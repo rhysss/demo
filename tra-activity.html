@@ -199,6 +199,42 @@
       white-space: nowrap;
     }
 
+    /* ── Detail metrics row ── */
+    .detail-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 900px) { .detail-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .detail-row { grid-template-columns: repeat(2, 1fr); } }
+
+    .detail-card {
+      background: rgba(30,45,77,.45);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .detail-card-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .detail-card-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .detail-card-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
     /* ── Big data cards ── */
     .data-grid {
       display: grid;
@@ -817,6 +853,30 @@
         <div class="data-card-label">TRA 账户余额</div>
         <div class="data-card-value val-text" style="font-size:2.25rem;">-- U</div>
         <div class="data-card-sub" style="margin-top:8px;">配资到账后开始计算</div>
+      </div>
+    </div>
+
+    <!-- 明细数据行 -->
+    <div class="detail-row">
+      <div class="detail-card">
+        <div class="detail-card-label">Balance 快照</div>
+        <div class="detail-card-value">42,160 U</div>
+        <div class="detail-card-sub">当前周期起始余额</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-label">充币</div>
+        <div class="detail-card-value">0 U</div>
+        <div class="detail-card-sub">本周期累计充入</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-label">提币</div>
+        <div class="detail-card-value">0 U</div>
+        <div class="detail-card-sub">本周期累计提出</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-label">手续费</div>
+        <div class="detail-card-value">240 U</div>
+        <div class="detail-card-sub">本周期累计手续费</div>
       </div>
     </div>
 
