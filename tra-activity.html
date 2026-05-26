@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRA · 交易复活账户</title>
+  <style>
+    :root {
+      --bg: #0b0e1a;
+      --surface: #111627;
+      --surface2: #1a2035;
+      --border: #1e2d4d;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59,130,246,.3);
+      --green: #22c55e;
+      --green-dim: rgba(34,197,94,.15);
+      --green-glow: rgba(34,197,94,.25);
+      --red: #ef4444;
+      --red-dim: rgba(239,68,68,.12);
+      --gold: #f59e0b;
+      --gold-dim: rgba(245,158,11,.12);
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 80px 24px 120px;
+      text-align: center;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,.15) 0%, transparent 70%);
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e2d4d' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: .5;
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #1e3a8a, #1e40af);
+      border: 1px solid #3b82f6;
+      color: #93c5fd;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #e2e8f0 0%, #93c5fd 50%, #60a5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 1.125rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 40px;
+    }
+
+    .hero-sub strong { color: var(--text); }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 15px 36px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 32px var(--accent-glow);
+      transition: all .2s;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px var(--accent-glow);
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section { padding: 80px 0; }
+    section + section { border-top: 1px solid var(--border); }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(1.5rem, 3vw, 2.25rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: -48px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .stat-item {
+      background: var(--surface);
+      padding: 28px 24px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-label { font-size: 13px; color: var(--muted); }
+
+    /* ── Data section (prominent) ── */
+    .data-section {
+      padding: 80px 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(59,130,246,.08) 0%, transparent 70%);
+    }
+
+    .data-section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .data-section-header h2 {
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .data-section-header h2 span { color: var(--accent); }
+
+    .update-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── Big data cards ── */
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 900px) { .data-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .data-grid { grid-template-columns: 1fr; } }
+
+    .data-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .data-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: 2px 2px 0 0;
+    }
+
+    .data-card.card-red   { border-color: rgba(239,68,68,.25); }
+    .data-card.card-red::after   { background: var(--red); }
+    .data-card.card-green { border-color: rgba(34,197,94,.25); }
+    .data-card.card-green::after { background: var(--green); }
+    .data-card.card-blue  { border-color: rgba(59,130,246,.25); }
+    .data-card.card-blue::after  { background: var(--accent); }
+    .data-card.card-neutral { }
+
+    .data-card-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .04em;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .data-card-value {
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .val-red   { color: var(--red); }
+    .val-green { color: var(--green); }
+    .val-blue  { color: var(--accent); }
+    .val-text  { color: var(--text); }
+
+    .data-card-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .data-card-tag {
+      display: inline-block;
+      background: var(--green-dim);
+      border: 1px solid rgba(34,197,94,.3);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 6px;
+    }
+
+    .progress-wrap {
+      margin-top: 12px;
+      background: var(--border);
+      border-radius: 4px;
+      height: 3px;
+      overflow: hidden;
+    }
+
+    .progress-fill { height: 100%; border-radius: 4px; }
+
+    /* ── Pulse dot ── */
+    .pulse-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green-glow);
+      display: inline-block;
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .5; transform: scale(.85); }
+    }
+
+    /* ── Early settlement bar ── */
+    .settle-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: linear-gradient(135deg, rgba(245,158,11,.08), rgba(239,68,68,.06));
+      border: 1px solid rgba(245,158,11,.25);
+      border-radius: var(--radius);
+      padding: 18px 24px;
+    }
+
+    .settle-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .settle-bar-icon {
+      font-size: 20px;
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: rgba(245,158,11,.12);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .settle-bar-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .btn-settle {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 22px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity .2s;
+      flex-shrink: 0;
+    }
+
+    .btn-settle:hover { opacity: .85; }
+
+    /* ── FAQ ── */
+    .faq-section { padding: 80px 0; }
+
+    .faq-group { margin-bottom: 40px; }
+
+    .faq-group-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 8px;
+      transition: border-color .2s;
+    }
+
+    .faq-item:hover { border-color: rgba(59,130,246,.4); }
+
+    .faq-q {
+      width: 100%;
+      background: var(--surface);
+      border: none;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      transition: background .15s;
+    }
+
+    .faq-q:hover { background: var(--surface2); }
+
+    .faq-chevron {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      color: var(--muted);
+      transition: transform .2s;
+    }
+
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+    .faq-a {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 0 24px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .3s ease, padding .3s ease;
+    }
+
+    .faq-item.open .faq-a {
+      max-height: 600px;
+      padding: 20px 24px 24px;
+    }
+
+    .faq-a p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    .faq-a p:last-child { margin-bottom: 0; }
+
+    /* settlement table inside FAQ */
+    .settle-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .settle-table th {
+      background: var(--surface2);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 700;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .settle-table td {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .settle-table tr:hover td { background: var(--surface2); }
+
+    .tag-green { color: var(--green); font-weight: 700; }
+    .tag-red   { color: var(--red);   font-weight: 700; }
+    .tag-gold  { color: var(--gold);  font-weight: 700; }
+
+    .step-inline {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .step-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .step-num-sm {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e3a8a, #1e40af);
+      border: 1px solid #3b82f6;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
+      color: #93c5fd;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-row p { margin: 0; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Chart + Qualify ── */
+    .chart-qualify-row {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      margin-top: 20px;
+      align-items: stretch;
+    }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .chart-header h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .chart-header p  { font-size: 12px; color: var(--muted); }
+
+    .sync-badge {
+      background: rgba(245,158,11,.1);
+      border: 1px solid rgba(245,158,11,.3);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    /* chart body */
+    .chart-body {
+      flex: 1;
+      min-height: 200px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-inner {
+      flex: 1;
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Y-axis */
+    .chart-y-axis {
+      display: flex;
+      flex-direction: column-reverse;
+      justify-content: space-between;
+      padding-bottom: 22px;
+      width: 30px;
+      flex-shrink: 0;
+    }
+
+    .y-label {
+      font-size: 9px;
+      color: var(--muted);
+      text-align: right;
+      line-height: 1;
+    }
+
+    /* plot area */
+    .chart-plot {
+      flex: 1;
+      position: relative;
+    }
+
+    .chart-plot::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 22px 0;
+      background-image: repeating-linear-gradient(
+        to top,
+        transparent 0%,
+        transparent calc(33.33% - 1px),
+        rgba(30,45,77,.6) calc(33.33% - 1px),
+        rgba(30,45,77,.6) 33.33%
+      );
+      pointer-events: none;
+    }
+
+    .bar-chart-area {
+      position: absolute;
+      bottom: 22px;
+      left: 0; right: 0; top: 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      padding: 4px 2px 0;
+    }
+
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+    }
+
+    .bar-fill {
+      width: 78%;
+      border-radius: 4px 4px 0 0;
+      min-height: 3px;
+      transition: opacity .2s, filter .2s;
+    }
+
+    .bar-fill:hover { opacity: .8; filter: brightness(1.2); cursor: pointer; }
+
+    .bar-fill.future {
+      width: 78%;
+      height: 14px !important;
+      min-height: 0;
+      background: transparent !important;
+      border: 1px dashed rgba(30,45,77,1);
+      border-bottom: none;
+      border-radius: 3px 3px 0 0;
+      opacity: 0.5;
+    }
+
+    .bar-labels {
+      position: absolute;
+      bottom: 0;
+      left: 0; right: 0;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 2px;
+    }
+
+    .bar-day-lbl {
+      flex: 1;
+      text-align: center;
+      font-size: 9px;
+      color: var(--muted);
+    }
+
+    .bar-day-lbl.future { opacity: 0.4; }
+
+    .chart-legend {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Qualify card ── */
+    .qualify-card {
+      background: var(--surface);
+      border: 1px solid rgba(245,158,11,.2);
+      border-radius: var(--radius);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .qualify-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .qualify-header h3 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .qualify-header p  { font-size: 11px; color: var(--muted); }
+
+    .eligible-badge {
+      background: rgba(34,197,94,.12);
+      border: 1px solid rgba(34,197,94,.35);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .gauge-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      padding: 4px 0;
+    }
+
+    .qualify-stats { display: flex; flex-direction: column; }
+
+    .qualify-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .qualify-row:last-child { border-bottom: none; }
+    .qualify-row-label { color: var(--muted); }
+    .qualify-row-val   { font-weight: 700; }
+    .qualify-row-val.gold { color: var(--gold); }
+
+    .btn-qualify {
+      width: 100%;
+      background: linear-gradient(135deg, #d97706, #b45309);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 13px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity .2s;
+      box-shadow: 0 0 20px rgba(245,158,11,.2);
+    }
+
+    .btn-qualify:hover { opacity: .85; }
+
+    @media (max-width: 900px) {
+      .chart-qualify-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .data-section-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ────── HERO ────── -->
+<section class="hero">
+  <div class="container">
+    <div class="badge">Trade Revival Account · 限时活动</div>
+    <h1>交易复活账户<br>TRA · 亏损也有第二次机会</h1>
+    <p class="hero-sub">
+      用真实交易数据说话。净亏损达标即可申请
+      <strong>最高 50% 配资</strong>，用虚拟配资账户重新出发。
+    </p>
+    <a href="#" class="btn-primary">
+      <span>立即报名</span>
+      <span>→</span>
+    </a>
+  </div>
+</section>
+
+
+<!-- ────── DATA PANEL (主区块) ────── -->
+<section class="data-section">
+  <div class="container">
+    <div class="data-section-header">
+      <div>
+        <div class="section-label">当前周期</div>
+        <h2>你的<span>交易数据</span></h2>
+      </div>
+      <div class="update-chip">
+        <span class="pulse-dot"></span>
+        每 1H 更新 · 仅供展示参考
+      </div>
+    </div>
+
+    <div class="data-grid">
+      <!-- 净盈亏 -->
+      <div class="data-card card-red">
+        <div class="data-card-label">当前周期净盈亏</div>
+        <div class="data-card-value val-red">−6,840 U</div>
+<div class="progress-wrap">
+          <div class="progress-fill" style="width:100%; background: linear-gradient(90deg,#ef4444,#dc2626);"></div>
+        </div>
+      </div>
+
+      <!-- 预估配资 -->
+      <div class="data-card card-green">
+        <div class="data-card-label">预估配资金额</div>
+        <div class="data-card-value val-green">3,420 U</div>
+        <div class="data-card-sub">= |净亏损| × 50%</div>
+      </div>
+
+      <!-- 周期剩余 -->
+      <div class="data-card card-blue">
+        <div class="data-card-label">结算周期剩余</div>
+        <div class="data-card-value val-blue">8 天</div>
+        <div class="data-card-sub">UTC+0 触发</div>
+        <div class="progress-wrap">
+          <div class="progress-fill" style="width:43%; background: linear-gradient(90deg,#3b82f6,#60a5fa);"></div>
+        </div>
+      </div>
+
+      <!-- TRA PnL -->
+      <div class="data-card card-neutral">
+        <div class="data-card-label">TRA 账户余额</div>
+        <div class="data-card-value val-text" style="font-size:2.25rem;">-- U</div>
+        <div class="data-card-sub" style="margin-top:8px;">配资到账后开始计算</div>
+      </div>
+    </div>
+
+    <!-- Chart + Qualify -->
+    <div class="chart-qualify-row">
+
+      <!-- 柱状图 -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3>14 天周期净盈亏走势</h3>
+            <p>仅展示预估数据，正式发放以周期结算为准</p>
+          </div>
+          <span class="sync-badge">Last sync 11:00 UTC</span>
+        </div>
+        <div class="chart-body">
+          <div class="chart-inner">
+            <div class="chart-y-axis">
+              <span class="y-label">3k</span>
+              <span class="y-label">2k</span>
+              <span class="y-label">1k</span>
+              <span class="y-label">0</span>
+            </div>
+            <div class="chart-plot">
+              <div class="bar-chart-area" id="barChart"></div>
+              <div class="bar-labels" id="barLabels"></div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#8b5cf6;"></span>亏损区间</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#14b8a6;"></span>盈利区间</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span>当前小时</div>
+        </div>
+      </div>
+
+      <!-- 资格卡 -->
+      <div class="qualify-card">
+        <div class="qualify-header">
+          <div>
+            <h3>提前结算资格</h3>
+            <p>Threshold: 5,000 USDT</p>
+          </div>
+          <span class="eligible-badge">Eligible</span>
+        </div>
+        <div class="gauge-wrap">
+          <svg width="190" height="190" viewBox="0 0 190 190">
+            <!-- track -->
+            <circle cx="95" cy="95" r="80" fill="none" stroke="#1e2d4d" stroke-width="12"/>
+            <!-- glow layer -->
+            <circle cx="95" cy="95" r="80" fill="none" stroke="rgba(245,158,11,.15)" stroke-width="22"
+              transform="rotate(-90 95 95)"/>
+            <!-- progress arc 100% -->
+            <circle cx="95" cy="95" r="80" fill="none" stroke="#f59e0b" stroke-width="12"
+              stroke-dasharray="502.65 502.65"
+              stroke-linecap="round"
+              transform="rotate(-90 95 95)"/>
+            <text x="95" y="88" text-anchor="middle" fill="#f59e0b" font-size="30" font-weight="800" font-family="-apple-system,sans-serif">100%</text>
+            <text x="95" y="110" text-anchor="middle" fill="#64748b" font-size="12" font-family="-apple-system,sans-serif">可申请提前结算</text>
+          </svg>
+        </div>
+        <div class="qualify-stats">
+          <div class="qualify-row">
+            <span class="qualify-row-label">当前净亏损</span>
+            <span class="qualify-row-val">6,840.00</span>
+          </div>
+          <div class="qualify-row">
+            <span class="qualify-row-label">门槛差额</span>
+            <span class="qualify-row-val gold">+1,840.00</span>
+          </div>
+          <div class="qualify-row">
+            <span class="qualify-row-label">申请状态</span>
+            <span class="qualify-row-val">未提交</span>
+          </div>
+        </div>
+        <button class="btn-qualify">🏆 申请提前结算</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ────── FAQ ────── -->
+<section class="faq-section" id="faq">
+  <div class="container">
+    <div class="section-label">常见问题</div>
+    <h2 class="section-title" style="margin-bottom:48px;">活动规则 FAQ</h2>
+
+    <!-- 参与流程 -->
+    <div class="faq-group">
+      <div class="faq-group-label">参与流程</div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggle(this)">
+          如何报名参与 TRA 活动？
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-a">
+          <p>点击页面「立即报名」按钮，完成 Twitter + 邮箱绑定后即完成报名。系统将立即为你生成一个 Trade Revival Account（TRA），账户信息同步发送至注册邮箱和站内信。</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggle(this)">
+          报名后 TRA 账户是如何运作的？
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-a">
+          <div class="step-inline">
+            <div class="step-row">
+              <div class="step-num-sm">1</div>
+              <p>绑定 Twitter + 邮箱，完成身份验证。</p>
+            </div>
+            <div class="step-row">
+              <div class="step-num-sm">2</div>
+              <p>系统按 1H 快照统计你当前结算周期的净盈亏，结果为负数即触发配资资格。</p>
+            </div>
+            <div class="step-row">
+              <div class="step-num-sm">3</div>
+              <p>报名后立即生成 TRA 账户（初始余额 0），配资注入后可开始交易。</p>
+            </div>
+            <div class="step-row">
+              <div class="step-num-sm">4</div>
+              <p>TRA 有效期 1 个月，到期或余额达到 2×配资额时触发结算，超额收益归你。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggle(this)">
+          展示的数据是实时结算结果吗？
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-a">
+          <p>不是。页面数据每 1 小时更新一次，跟随现有 balance 快照频率，仅用于展示和运营参考，不等同于最终结算结果。</p>
+          <p>正式结算以 14 天周期为准，按 UTC+0 时间触发。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 结算规则 -->
+    <div class="faq-group">
+      <div class="faq-group-label">结算规则</div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggle(this)">
+          结算周期是多久？什么情况可以提前结算？
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-a">
+          <p>正式结算周期为 14 天，按 UTC+0 触发。</p>
+          <p>如果你在当前周期内净亏损达到 5,000U 及以上，落地页将开放「申请提前结算」按钮。提交申请并经后台审核通过后，可提前将配资结算至 TRA。提前结算后，原周期数据将封存，14 天周期到期时不再重复结算。</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggle(this)">
+          TRA 到期后如何结算？最多能拿多少？
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-a">
+          <p>设配资金额为 <strong>F</strong>，TRA 有效期 1 个月，到期或余额达到 2F 时触发结算，规则如下：</p>
+          <table class="settle-table">
+            <thead>
+              <tr>
+                <th>情形</th>
+                <th>余额条件</th>
+                <th>结算结果</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>📈 盈利达标</td>
+                <td>F &lt; balance ≤ 2F</td>
+                <td class="tag-green">结算额 = balance − F</td>
+              </tr>
+              <tr>
+                <td>📉 未回本</td>
+                <td>balance ≤ F</td>
+                <td class="tag-red">不予结算</td>
+              </tr>
+              <tr>
+                <td>🏆 超额封顶</td>
+                <td>balance &gt; 2F（立即触发）</td>
+                <td class="tag-gold">封顶结算 = F</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="margin-top:12px;">结算金额通过 10041 渠道发放。</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggle(this)">
+          配资金额是怎么计算的？
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-a">
+          <p>配资金额 = |净亏损| × 50%。净亏损为负数时触发配资资格，结果为 0 或正数不予配资。</p>
+          <p>净亏损计算口径：DEX 用户以 Δ(balance) + Δ(总提) − Δ(总充) + Δ(返佣) 为准；CEX 用户以 Δ(balance) + Δ(总提) − Δ(活动奖金) − Δ(总充) 为准。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 账户限制 -->
+    <div class="faq-group">
+      <div class="faq-group-label">账户限制</div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggle(this)">
+          TRA 账户可以充值或提币吗？
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-a">
+          <p>不可以。TRA 是虚拟配资账户，禁止任何充币和提币操作，由用户状态直接管控，不同于普通真实资金账户。</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggle(this)">
+          TRA 账户能参与推荐返佣计划吗？
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-a">
+          <p>不能。TRA 账户统一挂载至系统账号（11259020），无法参与拉人头返佣计划。</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggle(this)">
+          TRA 账户还有哪些约束？
+          <span class="faq-chevron">▾</span>
+        </button>
+        <div class="faq-a">
+          <p>TRA 账户同时受两项约束：</p>
+          <p>① <strong>余额上限</strong>：余额达到 2×配资额（2F）时立即强制结算，封顶获得 F。</p>
+          <p>② <strong>有效期</strong>：TRA 创建后 1 个月到期，到期执行最终结算。</p>
+          <p>任一条件触发，账户即进入结算流程。</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ────── FOOTER ────── -->
+<footer>
+  <div class="container">
+    <p>TRA · Trade Revival Account &nbsp;|&nbsp; 本活动最终解释权归平台所有</p>
+    <p style="margin-top:8px;">数据展示每 1H 更新，不代表实时结算结果。结算以 14 天周期为准。</p>
+  </div>
+</footer>
+
+<script>
+  function toggle(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  // 结算周期剩余 8 天 → 当前为第 6 天（D6），D7-D14 为未来
+  const maxVal = 3000;
+  const barData = [
+    {day:'D1',  type:'loss',    val:2400},
+    {day:'D2',  type:'profit',  val: 800},
+    {day:'D3',  type:'loss',    val:1600},
+    {day:'D4',  type:'loss',    val:1200},
+    {day:'D5',  type:'loss',    val:2900},
+    {day:'D6',  type:'current', val:1240},
+    {day:'D7',  type:'future',  val:0},
+    {day:'D8',  type:'future',  val:0},
+    {day:'D9',  type:'future',  val:0},
+    {day:'D10', type:'future',  val:0},
+    {day:'D11', type:'future',  val:0},
+    {day:'D12', type:'future',  val:0},
+    {day:'D13', type:'future',  val:0},
+    {day:'D14', type:'future',  val:0},
+  ];
+  const colors = { loss:'#8b5cf6', profit:'#14b8a6', current:'#f59e0b', future:'transparent' };
+  const el = document.getElementById('barChart');
+  const lblEl = document.getElementById('barLabels');
+  if (el) {
+    el.innerHTML = barData.map(b => {
+      const pct = b.type === 'future' ? 0 : Math.round(b.val / maxVal * 100);
+      const isFuture = b.type === 'future';
+      return `<div class="bar-col">
+        <div class="bar-fill${isFuture ? ' future' : ''}" style="height:${pct}%;background:${colors[b.type]};"></div>
+      </div>`;
+    }).join('');
+  }
+  if (lblEl) {
+    lblEl.innerHTML = barData.map(b => `
+      <span class="bar-day-lbl${b.type === 'future' ? ' future' : ''}">${b.day}</span>`).join('');
+  }
+</script>
+
+</body>
+</html>
