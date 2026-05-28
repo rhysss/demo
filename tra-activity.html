@@ -786,6 +786,158 @@
     @media (max-width: 640px) {
       .data-section-header { flex-direction: column; align-items: flex-start; }
     }
+
+    /* ── Period Tab Switcher ── */
+    .period-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+      width: fit-content;
+    }
+    .period-tab {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 22px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .period-tab.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .period-tab:not(.active):hover {
+      color: var(--text);
+      background: var(--surface2);
+    }
+
+    /* ── History Period Cards ── */
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .period-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .period-card:hover { border-color: rgba(59,130,246,.3); }
+
+    .period-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      cursor: pointer;
+      user-select: none;
+      transition: background .15s;
+    }
+    .period-card-header:hover { background: var(--surface2); }
+
+    .period-num {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      min-width: 52px;
+    }
+    .period-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      flex: 1;
+    }
+    .period-date {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    @media (max-width: 600px) { .period-date { display: none; } }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .status-green { background: rgba(34,197,94,.12);  border: 1px solid rgba(34,197,94,.35);  color: var(--green); }
+    .status-gray  { background: rgba(100,116,139,.12); border: 1px solid rgba(100,116,139,.3); color: var(--muted); }
+    .status-gold  { background: rgba(245,158,11,.12);  border: 1px solid rgba(245,158,11,.35); color: var(--gold); }
+    .status-red   { background: rgba(239,68,68,.1);    border: 1px solid rgba(239,68,68,.3);   color: var(--red); }
+    .status-blue  { background: rgba(59,130,246,.12);  border: 1px solid rgba(59,130,246,.35); color: var(--accent); }
+
+    .period-chevron {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      color: var(--muted);
+      transition: transform .25s;
+      flex-shrink: 0;
+    }
+    .period-card.open .period-chevron { transform: rotate(180deg); }
+
+    .period-card-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .35s ease;
+    }
+    .period-card.open .period-card-body {
+      max-height: 300px;
+      border-top: 1px solid var(--border);
+    }
+
+    .period-body-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      padding: 20px;
+    }
+    @media (max-width: 700px) { .period-body-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; } }
+
+    .period-metric {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 0 16px;
+      border-right: 1px solid var(--border);
+    }
+    .period-metric:first-child { padding-left: 0; }
+    .period-metric:last-child  { border-right: none; }
+
+    .period-metric-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .period-metric-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .period-metric-value.val-red   { color: var(--red); }
+    .period-metric-value.val-green { color: var(--green); }
+    .period-metric-value.val-gold  { color: var(--gold); }
+    .period-metric-value.val-blue  { color: var(--accent); }
+    .period-metric-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -812,7 +964,7 @@
   <div class="container">
     <div class="data-section-header">
       <div>
-        <div class="section-label">当前周期</div>
+        <div class="section-label">交易数据</div>
         <h2>你的<span>交易数据</span></h2>
       </div>
       <div class="update-chip">
@@ -820,6 +972,15 @@
         每 1H 更新 · 仅供展示参考
       </div>
     </div>
+
+    <!-- Period Tab Switcher -->
+    <div class="period-tabs">
+      <button class="period-tab active" data-tab="current" onclick="switchTab('current')">当前周期</button>
+      <button class="period-tab" data-tab="history" onclick="switchTab('history')">历史记录</button>
+    </div>
+
+    <!-- ── 当前周期 view ── -->
+    <div id="current-view">
 
     <div class="data-grid">
       <!-- 净盈亏 -->
@@ -955,8 +1116,193 @@
         <button class="btn-qualify">🏆 申请提前结算</button>
       </div>
 
-    </div>
-  </div>
+    </div><!-- end chart-qualify-row -->
+
+    </div><!-- end #current-view -->
+
+    <!-- ── 历史记录 view ── -->
+    <div id="history-view" style="display:none">
+      <div class="history-list">
+
+        <!-- 第5周期：已结算·配资已发放 -->
+        <div class="period-card">
+          <div class="period-card-header" onclick="togglePeriod(this)">
+            <span class="period-num">第 5 周期</span>
+            <span class="period-name">正式结算</span>
+            <span class="period-date">2026/04/01 – 04/14</span>
+            <span class="status-badge status-green">已结算 · 配资已发放</span>
+            <span class="period-chevron">▾</span>
+          </div>
+          <div class="period-card-body">
+            <div class="period-body-grid">
+              <div class="period-metric">
+                <span class="period-metric-label">净盈亏</span>
+                <span class="period-metric-value val-red">−8,120 U</span>
+                <span class="period-metric-sub">亏损触发配资</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">配资金额</span>
+                <span class="period-metric-value val-green">4,060 U</span>
+                <span class="period-metric-sub">= |亏损| × 50%</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">TRA 余额</span>
+                <span class="period-metric-value" style="color:var(--muted);">已发放</span>
+                <span class="period-metric-sub">已注入 TRA 账户</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">结算状态</span>
+                <span class="period-metric-value val-green">结算完成</span>
+                <span class="period-metric-sub">14 天周期结算</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第4周期：未达结算条件 -->
+        <div class="period-card">
+          <div class="period-card-header" onclick="togglePeriod(this)">
+            <span class="period-num">第 4 周期</span>
+            <span class="period-name">盈利周期</span>
+            <span class="period-date">2026/03/15 – 03/28</span>
+            <span class="status-badge status-gray">未达结算条件</span>
+            <span class="period-chevron">▾</span>
+          </div>
+          <div class="period-card-body">
+            <div class="period-body-grid">
+              <div class="period-metric">
+                <span class="period-metric-label">净盈亏</span>
+                <span class="period-metric-value val-green">+2,340 U</span>
+                <span class="period-metric-sub">本周期盈利</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">配资金额</span>
+                <span class="period-metric-value" style="color:var(--muted);">--</span>
+                <span class="period-metric-sub">净盈利不配资</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">TRA 余额</span>
+                <span class="period-metric-value" style="color:var(--muted);">--</span>
+                <span class="period-metric-sub">未触发配资</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">结算状态</span>
+                <span class="period-metric-value" style="color:var(--muted);">不予结算</span>
+                <span class="period-metric-sub">周期净盈利</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第3周期：TRA 使用中 -->
+        <div class="period-card">
+          <div class="period-card-header" onclick="togglePeriod(this)">
+            <span class="period-num">第 3 周期</span>
+            <span class="period-name">TRA 交易中</span>
+            <span class="period-date">2026/03/01 – 03/14</span>
+            <span class="status-badge status-gold">TRA 使用中</span>
+            <span class="period-chevron">▾</span>
+          </div>
+          <div class="period-card-body">
+            <div class="period-body-grid">
+              <div class="period-metric">
+                <span class="period-metric-label">净盈亏</span>
+                <span class="period-metric-value val-red">−11,500 U</span>
+                <span class="period-metric-sub">亏损触发配资</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">配资金额</span>
+                <span class="period-metric-value val-gold">5,750 U</span>
+                <span class="period-metric-sub">= |亏损| × 50%</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">TRA 余额</span>
+                <span class="period-metric-value val-gold">8,200 U</span>
+                <span class="period-metric-sub">交易中 · 未结算</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">结算状态</span>
+                <span class="period-metric-value val-gold">TRA 使用中</span>
+                <span class="period-metric-sub">有效期剩余 18 天</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第2周期：已过期·未达盈利 -->
+        <div class="period-card">
+          <div class="period-card-header" onclick="togglePeriod(this)">
+            <span class="period-num">第 2 周期</span>
+            <span class="period-name">TRA 已过期</span>
+            <span class="period-date">2026/02/15 – 02/28</span>
+            <span class="status-badge status-red">已过期 · 未达盈利</span>
+            <span class="period-chevron">▾</span>
+          </div>
+          <div class="period-card-body">
+            <div class="period-body-grid">
+              <div class="period-metric">
+                <span class="period-metric-label">净盈亏</span>
+                <span class="period-metric-value val-red">−3,200 U</span>
+                <span class="period-metric-sub">亏损触发配资</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">配资金额</span>
+                <span class="period-metric-value">1,600 U</span>
+                <span class="period-metric-sub">= |亏损| × 50%</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">TRA 余额</span>
+                <span class="period-metric-value val-red">980 U</span>
+                <span class="period-metric-sub">到期时 &lt; 配资额</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">结算状态</span>
+                <span class="period-metric-value val-red">不予结算</span>
+                <span class="period-metric-sub">余额未回本</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第1周期：提前结算·已发放 -->
+        <div class="period-card">
+          <div class="period-card-header" onclick="togglePeriod(this)">
+            <span class="period-num">第 1 周期</span>
+            <span class="period-name">提前结算</span>
+            <span class="period-date">2026/02/01 – 02/14</span>
+            <span class="status-badge status-blue">提前结算 · 已发放</span>
+            <span class="period-chevron">▾</span>
+          </div>
+          <div class="period-card-body">
+            <div class="period-body-grid">
+              <div class="period-metric">
+                <span class="period-metric-label">净盈亏</span>
+                <span class="period-metric-value val-red">−6,500 U</span>
+                <span class="period-metric-sub">超过 5,000U 门槛</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">配资金额</span>
+                <span class="period-metric-value val-green">3,250 U</span>
+                <span class="period-metric-sub">= |亏损| × 50%</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">TRA 余额</span>
+                <span class="period-metric-value" style="color:var(--muted);">已发放</span>
+                <span class="period-metric-sub">提前注入 TRA</span>
+              </div>
+              <div class="period-metric">
+                <span class="period-metric-label">结算状态</span>
+                <span class="period-metric-value val-blue">提前结算完成</span>
+                <span class="period-metric-sub">周期第 9 天申请</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end history-list -->
+    </div><!-- end #history-view -->
+
+  </div><!-- end container -->
 </section>
 
 <!-- ────── FAQ ────── -->
@@ -1132,11 +1478,29 @@
 </footer>
 
 <script>
+  /* ── FAQ accordion ── */
   function toggle(btn) {
     const item = btn.closest('.faq-item');
     const isOpen = item.classList.contains('open');
     document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
     if (!isOpen) item.classList.add('open');
+  }
+
+  /* ── Period tab switcher ── */
+  function switchTab(tab) {
+    document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.period-tab[data-tab="${tab}"]`).classList.add('active');
+    document.getElementById('current-view').style.display  = tab === 'current'  ? '' : 'none';
+    document.getElementById('history-view').style.display  = tab === 'history'  ? '' : 'none';
+  }
+
+  /* ── History period card accordion ── */
+  function togglePeriod(header) {
+    const card = header.closest('.period-card');
+    const isOpen = card.classList.contains('open');
+    // Close all others
+    document.querySelectorAll('.period-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
   }
 
   // 结算周期剩余 8 天 → 当前为第 6 天（D6），D7-D14 为未来
