@@ -273,6 +273,14 @@
   }
   .channel-chip:hover:not(.selected) { border-color: #d1d5db; background: #f9fafb; }
 
+  .lang-selector { display: flex; flex-wrap: wrap; gap: 8px; }
+  .lang-chip {
+    padding: 6px 14px; border-radius: 8px; border: 1.5px solid #e8eaf0;
+    font-size: 13px; cursor: pointer; transition: all 0.15s; color: #6b7280;
+  }
+  .lang-chip.selected { border-color: #6c63ff; background: #f5f3ff; color: #6c63ff; font-weight: 500; }
+  .lang-chip:hover:not(.selected) { border-color: #d1d5db; background: #f9fafb; }
+
   .img-upload {
     border: 2px dashed #e8eaf0; border-radius: 10px; padding: 24px;
     text-align: center; cursor: pointer; transition: all 0.15s;
@@ -516,6 +524,24 @@
           <div class="form-hint">选择弹窗展示的渠道，可多选</div>
         </div>
 
+        <div class="form-group">
+          <label class="form-label">语言 <span class="required">*</span></label>
+          <div class="lang-selector" id="langSelector">
+            <div class="lang-chip selected" onclick="selectLang(this, 'zh-CN')">简体中文</div>
+            <div class="lang-chip" onclick="selectLang(this, 'zh-TW')">繁體中文</div>
+            <div class="lang-chip" onclick="selectLang(this, 'en')">English</div>
+            <div class="lang-chip" onclick="selectLang(this, 'vi')">Tiếng Việt</div>
+            <div class="lang-chip" onclick="selectLang(this, 'de')">Deutsch</div>
+            <div class="lang-chip" onclick="selectLang(this, 'es')">Español</div>
+            <div class="lang-chip" onclick="selectLang(this, 'ja')">日本語</div>
+            <div class="lang-chip" onclick="selectLang(this, 'ko')">한국어</div>
+            <div class="lang-chip" onclick="selectLang(this, 'ms')">Bahasa Melayu</div>
+            <div class="lang-chip" onclick="selectLang(this, 'pt')">Português</div>
+            <div class="lang-chip" onclick="selectLang(this, 'ru')">Русский</div>
+          </div>
+          <div class="form-hint">每条弹窗仅支持配置一种语言</div>
+        </div>
+
       </div>
 
       <!-- 图片配置 -->
@@ -733,6 +759,10 @@ function handleOverlayClick(e) {
 
 function toggleChannel(el) {
   el.classList.toggle('selected');
+}
+function selectLang(el) {
+  document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
 }
 function toggleChip(el) { el.classList.toggle('selected'); }
 function selectFreq(el) {
