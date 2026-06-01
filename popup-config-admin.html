@@ -453,6 +453,20 @@
               <option value="ended">已结束</option>
               <option value="draft">草稿</option>
             </select>
+            <select class="filter-select" onchange="filterLang(this.value)">
+              <option value="">全部语言</option>
+              <option value="zh-CN">简体中文</option>
+              <option value="zh-TW">繁體中文</option>
+              <option value="en">English</option>
+              <option value="vi">Tiếng Việt</option>
+              <option value="de">Deutsch</option>
+              <option value="es">Español</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="ms">Bahasa Melayu</option>
+              <option value="pt">Português</option>
+              <option value="ru">Русский</option>
+            </select>
           </div>
         </div>
 
@@ -461,6 +475,7 @@
             <tr>
               <th>弹窗名称</th>
               <th>渠道</th>
+              <th>语言</th>
               <th>预览图</th>
               <th>展示时间</th>
               <th>状态</th>
@@ -607,19 +622,25 @@
 </div>
 
 <script>
+const LANG_MAP = {
+  'zh-CN':'简体中文','zh-TW':'繁體中文','en':'English','vi':'Tiếng Việt',
+  'de':'Deutsch','es':'Español','ja':'日本語','ko':'한국어',
+  'ms':'Bahasa Melayu','pt':'Português','ru':'Русский'
+};
 const DATA = [
-  { id:1, name:'6月活动邀请弹窗', channel:'web', title:'限时活动开启！', trigger:'进入首页', start:'2026-06-01', end:'2026-06-15', priority:'high', views:'12,480', ctr:'8.2%', status:'active', enabled:true },
-  { id:2, name:'KYC 引导弹窗', channel:'app', title:'完成认证享特权', trigger:'登录后', start:'2026-05-20', end:'2026-12-31', priority:'mid', views:'6,320', ctr:'5.1%', status:'active', enabled:true },
-  { id:3, name:'新人注册礼弹窗', channel:'both', title:'注册即送 10 USDT', trigger:'首次访问', start:'2026-06-01', end:'2026-06-30', priority:'high', views:'3,800', ctr:'11.3%', status:'active', enabled:true },
-  { id:4, name:'App 下载引导', channel:'web', title:'下载 App 体验更好', trigger:'浏览 N 秒后', start:'2026-05-15', end:'2026-07-01', priority:'low', views:'8,100', ctr:'3.6%', status:'active', enabled:false },
-  { id:5, name:'合约节日活动', channel:'app', title:'合约交易返佣 50%', trigger:'完成交易', start:'2026-06-10', end:'2026-06-20', priority:'mid', views:'—', ctr:'—', status:'scheduled', enabled:false },
-  { id:6, name:'老用户回流活动', channel:'web', title:'欢迎回来！专属奖励', trigger:'登录后', start:'2026-05-01', end:'2026-05-31', priority:'mid', views:'21,500', ctr:'6.4%', status:'ended', enabled:false },
-  { id:7, name:'充值奖励弹窗 V2', channel:'app', title:'首充送 20%', trigger:'进入首页', start:'2026-06-05', end:'2026-06-25', priority:'high', views:'—', ctr:'—', status:'draft', enabled:false },
-  { id:8, name:'节日主题弹窗', channel:'both', title:'端午快乐 🎉', trigger:'进入首页', start:'2026-05-28', end:'2026-06-03', priority:'low', views:'4,200', ctr:'2.1%', status:'ended', enabled:false },
+  { id:1, name:'6月活动邀请弹窗', channel:'web', title:'限时活动开启！', lang:'zh-CN', start:'2026-06-01', end:'2026-06-15', status:'active', enabled:true },
+  { id:2, name:'KYC 引导弹窗', channel:'app', title:'完成认证享特权', lang:'zh-CN', start:'2026-05-20', end:'2026-12-31', status:'active', enabled:true },
+  { id:3, name:'新人注册礼弹窗', channel:'both', title:'注册即送 10 USDT', lang:'en', start:'2026-06-01', end:'2026-06-30', status:'active', enabled:true },
+  { id:4, name:'App 下载引导', channel:'web', title:'下载 App 体验更好', lang:'zh-TW', start:'2026-05-15', end:'2026-07-01', status:'active', enabled:false },
+  { id:5, name:'合约节日活动', channel:'app', title:'合约交易返佣 50%', lang:'vi', start:'2026-06-10', end:'2026-06-20', status:'scheduled', enabled:false },
+  { id:6, name:'老用户回流活动', channel:'web', title:'欢迎回来！专属奖励', lang:'ja', start:'2026-05-01', end:'2026-05-31', status:'ended', enabled:false },
+  { id:7, name:'充值奖励弹窗 V2', channel:'app', title:'首充送 20%', lang:'ko', start:'2026-06-05', end:'2026-06-25', status:'draft', enabled:false },
+  { id:8, name:'节日主题弹窗', channel:'both', title:'端午快乐 🎉', lang:'zh-CN', start:'2026-05-28', end:'2026-06-03', status:'ended', enabled:false },
 ];
 
 let currentChannel = 'all';
 let currentStatus = '';
+let currentLang = '';
 let searchQuery = '';
 let editingId = null;
 
@@ -646,6 +667,7 @@ function renderTable() {
   let rows = DATA.filter(d => {
     if (currentChannel !== 'all' && d.channel !== 'both' && d.channel !== currentChannel) return false;
     if (currentStatus && d.status !== currentStatus) return false;
+    if (currentLang && d.lang !== currentLang) return false;
     if (searchQuery && !d.name.toLowerCase().includes(searchQuery.toLowerCase()) && !d.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
@@ -665,6 +687,7 @@ function renderTable() {
         <div style="font-size:11px;color:#9ca3af;margin-top:2px">${d.title}</div>
       </td>
       <td>${getChannelBadge(d.channel)}</td>
+      <td style="font-size:12px;color:#374151">${LANG_MAP[d.lang] || d.lang}</td>
       <td>
         <div class="popup-thumb">🖼️</div>
       </td>
@@ -694,6 +717,7 @@ function switchChannel(ch, el) {
   renderTable();
 }
 function filterStatus(v) { currentStatus = v; renderTable(); }
+function filterLang(v) { currentLang = v; renderTable(); }
 function filterTable(v) { searchQuery = v; renderTable(); }
 
 function toggleEnabled(id, el) {
