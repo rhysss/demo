@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>弹窗配置管理</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px; background: #1a1a2e; color: #a0a8c0; flex-shrink: 0;
+    display: flex; flex-direction: column;
+  }
+  .sidebar-logo {
+    padding: 20px 24px; font-size: 16px; font-weight: 700;
+    color: #fff; border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sidebar-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: #6c63ff; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-group-label {
+    padding: 8px 24px 4px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.8px; color: #4a5280;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 24px; font-size: 13px; cursor: pointer;
+    transition: all 0.15s; border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .nav-item.active { background: rgba(108,99,255,0.15); color: #fff; border-left-color: #6c63ff; }
+  .nav-icon { font-size: 15px; opacity: 0.7; }
+
+  /* Main */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .topbar {
+    background: #fff; padding: 0 32px; height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #e8eaf0; flex-shrink: 0;
+  }
+  .topbar-title { font-size: 16px; font-weight: 600; color: #1a1a2e; }
+  .topbar-actions { display: flex; align-items: center; gap: 12px; }
+  .topbar-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #6c63ff, #a78bfa);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  .content { flex: 1; overflow-y: auto; padding: 28px 32px; }
+
+  /* Page header */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .page-header h1 { font-size: 20px; font-weight: 700; }
+  .page-header p { font-size: 13px; color: #6b7280; margin-top: 4px; }
+
+  .btn {
+    padding: 8px 18px; border-radius: 8px; border: none;
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: #6c63ff; color: #fff; }
+  .btn-primary:hover { background: #5b52e0; }
+  .btn-outline { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+  .btn-outline:hover { background: #f9fafb; }
+  .btn-danger { background: #fff; color: #ef4444; border: 1px solid #fca5a5; }
+  .btn-danger:hover { background: #fef2f2; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+  /* Channel tabs */
+  .channel-tabs {
+    display: flex; gap: 0; margin-bottom: 20px;
+    background: #fff; border-radius: 10px; padding: 4px;
+    border: 1px solid #e8eaf0; width: fit-content;
+  }
+  .channel-tab {
+    padding: 8px 24px; border-radius: 7px; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; color: #6b7280;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .channel-tab.active { background: #6c63ff; color: #fff; box-shadow: 0 2px 8px rgba(108,99,255,0.3); }
+  .channel-tab:not(.active):hover { background: #f3f4f6; color: #374151; }
+  .channel-badge {
+    background: rgba(255,255,255,0.25); font-size: 11px;
+    padding: 1px 6px; border-radius: 10px; font-weight: 600;
+  }
+  .channel-tab:not(.active) .channel-badge { background: #e5e7eb; color: #6b7280; }
+
+  /* Stats row */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: #fff; border-radius: 10px; padding: 16px 20px;
+    border: 1px solid #e8eaf0; flex: 1;
+  }
+  .stat-label { font-size: 12px; color: #6b7280; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+  .stat-sub { font-size: 11px; color: #10b981; margin-top: 3px; }
+  .stat-sub.warn { color: #f59e0b; }
+
+  /* Table */
+  .table-card {
+    background: #fff; border-radius: 12px; border: 1px solid #e8eaf0;
+    overflow: hidden;
+  }
+  .table-toolbar {
+    padding: 16px 20px; display: flex; align-items: center;
+    justify-content: space-between; border-bottom: 1px solid #f3f4f6;
+    gap: 12px;
+  }
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: #f9fafb; border: 1px solid #e8eaf0; border-radius: 8px;
+    padding: 7px 12px; width: 240px;
+  }
+  .search-box input {
+    border: none; background: none; font-size: 13px; outline: none;
+    color: #374151; width: 100%;
+  }
+  .search-icon { color: #9ca3af; font-size: 14px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    padding: 11px 16px; text-align: left; font-size: 12px;
+    font-weight: 600; color: #6b7280; background: #f9fafb;
+    border-bottom: 1px solid #e8eaf0; white-space: nowrap;
+  }
+  tbody tr { transition: background 0.1s; }
+  tbody tr:hover { background: #fafbff; }
+  tbody td {
+    padding: 14px 16px; font-size: 13px; color: #374151;
+    border-bottom: 1px solid #f3f4f6; vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .popup-thumb {
+    width: 48px; height: 32px; border-radius: 5px;
+    object-fit: cover; background: #f3f4f6;
+    border: 1px solid #e8eaf0; display: flex; align-items: center;
+    justify-content: center; font-size: 11px; color: #9ca3af; overflow: hidden;
+  }
+  .popup-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 500;
+  }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-gray { background: #f3f4f6; color: #6b7280; }
+  .badge-yellow { background: #fef3c7; color: #92400e; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  .priority-tag {
+    font-size: 11px; font-weight: 600; padding: 2px 7px;
+    border-radius: 4px; background: #f3f4f6; color: #6b7280;
+  }
+  .priority-tag.high { background: #fee2e2; color: #dc2626; }
+  .priority-tag.mid { background: #fef3c7; color: #d97706; }
+  .priority-tag.low { background: #f3f4f6; color: #6b7280; }
+
+  .action-btns { display: flex; gap: 6px; }
+
+  .toggle {
+    width: 36px; height: 20px; border-radius: 10px; background: #d1d5db;
+    cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle.on { background: #6c63ff; }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 50%; background: #fff;
+    transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.on::after { left: 18px; }
+
+  /* Pagination */
+  .pagination {
+    padding: 14px 20px; display: flex; align-items: center;
+    justify-content: space-between; border-top: 1px solid #f3f4f6;
+    font-size: 13px; color: #6b7280;
+  }
+  .page-btns { display: flex; gap: 6px; }
+  .page-btn {
+    width: 30px; height: 30px; border-radius: 6px; border: 1px solid #e8eaf0;
+    background: #fff; font-size: 13px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; transition: all 0.1s;
+  }
+  .page-btn.active { background: #6c63ff; color: #fff; border-color: #6c63ff; }
+  .page-btn:not(.active):hover { background: #f9fafb; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(3px);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: #fff; border-radius: 16px; width: 680px; max-width: 95vw;
+    max-height: 90vh; overflow-y: auto;
+    transform: translateY(12px); transition: transform 0.2s;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header {
+    padding: 20px 24px; border-bottom: 1px solid #f3f4f6;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; background: #fff; z-index: 1;
+  }
+  .modal-header h2 { font-size: 16px; font-weight: 700; }
+  .modal-header .subtitle { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .modal-close {
+    width: 30px; height: 30px; border-radius: 8px; border: none;
+    background: #f3f4f6; cursor: pointer; font-size: 16px; color: #6b7280;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.1s;
+  }
+  .modal-close:hover { background: #e5e7eb; }
+  .modal-body { padding: 24px; }
+  .modal-footer {
+    padding: 16px 24px; border-top: 1px solid #f3f4f6;
+    display: flex; justify-content: flex-end; gap: 10px;
+    position: sticky; bottom: 0; background: #fff;
+  }
+
+  /* Form */
+  .form-section { margin-bottom: 24px; }
+  .form-section-title {
+    font-size: 13px; font-weight: 600; color: #374151;
+    margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .form-section-title .icon { font-size: 15px; }
+
+  .form-row { display: flex; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; margin-bottom: 16px; }
+  .form-label {
+    font-size: 12px; font-weight: 600; color: #374151;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .required { color: #ef4444; }
+  .form-hint { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+  .form-input, .form-select, .form-textarea {
+    padding: 9px 12px; border-radius: 8px; border: 1.5px solid #e8eaf0;
+    font-size: 13px; color: #374151; outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%; font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: #6c63ff; box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+  }
+  .form-textarea { resize: vertical; min-height: 72px; }
+
+  .channel-selector { display: flex; gap: 8px; }
+  .channel-chip {
+    padding: 8px 16px; border-radius: 8px; border: 1.5px solid #e8eaf0;
+    font-size: 13px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 7px; color: #6b7280;
+  }
+  .channel-chip.selected {
+    border-color: #6c63ff; background: #f5f3ff; color: #6c63ff; font-weight: 500;
+  }
+  .channel-chip:hover:not(.selected) { border-color: #d1d5db; background: #f9fafb; }
+
+  .img-upload {
+    border: 2px dashed #e8eaf0; border-radius: 10px; padding: 24px;
+    text-align: center; cursor: pointer; transition: all 0.15s;
+    position: relative; overflow: hidden;
+  }
+  .img-upload:hover { border-color: #6c63ff; background: #fafbff; }
+  .img-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .img-upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .img-upload p { font-size: 13px; color: #6b7280; }
+  .img-upload span { font-size: 11px; color: #9ca3af; }
+  .img-preview {
+    width: 100%; aspect-ratio: 16/6; border-radius: 8px;
+    object-fit: cover; display: none;
+  }
+
+  .time-range { display: flex; align-items: center; gap: 10px; }
+  .time-range span { color: #6b7280; font-size: 13px; flex-shrink: 0; }
+
+  .trigger-options { display: flex; flex-wrap: wrap; gap: 8px; }
+  .trigger-chip {
+    padding: 6px 13px; border-radius: 6px; border: 1.5px solid #e8eaf0;
+    font-size: 12px; cursor: pointer; color: #6b7280; transition: all 0.15s;
+  }
+  .trigger-chip.selected { border-color: #6c63ff; background: #f5f3ff; color: #6c63ff; }
+
+  .freq-options { display: flex; gap: 8px; }
+  .freq-opt {
+    flex: 1; padding: 10px 8px; border-radius: 8px; border: 1.5px solid #e8eaf0;
+    text-align: center; cursor: pointer; font-size: 12px; color: #6b7280;
+    transition: all 0.15s;
+  }
+  .freq-opt.selected { border-color: #6c63ff; background: #f5f3ff; color: #6c63ff; font-weight: 500; }
+  .freq-opt .freq-icon { font-size: 18px; margin-bottom: 4px; }
+
+  /* Preview panel */
+  .preview-panel {
+    position: fixed; right: 32px; top: 50%;
+    transform: translateY(-50%);
+    background: #fff; border-radius: 16px;
+    border: 1px solid #e8eaf0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    width: 220px; padding: 16px;
+    display: none;
+  }
+  .preview-panel.show { display: block; }
+  .preview-label { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+  .phone-frame {
+    width: 160px; margin: 0 auto;
+    background: #1a1a2e; border-radius: 20px; padding: 12px 10px;
+    position: relative;
+  }
+  .phone-notch {
+    width: 50px; height: 5px; background: #333; border-radius: 3px;
+    margin: 0 auto 8px;
+  }
+  .phone-screen {
+    background: #16213e; border-radius: 10px; overflow: hidden;
+    aspect-ratio: 9/16; position: relative;
+  }
+  .phone-popup {
+    position: absolute; bottom: 20px; left: 8px; right: 8px;
+    background: #fff; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .phone-popup-img { width: 100%; height: 50px; background: linear-gradient(135deg, #6c63ff22, #a78bfa22); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .phone-popup-body { padding: 8px; }
+  .phone-popup-title { font-size: 7px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .phone-popup-btn { background: #6c63ff; color: #fff; font-size: 6px; padding: 3px 0; border-radius: 4px; text-align: center; }
+  .phone-popup-close { position: absolute; top: 4px; right: 4px; width: 12px; height: 12px; background: rgba(0,0,0,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 8px; }
+
+  /* Empty state */
+  .empty-state {
+    padding: 60px 20px; text-align: center; color: #9ca3af;
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; color: #6b7280; }
+  .empty-sub { font-size: 13px; margin-top: 6px; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 8px; align-items: center; }
+  .filter-select {
+    padding: 6px 10px; border-radius: 7px; border: 1px solid #e8eaf0;
+    font-size: 12px; color: #374151; background: #fff; cursor: pointer; outline: none;
+  }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #1a1a2e; color: #fff; padding: 12px 18px;
+    border-radius: 10px; font-size: 13px; z-index: 2000;
+    transform: translateY(20px); opacity: 0;
+    transition: all 0.25s; pointer-events: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-icon { font-size: 16px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="dot"></div>
+      运营后台
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">内容运营</div>
+      <div class="nav-item"><span class="nav-icon">🏠</span> 概览</div>
+      <div class="nav-item active"><span class="nav-icon">📋</span> 弹窗配置</div>
+      <div class="nav-item"><span class="nav-icon">📢</span> Banner 管理</div>
+      <div class="nav-item"><span class="nav-icon">🎯</span> 活动管理</div>
+      <div class="nav-group-label" style="margin-top:12px">推送运营</div>
+      <div class="nav-item"><span class="nav-icon">🔔</span> Push 通知</div>
+      <div class="nav-item"><span class="nav-icon">✉️</span> 站内信</div>
+      <div class="nav-group-label" style="margin-top:12px">数据</div>
+      <div class="nav-item"><span class="nav-icon">📊</span> 数据报表</div>
+      <div class="nav-item"><span class="nav-icon">⚙️</span> 系统设置</div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">弹窗配置管理</div>
+      <div class="topbar-actions">
+        <div style="font-size:12px;color:#6b7280;">rhys@100xex.com</div>
+        <div class="topbar-avatar">R</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Header -->
+      <div class="page-header">
+        <div>
+          <h1>弹窗配置</h1>
+          <p>管理 Web 端与 App 端的弹窗内容，支持定时、触发条件、频率等精细化控制</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal()">
+          ＋ 新建弹窗
+        </button>
+      </div>
+
+
+      <!-- Channel Tabs -->
+      <div class="channel-tabs">
+        <div class="channel-tab active" onclick="switchChannel('all', this)">
+          全部 <span class="channel-badge">12</span>
+        </div>
+        <div class="channel-tab" onclick="switchChannel('web', this)">
+          🌐 Web <span class="channel-badge">7</span>
+        </div>
+        <div class="channel-tab" onclick="switchChannel('app', this)">
+          📱 App <span class="channel-badge">5</span>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="搜索弹窗名称..." oninput="filterTable(this.value)">
+          </div>
+          <div class="filter-bar">
+            <select class="filter-select" onchange="filterStatus(this.value)">
+              <option value="">全部状态</option>
+              <option value="active">进行中</option>
+              <option value="scheduled">待发布</option>
+              <option value="ended">已结束</option>
+              <option value="draft">草稿</option>
+            </select>
+            <select class="filter-select">
+              <option value="">全部优先级</option>
+              <option value="high">高</option>
+              <option value="mid">中</option>
+              <option value="low">低</option>
+            </select>
+            <button class="btn btn-outline btn-sm">⬇ 导出</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width:44px"><input type="checkbox" onclick="toggleAll(this)"></th>
+              <th>弹窗名称</th>
+              <th>渠道</th>
+              <th>预览图</th>
+              <th>展示时间</th>
+              <th>状态</th>
+              <th>启用</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+          </tbody>
+        </table>
+
+        <div id="emptyState" class="empty-state" style="display:none;">
+          <div class="empty-icon">📭</div>
+          <div class="empty-text">暂无弹窗配置</div>
+          <div class="empty-sub">点击「新建弹窗」开始配置</div>
+        </div>
+
+        <div class="pagination">
+          <span id="paginationInfo">共 8 条</span>
+          <div class="page-btns">
+            <button class="page-btn">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="modalTitle">新建弹窗</h2>
+        <div class="subtitle" id="modalSubtitle">填写弹窗配置信息</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- 基础信息 -->
+      <div class="form-section">
+        <div class="form-section-title"><span class="icon">📝</span> 基础信息</div>
+
+        <div class="form-group">
+          <label class="form-label">弹窗名称 <span class="required">*</span></label>
+          <input class="form-input" id="f_name" placeholder="用于后台识别，不展示给用户" maxlength="50">
+          <div class="form-hint">仅内部使用，最多 50 字符</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">发布渠道 <span class="required">*</span></label>
+          <div class="channel-selector">
+            <div class="channel-chip selected" onclick="toggleChannel(this, 'web')">🌐 Web 端</div>
+            <div class="channel-chip" onclick="toggleChannel(this, 'app')">📱 App 端</div>
+            <div class="channel-chip" onclick="toggleChannel(this, 'both')">🔀 全渠道</div>
+          </div>
+          <div class="form-hint">选择弹窗展示的渠道，可多选</div>
+        </div>
+
+      </div>
+
+      <!-- 图片配置 -->
+      <div class="form-section">
+        <div class="form-section-title"><span class="icon">🖼️</span> 图片配置</div>
+
+        <div class="form-group">
+          <label class="form-label">弹窗图片</label>
+          <div class="img-upload" id="imgUpload" onclick="triggerUpload()">
+            <input type="file" id="imgInput" accept="image/*" onchange="handleImageUpload(event)" style="display:none">
+            <div id="uploadPlaceholder">
+              <div class="img-upload-icon">🖼️</div>
+              <p>点击上传图片</p>
+              <span>推荐尺寸 750×400px，支持 JPG / PNG / GIF，最大 2MB</span>
+            </div>
+            <img id="imgPreviewEl" class="img-preview" alt="预览">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 跳转配置 -->
+      <div class="form-section">
+        <div class="form-section-title"><span class="icon">🔗</span> 跳转配置</div>
+
+        <div class="form-group">
+            <label class="form-label">跳转链接 <span class="required">*</span></label>
+            <input class="form-input" id="f_link" placeholder="https:// 或 app://page/...">
+          </div>
+      </div>
+
+      <!-- 展示规则 -->
+      <div class="form-section">
+        <div class="form-section-title"><span class="icon">⏰</span> 展示规则</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">开始时间 <span class="required">*</span></label>
+            <input class="form-input" type="datetime-local" id="f_start">
+          </div>
+          <div class="form-group">
+            <label class="form-label">结束时间 <span class="required">*</span></label>
+            <input class="form-input" type="datetime-local" id="f_end">
+          </div>
+        </div>
+
+
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="saveDraft()">保存草稿</button>
+      <button class="btn btn-primary" onclick="savePopup()">发布弹窗</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">✅</span>
+  <span id="toastText"></span>
+</div>
+
+<script>
+const DATA = [
+  { id:1, name:'6月活动邀请弹窗', channel:'web', title:'限时活动开启！', trigger:'进入首页', start:'2026-06-01', end:'2026-06-15', priority:'high', views:'12,480', ctr:'8.2%', status:'active', enabled:true },
+  { id:2, name:'KYC 引导弹窗', channel:'app', title:'完成认证享特权', trigger:'登录后', start:'2026-05-20', end:'2026-12-31', priority:'mid', views:'6,320', ctr:'5.1%', status:'active', enabled:true },
+  { id:3, name:'新人注册礼弹窗', channel:'both', title:'注册即送 10 USDT', trigger:'首次访问', start:'2026-06-01', end:'2026-06-30', priority:'high', views:'3,800', ctr:'11.3%', status:'active', enabled:true },
+  { id:4, name:'App 下载引导', channel:'web', title:'下载 App 体验更好', trigger:'浏览 N 秒后', start:'2026-05-15', end:'2026-07-01', priority:'low', views:'8,100', ctr:'3.6%', status:'active', enabled:false },
+  { id:5, name:'合约节日活动', channel:'app', title:'合约交易返佣 50%', trigger:'完成交易', start:'2026-06-10', end:'2026-06-20', priority:'mid', views:'—', ctr:'—', status:'scheduled', enabled:false },
+  { id:6, name:'老用户回流活动', channel:'web', title:'欢迎回来！专属奖励', trigger:'登录后', start:'2026-05-01', end:'2026-05-31', priority:'mid', views:'21,500', ctr:'6.4%', status:'ended', enabled:false },
+  { id:7, name:'充值奖励弹窗 V2', channel:'app', title:'首充送 20%', trigger:'进入首页', start:'2026-06-05', end:'2026-06-25', priority:'high', views:'—', ctr:'—', status:'draft', enabled:false },
+  { id:8, name:'节日主题弹窗', channel:'both', title:'端午快乐 🎉', trigger:'进入首页', start:'2026-05-28', end:'2026-06-03', priority:'low', views:'4,200', ctr:'2.1%', status:'ended', enabled:false },
+];
+
+let currentChannel = 'all';
+let currentStatus = '';
+let searchQuery = '';
+let editingId = null;
+
+function getStatusBadge(s) {
+  const map = {
+    active: '<span class="badge badge-green"><span class="badge-dot"></span>进行中</span>',
+    scheduled: '<span class="badge badge-blue"><span class="badge-dot"></span>待发布</span>',
+    ended: '<span class="badge badge-gray"><span class="badge-dot"></span>已结束</span>',
+    draft: '<span class="badge badge-yellow"><span class="badge-dot"></span>草稿</span>',
+  };
+  return map[s] || s;
+}
+function getChannelBadge(c) {
+  if (c === 'web') return '<span class="badge badge-blue">🌐 Web</span>';
+  if (c === 'app') return '<span class="badge badge-green">📱 App</span>';
+  return '<span class="badge badge-gray">🔀 全渠道</span>';
+}
+function getPriority(p) {
+  const map = { high: '<span class="priority-tag high">高</span>', mid: '<span class="priority-tag mid">中</span>', low: '<span class="priority-tag low">低</span>' };
+  return map[p];
+}
+
+function renderTable() {
+  let rows = DATA.filter(d => {
+    if (currentChannel !== 'all' && d.channel !== 'both' && d.channel !== currentChannel) return false;
+    if (currentStatus && d.status !== currentStatus) return false;
+    if (searchQuery && !d.name.toLowerCase().includes(searchQuery.toLowerCase()) && !d.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  document.getElementById('paginationInfo').textContent = `共 ${rows.length} 条`;
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  tbody.innerHTML = rows.map(d => `
+    <tr>
+      <td><input type="checkbox"></td>
+      <td>
+        <div style="font-weight:500;color:#1a1a2e">${d.name}</div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px">${d.title}</div>
+      </td>
+      <td>${getChannelBadge(d.channel)}</td>
+      <td>
+        <div class="popup-thumb">🖼️</div>
+      </td>
+      <td style="font-size:12px">
+        <div>${d.start}</div>
+        <div style="color:#9ca3af">~ ${d.end}</div>
+      </td>
+      <td>${getStatusBadge(d.status)}</td>
+      <td>
+        <div class="toggle ${d.enabled ? 'on' : ''}" onclick="toggleEnabled(${d.id}, this)"></div>
+      </td>
+      <td>
+        <div class="action-btns">
+          <button class="btn btn-outline btn-sm" onclick="editPopup(${d.id})">编辑</button>
+          <button class="btn btn-outline btn-sm" onclick="copyPopup(${d.id})">复制</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePopup(${d.id})">删除</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function switchChannel(ch, el) {
+  currentChannel = ch;
+  document.querySelectorAll('.channel-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderTable();
+}
+function filterStatus(v) { currentStatus = v; renderTable(); }
+function filterTable(v) { searchQuery = v; renderTable(); }
+
+function toggleEnabled(id, el) {
+  el.classList.toggle('on');
+  const d = DATA.find(r => r.id === id);
+  if (d) d.enabled = el.classList.contains('on');
+  showToast(el.classList.contains('on') ? '已启用' : '已停用', '✅');
+}
+
+function editPopup(id) {
+  editingId = id;
+  document.getElementById('modalTitle').textContent = '编辑弹窗';
+  document.getElementById('modalSubtitle').textContent = '修改弹窗配置信息';
+  const d = DATA.find(r => r.id === id);
+  if (d) {
+    document.getElementById('f_name').value = d.name;
+    document.getElementById('f_title').value = d.title;
+  }
+  openModal();
+}
+
+function copyPopup(id) {
+  const d = DATA.find(r => r.id === id);
+  if (!d) return;
+  const newItem = { ...d, id: DATA.length + 1, name: d.name + '（副本）', status: 'draft', enabled: false };
+  DATA.push(newItem);
+  renderTable();
+  showToast('已复制弹窗配置', '📋');
+}
+
+function deletePopup(id) {
+  if (!confirm('确认删除该弹窗配置？此操作不可撤销。')) return;
+  const idx = DATA.findIndex(r => r.id === id);
+  if (idx !== -1) DATA.splice(idx, 1);
+  renderTable();
+  showToast('已删除', '🗑️');
+}
+
+function openModal() {
+  document.getElementById('modalOverlay').classList.add('open');
+  if (!editingId) {
+    document.getElementById('modalTitle').textContent = '新建弹窗';
+    document.getElementById('modalSubtitle').textContent = '填写弹窗配置信息';
+    document.getElementById('f_name').value = '';
+    document.getElementById('f_title').value = '';
+    document.getElementById('f_link').value = '';
+    document.getElementById('f_img_url').value = '';
+  }
+  // set default datetime
+  const now = new Date();
+  const fmt = d => d.toISOString().slice(0,16);
+  document.getElementById('f_start').value = fmt(now);
+  const end = new Date(now); end.setDate(end.getDate() + 7);
+  document.getElementById('f_end').value = fmt(end);
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null;
+}
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function toggleChannel(el) {
+  el.classList.toggle('selected');
+}
+function toggleChip(el) { el.classList.toggle('selected'); }
+function selectFreq(el) {
+  document.querySelectorAll('.freq-opt').forEach(f => f.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function triggerUpload() {
+  document.getElementById('imgInput').click();
+}
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const el = document.getElementById('imgPreviewEl');
+    el.src = ev.target.result;
+    el.style.display = 'block';
+    document.getElementById('uploadPlaceholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+function previewFromUrl() {
+  const url = document.getElementById('f_img_url').value;
+  if (!url) return;
+  const el = document.getElementById('imgPreviewEl');
+  el.src = url;
+  el.style.display = 'block';
+  document.getElementById('uploadPlaceholder').style.display = 'none';
+}
+
+function updatePreview() {}
+
+function saveDraft() {
+  const name = document.getElementById('f_name').value || '未命名弹窗';
+  DATA.push({ id: DATA.length+1, name, channel:'web', title: document.getElementById('f_title').value || '（无标题）', trigger:'进入首页', start:'—', end:'—', priority:'mid', views:'—', ctr:'—', status:'draft', enabled:false });
+  renderTable();
+  closeModal();
+  showToast('草稿已保存', '💾');
+}
+function savePopup() {
+  const name = document.getElementById('f_name').value;
+  if (!name) { alert('请填写弹窗名称'); return; }
+  const title = document.getElementById('f_title').value;
+  if (!title) { alert('请填写弹窗标题'); return; }
+  if (editingId) {
+    const d = DATA.find(r => r.id === editingId);
+    if (d) { d.name = name; d.title = title; d.status = 'active'; }
+  } else {
+    DATA.push({ id: DATA.length+1, name, channel:'web', title, trigger:'进入首页', start:'2026-06-01', end:'2026-06-30', priority:'mid', views:'0', ctr:'0%', status:'active', enabled:true });
+  }
+  renderTable();
+  closeModal();
+  showToast('弹窗已发布', '🚀');
+}
+
+function toggleAll(el) {
+  document.querySelectorAll('#tableBody input[type=checkbox]').forEach(cb => cb.checked = el.checked);
+}
+
+function showToast(msg, icon='✅') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastText').textContent = msg;
+  document.getElementById('toastIcon').textContent = icon;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// Nav click effect
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+renderTable();
+</script>
+</body>
+</html>
