@@ -451,7 +451,6 @@
         <table>
           <thead>
             <tr>
-              <th style="width:44px"><input type="checkbox" onclick="toggleAll(this)"></th>
               <th>弹窗名称</th>
               <th>渠道</th>
               <th>预览图</th>
@@ -635,7 +634,6 @@ function renderTable() {
   empty.style.display = 'none';
   tbody.innerHTML = rows.map(d => `
     <tr>
-      <td><input type="checkbox"></td>
       <td>
         <div style="font-weight:500;color:#1a1a2e">${d.name}</div>
         <div style="font-size:11px;color:#9ca3af;margin-top:2px">${d.title}</div>
