@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>官方验证通道 — 后台管理 | 100X Exchange</title>
+<style>
+/* ── 100XEX DESIGN TOKENS ── */
+:root {
+  --brand:       #92ef00;
+  --brand-dim:   rgba(146,239,0,.12);
+  --brand-dim2:  rgba(146,239,0,.06);
+  --brand-hover: rgba(146,239,0,.18);
+  --up:          #09a76a;
+  --up-dim:      rgba(9,167,106,.12);
+  --down:        #ff455d;
+  --down-dim:    rgba(255,69,93,.10);
+  --yellow:      #ffb931;
+  --yellow-dim:  rgba(255,185,49,.10);
+  --purple:      #7f60f0;
+  --purple-dim:  rgba(127,96,240,.12);
+  --bg1:         #000000;
+  --bg2:         #0f0f0f;
+  --bg3:         #181a1a;
+  --bg4:         #2e2f34;
+  --bg5:         rgba(255,255,255,.06);
+  --bg-hover:    #1b1c1e;
+  --border1:     #2b2e2e;
+  --border2:     #232525;
+  --border3:     #343838;
+  --t1:          #fafafa;
+  --t2:          #737c80;
+  --t3:          #676770;
+  --tp:          #6e707c;
+  --font:        "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",Arial,sans-serif;
+  --r:           4px;
+  --r-md:        8px;
+  --r-lg:        12px;
+  --sidebar-w:   220px;
+  --topbar-h:    52px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg1);color:var(--t1);font-family:var(--font);font-size:13px;overflow:hidden}
+
+/* ══ LAYOUT ══ */
+.layout{display:flex;height:100vh;overflow:hidden}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border1);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.sidebar-logo{
+  height:var(--topbar-h);display:flex;align-items:center;gap:8px;
+  padding:0 18px;border-bottom:1px solid var(--border1);flex-shrink:0;
+}
+.sidebar-logo svg{width:22px;height:22px;flex-shrink:0}
+.sidebar-logo-text{font-size:13px;font-weight:700;color:var(--t1)}
+.sidebar-logo-badge{
+  font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;
+  background:var(--brand-dim);border:1px solid rgba(146,239,0,.25);
+  color:var(--brand);margin-left:auto;
+}
+.sidebar-nav{flex:1;overflow-y:auto;padding:8px 0}
+.sidebar-nav::-webkit-scrollbar{display:none}
+.nav-group{margin-bottom:4px}
+.nav-group-label{
+  font-size:10px;font-weight:700;color:var(--t3);
+  padding:8px 18px 4px;text-transform:uppercase;letter-spacing:.8px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 18px;border-radius:0;cursor:pointer;
+  color:var(--t2);font-size:13px;transition:.12s;
+  border-left:2px solid transparent;margin:1px 0;
+}
+.nav-item:hover{color:var(--t1);background:var(--bg-hover);border-left-color:var(--border3)}
+.nav-item.active{color:var(--brand);background:var(--brand-dim2);border-left-color:var(--brand);font-weight:500}
+.nav-item .ni{font-size:15px;flex-shrink:0}
+.nav-item .nbadge{
+  margin-left:auto;font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:10px;background:var(--down);color:#fff;
+}
+.nav-item .nbadge.green{background:var(--brand);color:#000}
+.sidebar-footer{
+  padding:14px 18px;border-top:1px solid var(--border1);
+  display:flex;align-items:center;gap:8px;
+}
+.avatar{
+  width:28px;height:28px;border-radius:50%;background:var(--brand-dim);
+  border:1px solid rgba(146,239,0,.25);display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:700;color:var(--brand);flex-shrink:0;
+}
+.user-info .un{font-size:12px;font-weight:600;color:var(--t1)}
+.user-info .ur{font-size:10px;color:var(--t3)}
+
+/* ══ MAIN ══ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* Top bar */
+.topbar{
+  height:var(--topbar-h);background:var(--bg2);border-bottom:1px solid var(--border1);
+  display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;
+}
+.topbar-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)}
+.topbar-breadcrumb .sep{color:var(--border3)}
+.topbar-breadcrumb .cur{color:var(--t1);font-weight:500}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.topbar-status{
+  display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2);
+}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--brand);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.btn-sm{
+  padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:500;
+  cursor:pointer;border:1px solid;transition:.15s;font-family:var(--font);
+}
+.btn-default{border-color:var(--border3);background:var(--bg3);color:var(--t2)}
+.btn-default:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-dim2)}
+.btn-primary{border-color:var(--brand);background:var(--brand);color:#000;font-weight:600}
+.btn-primary:hover{background:#a8ff1a;border-color:#a8ff1a}
+.btn-danger{border-color:rgba(255,69,93,.4);background:var(--down-dim);color:var(--down)}
+.btn-danger:hover{background:rgba(255,69,93,.2)}
+
+/* Content scroll */
+.content{flex:1;overflow-y:auto;padding:24px}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:var(--border3);border-radius:2px}
+
+/* ══ PAGE: OVERVIEW ══ */
+.page{display:none}
+.page.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Page header */
+.page-hd{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:20px;gap:16px;flex-wrap:wrap;
+}
+.page-hd-left h1{font-size:18px;font-weight:700;color:var(--t1);letter-spacing:-.3px;margin-bottom:4px}
+.page-hd-left p{font-size:12px;color:var(--t2)}
+.page-hd-right{display:flex;gap:8px;align-items:center;flex-shrink:0}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{
+  background:var(--bg3);border:1px solid var(--border1);border-radius:var(--r-lg);
+  padding:16px 18px;transition:.15s;cursor:default;position:relative;overflow:hidden;
+}
+.stat-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+}
+.stat-card.green::after{background:var(--brand)}
+.stat-card.red::after{background:var(--down)}
+.stat-card.yellow::after{background:var(--yellow)}
+.stat-card.purple::after{background:var(--purple)}
+.stat-card:hover{border-color:var(--border3);background:var(--bg-hover)}
+.stat-label{font-size:11px;color:var(--t2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.stat-label .si{font-size:14px}
+.stat-num{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;line-height:1}
+.stat-num.green{color:var(--brand)}
+.stat-num.red{color:var(--down)}
+.stat-num.yellow{color:var(--yellow)}
+.stat-num.purple{color:var(--purple)}
+.stat-change{font-size:11px;display:flex;align-items:center;gap:4px}
+.stat-change.up{color:var(--up)}
+.stat-change.down{color:var(--down)}
+
+/* Two-col layout */
+.g2{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+
+/* Cards */
+.card{
+  background:var(--bg3);border:1px solid var(--border1);border-radius:var(--r-lg);overflow:hidden;
+}
+.card-head{
+  padding:14px 18px;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-head h3{font-size:13px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:7px}
+.card-head .ch-right{display:flex;align-items:center;gap:8px}
+.card-body{padding:16px 18px}
+.card-body.no-pad{padding:0}
+
+/* Table */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{
+  padding:10px 14px;text-align:left;font-size:11px;font-weight:600;
+  color:var(--t3);text-transform:uppercase;letter-spacing:.5px;
+  border-bottom:1px solid var(--border2);white-space:nowrap;background:var(--bg3);
+}
+.tbl td{
+  padding:11px 14px;border-bottom:1px solid var(--border2);color:var(--t1);
+  vertical-align:middle;
+}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg-hover)}
+.tbl .mono{font-family:monospace;font-size:11px;color:var(--t2)}
+
+/* Channel type badge */
+.ch-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:4px;font-size:11px;font-weight:600;
+}
+.ch-badge .bi{width:13px;height:13px;flex-shrink:0}
+.ch-telegram {background:rgba(38,165,228,.14);color:#26A5E4}
+.ch-twitter  {background:rgba(220,220,220,.1);color:#e0e0e0}
+.ch-facebook {background:rgba(24,119,242,.14);color:#4f9eff}
+.ch-instagram{background:rgba(220,68,108,.14);color:#e0607a}
+.ch-medium   {background:rgba(200,200,200,.1);color:#b0b0b0}
+.ch-youtube  {background:rgba(255,0,0,.12);color:#ff5a5a}
+
+/* Status badge */
+.status-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:100px;font-size:11px;font-weight:600;
+}
+.sb-active  {background:var(--brand-dim);color:var(--brand);border:1px solid rgba(146,239,0,.2)}
+.sb-inactive{background:var(--bg4);color:var(--t3);border:1px solid var(--border3)}
+.sb-pending {background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(255,185,49,.2)}
+.sb-removed {background:var(--down-dim);color:var(--down);border:1px solid rgba(255,69,93,.2)}
+
+/* Action btns in table */
+.tbl-actions{display:flex;gap:6px;align-items:center}
+.act-btn{
+  padding:4px 10px;border-radius:var(--r);font-size:11px;font-weight:500;
+  cursor:pointer;border:1px solid;transition:.12s;font-family:var(--font);
+}
+.act-edit{border-color:var(--border3);background:var(--bg4);color:var(--t2)}
+.act-edit:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-dim2)}
+.act-del{border-color:rgba(255,69,93,.3);background:var(--down-dim);color:var(--down)}
+.act-del:hover{background:rgba(255,69,93,.2)}
+.act-view{border-color:var(--border3);background:var(--bg4);color:var(--t2)}
+.act-view:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-dim)}
+.act-approve{border-color:rgba(146,239,0,.3);background:var(--brand-dim);color:var(--brand)}
+.act-approve:hover{background:var(--brand-hover)}
+
+/* Search + filter row */
+.filter-row{
+  display:flex;align-items:center;gap:10px;padding:14px 18px;
+  border-bottom:1px solid var(--border2);flex-wrap:wrap;
+}
+.search-box{
+  display:flex;align-items:center;gap:7px;
+  background:var(--bg4);border:1px solid var(--border3);border-radius:var(--r);
+  padding:7px 12px;flex:1;max-width:280px;
+}
+.search-box input{
+  flex:1;background:transparent;border:none;outline:none;
+  font-size:12px;color:var(--t1);font-family:var(--font);min-width:0;
+}
+.search-box input::placeholder{color:var(--tp)}
+.search-box svg{flex-shrink:0;color:var(--t3)}
+.filter-select{
+  padding:7px 12px;background:var(--bg4);border:1px solid var(--border3);
+  border-radius:var(--r);font-size:12px;color:var(--t2);cursor:pointer;
+  font-family:var(--font);outline:none;min-width:110px;
+}
+.filter-select:focus{border-color:var(--brand)}
+option{background:var(--bg4)}
+
+/* Pagination */
+.pagination{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px;border-top:1px solid var(--border2);
+}
+.page-info{font-size:11px;color:var(--t3)}
+.page-btns{display:flex;gap:4px}
+.pg-btn{
+  width:28px;height:28px;border-radius:var(--r);
+  border:1px solid var(--border3);background:var(--bg4);
+  color:var(--t2);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.12s;
+}
+.pg-btn:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-dim2)}
+.pg-btn.active{border-color:var(--brand);background:var(--brand);color:#000;font-weight:700}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(3px);
+}
+.modal-overlay.show{display:flex;animation:fadeIn .18s ease}
+.modal{
+  background:var(--bg3);border:1px solid var(--border3);border-radius:var(--r-lg);
+  width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);
+  overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.7);
+}
+.modal-head{
+  padding:18px 22px;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.modal-head h3{font-size:15px;font-weight:700;color:var(--t1)}
+.modal-close{
+  width:28px;height:28px;border-radius:var(--r);border:1px solid var(--border3);
+  background:transparent;color:var(--t2);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:.12s;
+}
+.modal-close:hover{border-color:var(--down);color:var(--down)}
+.modal-body{padding:22px}
+.modal-footer{
+  padding:14px 22px;border-top:1px solid var(--border2);
+  display:flex;justify-content:flex-end;gap:8px;
+}
+
+/* Form */
+.form-row{margin-bottom:16px}
+.form-row:last-child{margin-bottom:0}
+.form-label{font-size:12px;font-weight:500;color:var(--t2);margin-bottom:6px;display:block}
+.form-label .req{color:var(--down);margin-left:2px}
+.form-input{
+  width:100%;padding:9px 12px;background:var(--bg4);border:1px solid var(--border3);
+  border-radius:var(--r);font-size:13px;color:var(--t1);font-family:var(--font);
+  outline:none;transition:.15s;
+}
+.form-input:focus{border-color:var(--brand)}
+.form-input::placeholder{color:var(--tp)}
+.form-select{
+  width:100%;padding:9px 12px;background:var(--bg4);border:1px solid var(--border3);
+  border-radius:var(--r);font-size:13px;color:var(--t1);font-family:var(--font);
+  outline:none;cursor:pointer;
+}
+.form-select:focus{border-color:var(--brand)}
+.form-hint{font-size:11px;color:var(--t3);margin-top:5px;line-height:1.5}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Toggle switch */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.toggle-info h4{font-size:13px;font-weight:500;color:var(--t1)}
+.toggle-info p{font-size:11px;color:var(--t3);margin-top:2px}
+.toggle{
+  position:relative;width:38px;height:20px;flex-shrink:0;cursor:pointer;
+}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{
+  position:absolute;inset:0;border-radius:10px;
+  background:var(--border3);transition:.2s;
+}
+.toggle input:checked + .toggle-track{background:var(--brand)}
+.toggle-thumb{
+  position:absolute;top:3px;left:3px;width:14px;height:14px;
+  border-radius:50%;background:#fff;transition:.2s;
+}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(18px)}
+
+/* ── Mini charts (CSS only) ── */
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:28px}
+.spark-bar{width:5px;border-radius:1px;background:var(--brand);opacity:.4}
+.spark-bar:last-child{opacity:1}
+
+/* Activity feed */
+.feed-item{
+  display:flex;gap:12px;padding:12px 0;
+  border-bottom:1px solid var(--border2);align-items:flex-start;
+}
+.feed-item:last-child{border-bottom:none}
+.feed-ico{
+  width:30px;height:30px;border-radius:var(--r);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:1px;
+}
+.fi-green{background:var(--brand-dim)}
+.fi-red{background:var(--down-dim)}
+.fi-yellow{background:var(--yellow-dim)}
+.fi-purple{background:var(--purple-dim)}
+.feed-text{flex:1}
+.feed-text .ft{font-size:12px;color:var(--t1);line-height:1.5}
+.feed-text .ft strong{color:var(--brand)}
+.feed-text .fm{font-size:11px;color:var(--t3);margin-top:2px}
+
+/* Risk score */
+.risk-bar{
+  height:6px;border-radius:3px;background:var(--bg4);margin-top:6px;overflow:hidden;
+}
+.risk-fill{height:100%;border-radius:3px;transition:.3s}
+
+/* Tag pills */
+.tag{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 7px;border-radius:3px;font-size:11px;
+  background:var(--bg4);color:var(--t2);border:1px solid var(--border3);
+}
+
+/* Empty state */
+.empty{
+  text-align:center;padding:40px 20px;color:var(--t3);
+}
+.empty .ei{font-size:32px;margin-bottom:10px;opacity:.4}
+.empty p{font-size:12px}
+
+/* ── Tabs ── */
+.tab-row{display:flex;gap:0;border-bottom:1px solid var(--border1);margin-bottom:16px}
+.tab-item{
+  padding:10px 18px;font-size:13px;color:var(--t2);cursor:pointer;
+  border-bottom:2px solid transparent;transition:.15s;margin-bottom:-1px;white-space:nowrap;
+}
+.tab-item:hover{color:var(--t1)}
+.tab-item.active{color:var(--brand);border-bottom-color:var(--brand);font-weight:500}
+
+/* ── Settings ── */
+.setting-section{margin-bottom:28px}
+.setting-section-title{
+  font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;
+  letter-spacing:.8px;margin-bottom:12px;
+}
+.setting-card{
+  background:var(--bg3);border:1px solid var(--border1);border-radius:var(--r-lg);overflow:hidden;
+}
+.setting-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border2);gap:20px;
+}
+.setting-row:last-child{border-bottom:none}
+.sr-info h4{font-size:13px;font-weight:500;color:var(--t1)}
+.sr-info p{font-size:11px;color:var(--t3);margin-top:3px;line-height:1.5}
+.sr-right{flex-shrink:0}
+
+/* Tooltip */
+.tooltip{position:relative;display:inline-block}
+.tooltip .tt{
+  position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:var(--bg4);border:1px solid var(--border3);border-radius:var(--r);
+  padding:6px 10px;font-size:11px;color:var(--t1);white-space:nowrap;
+  pointer-events:none;opacity:0;transition:.15s;z-index:100;
+}
+.tooltip:hover .tt{opacity:1}
+
+/* ── Report detail row expanded ── */
+.expand-row{
+  background:var(--bg4);border-top:1px solid var(--border2);
+}
+.expand-body{padding:14px 18px;font-size:12px;color:var(--t2);line-height:1.8}
+.expand-body strong{color:var(--t1);font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg viewBox="0 0 22 22" fill="none">
+        <rect width="22" height="22" rx="5" fill="#92ef00"/>
+        <text x="11" y="15.5" font-size="8.5" font-weight="900" text-anchor="middle" fill="#000" font-family="Arial">100X</text>
+      </svg>
+      <span class="sidebar-logo-text">100X Admin</span>
+      <span class="sidebar-logo-badge">后台</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-label">渠道管理</div>
+        <div class="nav-item active" onclick="showPage('channels', this)">
+          <span class="ni">✅</span> 官方渠道库
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="avatar">AD</div>
+      <div class="user-info">
+        <div class="un">Admin</div>
+        <div class="ur">超级管理员</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <span>安全中心</span>
+        <span class="sep">›</span>
+        <span class="cur" id="breadcrumb">官方渠道库</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ══ PAGE: OVERVIEW (已移除) ══ -->
+      <div class="page" id="page-overview" style="display:none">
+        <div class="page-hd">
+          <div class="page-hd-left">
+            <h1>数据概览</h1>
+            <p>官方验证通道运营数据实时监控</p>
+          </div>
+          <div class="page-hd-right">
+            <select class="filter-select" style="max-width:120px">
+              <option>过去 7 天</option>
+              <option>过去 30 天</option>
+              <option>过去 90 天</option>
+            </select>
+            <button class="btn-sm btn-default">导出报告</button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card green">
+            <div class="stat-label"><span class="si">🔍</span> 总查询次数</div>
+            <div class="stat-num green">12,847,293</div>
+            <div class="stat-change up">↑ 18.4% vs 上周</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label"><span class="si">⚠️</span> 非官方拦截</div>
+            <div class="stat-num red">47,391</div>
+            <div class="stat-change up">↑ 23.1% vs 上周</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-label"><span class="si">🚨</span> 待处理举报</div>
+            <div class="stat-num yellow">7</div>
+            <div class="stat-change down">↓ 3 vs 昨日</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-label"><span class="si">✅</span> 已收录渠道</div>
+            <div class="stat-num purple">284</div>
+            <div class="stat-change up">↑ 12 本月新增</div>
+          </div>
+        </div>
+
+        <div class="g2">
+          <!-- Recent activity -->
+          <div class="card">
+            <div class="card-head">
+              <h3>📋 最近操作记录</h3>
+              <div class="ch-right">
+                <button class="btn-sm btn-default">查看全部</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="feed-item">
+                <div class="feed-ico fi-green">✅</div>
+                <div class="feed-text">
+                  <div class="ft">新增官方渠道 <strong>support@100xex.com</strong>（邮箱）</div>
+                  <div class="fm">操作员: admin · 2分钟前</div>
+                </div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-ico fi-red">🚨</div>
+                <div class="feed-text">
+                  <div class="ft">举报处理：<strong>100xex-airdrop.io</strong> 标记为钓鱼网址</div>
+                  <div class="fm">操作员: ops_zhang · 15分钟前</div>
+                </div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-ico fi-purple">✏️</div>
+                <div class="feed-text">
+                  <div class="ft">编辑渠道 <strong>@100xex_official</strong> 用途说明已更新</div>
+                  <div class="fm">操作员: admin · 1小时前</div>
+                </div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-ico fi-red">🗑️</div>
+                <div class="feed-text">
+                  <div class="ft">停用渠道 <strong>+86 400-000-0000</strong>（电话号码已更换）</div>
+                  <div class="fm">操作员: admin · 3小时前</div>
+                </div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-ico fi-green">✅</div>
+                <div class="feed-text">
+                  <div class="ft">新增官方渠道 <strong>@100xex_cn</strong>（Telegram）</div>
+                  <div class="fm">操作员: ops_li · 昨天 16:40</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reports pending -->
+          <div class="card">
+            <div class="card-head">
+              <h3>🚨 待处理举报 <span style="background:var(--down);color:#fff;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:700;margin-left:4px">7</span></h3>
+              <button class="btn-sm btn-default" onclick="showPage('reports',null)">全部举报</button>
+            </div>
+            <div class="card-body no-pad">
+              <div class="tbl-wrap">
+                <table class="tbl">
+                  <thead><tr>
+                    <th>举报内容</th><th>类型</th><th>操作</th>
+                  </tr></thead>
+                  <tbody>
+                    <tr>
+                      <td><div class="mono">100xex-vip.io</div></td>
+                      <td><span class="ch-badge ch-url">网址</span></td>
+                      <td><div class="tbl-actions"><button class="act-btn act-view" onclick="showPage('reports',null)">查看</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="mono">@100x_airdrop</div></td>
+                      <td><span class="ch-badge ch-telegram">TG</span></td>
+                      <td><div class="tbl-actions"><button class="act-btn act-view" onclick="showPage('reports',null)">查看</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="mono">support@100xex-pro.com</div></td>
+                      <td><span class="ch-badge ch-email">邮箱</span></td>
+                      <td><div class="tbl-actions"><button class="act-btn act-view" onclick="showPage('reports',null)">查看</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="mono">+86 138-0000-0000</div></td>
+                      <td><span class="ch-badge ch-phone">电话</span></td>
+                      <td><div class="tbl-actions"><button class="act-btn act-view" onclick="showPage('reports',null)">查看</button></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Query trend + channel breakdown -->
+        <div class="g3">
+          <div class="card">
+            <div class="card-head"><h3>📈 今日查询趋势</h3></div>
+            <div class="card-body">
+              <div style="font-size:22px;font-weight:800;color:var(--brand);margin-bottom:4px">142,873</div>
+              <div style="font-size:11px;color:var(--t2);margin-bottom:14px">今日累计查询次数</div>
+              <div class="sparkline">
+                <div class="spark-bar" style="height:40%"></div>
+                <div class="spark-bar" style="height:55%"></div>
+                <div class="spark-bar" style="height:48%"></div>
+                <div class="spark-bar" style="height:70%"></div>
+                <div class="spark-bar" style="height:60%"></div>
+                <div class="spark-bar" style="height:85%"></div>
+                <div class="spark-bar" style="height:65%"></div>
+                <div class="spark-bar" style="height:90%"></div>
+                <div class="spark-bar" style="height:75%"></div>
+                <div class="spark-bar" style="height:88%"></div>
+                <div class="spark-bar" style="height:100%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>🎯 渠道类型分布</h3></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px">
+                    <span style="color:var(--t2)">网址</span><span style="color:var(--t1);font-weight:600">38%</span>
+                  </div>
+                  <div class="risk-bar"><div class="risk-fill" style="width:38%;background:var(--brand)"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px">
+                    <span style="color:var(--t2)">邮箱</span><span style="color:var(--t1);font-weight:600">27%</span>
+                  </div>
+                  <div class="risk-bar"><div class="risk-fill" style="width:27%;background:var(--purple)"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px">
+                    <span style="color:var(--t2)">Telegram</span><span style="color:var(--t1);font-weight:600">18%</span>
+                  </div>
+                  <div class="risk-bar"><div class="risk-fill" style="width:18%;background:var(--yellow)"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px">
+                    <span style="color:var(--t2)">电话</span><span style="color:var(--t1);font-weight:600">12%</span>
+                  </div>
+                  <div class="risk-bar"><div class="risk-fill" style="width:12%;background:var(--up)"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px">
+                    <span style="color:var(--t2)">其他</span><span style="color:var(--t1);font-weight:600">5%</span>
+                  </div>
+                  <div class="risk-bar"><div class="risk-fill" style="width:5%;background:var(--t3)"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>🛡️ 安全指标</h3></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:12px;color:var(--t2)">识别准确率</span>
+                  <span style="font-size:14px;font-weight:700;color:var(--brand)">99.1%</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:12px;color:var(--t2)">漏报率</span>
+                  <span style="font-size:14px;font-weight:700;color:var(--up)">0.06%</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:12px;color:var(--t2)">误报率</span>
+                  <span style="font-size:14px;font-weight:700;color:var(--yellow)">0.83%</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:12px;color:var(--t2)">平均响应时长</span>
+                  <span style="font-size:14px;font-weight:700;color:var(--t1)">120ms</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:12px;color:var(--t2)">数据库同步延迟</span>
+                  <span style="font-size:14px;font-weight:700;color:var(--brand)">实时</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PAGE: CHANNELS ══ -->
+      <div class="page active" id="page-channels">
+        <div class="page-hd">
+          <div class="page-hd-left">
+            <h1>官方渠道库</h1>
+            <p>管理所有经认证的 100X Exchange 官方渠道</p>
+          </div>
+          <div class="page-hd-right">
+            <button class="btn-sm btn-default">批量导入</button>
+            <button class="btn-sm btn-primary" onclick="openModal('modal-add')">+ 新增渠道</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="filter-row">
+            <div class="search-box">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" placeholder="搜索账号名称…">
+            </div>
+            <select class="filter-select">
+              <option>全部类型</option>
+              <option>Telegram</option>
+              <option>Twitter / X</option>
+              <option>Facebook</option>
+              <option>Instagram</option>
+              <option>Medium</option>
+              <option>YouTube</option>
+            </select>
+            <select class="filter-select">
+              <option>全部状态</option>
+              <option>启用</option>
+              <option>停用</option>
+            </select>
+            <button class="btn-sm btn-primary" style="flex-shrink:0">查询</button>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr>
+                <th>渠道内容</th>
+                <th>类型</th>
+                <th>备注</th>
+                <th>添加时间</th>
+                <th>编辑时间</th>
+                <th>添加人</th>
+                <th>操作</th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td><div class="mono">@100xex_official</div></td>
+                  <td><span class="ch-badge ch-telegram">
+                    <svg class="bi" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.932z"/></svg>
+                    Telegram
+                  </span></td>
+                  <td style="color:var(--t3)">—</td>
+                  <td style="color:var(--t3);font-size:11px">2024-02-01</td>
+                  <td style="color:var(--t3);font-size:11px">—</td>
+                  <td style="color:var(--t3)">admin</td>
+                  <td><div class="tbl-actions">
+                    <button class="act-btn act-edit" onclick="openModal('modal-edit')">编辑</button>
+                    <button class="act-btn act-del">停用</button>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td><div class="mono">@100xex_cn</div></td>
+                  <td><span class="ch-badge ch-telegram">
+                    <svg class="bi" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.932z"/></svg>
+                    Telegram
+                  </span></td>
+                  <td style="color:var(--t3)">—</td>
+                  <td style="color:var(--t3);font-size:11px">2024-02-01</td>
+                  <td style="color:var(--t3);font-size:11px">—</td>
+                  <td style="color:var(--t3)">admin</td>
+                  <td><div class="tbl-actions">
+                    <button class="act-btn act-edit" onclick="openModal('modal-edit')">编辑</button>
+                    <button class="act-btn act-del">停用</button>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td><div class="mono">@100xex_global</div></td>
+                  <td><span class="ch-badge ch-telegram">
+                    <svg class="bi" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.932z"/></svg>
+                    Telegram
+                  </span></td>
+                  <td style="color:var(--t3)">—</td>
+                  <td style="color:var(--t3);font-size:11px">2024-02-15</td>
+                  <td style="color:var(--t3);font-size:11px">—</td>
+                  <td style="color:var(--t3)">admin</td>
+                  <td><div class="tbl-actions">
+                    <button class="act-btn act-edit" onclick="openModal('modal-edit')">编辑</button>
+                    <button class="act-btn act-del">停用</button>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td><div class="mono">@100xExchange</div></td>
+                  <td><span class="ch-badge ch-twitter">
+                    <svg class="bi" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    Twitter / X
+                  </span></td>
+                  <td style="color:var(--t3)">—</td>
+                  <td style="color:var(--t3);font-size:11px">2024-02-10</td>
+                  <td style="color:var(--t3);font-size:11px">—</td>
+                  <td style="color:var(--t3)">admin</td>
+                  <td><div class="tbl-actions">
+                    <button class="act-btn act-edit" onclick="openModal('modal-edit')">编辑</button>
+                    <button class="act-btn act-del">停用</button>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td><div class="mono">100xexchange</div></td>
+                  <td><span class="ch-badge ch-facebook">
+                    <svg class="bi" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    Facebook
+                  </span></td>
+                  <td style="color:var(--t3)">—</td>
+                  <td style="color:var(--t3);font-size:11px">2024-03-01</td>
+                  <td style="color:var(--t3);font-size:11px">—</td>
+                  <td style="color:var(--t3)">admin</td>
+                  <td><div class="tbl-actions">
+                    <button class="act-btn act-edit" onclick="openModal('modal-edit')">编辑</button>
+                    <button class="act-btn act-del">停用</button>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td><div class="mono">@100xexchange</div></td>
+                  <td><span class="ch-badge ch-instagram">
+                    <svg class="bi" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+                    Instagram
+                  </span></td>
+                  <td style="color:var(--t3)">—</td>
+                  <td style="color:var(--t3);font-size:11px">2024-03-10</td>
+                  <td style="color:var(--t3);font-size:11px">—</td>
+                  <td style="color:var(--t3)">admin</td>
+                  <td><div class="tbl-actions">
+                    <button class="act-btn act-edit" onclick="openModal('modal-edit')">编辑</button>
+                    <button class="act-btn act-del">停用</button>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td><div class="mono">@100xexchange</div></td>
+                  <td><span class="ch-badge ch-medium">
+                    <svg class="bi" viewBox="0 0 24 24" fill="currentColor"><path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg>
+                    Medium
+                  </span></td>
+                  <td style="color:var(--t3)">—</td>
+                  <td style="color:var(--t3);font-size:11px">2024-03-15</td>
+                  <td style="color:var(--t3);font-size:11px">—</td>
+                  <td style="color:var(--t3)">admin</td>
+                  <td><div class="tbl-actions">
+                    <button class="act-btn act-edit" onclick="openModal('modal-edit')">编辑</button>
+                    <button class="act-btn act-del">停用</button>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td><div class="mono">@100xExchange</div></td>
+                  <td><span class="ch-badge ch-youtube">
+                    <svg class="bi" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+                    YouTube
+                  </span></td>
+                  <td style="color:var(--t3)">—</td>
+                  <td style="color:var(--t3);font-size:11px">2024-03-20</td>
+                  <td style="color:var(--t3);font-size:11px">—</td>
+                  <td style="color:var(--t3)">admin</td>
+                  <td><div class="tbl-actions">
+                    <button class="act-btn act-edit" onclick="openModal('modal-edit')">编辑</button>
+                    <button class="act-btn act-del">停用</button>
+                  </div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <div class="page-info">共 8 条，第 1 / 1 页</div>
+            <div class="page-btns">
+              <button class="pg-btn">‹</button>
+              <button class="pg-btn active">1</button>
+              <button class="pg-btn">›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ══ MODAL: ADD CHANNEL ══ -->
+<div class="modal-overlay" id="modal-add" onclick="closeModalOutside(event,'modal-add')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>+ 新增官方渠道</h3>
+      <button class="modal-close" onclick="closeModal('modal-add')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="form-label">渠道类型 <span class="req">*</span></label>
+        <select class="form-select">
+          <option value="">请选择渠道类型</option>
+          <option>Telegram</option>
+          <option>Twitter / X</option>
+          <option>Facebook</option>
+          <option>Instagram</option>
+          <option>Medium</option>
+          <option>YouTube</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">渠道内容 <span class="req">*</span></label>
+        <input class="form-input" type="text" placeholder="请输入完整的渠道内容，如 support@100xex.com">
+        <div class="form-hint">填写完整、精确的渠道标识，用户将直接查询此内容</div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">用途说明 <span class="req">*</span></label>
+        <input class="form-input" type="text" placeholder="如：官方公告频道">
+      </div>
+      <div class="form-row">
+        <label class="form-label">备注（内部）</label>
+        <input class="form-input" type="text" placeholder="内部备注，不对外展示">
+      </div>
+      <div class="form-row">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <h4>添加后立即启用</h4>
+            <p>关闭后渠道将保存为草稿状态，需手动启用</p>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-default" onclick="closeModal('modal-add')">取消</button>
+      <button class="btn-sm btn-primary" onclick="closeModal('modal-add')">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: EDIT CHANNEL ══ -->
+<div class="modal-overlay" id="modal-edit" onclick="closeModalOutside(event,'modal-edit')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>编辑官方渠道</h3>
+      <button class="modal-close" onclick="closeModal('modal-edit')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="form-label">渠道类型</label>
+        <select class="form-select">
+          <option>Telegram</option>
+          <option>Twitter / X</option>
+          <option>Facebook</option>
+          <option>Instagram</option>
+          <option>Medium</option>
+          <option>YouTube</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">渠道内容 <span class="req">*</span></label>
+        <input class="form-input" type="text" value="@100xex_official">
+      </div>
+      <div class="form-row">
+        <label class="form-label">备注</label>
+        <input class="form-input" type="text" placeholder="内部备注…">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-danger">停用此渠道</button>
+      <div style="flex:1"></div>
+      <button class="btn-sm btn-default" onclick="closeModal('modal-edit')">取消</button>
+      <button class="btn-sm btn-primary" onclick="closeModal('modal-edit')">保存修改</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Nav
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if(el) el.classList.add('active');
+  document.getElementById('breadcrumb').textContent = '官方渠道库';
+}
+
+// Modals
+function openModal(id){ document.getElementById(id).classList.add('show') }
+function closeModal(id){ document.getElementById(id).classList.remove('show') }
+function closeModalOutside(e, id){ if(e.target.classList.contains('modal-overlay')) closeModal(id) }
+
+
+
+// Escape key
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+});
+
+// Toggle animation fix
+document.querySelectorAll('.toggle input').forEach(inp => {
+  inp.addEventListener('change', function(){
+    const thumb = this.parentElement.querySelector('.toggle-thumb');
+    thumb.style.transform = this.checked ? 'translateX(18px)' : '';
+  });
+  // init
+  const thumb = inp.parentElement.querySelector('.toggle-thumb');
+  if(inp.checked) thumb.style.transform = 'translateX(18px)';
+});
+</script>
+</body>
+</html>

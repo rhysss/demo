@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEX 预测市场 · 市场大厅</title>
+<style>
+/* =========================================
+   DESIGN TOKENS
+========================================= */
+:root {
+  --bg:      #090b13;
+  --bg2:     #0f1220;
+  --bg3:     #161b2e;
+  --card:    #191e33;
+  --card2:   #1f2540;
+  --border:  #252d50;
+  --border2: #2e3860;
+  --primary: #6366f1;
+  --violet:  #8b5cf6;
+  --grad:    linear-gradient(135deg,#6366f1,#8b5cf6);
+  --grad2:   linear-gradient(135deg,#1e1b4b,#312e81);
+  --gold:    #f59e0b;
+  --green:   #10b981;
+  --red:     #ef4444;
+  --sky:     #06b6d4;
+  --text:    #e2e8f0;
+  --text2:   #94a3b8;
+  --text3:   #475569;
+
+  /* category accent colors */
+  --c-sports:   #6366f1;
+  --c-esports:  #10b981;
+  --c-politics: #f59e0b;
+  --c-crypto:   #06b6d4;
+  --c-all:      #8b5cf6;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'SF Pro Display',-apple-system,'PingFang SC',sans-serif;min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+
+/* =========================================
+   LAYOUT TOGGLE BAR
+========================================= */
+.layout-bar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 20px;position:sticky;top:0;z-index:200;
+}
+.layout-bar-brand{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;}
+.layout-bar-brand .dot{width:8px;height:8px;border-radius:50%;background:var(--grad);}
+.layout-toggle{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;}
+.lt-btn{padding:5px 14px;border-radius:7px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;border:none;background:none;}
+.lt-btn.active{background:var(--grad);color:#fff;}
+.layout-bar-right{display:flex;align-items:center;gap:10px;}
+.wallet-btn{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);border-radius:10px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--primary);cursor:pointer;}
+
+/* =========================================
+   PC LAYOUT
+========================================= */
+#view-pc{display:block;}
+#view-app{display:none;}
+
+/* PC TOPBAR */
+.pc-topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:0;padding:0 32px;height:56px;
+}
+.pc-nav-logo{font-size:18px;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-right:32px;}
+.pc-nav-link{padding:0 14px;height:56px;display:flex;align-items:center;font-size:14px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.pc-nav-link:hover{color:var(--text);}
+.pc-nav-link.active{color:var(--primary);border-bottom-color:var(--primary);}
+.pc-nav-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.pc-search{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:7px 14px;font-size:13px;color:var(--text);width:220px;outline:none;}
+.pc-search::placeholder{color:var(--text3);}
+.pc-search:focus{border-color:var(--primary);}
+.pc-tickets-pill{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:6px 14px;font-size:13px;display:flex;align-items:center;gap:6px;}
+.pc-tickets-val{font-weight:700;color:var(--primary);}
+.pc-wallet{background:var(--grad);border-radius:10px;padding:7px 16px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;}
+
+/* PC HERO */
+.pc-hero{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.pc-hero-inner{max-width:1280px;margin:0 auto;padding:40px 32px;display:flex;align-items:center;gap:48px;}
+.pc-hero-text{flex:1;min-width:0;}
+.pc-hero-tag{font-size:11px;color:var(--primary);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.pc-hero-title{font-size:42px;font-weight:900;line-height:1.15;margin-bottom:12px;}
+.pc-hero-title span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.pc-hero-sub{font-size:16px;color:var(--text2);line-height:1.7;max-width:520px;margin-bottom:28px;}
+.pc-hero-stats{display:flex;gap:32px;}
+.pc-hero-stat{text-align:left;}
+.pc-hero-stat-val{font-size:26px;font-weight:800;}
+.pc-hero-stat-label{font-size:12px;color:var(--text3);margin-top:3px;}
+.pc-hero-visual{flex:0 0 480px;height:240px;position:relative;}
+
+/* SVG-based abstract illustration */
+.hero-canvas{width:100%;height:100%;position:relative;}
+.hero-glow{position:absolute;border-radius:50%;filter:blur(60px);opacity:.35;}
+.hero-glow-a{width:280px;height:280px;background:#6366f1;top:-60px;right:60px;}
+.hero-glow-b{width:200px;height:200px;background:#8b5cf6;bottom:-40px;right:0;}
+.hero-glow-c{width:160px;height:160px;background:#06b6d4;top:20px;right:280px;}
+
+/* Floating category icons */
+.hero-icon-float{
+  position:absolute;display:flex;align-items:center;justify-content:center;
+  border-radius:16px;font-size:24px;font-weight:700;
+  backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);
+  animation:floatY 4s ease-in-out infinite;
+}
+@keyframes floatY{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.hif-sports{width:60px;height:60px;background:rgba(99,102,241,.25);top:20px;right:160px;animation-delay:0s;}
+.hif-esports{width:52px;height:52px;background:rgba(16,185,129,.2);top:100px;right:280px;animation-delay:.8s;}
+.hif-politics{width:56px;height:56px;background:rgba(245,158,11,.2);bottom:30px;right:120px;animation-delay:1.6s;}
+.hif-crypto{width:64px;height:64px;background:rgba(6,182,212,.2);top:40px;right:40px;animation-delay:.4s;}
+.hif-olym{width:48px;height:48px;background:rgba(239,68,68,.2);bottom:50px;right:260px;animation-delay:1.2s;}
+
+/* Grid lines overlay */
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(99,102,241,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.06) 1px,transparent 1px);background-size:40px 40px;border-radius:16px;}
+.hero-chart-line{position:absolute;bottom:30px;left:20px;right:20px;height:2px;background:linear-gradient(90deg,transparent,rgba(99,102,241,.4),rgba(139,92,246,.6),rgba(6,182,212,.4),transparent);}
+.hero-chart-line::before{content:'';position:absolute;top:-20px;left:30%;width:60%;height:24px;background:linear-gradient(transparent,rgba(99,102,241,.15));clip-path:polygon(0 100%,20% 60%,40% 80%,60% 30%,80% 50%,100% 10%,100% 100%);}
+
+/* PC BODY */
+.pc-body{max-width:1280px;margin:0 auto;padding:28px 32px;display:flex;gap:24px;}
+
+/* PC SIDEBAR */
+.pc-sidebar{width:220px;flex-shrink:0;}
+.pc-sidebar-section{margin-bottom:24px;}
+.pc-sidebar-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:600;}
+.pc-cat-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border-radius:10px;cursor:pointer;transition:all .2s;
+  margin-bottom:2px;border:1px solid transparent;
+}
+.pc-cat-item:hover{background:rgba(99,102,241,.06);}
+.pc-cat-item.active{background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.2);}
+.pc-cat-left{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;}
+.pc-cat-dot{width:8px;height:8px;border-radius:50%;}
+.pc-cat-count{font-size:12px;color:var(--text3);background:var(--bg3);border-radius:6px;padding:1px 6px;}
+.pc-cat-item.active .pc-cat-count{background:rgba(99,102,241,.15);color:var(--primary);}
+.pc-sort-item{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:13px;color:var(--text2);cursor:pointer;border-radius:8px;transition:all .2s;}
+.pc-sort-item:hover{color:var(--text);}
+.pc-sort-item.active{color:var(--primary);}
+.pc-sort-item .check{font-size:12px;margin-left:auto;color:var(--primary);}
+.earn-banner{background:var(--grad2);border:1px solid rgba(99,102,241,.3);border-radius:14px;padding:14px;margin-top:8px;}
+.earn-banner-title{font-size:13px;font-weight:700;margin-bottom:6px;}
+.earn-banner-desc{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px;}
+.earn-banner-btns{display:flex;flex-direction:column;gap:6px;}
+.earn-mini-btn{padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;text-align:center;}
+.earn-mini-btn-primary{background:var(--grad);color:#fff;}
+.earn-mini-btn-outline{background:transparent;border:1px solid rgba(99,102,241,.3);color:var(--primary);}
+
+/* PC MAIN */
+.pc-main{flex:1;min-width:0;}
+.pc-main-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.pc-main-count{font-size:14px;color:var(--text2);}
+.pc-main-count span{color:var(--text);font-weight:600;}
+.pc-view-toggle{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px;}
+.pc-view-btn{width:32px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;font-size:14px;background:none;border:none;color:var(--text3);transition:all .2s;}
+.pc-view-btn.active{background:var(--card2);color:var(--text);}
+
+/* MARKET CARDS GRID */
+.market-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.market-grid.list-view{grid-template-columns:1fr;}
+
+/* MARKET CARD */
+.mkt-card{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:16px;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;gap:12px;
+  position:relative;overflow:hidden;
+}
+.mkt-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.03),transparent);pointer-events:none;}
+.mkt-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,.15);}
+.mkt-card.hidden{display:none;}
+
+/* card category accent line */
+.mkt-card[data-cat="sports"]  .card-accent{background:var(--c-sports);}
+.mkt-card[data-cat="esports"] .card-accent{background:var(--c-esports);}
+.mkt-card[data-cat="politics"].card-accent{background:var(--c-politics);}
+.mkt-card[data-cat="crypto"]  .card-accent{background:var(--c-crypto);}
+.card-accent{position:absolute;top:0;left:0;right:0;height:2px;}
+
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.card-header-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+.card-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.card-meta{flex:1;min-width:0;}
+.card-cat-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;border-radius:6px;padding:2px 7px;margin-bottom:4px;}
+.card-title{font-size:14px;font-weight:700;color:var(--text);line-height:1.4;}
+.card-status-badge{flex-shrink:0;}
+
+/* options distribution */
+.card-options{display:flex;flex-direction:column;gap:6px;}
+.option-row{display:flex;align-items:center;gap:8px;}
+.option-label{font-size:12px;color:var(--text2);min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.option-bar-wrap{flex:2;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.option-bar-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+.option-pct{font-size:11px;color:var(--text3);min-width:28px;text-align:right;}
+
+/* card footer */
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border);}
+.card-pool{display:flex;align-items:center;gap:4px;font-size:13px;}
+.card-pool-val{font-weight:700;color:var(--gold);}
+.card-pool-label{font-size:11px;color:var(--text3);}
+.card-stats{display:flex;align-items:center;gap:12px;font-size:11px;color:var(--text3);}
+.card-btn{background:var(--grad);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.card-btn:hover{opacity:.85;}
+
+/* list view card */
+.market-grid.list-view .mkt-card{flex-direction:row;align-items:center;gap:16px;}
+.market-grid.list-view .card-header{flex:0 0 280px;}
+.market-grid.list-view .card-options{flex:1;}
+.market-grid.list-view .card-footer{flex:0 0 200px;flex-direction:column;align-items:flex-end;gap:6px;padding:0;border:none;}
+
+/* STATUS BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-live{background:rgba(16,185,129,.15);color:var(--green);}
+.badge-upcoming{background:rgba(99,102,241,.15);color:var(--primary);}
+.badge-hot{background:rgba(239,68,68,.15);color:var(--red);}
+
+/* LOAD MORE */
+.load-more{text-align:center;padding:24px 0;}
+.load-more-btn{background:transparent;border:1px solid var(--border);border-radius:12px;padding:10px 28px;font-size:14px;color:var(--text2);cursor:pointer;transition:all .2s;}
+.load-more-btn:hover{border-color:var(--primary);color:var(--primary);}
+
+/* CATEGORY COLORS applied inline via JS */
+.cat-sports  {background:rgba(99,102,241,.12);color:var(--c-sports);}
+.cat-esports {background:rgba(16,185,129,.12);color:var(--c-esports);}
+.cat-politics{background:rgba(245,158,11,.12);color:var(--c-politics);}
+.cat-crypto  {background:rgba(6,182,212,.12);color:var(--c-crypto);}
+
+.icon-sports  {background:rgba(99,102,241,.12);}
+.icon-esports {background:rgba(16,185,129,.12);}
+.icon-politics{background:rgba(245,158,11,.12);}
+.icon-crypto  {background:rgba(6,182,212,.12);}
+
+.bar-sports  {background:var(--c-sports);}
+.bar-esports {background:var(--c-esports);}
+.bar-politics{background:var(--c-politics);}
+.bar-crypto  {background:var(--c-crypto);}
+
+/* =========================================
+   APP (MOBILE) LAYOUT
+========================================= */
+#view-app{max-width:390px;margin:0 auto;position:relative;}
+
+/* APP TOPBAR */
+.app-topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:40px;z-index:100;
+}
+.app-logo{font-size:16px;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.app-topbar-right{display:flex;align-items:center;gap:8px;}
+.app-tickets-pill{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:4px;}
+.app-tickets-val{font-weight:700;color:var(--primary);font-size:13px;}
+.app-wallet{width:32px;height:32px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:14px;}
+
+/* APP HERO */
+.app-hero{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:20px 16px;position:relative;overflow:hidden;
+}
+.app-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;background:radial-gradient(circle,rgba(139,92,246,.25),transparent 70%);}
+.app-hero::after{content:'';position:absolute;bottom:-20px;left:20%;width:120px;height:120px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent 70%);}
+.app-hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.app-hero-label{font-size:11px;color:var(--primary);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.app-hero-title{font-size:22px;font-weight:900;line-height:1.3;margin-bottom:6px;}
+.app-hero-title span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.app-hero-sub{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;}
+
+/* App hero illustration — horizontal ticker */
+.app-hero-visual{
+  display:flex;gap:8px;overflow:hidden;margin-bottom:16px;
+  -webkit-mask:linear-gradient(90deg,transparent,#fff 10%,#fff 90%,transparent);
+  mask:linear-gradient(90deg,transparent,#fff 10%,#fff 90%,transparent);
+}
+.hero-ticker{display:flex;gap:8px;animation:tickerScroll 20s linear infinite;}
+@keyframes tickerScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.hero-tick-item{flex-shrink:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:7px 12px;font-size:12px;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+
+.app-stats-row{display:flex;gap:0;background:var(--bg3);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.app-stat{flex:1;text-align:center;padding:10px 6px;border-right:1px solid var(--border);}
+.app-stat:last-child{border-right:none;}
+.app-stat-val{font-size:16px;font-weight:800;}
+.app-stat-label{font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* APP EARN BAR */
+.app-earn-bar{
+  background:linear-gradient(90deg,rgba(99,102,241,.15),rgba(139,92,246,.1));
+  border:1px solid rgba(99,102,241,.2);
+  margin:12px 16px 0;border-radius:12px;padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.app-earn-left{font-size:13px;color:var(--text2);}
+.app-earn-left strong{color:var(--text);}
+.app-earn-btns{display:flex;gap:6px;}
+.app-earn-btn{background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--primary);cursor:pointer;}
+
+/* APP CATEGORIES */
+.app-cats{display:flex;gap:8px;padding:14px 16px 2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.app-cats::-webkit-scrollbar{display:none;}
+.app-cat-chip{flex-shrink:0;display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:1.5px solid var(--border);background:transparent;color:var(--text2);}
+.app-cat-chip:hover{border-color:var(--primary);}
+.app-cat-chip.active{border-color:var(--primary);background:rgba(99,102,241,.12);color:var(--primary);}
+.app-cat-chip[data-cat="sports"].active{border-color:var(--c-sports);background:rgba(99,102,241,.12);color:var(--c-sports);}
+.app-cat-chip[data-cat="esports"].active{border-color:var(--c-esports);background:rgba(16,185,129,.12);color:var(--c-esports);}
+.app-cat-chip[data-cat="politics"].active{border-color:var(--c-politics);background:rgba(245,158,11,.12);color:var(--c-politics);}
+.app-cat-chip[data-cat="crypto"].active{border-color:var(--c-crypto);background:rgba(6,182,212,.12);color:var(--c-crypto);}
+
+/* APP SORT BAR */
+.app-sort-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 6px;}
+.app-market-count{font-size:12px;color:var(--text3);}
+.app-market-count span{color:var(--text2);font-weight:600;}
+.app-sort-btn{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;}
+
+/* APP MARKET CARDS — 2 per row */
+.app-market-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;}
+.app-mkt-card{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.app-mkt-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.app-mkt-card[data-cat="sports"]::before{background:var(--c-sports);}
+.app-mkt-card[data-cat="esports"]::before{background:var(--c-esports);}
+.app-mkt-card[data-cat="politics"]::before{background:var(--c-politics);}
+.app-mkt-card[data-cat="crypto"]::before{background:var(--c-crypto);}
+.app-mkt-card:hover{border-color:var(--primary);}
+.app-mkt-card.hidden{display:none;}
+.amc-icon{font-size:22px;margin-bottom:6px;}
+.amc-cat{font-size:10px;font-weight:700;margin-bottom:4px;}
+.amc-title{font-size:12px;font-weight:700;line-height:1.4;margin-bottom:8px;color:var(--text);}
+.amc-options{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.amc-opt-row{display:flex;align-items:center;gap:5px;}
+.amc-opt-label{font-size:10px;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.amc-bar-wrap{flex:2;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.amc-bar-fill{height:100%;border-radius:2px;}
+.amc-opt-pct{font-size:10px;color:var(--text3);min-width:22px;text-align:right;}
+.amc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border);}
+.amc-pool{font-size:12px;font-weight:700;color:var(--gold);}
+.amc-btn{background:var(--grad);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;}
+
+/* APP BOTTOM NAV */
+.app-bottom-nav{
+  position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
+  width:390px;background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;padding:8px 0;z-index:100;
+}
+.app-nav-item{flex:1;text-align:center;cursor:pointer;padding:4px;}
+.app-nav-icon{font-size:20px;}
+.app-nav-label{font-size:10px;color:var(--text3);margin-top:2px;}
+.app-nav-item.active .app-nav-label{color:var(--primary);}
+.app-body-pad{padding-bottom:80px;}
+
+/* =========================================
+   SHARED UTILS
+========================================= */
+.divider{height:1px;background:var(--border);}
+.shimmer{background:linear-gradient(90deg,var(--bg3) 25%,var(--card2) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+</style>
+</head>
+<body>
+
+<!-- ============================
+  LAYOUT TOGGLE BAR (always visible)
+============================= -->
+<div class="layout-bar">
+  <div class="layout-bar-brand">
+    <div class="dot"></div>
+    DEX 预测市场 · 原型
+  </div>
+  <div class="layout-toggle">
+    <button class="lt-btn active" id="btn-pc" onclick="switchLayout('pc')">🖥 PC 端</button>
+    <button class="lt-btn" id="btn-app" onclick="switchLayout('app')">📱 APP 端</button>
+  </div>
+  <div class="layout-bar-right">
+    <a href="dex-vote-prototype.html" style="font-size:12px;color:var(--text3);border:1px solid var(--border);padding:5px 12px;border-radius:8px;">← 返回详情原型</a>
+  </div>
+</div>
+
+<!-- ============================================================
+  PC LAYOUT
+============================================================ -->
+<div id="view-pc">
+
+  <!-- PC 顶部导航 -->
+  <div class="pc-topbar">
+    <div class="pc-nav-logo">◈ DEX Predict</div>
+    <div class="pc-nav-link active">市场大厅</div>
+    <div class="pc-nav-link">我的预测</div>
+    <div class="pc-nav-link">战队</div>
+    <div class="pc-nav-link">排行榜</div>
+    <div class="pc-nav-right">
+      <input class="pc-search" placeholder="🔍 搜索市场、赛事..." id="pc-search" oninput="handleSearch(this.value)">
+      <div class="pc-tickets-pill">🎫 <span class="pc-tickets-val">1,280</span> 票</div>
+      <div class="pc-wallet">0x3f...a8b2</div>
+    </div>
+  </div>
+
+  <!-- PC Hero Banner -->
+  <div class="pc-hero">
+    <div class="pc-hero-inner">
+      <div class="pc-hero-text">
+        <div class="pc-hero-tag">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;"></span>
+          全球预测市场 · 实时结算
+        </div>
+        <div class="pc-hero-title">预测任何事，<br><span>赢取真实奖励</span></div>
+        <div class="pc-hero-sub">选择你看好的结果，投入选票参与竞猜。通过入金和合约交易获取选票，邀请好友加入战队提升赔率权重，实现收益最大化。</div>
+        <div class="pc-hero-stats">
+          <div class="pc-hero-stat">
+            <div class="pc-hero-stat-val" style="color:var(--gold);">$2,100,000</div>
+            <div class="pc-hero-stat-label">当前累计总奖池</div>
+          </div>
+          <div class="pc-hero-stat">
+            <div class="pc-hero-stat-val" style="color:var(--primary);">11</div>
+            <div class="pc-hero-stat-label">活跃预测市场</div>
+          </div>
+          <div class="pc-hero-stat">
+            <div class="pc-hero-stat-val">47,200+</div>
+            <div class="pc-hero-stat-label">参与用户数</div>
+          </div>
+          <div class="pc-hero-stat">
+            <div class="pc-hero-stat-val" style="color:var(--green);">$3.4M</div>
+            <div class="pc-hero-stat-label">已累计发放奖励</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 抽象配图区域 -->
+      <div class="pc-hero-visual">
+        <div class="hero-glow hero-glow-a"></div>
+        <div class="hero-glow hero-glow-b"></div>
+        <div class="hero-glow hero-glow-c"></div>
+        <div class="hero-grid"></div>
+        <!-- 浮动类别图标 -->
+        <div class="hero-icon-float hif-sports">⚽</div>
+        <div class="hero-icon-float hif-esports">⚔️</div>
+        <div class="hero-icon-float hif-politics">🗳️</div>
+        <div class="hero-icon-float hif-crypto">₿</div>
+        <div class="hero-icon-float hif-olym">🏅</div>
+        <!-- 趋势线 -->
+        <div class="hero-chart-line"></div>
+        <!-- 中央大数字 -->
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);text-align:center;">
+          <div style="font-size:13px;color:rgba(255,255,255,.3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">Total Value Locked</div>
+          <div style="font-size:38px;font-weight:900;background:linear-gradient(135deg,#fff,rgba(99,102,241,.8));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">$2.1M</div>
+          <div style="font-size:12px;color:var(--green);margin-top:4px;">↑ 18.4% 今日新增</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PC Body -->
+  <div class="pc-body">
+
+    <!-- 左侧栏 -->
+    <div class="pc-sidebar">
+      <div class="pc-sidebar-section">
+        <div class="pc-sidebar-title">市场分类</div>
+        <div class="pc-cat-item active" data-cat="all" onclick="filterCat('all','pc')">
+          <div class="pc-cat-left"><div class="pc-cat-dot" style="background:var(--violet);"></div>全部市场</div>
+          <div class="pc-cat-count">11</div>
+        </div>
+        <div class="pc-cat-item" data-cat="sports" onclick="filterCat('sports','pc')">
+          <div class="pc-cat-left"><div class="pc-cat-dot" style="background:var(--c-sports);"></div>⚽ 体育赛事</div>
+          <div class="pc-cat-count">5</div>
+        </div>
+        <div class="pc-cat-item" data-cat="esports" onclick="filterCat('esports','pc')">
+          <div class="pc-cat-left"><div class="pc-cat-dot" style="background:var(--c-esports);"></div>⚔️ 电竞</div>
+          <div class="pc-cat-count">2</div>
+        </div>
+        <div class="pc-cat-item" data-cat="politics" onclick="filterCat('politics','pc')">
+          <div class="pc-cat-left"><div class="pc-cat-dot" style="background:var(--c-politics);"></div>🗳️ 政治大选</div>
+          <div class="pc-cat-count">2</div>
+        </div>
+        <div class="pc-cat-item" data-cat="crypto" onclick="filterCat('crypto','pc')">
+          <div class="pc-cat-left"><div class="pc-cat-dot" style="background:var(--c-crypto);"></div>₿ 加密价格</div>
+          <div class="pc-cat-count">2</div>
+        </div>
+      </div>
+
+      <div class="pc-sidebar-section">
+        <div class="pc-sidebar-title">排序方式</div>
+        <div class="pc-sort-item active">📊 奖池金额 <span class="check">✓</span></div>
+        <div class="pc-sort-item">🔥 最热门</div>
+        <div class="pc-sort-item">⏱ 即将截止</div>
+        <div class="pc-sort-item">🆕 最新上线</div>
+      </div>
+
+      <div class="pc-sidebar-section">
+        <div class="pc-sidebar-title">仅显示</div>
+        <div class="pc-sort-item active">🟢 进行中 <span class="check">✓</span></div>
+        <div class="pc-sort-item">⏳ 即将开始</div>
+        <div class="pc-sort-item">✅ 已结算</div>
+      </div>
+
+      <!-- 获票入口 -->
+      <div class="earn-banner">
+        <div class="earn-banner-title">🎫 获取更多选票</div>
+        <div class="earn-banner-desc">入金或增加合约交易量，即可获得更多选票参与竞猜。</div>
+        <div class="earn-banner-btns">
+          <button class="earn-mini-btn earn-mini-btn-primary">立即入金</button>
+          <button class="earn-mini-btn earn-mini-btn-outline">去交易</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="pc-main">
+      <div class="pc-main-header">
+        <div class="pc-main-count">显示 <span id="pc-market-count">11</span> 个市场</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:13px;color:var(--text3);">视图：</div>
+          <div class="pc-view-toggle">
+            <button class="pc-view-btn active" id="vbtn-grid" onclick="switchPcView('grid')" title="网格">⊞</button>
+            <button class="pc-view-btn" id="vbtn-list" onclick="switchPcView('list')" title="列表">☰</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 市场卡片网格 -->
+      <div class="market-grid" id="pc-grid">
+
+        <!-- 1. 巴西 vs 阿根廷 -->
+        <div class="mkt-card" data-cat="sports" data-title="巴西 vs 阿根廷">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon icon-sports">⚽</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-sports">⚽ 世界杯</div>
+                <div class="card-title">巴西 vs 阿根廷 · 小组赛 A</div>
+              </div>
+            </div>
+            <span class="badge badge-live">● 进行中</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">🇧🇷 巴西胜</span><div class="option-bar-wrap"><div class="option-bar-fill bar-sports" style="width:52%"></div></div><span class="option-pct">52%</span></div>
+            <div class="option-row"><span class="option-label">🤝 平局</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:11%;background:var(--text3)"></div></div><span class="option-pct">11%</span></div>
+            <div class="option-row"><span class="option-label">🇦🇷 阿根廷胜</span><div class="option-bar-wrap"><div class="option-bar-fill bar-sports" style="width:37%;opacity:.6"></div></div><span class="option-pct">37%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$128,500</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 2,341人 · ⏱ 06/15 20:00</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+        <!-- 2. BTC 价格 -->
+        <div class="mkt-card" data-cat="crypto" data-title="BTC 24小时价格">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon icon-crypto">₿</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-crypto">₿ 加密价格</div>
+                <div class="card-title">BTC/USDT · 24小时价格预测</div>
+              </div>
+            </div>
+            <span class="badge badge-hot">🔥 最热</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">📈 涨超 $100K</span><div class="option-bar-wrap"><div class="option-bar-fill bar-crypto" style="width:38%"></div></div><span class="option-pct">38%</span></div>
+            <div class="option-row"><span class="option-label">➡️ 横盘</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:22%;background:var(--text3)"></div></div><span class="option-pct">22%</span></div>
+            <div class="option-row"><span class="option-label">📉 跌破 $95K</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:40%;background:var(--red);opacity:.7"></div></div><span class="option-pct">40%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$312,000</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 9,800人 · ⏱ 明日 00:00</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+        <!-- 3. S15 总决赛冠军 -->
+        <div class="mkt-card" data-cat="esports" data-title="S15 全球总决赛冠军">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon icon-esports">⚔️</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-esports">⚔️ 电竞</div>
+                <div class="card-title">LoL S15 · 全球总决赛冠军</div>
+              </div>
+            </div>
+            <span class="badge badge-live">● 进行中</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">🇰🇷 T1</span><div class="option-bar-wrap"><div class="option-bar-fill bar-esports" style="width:38%"></div></div><span class="option-pct">38%</span></div>
+            <div class="option-row"><span class="option-label">🇨🇳 BLG</span><div class="option-bar-wrap"><div class="option-bar-fill bar-esports" style="width:31%;opacity:.7"></div></div><span class="option-pct">31%</span></div>
+            <div class="option-row"><span class="option-label">🇪🇺 G2 / 其他</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:31%;background:var(--text3)"></div></div><span class="option-pct">31%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$248,000</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 8,420人 · ⏱ 11/02</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+        <!-- 4. 2028 美国大选 -->
+        <div class="mkt-card" data-cat="politics" data-title="2028 美国总统大选">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon icon-politics">🗳️</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-politics">🗳️ 大选</div>
+                <div class="card-title">2028 美国总统大选 · 谁将获胜</div>
+              </div>
+            </div>
+            <span class="badge badge-upcoming">⏱ 即将</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">🔵 民主党</span><div class="option-bar-wrap"><div class="option-bar-fill bar-politics" style="width:54%"></div></div><span class="option-pct">54%</span></div>
+            <div class="option-row"><span class="option-label">🔴 共和党</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:46%;background:var(--red);opacity:.7"></div></div><span class="option-pct">46%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$520,000</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 15,800人 · ⏱ 2028/11</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+        <!-- 5. 法国 vs 英格兰 -->
+        <div class="mkt-card" data-cat="sports" data-title="法国 vs 英格兰">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon icon-sports">⚽</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-sports">⚽ 世界杯</div>
+                <div class="card-title">法国 vs 英格兰 · 小组赛 B</div>
+              </div>
+            </div>
+            <span class="badge badge-live">● 进行中</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">🇫🇷 法国胜</span><div class="option-bar-wrap"><div class="option-bar-fill bar-sports" style="width:63%"></div></div><span class="option-pct">63%</span></div>
+            <div class="option-row"><span class="option-label">🤝 平局</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:9%;background:var(--text3)"></div></div><span class="option-pct">9%</span></div>
+            <div class="option-row"><span class="option-label">🏴󠁧󠁢󠁥󠁮󠁧󠁿 英格兰胜</span><div class="option-bar-wrap"><div class="option-bar-fill bar-sports" style="width:28%;opacity:.6"></div></div><span class="option-pct">28%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$95,200</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 1,892人 · ⏱ 06/15 23:00</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+        <!-- 6. 奥运金牌榜 -->
+        <div class="mkt-card" data-cat="sports" data-title="2028奥运金牌榜第一">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:rgba(239,68,68,.12);">🏅</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-sports">🏅 奥运会</div>
+                <div class="card-title">2028 洛杉矶奥运 · 金牌榜第一</div>
+              </div>
+            </div>
+            <span class="badge badge-upcoming">⏱ 即将</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">🇺🇸 美国</span><div class="option-bar-wrap"><div class="option-bar-fill bar-sports" style="width:58%"></div></div><span class="option-pct">58%</span></div>
+            <div class="option-row"><span class="option-label">🇨🇳 中国</span><div class="option-bar-wrap"><div class="option-bar-fill bar-sports" style="width:42%;opacity:.7"></div></div><span class="option-pct">42%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$480,000</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 12,400人 · ⏱ 2028/08</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+        <!-- 7. ETH 周预测 -->
+        <div class="mkt-card" data-cat="crypto" data-title="ETH 7天价格预测">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon icon-crypto">⟠</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-crypto">₿ 加密价格</div>
+                <div class="card-title">ETH/USDT · 7天价格区间预测</div>
+              </div>
+            </div>
+            <span class="badge badge-upcoming">⏱ 即将</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">$4,000+</span><div class="option-bar-wrap"><div class="option-bar-fill bar-crypto" style="width:42%"></div></div><span class="option-pct">42%</span></div>
+            <div class="option-row"><span class="option-label">$3,500–4,000</span><div class="option-bar-wrap"><div class="option-bar-fill bar-crypto" style="width:35%;opacity:.6"></div></div><span class="option-pct">35%</span></div>
+            <div class="option-row"><span class="option-label">$3,500 以下</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:23%;background:var(--red);opacity:.6"></div></div><span class="option-pct">23%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$145,600</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 4,200人 · ⏱ 06/22</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+        <!-- 8. T1 vs BLG 半决赛 -->
+        <div class="mkt-card" data-cat="esports" data-title="T1 vs BLG 半决赛">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon icon-esports">🎮</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-esports">⚔️ 电竞</div>
+                <div class="card-title">T1 vs BLG · S15 半决赛 BO5</div>
+              </div>
+            </div>
+            <span class="badge badge-live">● 进行中</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">T1 3:0</span><div class="option-bar-wrap"><div class="option-bar-fill bar-esports" style="width:31%"></div></div><span class="option-pct">31%</span></div>
+            <div class="option-row"><span class="option-label">T1 3:1 / 3:2</span><div class="option-bar-wrap"><div class="option-bar-fill bar-esports" style="width:46%;opacity:.7"></div></div><span class="option-pct">46%</span></div>
+            <div class="option-row"><span class="option-label">BLG 获胜</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:23%;background:var(--text3)"></div></div><span class="option-pct">23%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$96,400</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 3,200人 · ⏱ 10/30</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+        <!-- 9. 德国 vs 葡萄牙 -->
+        <div class="mkt-card" data-cat="sports" data-title="德国 vs 葡萄牙">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon icon-sports">⚽</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-sports">⚽ 世界杯</div>
+                <div class="card-title">德国 vs 葡萄牙 · 小组赛 C</div>
+              </div>
+            </div>
+            <span class="badge badge-upcoming">⏱ 即将</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">🇩🇪 德国胜</span><div class="option-bar-wrap"><div class="option-bar-fill bar-sports" style="width:48%"></div></div><span class="option-pct">48%</span></div>
+            <div class="option-row"><span class="option-label">🤝 平局</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:14%;background:var(--text3)"></div></div><span class="option-pct">14%</span></div>
+            <div class="option-row"><span class="option-label">🇵🇹 葡萄牙胜</span><div class="option-bar-wrap"><div class="option-bar-fill bar-sports" style="width:38%;opacity:.6"></div></div><span class="option-pct">38%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$72,800</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 1,204人 · ⏱ 06/16</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+        <!-- 10. 宾夕法尼亚州 -->
+        <div class="mkt-card" data-cat="politics" data-title="宾夕法尼亚州归属">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon icon-politics">📍</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-politics">🗳️ 大选</div>
+                <div class="card-title">宾夕法尼亚州 · 2028 大选归属</div>
+              </div>
+            </div>
+            <span class="badge badge-upcoming">⏱ 即将</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">🔵 民主党</span><div class="option-bar-wrap"><div class="option-bar-fill bar-politics" style="width:52%"></div></div><span class="option-pct">52%</span></div>
+            <div class="option-row"><span class="option-label">🔴 共和党</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:48%;background:var(--red);opacity:.7"></div></div><span class="option-pct">48%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$188,000</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 6,240人 · ⏱ 2028/11</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+        <!-- 11. 男子100米 -->
+        <div class="mkt-card" data-cat="sports" data-title="男子100米金牌">
+          <div class="card-accent"></div>
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:rgba(239,68,68,.12);">🏃</div>
+              <div class="card-meta">
+                <div class="card-cat-badge cat-sports">🏅 奥运会</div>
+                <div class="card-title">男子 100 米 · 2028 奥运金牌</div>
+              </div>
+            </div>
+            <span class="badge badge-upcoming">⏱ 即将</span>
+          </div>
+          <div class="card-options">
+            <div class="option-row"><span class="option-label">🇯🇲 F.Omanyala</span><div class="option-bar-wrap"><div class="option-bar-fill bar-sports" style="width:35%"></div></div><span class="option-pct">35%</span></div>
+            <div class="option-row"><span class="option-label">🇺🇸 F.Kerley</span><div class="option-bar-wrap"><div class="option-bar-fill bar-sports" style="width:28%;opacity:.7"></div></div><span class="option-pct">28%</span></div>
+            <div class="option-row"><span class="option-label">其他选手</span><div class="option-bar-wrap"><div class="option-bar-fill" style="width:37%;background:var(--text3)"></div></div><span class="option-pct">37%</span></div>
+          </div>
+          <div class="card-footer">
+            <div><div class="card-pool"><span class="card-pool-val">$92,400</span> <span class="card-pool-label">奖池</span></div><div class="card-stats">👥 3,100人 · ⏱ 2028/08</div></div>
+            <button class="card-btn">预测</button>
+          </div>
+        </div>
+
+      </div><!-- /market-grid -->
+
+      <div class="load-more"><button class="load-more-btn">加载更多市场</button></div>
+    </div><!-- /pc-main -->
+
+  </div><!-- /pc-body -->
+</div><!-- /view-pc -->
+
+<!-- ============================================================
+  APP (MOBILE) LAYOUT
+============================================================ -->
+<div id="view-app">
+
+  <!-- App Topbar -->
+  <div class="app-topbar">
+    <div class="app-logo">◈ DEX Predict</div>
+    <div class="app-topbar-right">
+      <div class="app-tickets-pill">🎫 <span class="app-tickets-val">1,280</span></div>
+      <div class="app-wallet">🐋</div>
+    </div>
+  </div>
+
+  <!-- App Hero Banner -->
+  <div class="app-hero">
+    <div style="position:relative;z-index:1;">
+      <div class="app-hero-label">◈ DEX 预测市场</div>
+      <div class="app-hero-title">预测任何事，<br><span>赢取真实奖励</span></div>
+      <div class="app-hero-sub">投入选票竞猜结果，邀友组队提升赔率</div>
+
+      <!-- 滚动 ticker 作为配图 -->
+      <div class="app-hero-visual">
+        <!-- duplicate for seamless loop -->
+        <div class="hero-ticker" id="hero-ticker">
+          <div class="hero-tick-item" style="border-color:rgba(99,102,241,.2);">⚽ 巴西 vs 阿根廷 <span style="color:var(--green)">$128K</span></div>
+          <div class="hero-tick-item" style="border-color:rgba(6,182,212,.2);">₿ BTC 24H <span style="color:var(--sky)">$312K</span></div>
+          <div class="hero-tick-item" style="border-color:rgba(16,185,129,.2);">⚔️ S15 冠军 <span style="color:var(--green)">$248K</span></div>
+          <div class="hero-tick-item" style="border-color:rgba(245,158,11,.2);">🗳️ 2028 大选 <span style="color:var(--gold)">$520K</span></div>
+          <div class="hero-tick-item" style="border-color:rgba(239,68,68,.2);">🏅 奥运金牌榜 <span style="color:var(--red)">$480K</span></div>
+          <div class="hero-tick-item" style="border-color:rgba(99,102,241,.2);">⚽ 法国 vs 英格兰 <span style="color:var(--green)">$95K</span></div>
+          <!-- repeat -->
+          <div class="hero-tick-item" style="border-color:rgba(99,102,241,.2);">⚽ 巴西 vs 阿根廷 <span style="color:var(--green)">$128K</span></div>
+          <div class="hero-tick-item" style="border-color:rgba(6,182,212,.2);">₿ BTC 24H <span style="color:var(--sky)">$312K</span></div>
+          <div class="hero-tick-item" style="border-color:rgba(16,185,129,.2);">⚔️ S15 冠军 <span style="color:var(--green)">$248K</span></div>
+          <div class="hero-tick-item" style="border-color:rgba(245,158,11,.2);">🗳️ 2028 大选 <span style="color:var(--gold)">$520K</span></div>
+          <div class="hero-tick-item" style="border-color:rgba(239,68,68,.2);">🏅 奥运金牌榜 <span style="color:var(--red)">$480K</span></div>
+          <div class="hero-tick-item" style="border-color:rgba(99,102,241,.2);">⚽ 法国 vs 英格兰 <span style="color:var(--green)">$95K</span></div>
+        </div>
+      </div>
+
+      <div class="app-stats-row">
+        <div class="app-stat"><div class="app-stat-val" style="color:var(--gold);">$2.1M</div><div class="app-stat-label">累计奖池</div></div>
+        <div class="app-stat"><div class="app-stat-val" style="color:var(--primary);">11</div><div class="app-stat-label">活跃市场</div></div>
+        <div class="app-stat"><div class="app-stat-val">47K+</div><div class="app-stat-label">参与人数</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 获票入口条 -->
+  <div class="app-earn-bar">
+    <div class="app-earn-left">入金 / 交易 可得更多<strong> 选票</strong></div>
+    <div class="app-earn-btns">
+      <button class="app-earn-btn">入金</button>
+      <button class="app-earn-btn">去交易</button>
+    </div>
+  </div>
+
+  <!-- 类别筛选 -->
+  <div class="app-cats" id="app-cats">
+    <div class="app-cat-chip active" data-cat="all" onclick="filterCat('all','app')">全部 <span style="font-size:11px;opacity:.6;">11</span></div>
+    <div class="app-cat-chip" data-cat="sports" onclick="filterCat('sports','app')">⚽ 体育 <span style="font-size:11px;opacity:.6;">5</span></div>
+    <div class="app-cat-chip" data-cat="esports" onclick="filterCat('esports','app')">⚔️ 电竞 <span style="font-size:11px;opacity:.6;">2</span></div>
+    <div class="app-cat-chip" data-cat="politics" onclick="filterCat('politics','app')">🗳️ 大选 <span style="font-size:11px;opacity:.6;">2</span></div>
+    <div class="app-cat-chip" data-cat="crypto" onclick="filterCat('crypto','app')">₿ 加密 <span style="font-size:11px;opacity:.6;">2</span></div>
+  </div>
+
+  <!-- 排序条 -->
+  <div class="app-sort-bar">
+    <div class="app-market-count">共 <span id="app-market-count">11</span> 个市场</div>
+    <div class="app-sort-btn">奖池排序 ↓</div>
+  </div>
+
+  <!-- App 卡片网格 -->
+  <div class="app-market-grid app-body-pad" id="app-grid">
+
+    <div class="app-mkt-card" data-cat="sports">
+      <div class="amc-icon">⚽</div>
+      <div class="amc-cat cat-sports">⚽ 世界杯</div>
+      <div class="amc-title">巴西 vs 阿根廷</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">🇧🇷 巴西胜</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-sports" style="width:52%"></div></div><span class="amc-opt-pct">52%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">🤝 平局</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:11%;background:var(--text3)"></div></div><span class="amc-opt-pct">11%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">🇦🇷 阿根廷胜</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-sports" style="width:37%;opacity:.6"></div></div><span class="amc-opt-pct">37%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$128K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+    <div class="app-mkt-card" data-cat="crypto">
+      <div class="amc-icon">₿</div>
+      <div class="amc-cat cat-crypto">₿ 加密</div>
+      <div class="amc-title">BTC 24小时价格</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">📈 涨超$100K</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-crypto" style="width:38%"></div></div><span class="amc-opt-pct">38%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">➡️ 横盘</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:22%;background:var(--text3)"></div></div><span class="amc-opt-pct">22%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">📉 跌破$95K</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:40%;background:var(--red);opacity:.7"></div></div><span class="amc-opt-pct">40%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$312K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+    <div class="app-mkt-card" data-cat="esports">
+      <div class="amc-icon">⚔️</div>
+      <div class="amc-cat cat-esports">⚔️ 电竞</div>
+      <div class="amc-title">S15 总决赛冠军</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">🇰🇷 T1</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-esports" style="width:38%"></div></div><span class="amc-opt-pct">38%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">🇨🇳 BLG</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-esports" style="width:31%;opacity:.7"></div></div><span class="amc-opt-pct">31%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">其他队伍</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:31%;background:var(--text3)"></div></div><span class="amc-opt-pct">31%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$248K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+    <div class="app-mkt-card" data-cat="politics">
+      <div class="amc-icon">🗳️</div>
+      <div class="amc-cat cat-politics">🗳️ 大选</div>
+      <div class="amc-title">2028美国总统大选</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">🔵 民主党</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-politics" style="width:54%"></div></div><span class="amc-opt-pct">54%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">🔴 共和党</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:46%;background:var(--red);opacity:.7"></div></div><span class="amc-opt-pct">46%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$520K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+    <div class="app-mkt-card" data-cat="sports">
+      <div class="amc-icon">⚽</div>
+      <div class="amc-cat cat-sports">⚽ 世界杯</div>
+      <div class="amc-title">法国 vs 英格兰</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">🇫🇷 法国胜</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-sports" style="width:63%"></div></div><span class="amc-opt-pct">63%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">🤝 平局</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:9%;background:var(--text3)"></div></div><span class="amc-opt-pct">9%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">🏴󠁧󠁢󠁥󠁮󠁧󠁿 英格兰</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-sports" style="width:28%;opacity:.6"></div></div><span class="amc-opt-pct">28%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$95K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+    <div class="app-mkt-card" data-cat="sports">
+      <div class="amc-icon">🏅</div>
+      <div class="amc-cat cat-sports">🏅 奥运会</div>
+      <div class="amc-title">奥运金牌榜第一</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">🇺🇸 美国</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-sports" style="width:58%"></div></div><span class="amc-opt-pct">58%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">🇨🇳 中国</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-sports" style="width:42%;opacity:.6"></div></div><span class="amc-opt-pct">42%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$480K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+    <div class="app-mkt-card" data-cat="crypto">
+      <div class="amc-icon">⟠</div>
+      <div class="amc-cat cat-crypto">₿ 加密</div>
+      <div class="amc-title">ETH 7天价格预测</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">$4,000+</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-crypto" style="width:42%"></div></div><span class="amc-opt-pct">42%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">$3.5K-4K</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-crypto" style="width:35%;opacity:.6"></div></div><span class="amc-opt-pct">35%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">$3.5K以下</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:23%;background:var(--red);opacity:.6"></div></div><span class="amc-opt-pct">23%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$146K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+    <div class="app-mkt-card" data-cat="esports">
+      <div class="amc-icon">🎮</div>
+      <div class="amc-cat cat-esports">⚔️ 电竞</div>
+      <div class="amc-title">T1 vs BLG 半决赛</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">T1 胜</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-esports" style="width:77%"></div></div><span class="amc-opt-pct">77%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">BLG 胜</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:23%;background:var(--text3)"></div></div><span class="amc-opt-pct">23%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$96K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+    <div class="app-mkt-card" data-cat="sports">
+      <div class="amc-icon">⚽</div>
+      <div class="amc-cat cat-sports">⚽ 世界杯</div>
+      <div class="amc-title">德国 vs 葡萄牙</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">🇩🇪 德国胜</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-sports" style="width:48%"></div></div><span class="amc-opt-pct">48%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">🤝 平局</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:14%;background:var(--text3)"></div></div><span class="amc-opt-pct">14%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">🇵🇹 葡萄牙</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-sports" style="width:38%;opacity:.6"></div></div><span class="amc-opt-pct">38%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$73K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+    <div class="app-mkt-card" data-cat="politics">
+      <div class="amc-icon">📍</div>
+      <div class="amc-cat cat-politics">🗳️ 大选</div>
+      <div class="amc-title">宾州大选归属</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">🔵 民主党</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-politics" style="width:52%"></div></div><span class="amc-opt-pct">52%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">🔴 共和党</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:48%;background:var(--red);opacity:.7"></div></div><span class="amc-opt-pct">48%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$188K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+    <div class="app-mkt-card" data-cat="sports">
+      <div class="amc-icon">🏃</div>
+      <div class="amc-cat cat-sports">🏅 奥运会</div>
+      <div class="amc-title">男子100米金牌</div>
+      <div class="amc-options">
+        <div class="amc-opt-row"><span class="amc-opt-label">Omanyala</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-sports" style="width:35%"></div></div><span class="amc-opt-pct">35%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">Kerley</span><div class="amc-bar-wrap"><div class="amc-bar-fill bar-sports" style="width:28%;opacity:.7"></div></div><span class="amc-opt-pct">28%</span></div>
+        <div class="amc-opt-row"><span class="amc-opt-label">其他</span><div class="amc-bar-wrap"><div class="amc-bar-fill" style="width:37%;background:var(--text3)"></div></div><span class="amc-opt-pct">37%</span></div>
+      </div>
+      <div class="amc-footer"><span class="amc-pool">$92K</span><button class="amc-btn">预测</button></div>
+    </div>
+
+  </div><!-- /app-market-grid -->
+
+  <!-- App Bottom Nav -->
+  <div class="app-bottom-nav">
+    <div class="app-nav-item active">
+      <div class="app-nav-icon">🏠</div>
+      <div class="app-nav-label" style="color:var(--primary)">市场</div>
+    </div>
+    <div class="app-nav-item">
+      <div class="app-nav-icon">📋</div>
+      <div class="app-nav-label">我的预测</div>
+    </div>
+    <div class="app-nav-item">
+      <div class="app-nav-icon">👥</div>
+      <div class="app-nav-label">战队</div>
+    </div>
+    <div class="app-nav-item">
+      <div class="app-nav-icon">👤</div>
+      <div class="app-nav-label">我的</div>
+    </div>
+  </div>
+
+</div><!-- /view-app -->
+
+<script>
+/* ========================
+   Layout switch
+======================== */
+function switchLayout(mode){
+  document.getElementById('view-pc').style.display = mode==='pc'?'block':'none';
+  document.getElementById('view-app').style.display = mode==='app'?'block':'none';
+  document.getElementById('btn-pc').classList.toggle('active', mode==='pc');
+  document.getElementById('btn-app').classList.toggle('active', mode==='app');
+}
+
+/* ========================
+   Category filter
+======================== */
+function filterCat(cat, view){
+  if(view==='pc'){
+    // update sidebar active state
+    document.querySelectorAll('.pc-cat-item').forEach(el=>{
+      el.classList.toggle('active', el.dataset.cat===cat);
+    });
+    // show/hide cards
+    const cards = document.querySelectorAll('#pc-grid .mkt-card');
+    let count = 0;
+    cards.forEach(c=>{
+      const show = cat==='all' || c.dataset.cat===cat;
+      c.classList.toggle('hidden', !show);
+      if(show) count++;
+    });
+    document.getElementById('pc-market-count').textContent = count;
+  } else {
+    // update chips
+    document.querySelectorAll('#app-cats .app-cat-chip').forEach(el=>{
+      el.classList.toggle('active', el.dataset.cat===cat);
+    });
+    const cards = document.querySelectorAll('#app-grid .app-mkt-card');
+    let count = 0;
+    cards.forEach(c=>{
+      const show = cat==='all' || c.dataset.cat===cat;
+      c.classList.toggle('hidden', !show);
+      if(show) count++;
+    });
+    document.getElementById('app-market-count').textContent = count;
+  }
+}
+
+/* ========================
+   PC view toggle (grid/list)
+======================== */
+function switchPcView(mode){
+  const grid = document.getElementById('pc-grid');
+  grid.classList.toggle('list-view', mode==='list');
+  document.getElementById('vbtn-grid').classList.toggle('active', mode==='grid');
+  document.getElementById('vbtn-list').classList.toggle('active', mode==='list');
+}
+
+/* ========================
+   Search (PC)
+======================== */
+function handleSearch(val){
+  const q = val.toLowerCase().trim();
+  const cards = document.querySelectorAll('#pc-grid .mkt-card');
+  let count = 0;
+  cards.forEach(c=>{
+    const title = (c.dataset.title||'').toLowerCase();
+    const show = !q || title.includes(q);
+    c.classList.toggle('hidden', !show);
+    if(show) count++;
+  });
+  document.getElementById('pc-market-count').textContent = count;
+}
+
+/* ========================
+   Sort items (visual only)
+======================== */
+document.querySelectorAll('.pc-sort-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    el.closest('.pc-sidebar-section').querySelectorAll('.pc-sort-item').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

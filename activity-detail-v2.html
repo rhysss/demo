@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大宗商品交易季 - 活动详情</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d0d0d;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'PingFang SC', sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* NAV */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: #0d0d0d; border-bottom: 1px solid #1e1e1e;
+      height: 56px; display: flex; align-items: center;
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-left { display: flex; align-items: center; gap: 28px; }
+    .nav-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
+    .nav-badge { font-size: 11px; font-weight: 600; background: rgba(0,230,118,0.1); color: #00e676; border: 1px solid rgba(0,230,118,0.3); padding: 2px 7px; border-radius: 4px; }
+    .nav-link { font-size: 14px; color: #666; cursor: pointer; transition: color 0.15s; }
+    .nav-link:hover { color: #aaa; }
+    .nav-link.active { color: #fff; }
+    .nav-airdrop { display: flex; align-items: center; gap: 6px; border: 1px solid rgba(0,230,118,0.45); color: #00e676; padding: 5px 14px; border-radius: 9999px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+    .nav-airdrop:hover { background: rgba(0,230,118,0.08); }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+    .btn-deposit { background: #00e676; color: #000; font-weight: 700; padding: 7px 20px; border-radius: 9999px; font-size: 14px; border: none; cursor: pointer; }
+    .nav-wallet { font-size: 13px; color: #666; cursor: pointer; }
+
+    /* BREADCRUMB */
+    .breadcrumb { background: #0d0d0d; border-bottom: 1px solid #1e1e1e; }
+    .breadcrumb-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 44px; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #444; }
+    .breadcrumb-inner a { color: #444; transition: color 0.15s; }
+    .breadcrumb-inner a:hover { color: #888; }
+    .breadcrumb-sep { color: #2a2a2a; }
+    .breadcrumb-current { color: #666; }
+
+    /* HERO */
+    .hero { background: #0d0d0d; border-bottom: 1px solid #1e1e1e; overflow: hidden; }
+    .hero-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      min-height: 280px; display: flex; align-items: center; justify-content: space-between; gap: 40px;
+    }
+    .hero-content { padding: 52px 0; flex: 1; }
+    .hero-title { font-size: 34px; font-weight: 700; line-height: 1.25; margin-bottom: 24px; letter-spacing: -0.3px; max-width: 520px; }
+
+    /* Countdown */
+    .countdown-label { font-size: 12px; color: #555; margin-bottom: 10px; }
+    .countdown-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 28px; }
+    .cd-block { background: #151515; border: 1px solid #222; border-radius: 6px; padding: 10px 16px; text-align: center; min-width: 58px; }
+    .cd-num { font-size: 26px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+    .cd-unit { font-size: 11px; color: #444; margin-top: 4px; letter-spacing: 0.5px; }
+    .cd-sep { font-size: 22px; color: #333; margin-bottom: 14px; }
+
+    /* Hero buttons */
+    .hero-btns { display: flex; gap: 10px; margin-bottom: 28px; }
+    .btn-pill {
+      padding: 9px 22px; border-radius: 9999px; font-size: 14px; font-weight: 500;
+      cursor: pointer; border: 1px solid #333; color: #ccc; background: transparent;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-pill:hover { border-color: #666; color: #fff; }
+    .btn-pill-primary { border-color: #fff; color: #fff; }
+    .btn-pill-primary:hover { background: rgba(255,255,255,0.08); }
+
+    /* Contract tags */
+    .contracts-label { font-size: 12px; color: #444; margin-bottom: 10px; }
+    .contracts-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .contract-tag {
+      background: #141414; border: 1px solid #222; color: #aaa;
+      padding: 5px 14px; border-radius: 9999px; font-size: 12px; font-weight: 500;
+    }
+
+    /* Hero art */
+    .hero-art { flex-shrink: 0; width: 340px; }
+
+    /* Section divider */
+    .section-div { border-top: 1px solid #1a1a1a; }
+
+    /* Section wrapper */
+    .section { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+    .section-title { font-size: 20px; font-weight: 600; margin-bottom: 28px; }
+
+    /* REWARD PROGRESS */
+    .reward-stats { display: flex; gap: 48px; margin-bottom: 32px; }
+    .reward-stat-label { font-size: 13px; color: #555; margin-bottom: 6px; }
+    .reward-stat-val { font-size: 28px; font-weight: 700; }
+    .reward-stat-val .unit { font-size: 16px; font-weight: 500; color: #888; margin-left: 3px; }
+
+    /* Milestone bar */
+    .milestone-wrap { position: relative; }
+    .milestone-grid {
+      display: grid;
+      grid-template-columns: 130px repeat(7, 1fr);
+      gap: 0;
+      font-size: 12px;
+      color: #444;
+    }
+    .milestone-grid .row-label { color: #444; padding: 0 0 6px; }
+    .milestone-grid .tick { text-align: center; padding: 0 0 6px; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      align-items: center;
+      margin: 4px 0;
+    }
+    .bar-track { height: 6px; background: #1e1e1e; border-radius: 3px; position: relative; }
+    .bar-fill { height: 100%; background: #00e676; border-radius: 3px; }
+    /* Tick marks on the bar */
+    .tick-mark {
+      position: absolute; top: -5px; width: 1px; height: 16px;
+      background: #1e1e1e;
+    }
+    .milestone-bottom {
+      display: grid;
+      grid-template-columns: 130px repeat(7, 1fr);
+      font-size: 12px; color: #444;
+    }
+    .milestone-bottom .tick { text-align: center; padding: 6px 0 0; }
+
+    /* LEADERBOARD */
+    .lb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    .lb-update { font-size: 12px; color: #333; }
+
+    /* Podium */
+    .podium { display: flex; align-items: flex-end; justify-content: center; gap: 16px; margin-bottom: 32px; }
+    .podium-card {
+      border-radius: 10px; padding: 20px 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      width: 280px; text-align: center;
+    }
+    .podium-1 { background: rgba(0,230,118,0.04); border: 1px solid rgba(0,230,118,0.25); height: 200px; justify-content: center; }
+    .podium-2 { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.12); height: 170px; justify-content: center; }
+    .podium-3 { background: rgba(255,168,0,0.03); border: 1px solid rgba(255,168,0,0.2); height: 150px; justify-content: center; }
+
+    .podium-rank { font-size: 40px; font-weight: 900; line-height: 1; }
+    .rank-1 { color: #00e676; }
+    .rank-2 { color: #aaaaaa; }
+    .rank-3 { color: #cc8800; }
+    .podium-addr { font-size: 14px; color: #bbb; font-family: monospace; letter-spacing: 0.5px; }
+    .podium-vol-label { font-size: 12px; color: #444; }
+    .podium-vol-val { font-size: 14px; font-weight: 600; color: #ddd; display: flex; align-items: center; gap: 5px; }
+
+    /* My rank row */
+    .my-rank-row {
+      background: #111; border: 1px solid #1e1e1e;
+      border-radius: 8px; margin-bottom: 16px;
+      display: grid; grid-template-columns: 100px 1fr auto;
+      padding: 14px 20px; align-items: center;
+    }
+    .my-rank-label { font-size: 13px; color: #444; }
+    .my-rank-pos { font-size: 15px; font-weight: 600; color: #555; }
+    .my-rank-addr { font-size: 13px; color: #555; font-family: monospace; }
+    .my-rank-vol { font-size: 14px; color: #555; }
+
+    /* Table */
+    .lb-table { width: 100%; border-collapse: collapse; }
+    .lb-table thead th {
+      font-size: 12px; color: #333; font-weight: 500; text-align: left;
+      padding: 0 16px 14px; border-bottom: 1px solid #1a1a1a;
+    }
+    .lb-table thead th:last-child { text-align: right; }
+    .lb-table tbody tr { border-bottom: 1px solid #141414; transition: background 0.12s; }
+    .lb-table tbody tr:hover { background: #111; }
+    .lb-table tbody td {
+      font-size: 14px; color: #666; padding: 14px 16px;
+    }
+    .lb-table tbody td:last-child { text-align: right; color: #888; font-variant-numeric: tabular-nums; }
+    .lb-table tbody td.rank-num { color: #444; font-weight: 500; }
+    .lb-table tbody td.addr { font-family: monospace; font-size: 13px; }
+
+    /* Green coin icon */
+    .coin-icon {
+      width: 16px; height: 16px; background: #00e676; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; color: #000; flex-shrink: 0;
+    }
+
+    /* TASK STAGES */
+    .stages-section { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .stages-title { font-size: 16px; font-weight: 600; color: #e0e0e0; margin-bottom: 14px; }
+    .stage-wrap { display: flex; flex-direction: column; gap: 10px; }
+    .stage-card { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; overflow: hidden; }
+    .stage-head { display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer; user-select: none; }
+    .stage-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .stage-icon.done   { background: rgba(0,230,118,0.12); color: #00e676; border: 1px solid rgba(0,230,118,0.25); }
+    .stage-icon.active { background: rgba(255,170,0,0.12);  color: #ffaa00; border: 1px solid rgba(255,170,0,0.25); }
+    .stage-icon.locked { background: #181818; color: #333; border: 1px solid #222; }
+    .stage-head-info { flex: 1; }
+    .stage-name { font-size: 14px; font-weight: 600; color: #e0e0e0; margin-bottom: 2px; }
+    .stage-prize { font-size: 13px; color: #555; }
+    .stage-prize span { color: #00e676; font-weight: 600; }
+    .stage-status-tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500; }
+    .stage-status-tag.done   { background: rgba(0,230,118,0.1); color: #00e676; border: 1px solid rgba(0,230,118,0.2); }
+    .stage-status-tag.active { background: rgba(255,170,0,0.1); color: #ffaa00; border: 1px solid rgba(255,170,0,0.2); }
+    .stage-status-tag.locked { background: #181818; color: #444; border: 1px solid #222; }
+    .stage-chevron { font-size: 12px; color: #333; transition: transform 0.2s; }
+    .stage-card.open .stage-chevron { transform: rotate(180deg); }
+    .stage-body { display: none; padding: 0 20px 18px; border-top: 1px solid #161616; }
+    .stage-card.open .stage-body { display: block; }
+    .stage-tasks { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .stage-task { display: flex; align-items: center; gap: 12px; }
+    .task-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+    .task-dot.done  { background: rgba(0,230,118,0.15); color: #00e676; border: 1px solid rgba(0,230,118,0.25); }
+    .task-dot.going { background: rgba(255,170,0,0.12);  color: #ffaa00; border: 1px solid rgba(255,170,0,0.2); }
+    .task-dot.todo  { background: #181818; color: #333; border: 1px solid #222; }
+    .task-info { flex: 1; }
+    .task-name { font-size: 13px; color: #c0c0c0; }
+    .task-prog { font-size: 11px; color: #555; margin-top: 2px; }
+    .task-prog-bar { height: 3px; background: #1e1e1e; border-radius: 2px; margin-top: 6px; }
+    .task-prog-fill { height: 100%; border-radius: 2px; background: #ffaa00; }
+    .cond-badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; margin-left: auto; flex-shrink: 0; }
+    .cond-and { background: #1a1a1a; color: #555; border: 1px solid #2a2a2a; }
+    .cond-or  { background: rgba(100,60,200,0.12); color: #9066ff; border: 1px solid rgba(100,60,200,0.25); box-shadow: 0 0 6px rgba(100,60,200,0.15); }
+    .stage-locked-note { margin-top: 14px; padding: 10px 14px; background: #0e0e0e; border: 1px solid #1a1a1a; border-radius: 6px; font-size: 12px; color: #444; text-align: center; }
+    .cond-group-label { display: flex; align-items: center; gap: 8px; margin: 14px 0 10px; }
+    .cond-group-desc { font-size: 12px; color: #444; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid #1a1a1a; background: #0a0a0a; padding: 48px 0 32px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .footer-top { display: flex; justify-content: space-between; margin-bottom: 40px; }
+    .footer-brand-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .footer-brand-sub { font-size: 13px; color: #3a3a3a; }
+    .footer-links { display: grid; grid-template-columns: repeat(4,1fr); gap: 48px; }
+    .footer-col-title { font-size: 13px; color: #555; margin-bottom: 12px; }
+    .footer-col a { display: block; font-size: 13px; color: #333; margin-bottom: 8px; transition: color 0.15s; }
+    .footer-col a:hover { color: #666; }
+    .footer-bottom { border-top: 1px solid #1a1a1a; padding-top: 24px; display: flex; justify-content: space-between; align-items: center; }
+    .footer-copy { font-size: 13px; color: #2e2e2e; }
+    .footer-socials { display: flex; gap: 18px; }
+    .footer-socials svg { fill: #2e2e2e; transition: fill 0.15s; cursor: pointer; }
+    .footer-socials svg:hover { fill: #555; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <div class="nav-logo">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+          <polygon points="10,1 19,6 19,14 10,19 1,14 1,6" stroke="#00e676" stroke-width="1.5" fill="none"/>
+          <polygon points="10,5.5 16,9 16,12.5 10,16 4,12.5 4,9" fill="rgba(0,230,118,0.2)"/>
+        </svg>
+        AX
+      </div>
+      <span class="nav-badge">合约V2 Beta</span>
+      <a href="#" class="nav-link">现货</a>
+      <a href="#" class="nav-link">投资组合</a>
+      <a href="#" class="nav-link">积分</a>
+      <a href="#" class="nav-link">策略</a>
+      <a href="activity-center-v2.html" class="nav-link active">奖励</a>
+      <a href="#" class="nav-link">更多 ▾</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-airdrop">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Airdrop
+      </div>
+      <button class="btn-deposit">充值</button>
+      <div class="nav-wallet">0x0B6e...629434 ▾</div>
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="activity-center-v2.html">活动中心</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-current">大宗商品交易季开启，参与瓜分 100,000 USDT</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <h1 class="hero-title">大宗商品交易季开启，参与瓜分 1,000,000 AX</h1>
+      <div class="countdown-label">距离活动结束</div>
+      <div class="countdown-row">
+        <div class="cd-block"><div class="cd-num" id="cd-d">12</div><div class="cd-unit">D</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-num" id="cd-h">08</div><div class="cd-unit">H</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-num" id="cd-m">34</div><div class="cd-unit">M</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-num" id="cd-s">52</div><div class="cd-unit">S</div></div>
+      </div>
+      <div class="hero-btns">
+        <button class="btn-pill" onclick="showShare()">活动分享</button>
+        <button class="btn-pill btn-pill-primary">去交易</button>
+      </div>
+      <div class="contracts-label">活动合约</div>
+      <div class="contracts-row">
+        <span class="contract-tag">XAUUSD</span>
+        <span class="contract-tag">SILVERUSD</span>
+        <span class="contract-tag">COPPERUSD</span>
+        <span class="contract-tag">CLUSD</span>
+        <span class="contract-tag">NATGASUSD</span>
+      </div>
+    </div>
+
+    <!-- Hero illustration: chart + screen -->
+    <div class="hero-art">
+      <!-- Waveform / data stream illustration -->
+      <svg width="340" height="280" viewBox="0 0 340 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="wglow" cx="50%" cy="55%" r="50%">
+            <stop offset="0%"   stop-color="#00e676" stop-opacity="0.09"/>
+            <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="wave-fade" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#00e676" stop-opacity="0"/>
+            <stop offset="20%"  stop-color="#00e676" stop-opacity="0.7"/>
+            <stop offset="80%"  stop-color="#00e676" stop-opacity="0.7"/>
+            <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="wave-fade2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#00e676" stop-opacity="0"/>
+            <stop offset="20%"  stop-color="#00e676" stop-opacity="0.3"/>
+            <stop offset="80%"  stop-color="#00e676" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="wglow-filter">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Background glow -->
+        <ellipse cx="170" cy="148" rx="155" ry="100" fill="url(#wglow)"/>
+
+        <!-- Horizontal axis line -->
+        <line x1="20" y1="140" x2="320" y2="140" stroke="#1e1e1e" stroke-width="0.8"/>
+
+        <!-- Ghost waveform (back layer) -->
+        <path d="M20,140 C40,140 48,100 60,100 C72,100 78,180 90,180 C102,180 108,110 120,110 C132,110 138,165 150,165 C162,165 168,120 180,120 C192,120 198,158 210,158 C222,158 228,115 240,115 C252,115 258,152 270,152 C282,152 288,128 300,128 C312,128 316,140 320,140"
+              stroke="url(#wave-fade2)" stroke-width="1.2" fill="none"/>
+
+        <!-- Main waveform (glowing) -->
+        <path d="M20,140 C40,140 46,88 62,88 C78,88 84,192 100,192 C116,192 122,104 138,104 C154,104 160,170 176,170 C192,170 198,112 214,112 C230,112 236,160 252,160 C268,160 274,124 290,124 C306,124 312,140 320,140"
+              stroke="url(#wave-fade)" stroke-width="1.8" fill="none" filter="url(#wglow-filter)"/>
+
+        <!-- Fill area under waveform -->
+        <path d="M20,140 C40,140 46,88 62,88 C78,88 84,192 100,192 C116,192 122,104 138,104 C154,104 160,170 176,170 C192,170 198,112 214,112 C230,112 236,160 252,160 C268,160 274,124 290,124 C306,124 312,140 320,140 L320,140 L20,140 Z"
+              fill="url(#wave-fade2)" opacity="0.08"/>
+
+        <!-- Vertical tick marks on axis -->
+        <g stroke="#1c1c1c" stroke-width="0.8">
+          <line x1="62"  y1="136" x2="62"  y2="144"/>
+          <line x1="100" y1="136" x2="100" y2="144"/>
+          <line x1="138" y1="136" x2="138" y2="144"/>
+          <line x1="176" y1="136" x2="176" y2="144"/>
+          <line x1="214" y1="136" x2="214" y2="144"/>
+          <line x1="252" y1="136" x2="252" y2="144"/>
+          <line x1="290" y1="136" x2="290" y2="144"/>
+        </g>
+
+        <!-- Data stream dots (flowing left to right) -->
+        <g fill="#00e676">
+          <circle cx="62"  cy="88"  r="3"   opacity="0.8" filter="url(#wglow-filter)"/>
+          <circle cx="100" cy="192" r="2.5" opacity="0.6"/>
+          <circle cx="138" cy="104" r="3"   opacity="0.8" filter="url(#wglow-filter)"/>
+          <circle cx="176" cy="170" r="2"   opacity="0.5"/>
+          <circle cx="214" cy="112" r="3"   opacity="0.8" filter="url(#wglow-filter)"/>
+          <circle cx="252" cy="160" r="2"   opacity="0.5"/>
+          <circle cx="290" cy="124" r="2.5" opacity="0.6"/>
+        </g>
+        <!-- Glow rings on peaks -->
+        <circle cx="62"  cy="88"  r="7" fill="#00e676" opacity="0.05"/>
+        <circle cx="138" cy="104" r="7" fill="#00e676" opacity="0.05"/>
+        <circle cx="214" cy="112" r="7" fill="#00e676" opacity="0.05"/>
+
+        <!-- Floating data cards -->
+        <g>
+          <!-- Card 1 -->
+          <rect x="30"  y="30"  width="72" height="38" rx="5" fill="#111" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="30" y1="44" x2="102" y2="44" stroke="#161616" stroke-width="0.5"/>
+          <rect x="36" y="36" width="18" height="5" rx="2" fill="#1e1e1e"/>
+          <rect x="36" y="49" width="28" height="4" rx="1.5" fill="#00e676" opacity="0.15"/>
+          <rect x="36" y="55" width="20" height="4" rx="1.5" fill="#1a1a1a"/>
+          <text x="58" y="41" fill="#00e676" font-size="8" font-family="monospace" opacity="0.7">+14.2%</text>
+          <!-- Card 2 -->
+          <rect x="238" y="210" width="78" height="38" rx="5" fill="#111" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="238" y1="224" x2="316" y2="224" stroke="#161616" stroke-width="0.5"/>
+          <rect x="244" y="216" width="20" height="5" rx="2" fill="#1e1e1e"/>
+          <rect x="244" y="229" width="32" height="4" rx="1.5" fill="#00e676" opacity="0.15"/>
+          <rect x="244" y="235" width="22" height="4" rx="1.5" fill="#1a1a1a"/>
+          <text x="268" y="221" fill="#00e676" font-size="8" font-family="monospace" opacity="0.7">+8.7%</text>
+        </g>
+
+        <!-- Horizontal scan line (grid rows) -->
+        <g stroke="#111" stroke-width="0.5" stroke-dasharray="3,6" opacity="0.6">
+          <line x1="20" y1="100" x2="320" y2="100"/>
+          <line x1="20" y1="120" x2="320" y2="120"/>
+          <line x1="20" y1="160" x2="320" y2="160"/>
+          <line x1="20" y1="180" x2="320" y2="180"/>
+        </g>
+
+        <!-- Corner markers -->
+        <line x1="8"   y1="8"   x2="20"  y2="8"   stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="8"   y1="8"   x2="8"   y2="20"  stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="320" y1="8"   x2="332" y2="8"   stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="332" y1="8"   x2="332" y2="20"  stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="8"   y1="260" x2="20"  y2="260" stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="8"   y1="248" x2="8"   y2="260" stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="320" y1="260" x2="332" y2="260" stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="332" y1="248" x2="332" y2="260" stroke="#1a1a1a" stroke-width="1.2"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ── TASK STAGES ── -->
+<div class="section-div">
+  <div class="section">
+    <div class="section-title">任务阶段</div>
+    <div class="stage-wrap">
+
+      <!-- Stage 1: 交易任务 (done) -->
+      <div class="stage-card open" id="stage1">
+        <div class="stage-head" onclick="toggleStage('stage1')">
+          <div class="stage-icon done">✓</div>
+          <div class="stage-head-info">
+            <div class="stage-name">阶段一 · 交易任务</div>
+            <div class="stage-prize">奖励 <span>+100,000 AX</span> · 已完成</div>
+          </div>
+          <span class="stage-status-tag done">已完成</span>
+          <span class="stage-chevron">▼</span>
+        </div>
+        <div class="stage-body">
+          <div class="cond-group-label"><span class="cond-badge cond-and">AND</span><span class="cond-group-desc">以下条件需全部满足</span></div>
+          <div class="stage-tasks">
+            <div class="stage-task">
+              <div class="task-dot done">✓</div>
+              <div class="task-info">
+                <div class="task-name">累计交易量达到 500,000 USDT</div>
+                <div class="task-prog">500,000 / 500,000 USDT</div>
+                <div class="task-prog-bar"><div class="task-prog-fill" style="width:100%;background:#00e676;"></div></div>
+              </div>
+            </div>
+            <div class="stage-task">
+              <div class="task-dot done">✓</div>
+              <div class="task-info">
+                <div class="task-name">持仓时间超过 24 小时</div>
+                <div class="task-prog">已满足</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage 2: 入金任务 (in progress) -->
+      <div class="stage-card open" id="stage2">
+        <div class="stage-head" onclick="toggleStage('stage2')">
+          <div class="stage-icon active">⚡</div>
+          <div class="stage-head-info">
+            <div class="stage-name">阶段二 · 入金任务</div>
+            <div class="stage-prize">奖励 <span>+200,000 AX</span> · 进行中</div>
+          </div>
+          <span class="stage-status-tag active">进行中</span>
+          <span class="stage-chevron">▼</span>
+        </div>
+        <div class="stage-body">
+          <div class="cond-group-label"><span class="cond-badge cond-or">OR</span><span class="cond-group-desc">满足以下任意一项即可</span></div>
+          <div class="stage-tasks">
+            <div class="stage-task">
+              <div class="task-dot going">◑</div>
+              <div class="task-info">
+                <div class="task-name">充值累计达到 10,000 USDT</div>
+                <div class="task-prog">6,500 / 10,000 USDT（65%）</div>
+                <div class="task-prog-bar"><div class="task-prog-fill" style="width:65%;"></div></div>
+              </div>
+            </div>
+            <div class="stage-task">
+              <div class="task-dot todo">○</div>
+              <div class="task-info">
+                <div class="task-name">持有 AX 资产超过 5,000 AX</div>
+                <div class="task-prog">1,200 / 5,000 AX（24%）</div>
+                <div class="task-prog-bar"><div class="task-prog-fill" style="width:24%;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage 3: 拉新任务 (locked) -->
+      <div class="stage-card" id="stage3">
+        <div class="stage-head" onclick="toggleStage('stage3')">
+          <div class="stage-icon locked">🔒</div>
+          <div class="stage-head-info">
+            <div class="stage-name">阶段三 · 拉新任务</div>
+            <div class="stage-prize">奖励 <span style="color:#555;">+500,000 AX</span> · 待解锁</div>
+          </div>
+          <span class="stage-status-tag locked">待解锁</span>
+          <span class="stage-chevron">▼</span>
+        </div>
+        <div class="stage-body">
+          <div class="stage-locked-note">完成阶段二后解锁 · 邀请好友注册并完成首笔交易</div>
+          <div class="cond-group-label" style="opacity:0.4;"><span class="cond-badge cond-and">AND</span><span class="cond-group-desc">以下条件需全部满足</span></div>
+          <div class="stage-tasks" style="opacity:0.4;pointer-events:none;">
+            <div class="stage-task">
+              <div class="task-dot todo">○</div>
+              <div class="task-info">
+                <div class="task-name">邀请 3 位好友完成注册</div>
+                <div class="task-prog">0 / 3</div>
+                <div class="task-prog-bar"><div class="task-prog-fill" style="width:0%;"></div></div>
+              </div>
+            </div>
+            <div class="stage-task">
+              <div class="task-dot todo">○</div>
+              <div class="task-info">
+                <div class="task-name">受邀好友首笔交易量 ≥ 1,000 USDT</div>
+                <div class="task-prog">0 / 3 人完成</div>
+                <div class="task-prog-bar"><div class="task-prog-fill" style="width:0%;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── REWARD PROGRESS ── -->
+<div class="section-div">
+  <div class="section">
+    <div class="section-title">奖励进度</div>
+
+    <div class="reward-stats">
+      <div>
+        <div class="reward-stat-label">当前奖池</div>
+        <div class="reward-stat-val">1,000,000<span class="unit">AX</span></div>
+      </div>
+      <div>
+        <div class="reward-stat-label">活动交易量</div>
+        <div class="reward-stat-val">6B<span class="unit">USDT</span></div>
+      </div>
+    </div>
+
+    <!-- Milestone progress bar -->
+    <div class="milestone-wrap">
+      <!-- Top label row -->
+      <div class="milestone-grid">
+        <div class="row-label">活动交易量<br>(USDT)</div>
+        <div class="tick">200M</div>
+        <div class="tick">400M</div>
+        <div class="tick">800M</div>
+        <div class="tick">1.2B</div>
+        <div class="tick">1.6B</div>
+        <div class="tick">2B</div>
+        <div class="tick">4B</div>
+      </div>
+
+      <!-- Bar -->
+      <div class="bar-row">
+        <div></div>
+        <div class="bar-track">
+          <!-- Fully filled since 6B > 4B -->
+          <div class="bar-fill" style="width:100%;"></div>
+          <!-- Tick marks at each milestone (evenly spaced in 7 segments) -->
+          <div class="tick-mark" style="left:14.28%"></div>
+          <div class="tick-mark" style="left:28.57%"></div>
+          <div class="tick-mark" style="left:42.85%"></div>
+          <div class="tick-mark" style="left:57.14%"></div>
+          <div class="tick-mark" style="left:71.42%"></div>
+          <div class="tick-mark" style="left:85.71%"></div>
+        </div>
+      </div>
+
+      <!-- Bottom label row -->
+      <div class="milestone-bottom">
+        <div class="row-label" style="padding-top:6px;font-size:12px;color:#444;">奖池金额<br>(AX)</div>
+        <div class="tick">50K</div>
+        <div class="tick">100K</div>
+        <div class="tick">200K</div>
+        <div class="tick">300K</div>
+        <div class="tick">400K</div>
+        <div class="tick">500K</div>
+        <div class="tick">1,000K</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LEADERBOARD ── -->
+<div class="section-div">
+  <div class="section">
+    <div class="lb-header">
+      <div class="section-title" style="margin-bottom:0;">排行榜</div>
+      <div class="lb-update">Update：每5分钟更新一次</div>
+    </div>
+
+    <!-- Podium top 3 -->
+    <div class="podium">
+      <!-- 2nd -->
+      <div class="podium-card podium-2">
+        <div class="podium-rank rank-2">2</div>
+        <div class="podium-addr">6754...5956</div>
+        <div>
+          <div class="podium-vol-label">交易量</div>
+          <div class="podium-vol-val">
+            <span class="coin-icon" style="font-size:7px;width:20px;border-radius:4px;">AX</span>553,524,171
+          </div>
+        </div>
+      </div>
+      <!-- 1st -->
+      <div class="podium-card podium-1">
+        <div style="color:#00e676;font-size:12px;font-weight:600;letter-spacing:1px;margin-bottom:4px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#00e676" style="vertical-align:middle;margin-right:3px;"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
+          CHAMPION
+        </div>
+        <div class="podium-rank rank-1">1</div>
+        <div class="podium-addr">6917...6577</div>
+        <div>
+          <div class="podium-vol-label">交易量</div>
+          <div class="podium-vol-val">
+            <span class="coin-icon" style="font-size:7px;width:20px;border-radius:4px;">AX</span>590,101,528
+          </div>
+        </div>
+      </div>
+      <!-- 3rd -->
+      <div class="podium-card podium-3">
+        <div class="podium-rank rank-3">3</div>
+        <div class="podium-addr">6554...6818</div>
+        <div>
+          <div class="podium-vol-label">交易量</div>
+          <div class="podium-vol-val">
+            <span class="coin-icon" style="font-size:7px;width:20px;border-radius:4px;">AX</span>523,499,407
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My rank -->
+    <div class="my-rank-row">
+      <div>
+        <div class="my-rank-label">我的排名</div>
+        <div class="my-rank-pos">--</div>
+      </div>
+      <div class="my-rank-addr">6927...0978</div>
+      <div class="my-rank-vol">0</div>
+    </div>
+
+    <!-- Table -->
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th style="width:100px;">排名</th>
+          <th>UID</th>
+          <th>交易量（AX）</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── RULES ── -->
+<div class="section-div">
+  <div class="section">
+    <div class="section-title">活动规则</div>
+    <div style="color:#444;font-size:14px;line-height:1.8;max-width:780px;">
+      <p style="margin-bottom:12px;">1. 活动期间，参与交易指定合约（XAUUSD、SILVERUSD、COPPERUSD、CLUSD、NATGASUSD），累计交易量即可参与 AX 奖池瓜分。</p>
+      <p style="margin-bottom:12px;">2. AX 奖励按照活动期间各用户交易量占总交易量的比例进行分配，活动结束后 T+1 工作日发放至链上钱包地址。</p>
+      <p style="margin-bottom:12px;">3. 奖池 AX 数量随总交易量增长解锁：当总交易量达到对应里程碑时，奖池自动扩大至对应 AX 数量。</p>
+      <p style="margin-bottom:12px;">4. 排行榜每5分钟更新一次，展示实时交易量排名（以 USDT 计价），供参考使用。</p>
+      <p style="color:#333;">5. 平台保留对本活动的最终解释权。如遇异常交易或刷量行为，平台有权取消相关用户的活动资格及 AX 发放资格。</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="vertical-align:middle;margin-right:6px;">
+            <polygon points="10,1 19,6 19,14 10,19 1,14 1,6" stroke="#00e676" stroke-width="1.5" fill="none"/>
+            <polygon points="10,5.5 16,9 16,12.5 10,16 4,12.5 4,9" fill="rgba(0,230,118,0.18)"/>
+          </svg>edgeX
+        </div>
+        <div class="footer-brand-sub">全球资产 24/7 去中心化交易层</div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <div class="footer-col-title">产品</div>
+          <a href="#">Web Pro</a><a href="#">谷歌应用商店</a><a href="#">App Store</a><a href="#">Android APK</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">开发者</div>
+          <a href="#">文档</a><a href="#">API</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">支持</div>
+          <a href="#">客服服务</a><a href="#">产品反馈</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">关于我们</div>
+          <a href="#">博客</a><a href="#">审计报告</a><a href="#">EDGE MiCA 白皮书</a><a href="#">隐私政策</a><a href="#">用户协议</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 edgeX All Rights Reserved</div>
+      <div class="footer-socials">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.258 5.63 5.906-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026 13.83 13.83 0 0 0 1.226-1.963.074.074 0 0 0-.041-.104 13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Share modal -->
+<div id="share-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;" onclick="hideShare(event)">
+  <div style="background:#111;border:1px solid #222;border-radius:16px;padding:28px 32px;width:380px;" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <span style="font-size:16px;font-weight:600;">分享活动</span>
+      <button onclick="hideShare()" style="background:none;border:none;color:#555;cursor:pointer;font-size:20px;line-height:1;">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
+      <div style="text-align:center;cursor:pointer;">
+        <div style="width:48px;height:48px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#ccc"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.258 5.63 5.906-5.63z"/></svg>
+        </div>
+        <span style="font-size:12px;color:#555;">X</span>
+      </div>
+      <div style="text-align:center;cursor:pointer;">
+        <div style="width:48px;height:48px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#ccc"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        </div>
+        <span style="font-size:12px;color:#555;">Telegram</span>
+      </div>
+      <div style="text-align:center;cursor:pointer;">
+        <div style="width:48px;height:48px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#ccc"><path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026c.462-.62.874-1.275 1.226-1.963.041-.08.002-.175-.041-.104a13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028z"/></svg>
+        </div>
+        <span style="font-size:12px;color:#555;">Discord</span>
+      </div>
+      <div style="text-align:center;cursor:pointer;" onclick="copyLink()">
+        <div style="width:48px;height:48px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </div>
+        <span style="font-size:12px;color:#555;" id="copy-txt">复制链接</span>
+      </div>
+    </div>
+    <div style="background:#0a0a0a;border:1px solid #1e1e1e;border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:12px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">https://pro.edgex.exchange/zh-CN/event/detail/74?ref=0x0B6e...</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Countdown to activity end
+  const endTime = new Date('2026-06-01T08:00:00Z').getTime();
+  function updateCountdown() {
+    const now = Date.now();
+    const diff = Math.max(0, endTime - now);
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cd-d').textContent = String(d).padStart(2,'0');
+    document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  // Leaderboard data
+  const lbData = [
+    { rank:4,  uid:'6706...9202', vol:'452,102,792' },
+    { rank:5,  uid:'6376...9937', vol:'303,651,731' },
+    { rank:6,  uid:'6707...1986', vol:'297,092,021' },
+    { rank:7,  uid:'6706...7985', vol:'166,376,566' },
+    { rank:8,  uid:'6376...2273', vol:'124,722,158' },
+    { rank:9,  uid:'6655...7779', vol:'106,690,225' },
+    { rank:10, uid:'6706...2930', vol:'102,578,718' },
+    { rank:11, uid:'6337...0353', vol:'84,319,305'  },
+    { rank:12, uid:'6706...3586', vol:'79,289,593'  },
+    { rank:13, uid:'6655...5011', vol:'78,895,130'  },
+  ];
+  const tbody = document.getElementById('lb-body');
+  lbData.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="rank-num">${row.rank}</td><td class="addr">${row.uid}</td><td>${row.vol}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Share modal
+  function toggleStage(id) {
+    const card = document.getElementById(id);
+    card.classList.toggle('open');
+  }
+
+  function showShare() { document.getElementById('share-modal').style.display = 'flex'; }
+  function hideShare(e) {
+    if (!e || e.target === document.getElementById('share-modal'))
+      document.getElementById('share-modal').style.display = 'none';
+  }
+  function copyLink() {
+    const el = document.getElementById('copy-txt');
+    el.textContent = '已复制 ✓';
+    el.style.color = '#00e676';
+    setTimeout(() => { el.textContent = '复制链接'; el.style.color = '#555'; }, 2000);
+  }
+</script>
+</body>
+</html>

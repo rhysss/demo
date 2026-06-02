@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>官方渠道验证 — 100X Exchange</title>
+<style>
+:root {
+  --brand:#92ef00;--brand-dim:rgba(146,239,0,.12);--brand-dim2:rgba(146,239,0,.06);--brand-glow:rgba(146,239,0,.3);
+  --up:#09a76a;--down:#ff455d;--down-dim:rgba(255,69,93,.10);
+  --yellow:#ffb931;--yellow-dim:rgba(255,185,49,.10);
+  --bg1:#000;--bg2:#0f0f0f;--bg3:#181a1a;--bg4:#252728;--bg5:#1c1e1e;--bg-hover:#1b1c1e;
+  --border1:#2b2e2e;--border2:#1e2020;--border3:#343838;
+  --t1:#fafafa;--t2:#737c80;--t3:#4b5460;--tp:#6e707c;
+  --font:"Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",Arial,sans-serif;
+  --r:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg1);color:var(--t1)}
+body{font-family:var(--font);font-size:14px;min-height:100vh;display:flex;flex-direction:column}
+
+/* NAV */
+.nav{height:52px;background:var(--bg2);border-bottom:1px solid var(--border1);display:flex;align-items:center;padding:0 24px;position:sticky;top:0;z-index:100;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:7px;margin-right:32px;text-decoration:none;flex-shrink:0}
+.logo-mark{width:28px;height:28px}
+.logo-text{font-size:15px;font-weight:800;color:var(--t1);letter-spacing:-.3px;display:flex;align-items:baseline}
+.logo-text .x100{color:var(--brand);font-size:16px}
+.logo-text .ex{color:var(--t2);font-size:12px;font-weight:600;margin-left:1px}
+.nav-links{display:flex;align-items:center;flex:1}
+.nav-links a{padding:0 12px;height:52px;display:flex;align-items:center;font-size:13px;color:var(--t2);text-decoration:none;transition:color .15s;white-space:nowrap;border-bottom:2px solid transparent}
+.nav-links a:hover{color:var(--t1)}
+.nav-links a.active{color:var(--brand);border-bottom-color:var(--brand)}
+.nav-tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--brand-dim);border:1px solid rgba(146,239,0,.25);color:var(--brand);letter-spacing:.3px;margin-left:3px}
+.nav-tag.hot{background:rgba(255,69,93,.15);border-color:rgba(255,69,93,.3);color:var(--down)}
+.nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn-login{padding:6px 16px;border-radius:var(--r);font-size:13px;font-weight:500;background:var(--bg3);border:1px solid var(--border3);color:var(--t1);cursor:pointer;transition:.15s;font-family:var(--font)}
+.btn-login:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-dim2)}
+.btn-register{padding:6px 16px;border-radius:var(--r);font-size:13px;font-weight:600;background:var(--brand);border:none;color:#000;cursor:pointer;transition:.15s;font-family:var(--font)}
+.btn-register:hover{background:#a8ff1a}
+
+/* BREADCRUMB */
+.bc-bar{background:var(--bg2);border-bottom:1px solid var(--border1);padding:0 24px;height:38px;display:flex;align-items:center}
+.bc{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3)}
+.bc a{color:var(--t3);text-decoration:none;transition:.12s}.bc a:hover{color:var(--t2)}
+.bc .sep{color:var(--border3);font-size:10px}.bc .cur{color:var(--t2)}
+
+/* MAIN CONTENT */
+.content{flex:1;max-width:1080px;margin:0 auto;width:100%;padding:40px 24px 80px}
+
+/* PAGE HEADER */
+.page-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:40px}
+.page-hd-title{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
+.page-hd-sub{font-size:14px;color:var(--t2);line-height:1.75;max-width:500px}
+.page-hd-sub em{color:var(--t1);font-style:normal;font-weight:500}
+.sec-badge{display:flex;align-items:center;gap:10px;background:var(--brand-dim2);border:1px solid rgba(146,239,0,.2);border-radius:var(--r-lg);padding:12px 18px;flex-shrink:0;margin-top:4px}
+.sec-badge svg{flex-shrink:0}
+.sb-text{font-size:12px;color:var(--brand);font-weight:700;line-height:1.5}
+.sb-sub{font-size:11px;color:rgba(146,239,0,.55);font-weight:400;margin-top:1px}
+
+/* SECTION LABEL */
+.sec-lbl{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:1.8px;color:var(--t3);text-transform:uppercase;margin-bottom:16px}
+.sec-lbl::before{content:'';width:3px;height:14px;background:var(--brand);border-radius:2px;flex-shrink:0}
+
+/* ─── VERIFY CARD ─── */
+.verify-card{background:var(--bg2);border:1px solid var(--border1);border-radius:var(--r-xl);padding:32px;margin-bottom:48px}
+
+/* ── CUSTOM PLATFORM DROPDOWN ── */
+.plat-drop-wrap{position:relative;flex-shrink:0}
+.plat-drop-btn{
+  display:flex;align-items:center;gap:9px;
+  padding:0 18px;height:50px;min-width:176px;
+  background:transparent;border:none;border-right:1px solid var(--border1);
+  color:var(--t1);font-size:13px;cursor:pointer;white-space:nowrap;
+  font-family:var(--font);transition:.15s;
+}
+.plat-drop-btn:hover{background:rgba(255,255,255,.03)}
+.pd-ico-ring{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pd-label{flex:1;text-align:left;font-weight:500}
+.pd-caret{color:var(--t3);transition:transform .2s;flex-shrink:0}
+.plat-drop-btn.open .pd-caret{transform:rotate(180deg)}
+
+.plat-drop-menu{
+  position:absolute;top:calc(100% + 6px);left:0;width:200px;
+  background:var(--bg4);border:1px solid var(--border3);border-radius:var(--r-lg);
+  overflow:hidden;z-index:300;box-shadow:0 16px 48px rgba(0,0,0,.75);
+  display:none;
+}
+.plat-drop-menu.open{display:block;animation:dropFd .16s ease}
+@keyframes dropFd{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.pd-opt{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;font-size:13px;color:var(--t2);cursor:pointer;transition:.12s;
+}
+.pd-opt:hover{background:var(--bg-hover);color:var(--t1)}
+.pd-opt.active{color:var(--brand);background:var(--brand-dim2)}
+.pd-opt .pd-opt-ico{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Search row — overflow:visible 保证下拉菜单不被裁切 */
+.search-row{
+  display:flex;align-items:stretch;
+  background:var(--bg3);border:1px solid var(--border1);border-radius:var(--r-md);
+  overflow:visible;             /* ← 绝对不能改成 hidden，否则菜单被裁 */
+  transition:border-color .2s;position:relative;
+}
+.search-row:focus-within{border-color:var(--border3)}
+.search-row.err{border-color:var(--down)!important;animation:shake .35s ease}
+.search-pfx{display:flex;align-items:center;padding:0 4px 0 14px;font-size:14px;color:var(--t3);flex-shrink:0;white-space:nowrap}
+.search-pfx.hide{display:none}
+.search-field{flex:1;background:transparent;border:none;outline:none;padding:0 16px;height:50px;font-size:14px;color:var(--t1);font-family:var(--font);min-width:0}
+.search-field::placeholder{color:var(--tp)}
+/* 首端圆角给下拉按钮，末端圆角给验证按钮，取代父级 overflow:hidden 的裁切 */
+.plat-drop-btn{border-radius:calc(var(--r-md) - 1px) 0 0 calc(var(--r-md) - 1px)}
+.verify-btn{
+  display:flex;align-items:center;gap:7px;padding:0 32px;
+  background:var(--brand);color:#000;border:none;cursor:pointer;
+  font-size:13px;font-weight:700;transition:.15s;white-space:nowrap;
+  font-family:var(--font);flex-shrink:0;
+  border-radius:0 calc(var(--r-md) - 1px) calc(var(--r-md) - 1px) 0;
+}
+.verify-btn:hover{background:#a8ff1a}
+.verify-btn:active{opacity:.85}
+.verify-btn:disabled{opacity:.5;cursor:not-allowed}
+.verify-hint{font-size:12px;color:var(--t3);margin-top:10px;line-height:1.7}
+.verify-hint a{color:var(--t3);text-decoration:underline;transition:.12s}.verify-hint a:hover{color:var(--brand)}
+
+/* Spinner */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:14px;height:14px;border:2px solid rgba(0,0,0,.25);border-top-color:#000;border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
+
+/* Inline success result */
+.result-area{margin-top:18px;display:none}
+.result-area.show{display:block;animation:slideUp .22s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.res-ok{background:rgba(9,167,106,.07);border:1px solid rgba(9,167,106,.22);border-radius:var(--r-lg);padding:20px 24px}
+.res-ok-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.res-ok-ico{width:38px;height:38px;border-radius:50%;background:rgba(9,167,106,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.res-ok-ttl{font-size:15px;font-weight:700;color:#22c55e;margin-bottom:3px}
+.res-ok-sub{font-size:13px;color:var(--t2);line-height:1.5}
+.res-div{height:1px;background:rgba(255,255,255,.05);margin:14px 0}
+.res-meta{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:14px}
+.rmi label{display:block;font-size:11px;color:var(--t3);margin-bottom:3px}
+.rmi span{font-size:13px;font-weight:600;color:var(--t1)}
+.res-acts{display:flex;gap:8px;flex-wrap:wrap}
+.r-btn{padding:7px 14px;border-radius:var(--r);font-size:12px;font-weight:500;border:1px solid var(--border3);background:transparent;color:var(--t2);cursor:pointer;transition:.15s;font-family:var(--font);display:flex;align-items:center;gap:5px}
+.r-btn:hover{border-color:var(--border1);color:var(--t1);background:var(--bg4)}
+
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+
+/* ─── CHANNELS MATRIX TABLE ─── */
+.ch-matrix-wrap{background:var(--bg2);border:1px solid var(--border1);border-radius:var(--r-xl);overflow:hidden}
+.ch-matrix{width:100%;border-collapse:collapse;table-layout:fixed}
+.ch-matrix col.c-plat{width:180px}
+.ch-matrix col.c-handle{width:auto}
+.ch-matrix col.c-use{width:160px}
+.ch-matrix col.c-act{width:120px}
+.ch-matrix thead th{
+  background:var(--bg3);padding:11px 20px;
+  font-size:10px;font-weight:700;letter-spacing:1.5px;
+  color:var(--t3);text-transform:uppercase;text-align:left;
+  border-bottom:1px solid var(--border1);
+}
+.ch-matrix tbody tr{transition:background .12s;cursor:default}
+.ch-matrix tbody tr:hover td{background:rgba(255,255,255,.025)}
+.ch-matrix td{
+  padding:13px 20px;font-size:13px;
+  border-bottom:1px solid var(--border2);
+  vertical-align:middle;
+}
+.ch-matrix tbody tr:last-child td{border-bottom:none}
+
+/* platform group separator */
+.ch-matrix .grp-sep td{border-top:1px solid var(--border1)}
+
+/* platform cell */
+.plat-cell{white-space:nowrap}
+.plat-cell-inner{display:flex;align-items:center;gap:9px}
+.plat-cell-ico{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.plat-cell-name{font-size:13px;font-weight:600;color:var(--t1)}
+/* continuation rows: empty plat cell */
+.plat-cell.cont{padding-left:55px}
+
+/* handle cell */
+.handle-cell{display:flex;align-items:center;gap:8px}
+.handle-ico{font-size:14px;line-height:1;flex-shrink:0}
+.handle-name{font-size:13px;font-weight:600;color:var(--t1)}
+.verified-badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:100px;background:var(--brand-dim);border:1px solid rgba(146,239,0,.25);color:var(--brand);white-space:nowrap;margin-left:4px}
+
+/* use desc */
+.use-cell{font-size:12px;color:var(--t2)}
+
+/* action cell */
+.act-cell{display:flex;align-items:center;gap:6px}
+.act-link{
+  padding:5px 10px;border-radius:var(--r);font-size:11px;font-weight:500;
+  border:1px solid var(--border3);background:transparent;color:var(--t2);
+  text-decoration:none;cursor:pointer;transition:.12s;display:flex;align-items:center;gap:4px;
+  font-family:var(--font);
+}
+.act-link:hover{border-color:var(--border1);color:var(--brand);background:var(--brand-dim2)}
+.act-copy{cursor:pointer}
+
+@media(max-width:680px){
+  .ch-matrix col.c-use{display:none}
+  .ch-matrix .use-cell{display:none}
+  .ch-matrix col.c-act{width:90px}
+  .ch-matrix thead th:nth-child(3){display:none}
+}
+
+/* ─── DISCLAIMER ─── */
+.disclaimer{background:var(--bg2);border:1px solid rgba(255,185,49,.18);border-radius:var(--r-xl);padding:24px;margin-top:48px}
+.disc-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.disc-title{font-size:13px;font-weight:700;color:var(--yellow)}
+.disc-body{font-size:12px;color:var(--t3);line-height:1.95}
+.disc-body strong{color:var(--t2);font-weight:600}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border1);padding:20px 24px;text-align:center;font-size:12px;color:var(--t3);flex-shrink:0}
+footer a{color:var(--t3);text-decoration:none;margin:0 10px;transition:.15s}
+footer a:hover{color:var(--brand)}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal-box{background:#1c1e1e;border:1px solid rgba(255,255,255,.08);border-radius:20px;width:100%;max-width:420px;padding:36px 28px 26px;position:relative;transform:translateY(20px) scale(.96);opacity:0;transition:transform .28s cubic-bezier(.34,1.4,.64,1),opacity .22s ease;box-shadow:0 32px 64px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.04)}
+.modal-overlay.show .modal-box{transform:translateY(0) scale(1);opacity:1}
+.modal-x{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.06);border:none;cursor:pointer;color:var(--t2);font-size:18px;display:flex;align-items:center;justify-content:center;transition:.15s;font-family:var(--font)}
+.modal-x:hover{background:rgba(255,69,93,.12);color:var(--down)}
+.modal-halo{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 22px}
+.modal-halo.red{background:radial-gradient(circle,rgba(255,69,93,.22) 0%,rgba(255,69,93,.05) 65%,transparent 100%)}
+.modal-halo.yellow{background:radial-gradient(circle,rgba(255,185,49,.2) 0%,rgba(255,185,49,.05) 65%,transparent 100%)}
+.modal-halo.green{background:radial-gradient(circle,rgba(34,197,94,.22) 0%,rgba(34,197,94,.05) 65%,transparent 100%)}
+.modal-circle{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.modal-circle.red{background:linear-gradient(145deg,#ff455d,#d9243a);box-shadow:0 6px 24px rgba(255,69,93,.4)}
+.modal-circle.yellow{background:linear-gradient(145deg,#ffb931,#d97706);box-shadow:0 6px 24px rgba(255,185,49,.35)}
+.modal-circle.green{background:linear-gradient(145deg,#22c55e,#16a34a);box-shadow:0 6px 24px rgba(34,197,94,.4)}
+.modal-ttl{font-size:22px;font-weight:800;text-align:center;letter-spacing:-.3px;margin-bottom:8px}
+.modal-ttl.red{color:#ff455d}.modal-ttl.yellow{color:var(--yellow)}.modal-ttl.green{color:#22c55e}
+.modal-sub{font-size:14px;color:#8a9099;text-align:center;line-height:1.65;margin-bottom:20px}
+.modal-sub strong{color:#d1d5db;font-weight:600}
+.modal-qbox{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:14px;color:#8a9099;line-height:1.5;word-break:break-all}
+.modal-qbox .qv{color:#e5e7eb;font-weight:600}
+.modal-tips{list-style:none;padding:0}
+.modal-tips li{font-size:13px;color:#737c80;line-height:1.75;display:flex;align-items:flex-start;gap:8px;padding:1px 0}
+.modal-tips li .dot{flex-shrink:0;font-size:18px;line-height:1.25;margin-top:-1px}
+.dot.red{color:#ff455d}.dot.yellow{color:var(--yellow)}
+.modal-hr{height:1px;background:rgba(255,255,255,.07);margin:18px 0}
+.modal-note{font-size:11px;color:#4b5563;text-align:center;line-height:1.8;margin-bottom:22px}
+.modal-note a{color:#6b7280;text-decoration:underline;cursor:pointer;transition:.12s}
+.modal-note a:hover{color:var(--brand)}
+.modal-btns{display:flex;gap:10px}
+.mbtn{flex:1;padding:15px 0;border-radius:100px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px;transition:all .18s}
+.mbtn:active{transform:scale(.96)}
+.mbtn-ghost{background:transparent;border:1.5px solid rgba(255,255,255,.12);color:#9ca3af}
+.mbtn-ghost:hover{border-color:var(--down);color:var(--down);background:rgba(255,69,93,.07)}
+.mbtn-primary{background:var(--brand);color:#000}
+.mbtn-primary:hover{background:#a8ff1a}
+
+@media(max-width:680px){
+  .content{padding:24px 16px 48px}
+  .page-hd{flex-direction:column}
+  .sec-badge{align-self:flex-start}
+  .verify-card{padding:20px}
+  .ch-grid{grid-template-columns:1fr}
+  .plat-drop-btn{min-width:140px;padding:0 12px}
+  .verify-btn{padding:0 18px}
+  .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="https://www.100xex.com" class="logo">
+    <svg class="logo-mark" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#92ef00"/>
+      <text x="14" y="20" font-size="12" font-weight="900" text-anchor="middle" fill="#000" font-family="Arial,sans-serif">100X</text>
+    </svg>
+    <div class="logo-text"><span class="x100">100X</span><span class="ex">Exchange</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="#">买币</a>
+    <a href="#">行情</a>
+    <a href="#">现货</a>
+    <a href="#">合约 <span class="nav-tag">NEW</span></a>
+    <a href="#">理财</a>
+    <a href="#">活动 <span class="nav-tag hot">HOT</span></a>
+    <a href="#" class="active">安全中心</a>
+    <a href="#">更多</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-login">登录</button>
+    <button class="btn-register">注册</button>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="bc-bar">
+  <nav class="bc">
+    <a href="#">首页</a><span class="sep">›</span>
+    <a href="#">安全中心</a><span class="sep">›</span>
+    <span class="cur">官方渠道验证</span>
+  </nav>
+</div>
+
+<!-- MAIN -->
+<div class="content">
+
+  <!-- PAGE HEADER -->
+  <div class="page-hd">
+    <div class="page-hd-left">
+      <h1 class="page-hd-title">官方渠道验证</h1>
+      <p class="page-hd-sub">
+        为保护您的资产安全，避免遭受钓鱼诈骗，您可通过本页面<em>验证社交媒体账号</em>是否属于
+        100X Exchange 官方认证渠道。如有疑虑，请先核验再操作。
+      </p>
+    </div>
+    <div class="sec-badge">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#92ef00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <div>
+        <div class="sb-text">官方安全验证</div>
+        <div class="sb-sub">数据实时同步 · 权威核验</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: 验证查询 -->
+  <div class="sec-lbl">渠道验证查询</div>
+  <div class="verify-card">
+
+    <!-- Query bar: dropdown + input + button all in one row -->
+    <div class="search-row" id="searchRow">
+
+      <!-- Platform dropdown -->
+      <div class="plat-drop-wrap" id="platDropWrap">
+        <button class="plat-drop-btn" id="platDropBtn" onclick="toggleDrop()">
+          <span class="pd-ico-ring" id="pdIcoRing" style="background:rgba(38,165,228,.18)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="#26A5E4" id="pdIcoSvg"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+          </span>
+          <span class="pd-label" id="pdLabel">Telegram</span>
+          <svg class="pd-caret" id="pdCaret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <!-- Dropdown menu -->
+        <div class="plat-drop-menu" id="platDropMenu">
+          <div class="pd-opt active" data-plat="telegram" onclick="pickPlat('telegram',this)">
+            <span class="pd-opt-ico" style="background:rgba(38,165,228,.18)"><svg width="11" height="11" viewBox="0 0 24 24" fill="#26A5E4"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg></span>
+            Telegram
+          </div>
+          <div class="pd-opt" data-plat="twitter" onclick="pickPlat('twitter',this)">
+            <span class="pd-opt-ico" style="background:rgba(255,255,255,.1)"><svg width="11" height="11" viewBox="0 0 24 24" fill="#e7e7e7"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.257 5.625 5.907-5.625zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span>
+            Twitter / X
+          </div>
+          <div class="pd-opt" data-plat="facebook" onclick="pickPlat('facebook',this)">
+            <span class="pd-opt-ico" style="background:rgba(24,119,242,.18)"><svg width="11" height="11" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></span>
+            Facebook
+          </div>
+          <div class="pd-opt" data-plat="instagram" onclick="pickPlat('instagram',this)">
+            <span class="pd-opt-ico" style="background:rgba(225,48,108,.15)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="url(#igGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <defs><linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs>
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#dc2743" stroke="none"/>
+            </svg></span>
+            Instagram
+          </div>
+          <div class="pd-opt" data-plat="medium" onclick="pickPlat('medium',this)">
+            <span class="pd-opt-ico" style="background:rgba(255,255,255,.08)"><svg width="11" height="11" viewBox="0 0 24 24" fill="#d0d0d0"><path d="M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 12a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 12zm7.42 0c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg></span>
+            Medium
+          </div>
+          <div class="pd-opt" data-plat="youtube" onclick="pickPlat('youtube',this)">
+            <span class="pd-opt-ico" style="background:rgba(255,0,0,.15)"><svg width="13" height="9" viewBox="0 0 24 17" fill="#FF0000"><path d="M23.495 2.594A3.016 3.016 0 0 0 21.37.453C19.505 0 12 0 12 0S4.495 0 2.63.453A3.016 3.016 0 0 0 .505 2.594C0 4.47 0 8.4 0 8.4s0 3.93.505 5.806a3.016 3.016 0 0 0 2.125 2.141C4.495 16.8 12 16.8 12 16.8s7.505 0 9.37-.453a3.016 3.016 0 0 0 2.125-2.141C24 12.33 24 8.4 24 8.4s0-3.93-.505-5.806zM9.545 11.932V4.868l6.273 3.532-6.273 3.532z"/></svg></span>
+            YouTube
+          </div>
+        </div>
+      </div>
+
+      <span class="search-pfx" id="pfx">@</span>
+      <input class="search-field" id="qInput" type="text"
+        placeholder="输入 Telegram 用户名，如 @100xex_official"
+        autocomplete="off" spellcheck="false">
+      <button class="verify-btn" id="verifyBtn" onclick="doVerify()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        立即验证
+      </button>
+    </div>
+    <div class="verify-hint" id="vHint">
+      输入账号 <strong>用户名</strong> 或完整链接均可识别 · 请勿向任何声称是官方的账号转账或提供密码
+    </div>
+
+    <!-- Inline success result -->
+    <div class="result-area" id="resultArea">
+      <div class="res-ok">
+        <div class="res-ok-head">
+          <div class="res-ok-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <div class="res-ok-ttl">已验证 · 100X Exchange 官方渠道</div>
+            <div class="res-ok-sub" id="resDesc">该账号已确认属于 100X Exchange 官方资产，您可以放心使用。</div>
+          </div>
+        </div>
+        <div class="res-div"></div>
+        <div class="res-meta">
+          <div class="rmi"><label>渠道平台</label><span id="resPlatform">Telegram</span></div>
+          <div class="rmi"><label>账号标识</label><span id="resHandle">—</span></div>
+          <div class="rmi"><label>归属主体</label><span>100X Exchange</span></div>
+          <div class="rmi"><label>用途说明</label><span id="resUse">—</span></div>
+          <div class="rmi"><label>查询时间</label><span id="resTime">—</span></div>
+        </div>
+        <div class="res-acts">
+          <button class="r-btn" onclick="copyResult()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            复制验证结果
+          </button>
+          <button class="r-btn" onclick="shareResult()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            分享
+          </button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /verify-card -->
+
+  <!-- [渠道公示矩阵已移除，待后续独立页面承载] -->
+  <div class="ch-matrix-wrap" style="display:none">
+    <table class="ch-matrix">
+      <colgroup>
+        <col class="c-plat"><col class="c-handle"><col class="c-use"><col class="c-act">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>平台</th>
+          <th>账号标识</th>
+          <th>用途说明</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- Telegram ×3 -->
+        <tr>
+          <td class="plat-cell">
+            <div class="plat-cell-inner">
+              <span class="plat-cell-ico" style="background:rgba(38,165,228,.15)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="#26A5E4"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+              </span>
+              <span class="plat-cell-name">Telegram</span>
+            </div>
+          </td>
+          <td><div class="handle-cell"><span class="handle-ico">📢</span><span class="handle-name">@100xex_official</span><span class="verified-badge">官方</span></div></td>
+          <td class="use-cell">官方公告频道</td>
+          <td><div class="act-cell">
+            <a class="act-link" href="https://t.me/100xex_official" target="_blank">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>访问
+            </a>
+            <button class="act-link act-copy" onclick="copyHandle('@100xex_official',this)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制
+            </button>
+          </div></td>
+        </tr>
+        <tr>
+          <td class="plat-cell cont"></td>
+          <td><div class="handle-cell"><span class="handle-ico">💬</span><span class="handle-name">@100xex_cn</span><span class="verified-badge">官方</span></div></td>
+          <td class="use-cell">官方中文社群</td>
+          <td><div class="act-cell">
+            <a class="act-link" href="https://t.me/100xex_cn" target="_blank">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>访问
+            </a>
+            <button class="act-link act-copy" onclick="copyHandle('@100xex_cn',this)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制
+            </button>
+          </div></td>
+        </tr>
+        <tr>
+          <td class="plat-cell cont"></td>
+          <td><div class="handle-cell"><span class="handle-ico">🌐</span><span class="handle-name">@100xex_global</span><span class="verified-badge">官方</span></div></td>
+          <td class="use-cell">官方全球社群</td>
+          <td><div class="act-cell">
+            <a class="act-link" href="https://t.me/100xex_global" target="_blank">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>访问
+            </a>
+            <button class="act-link act-copy" onclick="copyHandle('@100xex_global',this)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制
+            </button>
+          </div></td>
+        </tr>
+
+        <!-- Twitter/X -->
+        <tr class="grp-sep">
+          <td class="plat-cell">
+            <div class="plat-cell-inner">
+              <span class="plat-cell-ico" style="background:rgba(255,255,255,.09)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#e7e7e7"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.257 5.625 5.907-5.625zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </span>
+              <span class="plat-cell-name">Twitter / X</span>
+            </div>
+          </td>
+          <td><div class="handle-cell"><span class="handle-ico">✨</span><span class="handle-name">@100xExchange</span><span class="verified-badge">官方</span></div></td>
+          <td class="use-cell">官方主账号 · 行情资讯</td>
+          <td><div class="act-cell">
+            <a class="act-link" href="https://x.com/100xExchange" target="_blank">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>访问
+            </a>
+            <button class="act-link act-copy" onclick="copyHandle('@100xExchange',this)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制
+            </button>
+          </div></td>
+        </tr>
+
+        <!-- Facebook -->
+        <tr class="grp-sep">
+          <td class="plat-cell">
+            <div class="plat-cell-inner">
+              <span class="plat-cell-ico" style="background:rgba(24,119,242,.15)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </span>
+              <span class="plat-cell-name">Facebook</span>
+            </div>
+          </td>
+          <td><div class="handle-cell"><span class="handle-ico">🏢</span><span class="handle-name">100X Exchange</span><span class="verified-badge">官方</span></div></td>
+          <td class="use-cell">官方主页 · 活动公告</td>
+          <td><div class="act-cell">
+            <a class="act-link" href="https://www.facebook.com/100xexchange" target="_blank">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>访问
+            </a>
+            <button class="act-link act-copy" onclick="copyHandle('100X Exchange',this)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制
+            </button>
+          </div></td>
+        </tr>
+
+        <!-- Instagram -->
+        <tr class="grp-sep">
+          <td class="plat-cell">
+            <div class="plat-cell-inner">
+              <span class="plat-cell-ico" style="background:rgba(225,48,108,.12)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <defs><linearGradient id="igM" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs>
+                  <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#igM)"/>
+                  <circle cx="12" cy="12" r="4" stroke="url(#igM)"/>
+                  <circle cx="17.5" cy="6.5" r="1" fill="#dc2743" stroke="none"/>
+                </svg>
+              </span>
+              <span class="plat-cell-name">Instagram</span>
+            </div>
+          </td>
+          <td><div class="handle-cell"><span class="handle-ico">📸</span><span class="handle-name">@100xexchange</span><span class="verified-badge">官方</span></div></td>
+          <td class="use-cell">官方主页 · 视觉内容</td>
+          <td><div class="act-cell">
+            <a class="act-link" href="https://www.instagram.com/100xexchange" target="_blank">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>访问
+            </a>
+            <button class="act-link act-copy" onclick="copyHandle('@100xexchange',this)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制
+            </button>
+          </div></td>
+        </tr>
+
+        <!-- Medium -->
+        <tr class="grp-sep">
+          <td class="plat-cell">
+            <div class="plat-cell-inner">
+              <span class="plat-cell-ico" style="background:rgba(255,255,255,.07)">
+                <svg width="13" height="11" viewBox="0 0 24 20" fill="#c0c0c0"><path d="M13.54 10a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 10a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 10zm7.42 0c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 10c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 4.25 24 6.83 24 10z"/></svg>
+              </span>
+              <span class="plat-cell-name">Medium</span>
+            </div>
+          </td>
+          <td><div class="handle-cell"><span class="handle-ico">✍️</span><span class="handle-name">@100xexchange</span><span class="verified-badge">官方</span></div></td>
+          <td class="use-cell">官方博客 · 深度内容</td>
+          <td><div class="act-cell">
+            <a class="act-link" href="https://medium.com/@100xexchange" target="_blank">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>访问
+            </a>
+            <button class="act-link act-copy" onclick="copyHandle('@100xexchange',this)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制
+            </button>
+          </div></td>
+        </tr>
+
+        <!-- YouTube -->
+        <tr class="grp-sep">
+          <td class="plat-cell">
+            <div class="plat-cell-inner">
+              <span class="plat-cell-ico" style="background:rgba(255,0,0,.12)">
+                <svg width="15" height="11" viewBox="0 0 24 17" fill="#FF0000"><path d="M23.495 2.594A3.016 3.016 0 0 0 21.37.453C19.505 0 12 0 12 0S4.495 0 2.63.453A3.016 3.016 0 0 0 .505 2.594C0 4.47 0 8.4 0 8.4s0 3.93.505 5.806a3.016 3.016 0 0 0 2.125 2.141C4.495 16.8 12 16.8 12 16.8s7.505 0 9.37-.453a3.016 3.016 0 0 0 2.125-2.141C24 12.33 24 8.4 24 8.4s0-3.93-.505-5.806zM9.545 11.932V4.868l6.273 3.532-6.273 3.532z"/></svg>
+              </span>
+              <span class="plat-cell-name">YouTube</span>
+            </div>
+          </td>
+          <td><div class="handle-cell"><span class="handle-ico">🎬</span><span class="handle-name">@100xExchange</span><span class="verified-badge">官方</span></div></td>
+          <td class="use-cell">官方频道 · 教程与直播</td>
+          <td><div class="act-cell">
+            <a class="act-link" href="https://www.youtube.com/@100xExchange" target="_blank">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>访问
+            </a>
+            <button class="act-link act-copy" onclick="copyHandle('@100xExchange',this)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制
+            </button>
+          </div></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div><!-- /ch-matrix-wrap -->
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
+    <div class="disc-head">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffb931" stroke-width="2.2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span class="disc-title">安全声明</span>
+    </div>
+    <div class="disc-body">
+      100X Exchange <strong>官方不会以任何理由索要您的账号密码、私钥或助记词，也不会主动要求您转账。</strong>如遇上述情况，请立即停止操作并通过 <strong>100xex.com</strong> 官网客服举报。本工具仅用于验证账号真实性，验证通过不代表任何投资建议或业务承诺。
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<footer>
+  <div style="margin-bottom:10px">© 2026 100X Exchange. All rights reserved.</div>
+  <div>
+    <a href="#">隐私政策</a><a href="#">服务协议</a><a href="#">风险提示</a><a href="#">帮助中心</a><a href="#">联系我们</a>
+  </div>
+</footer>
+
+<!-- OK MODAL -->
+<div class="modal-overlay" id="mOk" onclick="overlayClose(event,'mOk')">
+  <div class="modal-box">
+    <button class="modal-x" onclick="closeModal('mOk')">✕</button>
+    <div class="modal-halo green">
+      <div class="modal-circle green">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+    <div class="modal-ttl green">官方认证渠道</div>
+    <div class="modal-sub">您查询的 <strong id="okDisplay">—</strong> 是 100X Exchange 官方 <strong id="okPlatform">—</strong></div>
+    <div class="modal-hr"></div>
+    <div class="modal-note">*请不要将您的账户信息与密码透露给任何人，官方不会主动索要。</div>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-primary" onclick="closeModal('mOk')">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAIL MODAL -->
+<div class="modal-overlay" id="mFail" onclick="overlayClose(event,'mFail')">
+  <div class="modal-box">
+    <button class="modal-x" onclick="closeModal('mFail')">✕</button>
+    <div class="modal-halo red">
+      <div class="modal-circle red">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+    <div class="modal-ttl red">非 100X 官方渠道</div>
+    <div class="modal-sub">您查询的 <strong id="failDisplay">—</strong> 不是 100X Exchange 官方渠道</div>
+    <div class="modal-qbox">查询内容：<span class="qv" id="failQbox">—</span></div>
+    <ul class="modal-tips">
+      <li><span class="dot red">•</span>请检查账号拼写是否与查询目标完全一致</li>
+      <li><span class="dot red">•</span>如不确定，请访问 <strong style="color:var(--brand)">100xex.com</strong> 官网查阅公示渠道</li>
+      <li><span class="dot red">•</span>请勿向未经验证的账号发送任何资金或个人信息</li>
+    </ul>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-primary" onclick="closeModal('mFail')">我知道了</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ─── PLATFORM CONFIG ───────────────────────────────
+const PLATS = {
+  telegram: {
+    label:'Telegram',
+    prefix:'@',
+    showPrefix: true,
+    ph:'输入 Telegram 用户名，如 @100xex_official',
+    use:'官方公告 / 社群',
+    official:[
+      {key:'100xex_official', use:'官方公告频道'},
+      {key:'100xex_cn',       use:'官方中文社群'},
+      {key:'100xex_global',   use:'官方全球社群'},
+      {key:'rhys',            use:'官方账号'},
+      {key:'cony',            use:'官方账号'},
+    ]
+  },
+  twitter: {
+    label:'Twitter / X',
+    prefix:'@',
+    showPrefix: true,
+    ph:'输入 Twitter 用户名，如 @100xExchange',
+    use:'官方动态',
+    official:[
+      {key:'100xexchange', use:'官方主账号'},
+    ]
+  },
+  facebook: {
+    label:'Facebook',
+    prefix:'facebook.com/',
+    showPrefix: false,
+    ph:'输入 Facebook 主页名称，如 100xexchange',
+    use:'官方主页',
+    official:[
+      {key:'100xexchange', use:'官方主页'},
+    ]
+  },
+  instagram: {
+    label:'Instagram',
+    prefix:'@',
+    showPrefix: true,
+    ph:'输入 Instagram 用户名，如 @100xexchange',
+    use:'官方主页',
+    official:[
+      {key:'100xexchange', use:'官方主页'},
+    ]
+  },
+  medium: {
+    label:'Medium',
+    prefix:'@',
+    showPrefix: true,
+    ph:'输入 Medium 用户名，如 @100xexchange',
+    use:'官方博客',
+    official:[
+      {key:'100xexchange', use:'官方博客'},
+    ]
+  },
+  youtube: {
+    label:'YouTube',
+    prefix:'@',
+    showPrefix: true,
+    ph:'输入 YouTube 频道名称，如 @100xExchange',
+    use:'官方频道',
+    official:[
+      {key:'100xexchange', use:'官方频道'},
+    ]
+  }
+};
+
+let curPlat = 'telegram';
+
+// ─── DROPDOWN TOGGLE ───────────────────────────────
+function toggleDrop() {
+  const btn  = document.getElementById('platDropBtn');
+  const menu = document.getElementById('platDropMenu');
+  const isOpen = menu.classList.contains('open');
+  btn.classList.toggle('open', !isOpen);
+  menu.classList.toggle('open', !isOpen);
+}
+
+// ─── PICK PLATFORM FROM DROPDOWN ──────────────────
+function pickPlat(plat, optEl) {
+  curPlat = plat;
+  const cfg = PLATS[plat];
+
+  // update button face
+  const srcOpt = optEl || document.querySelector(`.pd-opt[data-plat="${plat}"]`);
+  document.getElementById('pdIcoRing').style.background =
+    srcOpt.querySelector('.pd-opt-ico').style.background;
+  document.getElementById('pdIcoRing').innerHTML =
+    srcOpt.querySelector('.pd-opt-ico').innerHTML;
+  document.getElementById('pdLabel').textContent = cfg.label;
+
+  // active state in menu
+  document.querySelectorAll('.pd-opt').forEach(o => o.classList.remove('active'));
+  srcOpt.classList.add('active');
+
+  // close menu
+  document.getElementById('platDropBtn').classList.remove('open');
+  document.getElementById('platDropMenu').classList.remove('open');
+
+  // update input
+  const pfxEl = document.getElementById('pfx');
+  if (cfg.showPrefix) { pfxEl.textContent = cfg.prefix; pfxEl.classList.remove('hide'); }
+  else { pfxEl.classList.add('hide'); }
+  document.getElementById('qInput').placeholder = cfg.ph;
+  document.getElementById('qInput').value = '';
+  document.getElementById('resultArea').classList.remove('show');
+  document.getElementById('qInput').focus();
+}
+
+// close dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#platDropWrap')) {
+    document.getElementById('platDropBtn').classList.remove('open');
+    document.getElementById('platDropMenu').classList.remove('open');
+  }
+});
+
+// ─── VERIFY ────────────────────────────────────────
+function doVerify() {
+  const raw = document.getElementById('qInput').value.trim();
+  if (!raw) {
+    const row = document.getElementById('searchRow');
+    row.classList.add('err');
+    setTimeout(() => row.classList.remove('err'), 500);
+    document.getElementById('qInput').focus();
+    return;
+  }
+  const btn = document.getElementById('verifyBtn');
+  btn.innerHTML = '<span class="spinner"></span>';
+  btn.disabled = true;
+  document.getElementById('resultArea').classList.remove('show');
+
+  setTimeout(() => {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> 立即验证`;
+    btn.disabled = false;
+
+    const cfg = PLATS[curPlat];
+    const norm = raw.toLowerCase()
+      .replace(/^@/, '')
+      .replace(/https?:\/\/(www\.)?(t\.me|x\.com|twitter\.com|facebook\.com|instagram\.com|medium\.com|youtube\.com)\/@?/,'')
+      .replace(/\//g,'')
+      .trim();
+
+    const match = cfg.official.find(o => o.key === norm);
+    const now = new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+    if (match) {
+      const handle = (cfg.showPrefix ? cfg.prefix : '') + norm;
+      document.getElementById('okDisplay').textContent = `【${handle}】`;
+      document.getElementById('okPlatform').textContent = cfg.label;
+      openModal('mOk');
+    } else {
+      document.getElementById('failDisplay').textContent = `【${raw}】`;
+      document.getElementById('failQbox').textContent = raw;
+      openModal('mFail');
+    }
+  }, 480);
+}
+
+// ─── COPY HANDLE (matrix table) ──────────────────
+function copyHandle(handle, btn) {
+  navigator.clipboard?.writeText(handle).then(() => {
+    const orig = btn.innerHTML;
+    btn.textContent = '✓ 已复制';
+    setTimeout(() => { btn.innerHTML = orig; }, 1500);
+  });
+}
+
+// ─── COPY / SHARE ──────────────────────────────────
+function copyResult() {
+  const h = document.getElementById('resHandle').textContent;
+  const p = document.getElementById('resPlatform').textContent;
+  const t = document.getElementById('resTime').textContent;
+  const text = `100X Exchange 官方渠道验证\n平台：${p}\n账号：${h}\n结果：✅ 已验证官方渠道\n时间：${t}\n验证地址：https://www.100xex.com/official-verify`;
+  navigator.clipboard?.writeText(text).then(() => {
+    const btn = event.currentTarget;
+    btn.textContent = '✓ 已复制';
+    setTimeout(() => { btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> 复制验证结果`; }, 1600);
+  });
+}
+function shareResult() {
+  if (navigator.share) {
+    navigator.share({ title:'100X Exchange 官方渠道验证', url: 'https://www.100xex.com/official-verify' });
+  }
+}
+
+// ─── MODALS ────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow = '';
+}
+function overlayClose(e, id) {
+  if (e.target === document.getElementById(id)) closeModal(id);
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal('mFail'); closeModal('mUnk'); }
+});
+document.getElementById('qInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doVerify();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>行情阈值配置</title>
+<style>
+:root {
+  --bg:     #f5f7fa;
+  --card:   #ffffff;
+  --border: #e4e8f0;
+  --primary:#6366f1;
+  --plight: #eef2ff;
+  --violet: #8b5cf6;
+  --gold:   #f59e0b;
+  --glight: #fffbeb;
+  --green:  #10b981;
+  --red:    #ef4444;
+  --sky:    #06b6d4;
+  --text:   #1e293b;
+  --text2:  #64748b;
+  --text3:  #94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'PingFang SC',-apple-system,'Microsoft YaHei',sans-serif;min-height:100vh;padding:32px 24px;}
+.page-wrap{max-width:960px;margin:0 auto;}
+.page-title{font-size:20px;font-weight:800;margin-bottom:4px;}
+.page-desc{font-size:13px;color:var(--text2);margin-bottom:24px;}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:16px;overflow:hidden;}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
+.card-title{font-size:14px;font-weight:700;}
+.card-desc{font-size:12px;color:var(--text2);margin-top:2px;}
+.card-body{padding:20px;}
+
+/* ── Info boxes ── */
+.info-box{border-radius:10px;padding:11px 15px;font-size:12.5px;line-height:1.7;margin-bottom:16px;}
+.ib-blue{background:var(--plight);border:1px solid #c7d2fe;color:#3730a3;}
+.ib-blue strong{color:#4338ca;}
+.ib-orange{background:var(--glight);border:1px solid #fde68a;color:#92400e;}
+.ib-orange strong{color:#b45309;}
+
+/* ── Tags ── */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.tag-blue{background:var(--plight);color:var(--primary);}
+.tag-violet{background:#ede9fe;color:#6d28d9;}
+.tag-green{background:#dcfce7;color:#166534;}
+.tag-gray{background:#f1f5f9;color:var(--text2);}
+.tag-gold{background:#fef3c7;color:#b45309;}
+
+/* ── Buttons ── */
+.btn{padding:7px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--violet));color:#fff;}
+.btn-primary:hover{opacity:.88;}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text2);}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary);}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-ghost{background:transparent;border:none;color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:inherit;}
+.btn-ghost:hover{background:var(--plight);}
+.btn-danger-ghost{background:transparent;border:none;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:inherit;}
+.btn-danger-ghost:hover{background:#fee2e2;}
+
+/* ── Toggle ── */
+.tg{position:relative;width:40px;height:22px;flex-shrink:0;}
+.tg input{opacity:0;width:0;height:0;}
+.tg-s{position:absolute;inset:0;border-radius:11px;background:#d1d5db;cursor:pointer;transition:.3s;}
+.tg-s::before{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tg input:checked+.tg-s{background:var(--primary);}
+.tg input:checked+.tg-s::before{transform:translateX(18px);}
+
+/* ── Template presets ── */
+.preset-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.preset-card{
+  flex:1;min-width:140px;
+  background:var(--bg);border:2px solid var(--border);border-radius:12px;
+  padding:12px 14px;cursor:pointer;transition:all .2s;
+}
+.preset-card:hover{border-color:var(--primary);background:var(--plight);}
+.preset-card.active{border-color:var(--primary);background:var(--plight);}
+.preset-card-name{font-size:13px;font-weight:700;margin-bottom:5px;}
+.preset-card-desc{font-size:11px;color:var(--text2);line-height:1.6;}
+.preset-windows{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px;}
+.win-pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(99,102,241,.1);color:var(--primary);}
+
+/* ── Period config table ── */
+.period-table{width:100%;border-collapse:collapse;}
+.period-table th{
+  background:#f8fafc;padding:10px 14px;
+  text-align:left;font-size:11px;font-weight:700;
+  color:var(--text2);text-transform:uppercase;letter-spacing:.4px;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+.period-table td{padding:0;border-bottom:1px solid var(--border);vertical-align:middle;}
+.period-table tr:last-child td{border-bottom:none;}
+.period-table tr.disabled-row{opacity:.45;}
+
+/* period label cell */
+.period-label-cell{padding:14px 16px;display:flex;align-items:center;gap:10px;min-width:160px;}
+.period-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.period-name{font-size:13px;font-weight:700;}
+.period-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+
+/* threshold input cell */
+.thresh-cell{padding:10px 14px;}
+.thresh-pair{display:flex;align-items:center;gap:6px;}
+.thresh-input{
+  width:62px;background:var(--bg);border:1.5px solid var(--border);
+  border-radius:8px;padding:7px 8px;font-size:13px;font-weight:700;
+  color:var(--text);outline:none;text-align:center;font-family:inherit;
+  transition:border .15s;
+}
+.thresh-input:focus{border-color:var(--primary);background:#fff;}
+.thresh-input.up:focus{border-color:var(--green);}
+.thresh-input.dn:focus{border-color:var(--red);}
+.thresh-unit{font-size:12px;color:var(--text3);font-weight:600;}
+.thresh-divider{font-size:11px;color:var(--text3);padding:0 2px;}
+
+/* cooldown select */
+.cooldown-sel{
+  background:var(--bg);border:1.5px solid var(--border);border-radius:8px;
+  padding:7px 10px;font-size:12px;color:var(--text);outline:none;
+  cursor:pointer;font-family:inherit;transition:border .15s;width:100%;
+}
+.cooldown-sel:focus{border-color:var(--primary);}
+
+/* preview text */
+.preview-text{
+  font-size:11px;color:var(--text2);line-height:1.6;padding:10px 14px;
+  border-left:2px solid var(--border);
+}
+.preview-text .pv-title{font-weight:700;color:var(--text);margin-bottom:2px;font-size:12px;}
+.preview-text .pv-up{color:var(--green);}
+.preview-text .pv-dn{color:var(--red);}
+
+/* ── Symbol override list ── */
+.sym-row{display:flex;align-items:center;padding:13px 20px;border-bottom:1px solid var(--border);gap:12px;transition:background .15s;}
+.sym-row:last-child{border-bottom:none;}
+.sym-row:hover{background:#fafbff;}
+.sym-name{font-size:14px;font-weight:700;min-width:90px;}
+.sym-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.sym-windows{flex:1;display:flex;gap:6px;flex-wrap:wrap;}
+.sym-win-chip{
+  display:flex;align-items:center;gap:5px;padding:4px 9px;
+  border-radius:8px;font-size:11px;font-weight:600;
+  background:#f8fafc;border:1px solid var(--border);color:var(--text2);
+}
+.sym-win-chip .wc-name{color:var(--text);font-weight:700;}
+.sym-win-chip .wc-up{color:var(--green);}
+.sym-win-chip .wc-dn{color:var(--red);}
+.sym-win-chip.chip-default{background:var(--plight);border-color:#c7d2fe;color:var(--primary);}
+.sym-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.today-push{font-size:11px;color:var(--text3);white-space:nowrap;}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,18,36,.55);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border-radius:20px;width:100%;max-width:820px;box-shadow:0 20px 80px rgba(0,0,0,.2);}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);}
+.modal-title{font-size:17px;font-weight:800;}
+.modal-sub{font-size:12px;color:var(--text2);margin-top:3px;}
+.modal-close{width:32px;height:32px;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2);}
+.modal-body{padding:22px 24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+
+/* Period rows in modal */
+.m-period-row{
+  display:grid;
+  grid-template-columns:44px 130px 1fr 1fr 1fr 1fr 30px;
+  align-items:center;gap:0;
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  transition:background .15s;
+}
+.m-period-row:hover{background:#fafbff;}
+.m-period-row:last-of-type{border-bottom:none;}
+.m-period-row.row-off{opacity:.4;}
+
+.m-period-head{
+  display:grid;
+  grid-template-columns:44px 130px 1fr 1fr 1fr 1fr 30px;
+  gap:0;padding:9px 14px;background:#f8fafc;border-bottom:1px solid var(--border);
+}
+.mth{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;}
+.m-period-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.m-period-name{font-size:13px;font-weight:700;padding:0 8px;}
+
+/* add period row */
+.add-period-row{padding:11px 14px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);}
+
+/* section label */
+.sec-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.sec-line{flex:1;height:1px;background:var(--border);}
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <div class="page-title">行情阈值配置</div>
+  <div class="page-desc">按价格变动的时间窗口（10分钟 / 1小时 / 24小时等）配置涨跌触发阈值，各窗口独立计算、独立触发。</div>
+
+  <!-- ── 模板快选 ── -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">监控模板快选</div>
+        <div class="card-desc">选择预设模板快速填充，也可在下方自由调整各窗口参数</div>
+      </div>
+    </div>
+    <div class="card-body" style="padding-bottom:8px;">
+      <div class="preset-row">
+
+        <div class="preset-card" onclick="applyPreset('short',this)">
+          <div class="preset-card-name">⚡ 短线监控</div>
+          <div class="preset-card-desc">捕捉快速波动，适合高频交易用户</div>
+          <div class="preset-windows">
+            <div class="win-pill">5分钟</div>
+            <div class="win-pill">15分钟</div>
+            <div class="win-pill">1小时</div>
+          </div>
+        </div>
+
+        <div class="preset-card active" onclick="applyPreset('standard',this)">
+          <div class="preset-card-name">📊 标准监控</div>
+          <div class="preset-card-desc">兼顾短期与日内，平台默认推荐</div>
+          <div class="preset-windows">
+            <div class="win-pill">10分钟</div>
+            <div class="win-pill">1小时</div>
+            <div class="win-pill">24小时</div>
+          </div>
+        </div>
+
+        <div class="preset-card" onclick="applyPreset('daily',this)">
+          <div class="preset-card-name">📅 日内监控</div>
+          <div class="preset-card-desc">关注较大周期的趋势变化</div>
+          <div class="preset-windows">
+            <div class="win-pill">1小时</div>
+            <div class="win-pill">4小时</div>
+            <div class="win-pill">24小时</div>
+          </div>
+        </div>
+
+        <div class="preset-card" onclick="applyPreset('full',this)">
+          <div class="preset-card-name">🔭 全量监控</div>
+          <div class="preset-card-desc">所有窗口全开，推送频率较高</div>
+          <div class="preset-windows">
+            <div class="win-pill">5分钟</div>
+            <div class="win-pill">15分钟</div>
+            <div class="win-pill">1小时</div>
+            <div class="win-pill">4小时</div>
+            <div class="win-pill">24小时</div>
+          </div>
+        </div>
+
+        <div class="preset-card" onclick="applyPreset('custom',this)" id="preset-custom">
+          <div class="preset-card-name">✏️ 自定义</div>
+          <div class="preset-card-desc">自由组合监控窗口和触发阈值</div>
+          <div class="preset-windows">
+            <div class="win-pill" style="background:rgba(100,116,139,.1);color:var(--text2);">自由配置</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 全局默认监控窗口配置 ── -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">全局默认监控窗口</div>
+        <div class="card-desc">未单独配置的标的使用此规则；各窗口独立触发，互不影响</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm">添加窗口</button>
+        <button class="btn btn-primary btn-sm">保存</button>
+      </div>
+    </div>
+
+    <div class="info-box ib-blue" style="margin:16px 20px 0;margin-bottom:0;">
+      <strong>什么是监控窗口？</strong>
+      指系统持续滚动计算某时间段内的涨跌幅。例如「10分钟」窗口：每次检测当前价 vs 10分钟前的价格，涨幅达到阈值即触发推送，与白天/夜晚无关。
+    </div>
+
+    <table class="period-table" style="margin-top:0;">
+      <thead>
+        <tr>
+          <th style="width:170px;">监控窗口</th>
+          <th>涨幅触发 &nbsp;<span style="color:var(--green);font-size:10px;">↑</span></th>
+          <th>跌幅触发 &nbsp;<span style="color:var(--red);font-size:10px;">↓</span></th>
+          <th style="width:150px;">触发后冷却</th>
+          <th style="width:90px;">每日上限</th>
+          <th style="min-width:220px;">推送文案预览</th>
+          <th style="width:60px;">状态</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- 10分钟 -->
+        <tr>
+          <td>
+            <div class="period-label-cell">
+              <div class="period-icon" style="background:#eef2ff;">⚡</div>
+              <div>
+                <div class="period-name">10 分钟</div>
+                <div class="period-sub">短线急涨急跌</div>
+              </div>
+            </div>
+          </td>
+          <td class="thresh-cell">
+            <div class="thresh-pair">
+              <input class="thresh-input up" type="number" value="3" min="0.1" max="50" step="0.5">
+              <span class="thresh-unit">%</span>
+            </div>
+          </td>
+          <td class="thresh-cell">
+            <div class="thresh-pair">
+              <input class="thresh-input dn" type="number" value="3" min="0.1" max="50" step="0.5">
+              <span class="thresh-unit">%</span>
+            </div>
+          </td>
+          <td class="thresh-cell">
+            <select class="cooldown-sel">
+              <option>10 分钟</option>
+              <option>20 分钟</option>
+              <option selected>30 分钟</option>
+              <option>1 小时</option>
+              <option>2 小时</option>
+            </select>
+          </td>
+          <td class="thresh-cell">
+            <div class="thresh-pair">
+              <input class="thresh-input" type="number" value="5" min="1" max="20">
+              <span class="thresh-unit">次</span>
+            </div>
+          </td>
+          <td>
+            <div class="preview-text">
+              <div class="pv-title">BTC 快速上涨</div>
+              <div class="pv-up">10分钟内涨了 <strong>3%</strong>，现在 101,240</div>
+              <div style="margin-top:2px;color:var(--text3);font-size:10px;">— 或 —</div>
+              <div class="pv-dn">10分钟内跌了 <strong>3%</strong>，注意风险</div>
+            </div>
+          </td>
+          <td style="padding:10px 14px;">
+            <label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label>
+          </td>
+        </tr>
+
+        <!-- 1小时 -->
+        <tr>
+          <td>
+            <div class="period-label-cell">
+              <div class="period-icon" style="background:#ecfdf5;">🕐</div>
+              <div>
+                <div class="period-name">1 小时</div>
+                <div class="period-sub">日内波动监控</div>
+              </div>
+            </div>
+          </td>
+          <td class="thresh-cell">
+            <div class="thresh-pair">
+              <input class="thresh-input up" type="number" value="5" min="0.5" max="50" step="0.5">
+              <span class="thresh-unit">%</span>
+            </div>
+          </td>
+          <td class="thresh-cell">
+            <div class="thresh-pair">
+              <input class="thresh-input dn" type="number" value="5" min="0.5" max="50" step="0.5">
+              <span class="thresh-unit">%</span>
+            </div>
+          </td>
+          <td class="thresh-cell">
+            <select class="cooldown-sel">
+              <option>30 分钟</option>
+              <option selected>1 小时</option>
+              <option>2 小时</option>
+              <option>4 小时</option>
+            </select>
+          </td>
+          <td class="thresh-cell">
+            <div class="thresh-pair">
+              <input class="thresh-input" type="number" value="3" min="1" max="20">
+              <span class="thresh-unit">次</span>
+            </div>
+          </td>
+          <td>
+            <div class="preview-text">
+              <div class="pv-title">BTC 1小时大涨</div>
+              <div class="pv-up">1小时内涨了 <strong>5%</strong>，当前 101,240</div>
+              <div style="margin-top:2px;color:var(--text3);font-size:10px;">— 或 —</div>
+              <div class="pv-dn">1小时内跌了 <strong>5%</strong>，注意风险</div>
+            </div>
+          </td>
+          <td style="padding:10px 14px;">
+            <label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label>
+          </td>
+        </tr>
+
+        <!-- 24小时 -->
+        <tr>
+          <td>
+            <div class="period-label-cell">
+              <div class="period-icon" style="background:#fef3c7;">📅</div>
+              <div>
+                <div class="period-name">24 小时</div>
+                <div class="period-sub">全日涨跌幅</div>
+              </div>
+            </div>
+          </td>
+          <td class="thresh-cell">
+            <div class="thresh-pair">
+              <input class="thresh-input up" type="number" value="10" min="1" max="99" step="1">
+              <span class="thresh-unit">%</span>
+            </div>
+          </td>
+          <td class="thresh-cell">
+            <div class="thresh-pair">
+              <input class="thresh-input dn" type="number" value="8" min="1" max="99" step="1">
+              <span class="thresh-unit">%</span>
+            </div>
+          </td>
+          <td class="thresh-cell">
+            <select class="cooldown-sel">
+              <option>4 小时</option>
+              <option>8 小时</option>
+              <option selected>每日一次</option>
+            </select>
+          </td>
+          <td class="thresh-cell">
+            <div class="thresh-pair">
+              <input class="thresh-input" type="number" value="1" min="1" max="5">
+              <span class="thresh-unit">次</span>
+            </div>
+          </td>
+          <td>
+            <div class="preview-text">
+              <div class="pv-title">BTC 24小时暴涨</div>
+              <div class="pv-up">24小时内涨了 <strong>10%</strong>，当前 101,240</div>
+              <div style="margin-top:2px;color:var(--text3);font-size:10px;">— 或 —</div>
+              <div class="pv-dn">24小时内跌了 <strong>8%</strong>，注意风险</div>
+            </div>
+          </td>
+          <td style="padding:10px 14px;">
+            <label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+
+    <!-- 说明行 -->
+    <div style="padding:12px 20px;background:#f8fafc;border-top:1px solid var(--border);display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;">
+      <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;">
+        <span style="color:var(--primary);">ℹ</span>
+        <strong>涨跌独立计次</strong>：同一窗口，上涨和下跌分别触发、分别冷却
+      </div>
+      <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;">
+        <span style="color:var(--primary);">ℹ</span>
+        <strong>窗口间互不干扰</strong>：10分钟触发不影响1小时的计算
+      </div>
+      <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;">
+        <span style="color:var(--primary);">ℹ</span>
+        <strong>每日上限</strong>：超出后当日该窗口静默，次日00:00重置
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 标的独立配置 ── -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">监控标的管理</div>
+        <div class="card-desc">每个标的可覆盖全局默认，配置专属的各窗口阈值</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openAddSym()">＋ 添加标的</button>
+    </div>
+
+    <!-- BTC — 自定义 -->
+    <div class="sym-row">
+      <label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label>
+      <div style="min-width:100px;">
+        <div class="sym-name">BTC/USDT</div>
+        <div class="sym-sub" style="color:var(--violet);">自定义配置</div>
+      </div>
+      <div class="sym-windows">
+        <div class="sym-win-chip">
+          <span class="wc-name">10分钟</span>
+          <span class="wc-up">↑2%</span><span class="wc-dn">↓2%</span>
+        </div>
+        <div class="sym-win-chip">
+          <span class="wc-name">1小时</span>
+          <span class="wc-up">↑4%</span><span class="wc-dn">↓5%</span>
+        </div>
+        <div class="sym-win-chip">
+          <span class="wc-name">24小时</span>
+          <span class="wc-up">↑8%</span><span class="wc-dn">↓6%</span>
+        </div>
+        <span class="tag tag-violet">自定义</span>
+      </div>
+      <div class="sym-actions">
+        <div class="today-push">今日已推 <strong>3</strong> 次</div>
+        <button class="btn btn-outline btn-sm" onclick="openEdit('BTC/USDT')">编辑</button>
+        <button class="btn-danger-ghost">重置</button>
+      </div>
+    </div>
+
+    <!-- ETH — 自定义 -->
+    <div class="sym-row">
+      <label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label>
+      <div style="min-width:100px;">
+        <div class="sym-name">ETH/USDT</div>
+        <div class="sym-sub" style="color:var(--violet);">自定义配置</div>
+      </div>
+      <div class="sym-windows">
+        <div class="sym-win-chip">
+          <span class="wc-name">10分钟</span>
+          <span class="wc-up">↑3%</span><span class="wc-dn">↓3%</span>
+        </div>
+        <div class="sym-win-chip" style="opacity:.4;text-decoration:line-through;">
+          <span class="wc-name">1小时</span>
+          <span style="font-size:10px;color:var(--text3);">已关闭</span>
+        </div>
+        <div class="sym-win-chip">
+          <span class="wc-name">24小时</span>
+          <span class="wc-up">↑12%</span><span class="wc-dn">↓10%</span>
+        </div>
+        <span class="tag tag-violet">自定义</span>
+      </div>
+      <div class="sym-actions">
+        <div class="today-push">今日已推 <strong>1</strong> 次</div>
+        <button class="btn btn-outline btn-sm" onclick="openEdit('ETH/USDT')">编辑</button>
+        <button class="btn-danger-ghost">重置</button>
+      </div>
+    </div>
+
+    <!-- SOL — 继承全局 -->
+    <div class="sym-row">
+      <label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label>
+      <div style="min-width:100px;">
+        <div class="sym-name">SOL/USDT</div>
+        <div class="sym-sub" style="color:var(--text3);">继承全局默认</div>
+      </div>
+      <div class="sym-windows">
+        <div class="sym-win-chip chip-default">
+          <span>10分钟 ↑3% ↓3%</span>
+        </div>
+        <div class="sym-win-chip chip-default">
+          <span>1小时 ↑5% ↓5%</span>
+        </div>
+        <div class="sym-win-chip chip-default">
+          <span>24小时 ↑10% ↓8%</span>
+        </div>
+        <span class="tag tag-blue">全局默认</span>
+      </div>
+      <div class="sym-actions">
+        <div class="today-push">今日已推 <strong>0</strong> 次</div>
+        <button class="btn btn-outline btn-sm" onclick="openEdit('SOL/USDT')">自定义</button>
+        <button class="btn-danger-ghost" style="visibility:hidden;">重置</button>
+      </div>
+    </div>
+
+    <!-- BNB — 关闭 -->
+    <div class="sym-row" style="opacity:.5;">
+      <label class="tg"><input type="checkbox"><span class="tg-s"></span></label>
+      <div style="min-width:100px;">
+        <div class="sym-name">BNB/USDT</div>
+        <div class="sym-sub">已停止监控</div>
+      </div>
+      <div class="sym-windows">
+        <span class="tag tag-gray">监控已关闭</span>
+      </div>
+      <div class="sym-actions">
+        <div class="today-push">今日已推 — 次</div>
+        <button class="btn btn-outline btn-sm" style="pointer-events:none;">自定义</button>
+        <button class="btn-danger-ghost" style="visibility:hidden;">重置</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="info-box ib-orange">
+    <strong>涨跌分开触发说明：</strong>同一时间窗口内，上涨达阈值触发一次后进入冷却；下跌阈值独立计算，不受上涨冷却影响。例如 BTC 10分钟内先涨 3% 触发了推送，之后 10 分钟内又跌 3%，仍会触发下跌推送。
+  </div>
+
+</div><!-- /page-wrap -->
+
+
+<!-- ════════════════════════════════════
+  MODAL：标的自定义各窗口阈值
+════════════════════════════════════ -->
+<div class="modal-overlay" id="edit-modal">
+<div class="modal">
+  <div class="modal-header">
+    <div>
+      <div class="modal-title" id="modal-sym">BTC/USDT · 自定义监控窗口</div>
+      <div class="modal-sub">各窗口独立触发、独立冷却，可单独关闭某个窗口</div>
+    </div>
+    <div class="modal-close" onclick="closeModal()">✕</div>
+  </div>
+
+  <div class="modal-body">
+
+    <div class="info-box ib-blue" style="margin-bottom:16px;">
+      当前标的配置会<strong>完全覆盖</strong>全局默认，两套规则不叠加。点击「重置为全局默认」可恢复继承。
+    </div>
+
+    <div class="sec-label">各窗口阈值配置 <div class="sec-line"></div></div>
+
+    <!-- Table header -->
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;">
+      <div class="m-period-head">
+        <div class="mth"></div>
+        <div class="mth">监控窗口</div>
+        <div class="mth">涨幅触发</div>
+        <div class="mth">跌幅触发</div>
+        <div class="mth">触发后冷却</div>
+        <div class="mth">每日上限</div>
+        <div class="mth">开关</div>
+      </div>
+
+      <!-- 5分钟 — 关闭状态 -->
+      <div class="m-period-row row-off" id="mrow-5m">
+        <div><label class="tg"><input type="checkbox" onchange="toggleRow(this,'mrow-5m')"><span class="tg-s"></span></label></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:0 8px;">
+          <div class="m-period-icon" style="background:#f1f5f9;">⚡</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">5 分钟</div>
+            <div style="font-size:10px;color:var(--text3);">极短线</div>
+          </div>
+        </div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input up" type="number" value="2" min="0.1" max="50" step="0.5"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input dn" type="number" value="2" min="0.1" max="50" step="0.5"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><select class="cooldown-sel"><option>5 分钟</option><option selected>10 分钟</option><option>20 分钟</option><option>30 分钟</option></select></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input" type="number" value="10" min="1" max="50"><span class="thresh-unit">次</span></div></div>
+        <div style="font-size:11px;color:var(--text3);">已关闭</div>
+      </div>
+
+      <!-- 10分钟 -->
+      <div class="m-period-row" id="mrow-10m">
+        <div><label class="tg"><input type="checkbox" checked onchange="toggleRow(this,'mrow-10m')"><span class="tg-s"></span></label></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:0 8px;">
+          <div class="m-period-icon" style="background:#eef2ff;">⚡</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">10 分钟</div>
+            <div style="font-size:10px;color:var(--text3);">短线急涨跌</div>
+          </div>
+        </div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input up" type="number" value="2" min="0.1" max="50" step="0.5"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input dn" type="number" value="2" min="0.1" max="50" step="0.5"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><select class="cooldown-sel"><option>10 分钟</option><option selected>20 分钟</option><option>30 分钟</option><option>1 小时</option></select></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input" type="number" value="5" min="1" max="20"><span class="thresh-unit">次</span></div></div>
+        <div style="font-size:11px;color:var(--green);font-weight:600;">已开启</div>
+      </div>
+
+      <!-- 30分钟 — 关闭 -->
+      <div class="m-period-row row-off" id="mrow-30m">
+        <div><label class="tg"><input type="checkbox" onchange="toggleRow(this,'mrow-30m')"><span class="tg-s"></span></label></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:0 8px;">
+          <div class="m-period-icon" style="background:#f1f5f9;">🕐</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">30 分钟</div>
+            <div style="font-size:10px;color:var(--text3);">中短线</div>
+          </div>
+        </div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input up" type="number" value="3" step="0.5"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input dn" type="number" value="3" step="0.5"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><select class="cooldown-sel"><option>30 分钟</option><option selected>1 小时</option><option>2 小时</option></select></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input" type="number" value="3"><span class="thresh-unit">次</span></div></div>
+        <div style="font-size:11px;color:var(--text3);">已关闭</div>
+      </div>
+
+      <!-- 1小时 -->
+      <div class="m-period-row" id="mrow-1h">
+        <div><label class="tg"><input type="checkbox" checked onchange="toggleRow(this,'mrow-1h')"><span class="tg-s"></span></label></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:0 8px;">
+          <div class="m-period-icon" style="background:#ecfdf5;">🕐</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">1 小时</div>
+            <div style="font-size:10px;color:var(--text3);">日内波动</div>
+          </div>
+        </div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input up" type="number" value="4" step="0.5"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input dn" type="number" value="5" step="0.5"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><select class="cooldown-sel"><option>30 分钟</option><option selected>1 小时</option><option>2 小时</option><option>4 小时</option></select></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input" type="number" value="3"><span class="thresh-unit">次</span></div></div>
+        <div style="font-size:11px;color:var(--green);font-weight:600;">已开启</div>
+      </div>
+
+      <!-- 4小时 — 关闭 -->
+      <div class="m-period-row row-off" id="mrow-4h">
+        <div><label class="tg"><input type="checkbox" onchange="toggleRow(this,'mrow-4h')"><span class="tg-s"></span></label></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:0 8px;">
+          <div class="m-period-icon" style="background:#f1f5f9;">📊</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">4 小时</div>
+            <div style="font-size:10px;color:var(--text3);">中期趋势</div>
+          </div>
+        </div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input up" type="number" value="6"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input dn" type="number" value="6"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><select class="cooldown-sel"><option>2 小时</option><option selected>4 小时</option><option>8 小时</option></select></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input" type="number" value="2"><span class="thresh-unit">次</span></div></div>
+        <div style="font-size:11px;color:var(--text3);">已关闭</div>
+      </div>
+
+      <!-- 24小时 -->
+      <div class="m-period-row" id="mrow-24h" style="border-bottom:none;">
+        <div><label class="tg"><input type="checkbox" checked onchange="toggleRow(this,'mrow-24h')"><span class="tg-s"></span></label></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:0 8px;">
+          <div class="m-period-icon" style="background:#fef3c7;">📅</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">24 小时</div>
+            <div style="font-size:10px;color:var(--text3);">全日涨跌幅</div>
+          </div>
+        </div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input up" type="number" value="8"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input dn" type="number" value="6"><span class="thresh-unit">%</span></div></div>
+        <div style="padding:0 8px;"><select class="cooldown-sel"><option>4 小时</option><option>8 小时</option><option selected>每日一次</option></select></div>
+        <div style="padding:0 8px;"><div class="thresh-pair"><input class="thresh-input" type="number" value="1"><span class="thresh-unit">次</span></div></div>
+        <div style="font-size:11px;color:var(--green);font-weight:600;">已开启</div>
+      </div>
+
+    </div><!-- /table wrap -->
+
+    <!-- 推送效果预估 -->
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">📊 推送频率预估（基于 BTC 近30天历史数据）</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div style="text-align:center;padding:10px;background:var(--card);border-radius:9px;border:1px solid var(--border);">
+          <div style="font-size:18px;font-weight:800;color:var(--primary);">~12次</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">10分钟窗口 / 天</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:var(--card);border-radius:9px;border:1px solid var(--border);">
+          <div style="font-size:18px;font-weight:800;color:var(--primary);">~3次</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">1小时窗口 / 天</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:var(--card);border-radius:9px;border:1px solid var(--border);">
+          <div style="font-size:18px;font-weight:800;color:var(--primary);">~1次</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">24小时窗口 / 天</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;">* 基于阈值估算，受市场波动影响，仅供参考</div>
+    </div>
+
+  </div><!-- /modal-body -->
+
+  <div class="modal-footer">
+    <button class="btn-danger-ghost" onclick="resetSym()">↺ 重置为全局默认</button>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="closeModal();alert('已保存')">保存配置</button>
+    </div>
+  </div>
+</div>
+</div><!-- /modal -->
+
+
+<script>
+/* ── Modal ── */
+function openEdit(sym) {
+  document.getElementById('modal-sym').textContent = sym + ' · 自定义监控窗口';
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+}
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+function openAddSym() { alert('输入交易对名称（如 XRP/USDT）即可添加，默认继承全局配置。'); }
+function resetSym() {
+  if (confirm('重置后将继承全局默认规则，是否确认？')) { closeModal(); }
+}
+
+/* ── Toggle row disabled state ── */
+function toggleRow(cb, rowId) {
+  const row = document.getElementById(rowId);
+  if (row) {
+    row.classList.toggle('row-off', !cb.checked);
+    const statusEl = row.querySelector('div:last-child');
+    if (statusEl) {
+      statusEl.textContent = cb.checked ? '已开启' : '已关闭';
+      statusEl.style.color = cb.checked ? 'var(--green)' : 'var(--text3)';
+      if (cb.checked) statusEl.style.fontWeight = '600';
+    }
+  }
+}
+
+/* ── Preset ── */
+function applyPreset(type, el) {
+  document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const presets = {
+    short:    '已应用「短线监控」模板：5分钟/15分钟/1小时窗口',
+    standard: '已应用「标准监控」模板：10分钟/1小时/24小时窗口',
+    daily:    '已应用「日内监控」模板：1小时/4小时/24小时窗口',
+    full:     '已应用「全量监控」模板：5/15分钟/1/4小时/24小时窗口',
+    custom:   '已切换为「自定义」模式，请手动调整各窗口参数'
+  };
+  if (type !== 'standard') alert(presets[type] + '\n（原型演示：实际场景会自动更新下方配置项）');
+}
+</script>
+</body>
+</html>

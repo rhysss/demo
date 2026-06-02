@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>社交任务 · 领取 AX 奖励</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d0d0d; color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'PingFang SC', sans-serif;
+      min-height: 100vh; -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── NAV ── */
+    .nav { position: sticky; top: 0; z-index: 100; background: #0d0d0d; border-bottom: 1px solid #1e1e1e; height: 56px; display: flex; align-items: center; }
+    .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .nav-left { display: flex; align-items: center; gap: 28px; }
+    .nav-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
+    .nav-badge { font-size: 11px; font-weight: 600; background: rgba(0,230,118,0.1); color: #00e676; border: 1px solid rgba(0,230,118,0.3); padding: 2px 7px; border-radius: 4px; }
+    .nav-link { font-size: 14px; color: #666; cursor: pointer; transition: color 0.15s; }
+    .nav-link:hover { color: #aaa; }
+    .nav-link.active { color: #fff; }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+    .nav-airdrop { display: flex; align-items: center; gap: 6px; border: 1px solid rgba(0,230,118,0.45); color: #00e676; padding: 5px 14px; border-radius: 9999px; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .btn-deposit { background: #00e676; color: #000; font-weight: 700; padding: 7px 20px; border-radius: 9999px; font-size: 14px; border: none; cursor: pointer; }
+    .nav-wallet { font-size: 13px; color: #666; cursor: pointer; }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb { background: #0d0d0d; border-bottom: 1px solid #1e1e1e; }
+    .breadcrumb-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 44px; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #444; }
+    .breadcrumb-inner a { color: #444; transition: color 0.15s; }
+    .breadcrumb-inner a:hover { color: #888; }
+    .breadcrumb-sep { color: #2a2a2a; }
+    .breadcrumb-current { color: #666; }
+
+    /* ── HERO ── */
+    .hero { background: #0d0d0d; border-bottom: 1px solid #1e1e1e; padding: 44px 0 36px; }
+    .hero-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; align-items: flex-start; justify-content: space-between; gap: 40px; }
+    .hero-left { flex: 1; }
+    .hero-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,230,118,0.08); border: 1px solid rgba(0,230,118,0.2); color: #00e676; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 4px; margin-bottom: 16px; letter-spacing: 0.3px; }
+    .hero-title { font-size: 30px; font-weight: 700; line-height: 1.3; margin-bottom: 20px; max-width: 560px; letter-spacing: -0.3px; }
+    .hero-stats { display: flex; gap: 36px; }
+    .hero-stat-val { font-size: 22px; font-weight: 700; }
+    .hero-stat-val .unit { font-size: 13px; color: #888; font-weight: 500; margin-left: 3px; }
+    .hero-stat-label { font-size: 12px; color: #555; margin-top: 3px; }
+    .hero-right { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; padding-top: 4px; }
+    .hero-btns { display: flex; gap: 10px; }
+    .btn-pill { padding: 9px 22px; border-radius: 9999px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid #333; color: #ccc; background: transparent; transition: border-color 0.15s, color 0.15s; }
+    .btn-pill:hover { border-color: #666; color: #fff; }
+    .btn-pill-primary { background: #00e676; color: #000; border-color: #00e676; font-weight: 700; }
+    .btn-pill-primary:hover { background: #00c860; border-color: #00c860; color: #000; }
+    .hero-status { font-size: 12px; color: #555; }
+    .hero-status span { color: #00e676; }
+
+    /* ── SECTION ── */
+    .section-div { border-top: 1px solid #1a1a1a; }
+    .section { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+    .section-title { font-size: 18px; font-weight: 600; margin-bottom: 28px; }
+
+    /* ── TIMELINE ── */
+    .timeline-wrap { position: relative; margin-bottom: 40px; }
+    .tl-bar-wrap { position: relative; display: flex; align-items: flex-end; margin-bottom: 0; }
+    .tl-nodes { display: flex; align-items: flex-start; position: relative; }
+    .tl-nodes::before {
+      content: '';
+      position: absolute;
+      top: 36px; left: 20px; right: 20px;
+      height: 1px; background: #1e1e1e; z-index: 0;
+    }
+    .tl-node { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; z-index: 1; }
+    .tl-node-label { font-size: 12px; color: #555; margin-bottom: 6px; text-align: center; white-space: nowrap; }
+    .tl-node-date { font-size: 13px; color: #888; margin-bottom: 10px; text-align: center; font-variant-numeric: tabular-nums; }
+    .tl-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #2a2a2a; background: #141414; display: flex; align-items: center; justify-content: center; }
+    .tl-dot.past { background: #00e676; border-color: #00e676; }
+    .tl-dot.past::after { content: '✓'; font-size: 9px; color: #000; font-weight: 700; }
+    .tl-dot.current { background: #111; border-color: #00e676; box-shadow: 0 0 0 3px rgba(0,230,118,0.15); }
+    .tl-dot.current::after { content: ''; width: 6px; height: 6px; background: #00e676; border-radius: 50%; }
+    .tl-dot.future { background: #141414; border-color: #222; }
+    .tl-line-fill { position: absolute; top: 36px; height: 1px; background: #00e676; left: 20px; z-index: 0; }
+
+    /* ── QUEST SECTION ── */
+    .quest-wrap { display: flex; gap: 24px; }
+    .quest-main { flex: 1; min-width: 0; }
+    .quest-sidebar { width: 260px; flex-shrink: 0; }
+
+    /* Vertical timeline connector (left side of task list) */
+    .quest-timeline { position: relative; padding-left: 28px; }
+    .quest-timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 12px; bottom: 12px;
+      width: 1px; background: #1e1e1e;
+    }
+
+    /* Prereq row */
+    .prereq-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #111; border: 1px solid #1e1e1e; border-radius: 10px;
+      padding: 14px 18px; margin-bottom: 12px; position: relative;
+    }
+    .prereq-dot {
+      position: absolute; left: -21px; top: 50%; transform: translateY(-50%);
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #00e676; border: 2px solid #0d0d0d;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .prereq-dot::after { content: '✓'; font-size: 7px; color: #000; font-weight: 800; }
+    .prereq-dot.pending { background: #222; }
+    .prereq-dot.pending::after { display: none; }
+    .prereq-info { display: flex; align-items: center; gap: 12px; }
+    .prereq-name { font-size: 14px; font-weight: 600; color: #e0e0e0; }
+    .prereq-sub { font-size: 12px; color: #444; margin-top: 2px; }
+    .btn-connect { background: #00e676; color: #000; font-size: 13px; font-weight: 700; padding: 7px 18px; border-radius: 6px; border: none; cursor: pointer; white-space: nowrap; }
+
+    /* Quest group (collapsible) */
+    .quest-group { margin-bottom: 12px; position: relative; }
+    .quest-group-dot {
+      position: absolute; left: -21px; top: 18px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #1a1a1a; border: 1.5px solid #333;
+    }
+    .quest-group-head {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #111; border: 1px solid #1e1e1e; border-radius: 10px 10px 0 0;
+      padding: 14px 18px; cursor: pointer; user-select: none;
+    }
+    .quest-group.closed .quest-group-head { border-radius: 10px; }
+    .quest-group-title { font-size: 14px; font-weight: 600; color: #c0c0c0; }
+    .quest-group-range { font-size: 12px; color: #444; }
+    .quest-chevron { font-size: 12px; color: #333; transition: transform 0.2s; }
+    .quest-group.closed .quest-chevron { transform: rotate(-90deg); }
+    .quest-group-body { background: #0e0e0e; border: 1px solid #1e1e1e; border-top: none; border-radius: 0 0 10px 10px; overflow: hidden; }
+
+    /* Individual task card */
+    .task-card {
+      display: flex; align-items: stretch;
+      border-bottom: 1px solid #161616; padding: 16px 18px; gap: 16px;
+      transition: background 0.12s;
+    }
+    .task-card:last-child { border-bottom: none; }
+    .task-card:hover { background: rgba(255,255,255,0.015); }
+
+    /* Reward box */
+    .reward-box {
+      width: 100px; flex-shrink: 0;
+      background: #141414; border: 1px solid #222; border-radius: 8px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 10px 8px; text-align: center;
+    }
+    .reward-box.ax { border-color: rgba(0,230,118,0.2); background: rgba(0,230,118,0.04); }
+    .reward-box.pts { border-color: rgba(120,80,220,0.25); background: rgba(120,80,220,0.05); }
+    .reward-num { font-size: 22px; font-weight: 800; line-height: 1; }
+    .reward-num.ax-color { color: #00e676; }
+    .reward-num.pts-color { color: #9966ff; }
+    .reward-unit { font-size: 10px; font-weight: 600; color: #555; margin-top: 4px; letter-spacing: 0.3px; }
+    .reward-unit.ax-color { color: rgba(0,230,118,0.5); }
+    .reward-unit.pts-color { color: rgba(150,100,255,0.5); }
+
+    /* Task body */
+    .task-body { flex: 1; min-width: 0; display: flex; align-items: center; gap: 16px; }
+    .task-desc { flex: 1; }
+    .task-title { font-size: 14px; font-weight: 600; color: #d0d0d0; margin-bottom: 4px; }
+    .task-sub { font-size: 12px; color: #444; }
+    .task-prog-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .task-prog-bar { flex: 1; height: 3px; background: #1e1e1e; border-radius: 2px; }
+    .task-prog-fill { height: 100%; border-radius: 2px; background: #00e676; }
+    .task-prog-text { font-size: 11px; color: #444; white-space: nowrap; }
+    .btn-task { flex-shrink: 0; padding: 7px 18px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #2a2a2a; background: #1a1a1a; color: #ccc; transition: border-color 0.15s, background 0.15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+    .btn-task:hover { border-color: #444; background: #222; }
+    .btn-task-done { background: rgba(0,230,118,0.08); border-color: rgba(0,230,118,0.2); color: #00e676; cursor: default; }
+
+    /* Dual-condition task */
+    .dual-task {
+      display: flex; align-items: stretch; gap: 0;
+      border-bottom: 1px solid #161616;
+    }
+    .dual-task:last-child { border-bottom: none; }
+    .dual-side { flex: 1; padding: 16px 18px; display: flex; align-items: center; gap: 14px; transition: background 0.12s; }
+    .dual-side:hover { background: rgba(255,255,255,0.015); }
+    .dual-connector {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 8px 0; position: relative; flex-shrink: 0; width: 40px;
+    }
+    .dual-connector::before {
+      content: ''; position: absolute; top: 0; bottom: 0; left: 50%;
+      width: 1px; background: #1e1e1e; transform: translateX(-50%);
+    }
+    .connector-label {
+      position: relative; z-index: 1;
+      font-size: 11px; font-weight: 700; padding: 4px 7px; border-radius: 4px;
+    }
+    .connector-and { background: #1a1a1a; color: #555; border: 1px solid #252525; }
+    .connector-or  { background: rgba(100,60,200,0.12); color: #9066ff; border: 1px solid rgba(100,60,200,0.25); box-shadow: 0 0 8px rgba(100,60,200,0.1); }
+
+    /* Tiered milestones */
+    .tier-block { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; overflow: hidden; margin-bottom: 12px; position: relative; }
+    .tier-block-dot {
+      position: absolute; left: -21px; top: 18px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #1a1a1a; border: 1.5px solid #333;
+    }
+    .tier-head { padding: 14px 18px; border-bottom: 1px solid #161616; }
+    .tier-title { font-size: 14px; font-weight: 600; color: #c0c0c0; }
+    .tier-body { padding: 18px 18px 14px; }
+    .tier-scale { position: relative; margin-bottom: 8px; }
+    .tier-rewards-row { display: flex; font-size: 11px; color: #444; margin-bottom: 6px; }
+    .tier-rewards-row .t-spacer { flex: 0 0 70px; }
+    .tier-rewards-row .t-cell { flex: 1; text-align: center; line-height: 1.4; }
+    .tier-rewards-row .t-cell.reached { color: #00e676; }
+    .tier-bar-wrap { display: flex; align-items: center; gap: 0; position: relative; }
+    .tier-label-col { flex: 0 0 70px; font-size: 11px; color: #444; }
+    .tier-track { flex: 1; height: 5px; background: #1e1e1e; border-radius: 3px; position: relative; }
+    .tier-fill { height: 100%; background: #00e676; border-radius: 3px; transition: width 0.4s; }
+    .tier-tick { position: absolute; top: -5px; width: 1px; height: 15px; background: #2a2a2a; }
+    .tier-amounts-row { display: flex; font-size: 11px; color: #333; margin-top: 8px; }
+    .tier-amounts-row .t-spacer { flex: 0 0 70px; }
+    .tier-amounts-row .t-cell { flex: 1; text-align: center; }
+    .tier-amounts-row .t-cell.reached { color: #555; }
+    .tier-progress-info {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 14px; padding: 12px 14px; background: #0e0e0e; border: 1px solid #1a1a1a; border-radius: 8px;
+    }
+    .tier-prog-left { display: flex; align-items: center; gap: 12px; }
+    .tier-prog-icon { width: 36px; height: 36px; }
+    .tier-prog-icon img { width: 100%; }
+    .tier-prog-text { font-size: 12px; color: #555; margin-bottom: 2px; }
+    .tier-prog-val { font-size: 16px; font-weight: 700; color: #d0d0d0; }
+    .tier-prog-val .unit { font-size: 11px; color: #555; margin-left: 3px; }
+
+    /* Max rewards banner */
+    .max-rewards-banner {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 16px; padding: 14px 18px;
+      background: rgba(0,230,118,0.04); border: 1px solid rgba(0,230,118,0.15);
+      border-radius: 10px;
+    }
+    .max-rewards-dot { width: 8px; height: 8px; border-radius: 50%; background: #00e676; flex-shrink: 0; box-shadow: 0 0 6px rgba(0,230,118,0.5); }
+    .max-rewards-text { font-size: 14px; color: #888; }
+    .max-rewards-text strong { color: #00e676; font-weight: 700; }
+
+    /* Sidebar - my rewards */
+    .sidebar-card { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; overflow: hidden; position: sticky; top: 76px; }
+    .sidebar-head { padding: 14px 18px; border-bottom: 1px solid #161616; font-size: 14px; font-weight: 600; color: #c0c0c0; }
+    .sidebar-body { padding: 16px 18px; }
+    .sidebar-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .sidebar-row:last-child { margin-bottom: 0; }
+    .sidebar-label { font-size: 12px; color: #555; }
+    .sidebar-val { font-size: 15px; font-weight: 700; }
+    .sidebar-val.ax { color: #00e676; }
+    .sidebar-val.pts { color: #9966ff; }
+    .sidebar-divider { height: 1px; background: #161616; margin: 14px 0; }
+    .sidebar-prog-label { font-size: 12px; color: #555; margin-bottom: 8px; }
+    .sidebar-prog-wrap { display: flex; align-items: center; gap: 10px; }
+    .sidebar-prog-bar { flex: 1; height: 4px; background: #1e1e1e; border-radius: 2px; }
+    .sidebar-prog-fill { height: 100%; border-radius: 2px; background: #00e676; }
+    .sidebar-prog-pct { font-size: 11px; color: #555; white-space: nowrap; }
+    .sidebar-claim-btn { width: 100%; margin-top: 16px; padding: 10px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: #555; font-size: 14px; font-weight: 600; cursor: default; }
+    .sidebar-claim-btn.active { background: #00e676; color: #000; border-color: #00e676; cursor: pointer; }
+
+    /* Rules */
+    .rules-body { font-size: 14px; color: #444; line-height: 1.8; }
+    .rules-body p { margin-bottom: 10px; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid #1a1a1a; background: #0a0a0a; padding: 48px 0 32px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .footer-top { display: flex; justify-content: space-between; margin-bottom: 40px; }
+    .footer-brand-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .footer-brand-sub { font-size: 13px; color: #3a3a3a; }
+    .footer-links { display: grid; grid-template-columns: repeat(4,1fr); gap: 48px; }
+    .footer-col-title { font-size: 13px; color: #555; margin-bottom: 12px; }
+    .footer-col a { display: block; font-size: 13px; color: #333; margin-bottom: 8px; }
+    .footer-col a:hover { color: #666; }
+    .footer-bottom { border-top: 1px solid #1a1a1a; padding-top: 24px; display: flex; justify-content: space-between; align-items: center; }
+    .footer-copy { font-size: 13px; color: #2e2e2e; }
+    .footer-socials { display: flex; gap: 18px; }
+    .footer-socials svg { fill: #2e2e2e; cursor: pointer; }
+    .footer-socials svg:hover { fill: #555; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <div class="nav-logo">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+          <polygon points="10,1 19,6 19,14 10,19 1,14 1,6" stroke="#00e676" stroke-width="1.5" fill="none"/>
+          <polygon points="10,5.5 16,9 16,12.5 10,16 4,12.5 4,9" fill="rgba(0,230,118,0.2)"/>
+        </svg>
+        AX
+      </div>
+      <span class="nav-badge">合约V2 Beta</span>
+      <a href="#" class="nav-link">现货</a>
+      <a href="#" class="nav-link">投资组合</a>
+      <a href="#" class="nav-link">积分</a>
+      <a href="#" class="nav-link">策略</a>
+      <a href="activity-center-v2.html" class="nav-link active">奖励</a>
+      <a href="#" class="nav-link">更多 ▾</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-airdrop">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Airdrop
+      </div>
+      <button class="btn-deposit">充值</button>
+      <div class="nav-wallet">0x0B6e...629434 ▾</div>
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="activity-center-v2.html">活动中心</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-current">社交任务 · AX 新春空投季</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-tag">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="#00e676"><circle cx="5" cy="5" r="5"/></svg>
+        社交任务 · 进行中
+      </div>
+      <h1 class="hero-title">完成任务，参与瓜分<br>100,000 AX 空投奖池</h1>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-val">100,000 <span class="unit">AX</span></div>
+          <div class="hero-stat-label">总奖励池</div>
+        </div>
+        <div>
+          <div class="hero-stat-val">3,218 <span class="unit">人</span></div>
+          <div class="hero-stat-label">已参与</div>
+        </div>
+        <div>
+          <div class="hero-stat-val">11 <span class="unit">天</span></div>
+          <div class="hero-stat-label">剩余时间</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-btns">
+        <button class="btn-pill" onclick="document.getElementById('share-modal').style.display='flex'">活动分享</button>
+        <button class="btn-pill btn-pill-primary">立即参与</button>
+      </div>
+      <div class="hero-status">活动结束时间 <span>2026-04-28 10:49</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TIMELINE + TASKS -->
+<div class="section-div">
+  <div class="section">
+
+    <!-- Timeline -->
+    <div class="section-title">时间线</div>
+    <div class="timeline-wrap">
+      <div class="tl-nodes">
+        <!-- fill line covers first 2 segments -->
+        <div class="tl-line-fill" style="width: calc(66.6% - 20px);"></div>
+
+        <div class="tl-node">
+          <div class="tl-node-label">报名开始时间</div>
+          <div class="tl-node-date">2026-03-24 11:17</div>
+          <div class="tl-dot past"></div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-node-label">活动开始时间</div>
+          <div class="tl-node-date">2026-03-24 11:17</div>
+          <div class="tl-dot past"></div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-node-label">活动结束时间</div>
+          <div class="tl-node-date">2026-04-28 10:49</div>
+          <div class="tl-dot current"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quest layout: main + sidebar -->
+    <div class="quest-wrap">
+      <div class="quest-main">
+        <div class="quest-timeline">
+
+          <!-- Prereq: Login -->
+          <div class="prereq-row">
+            <div class="prereq-dot"></div>
+            <div class="prereq-info">
+              <div>
+                <div class="prereq-name">登陆并报名</div>
+                <div class="prereq-sub">Before 2026-04-28 10:49:48</div>
+              </div>
+            </div>
+            <button class="btn-connect">连接</button>
+          </div>
+
+          <!-- Task group -->
+          <div class="quest-group" id="qg1">
+            <div class="quest-group-dot"></div>
+            <div class="quest-group-head" onclick="toggleGroup('qg1')">
+              <div>
+                <div class="quest-group-title">任务</div>
+                <div class="quest-group-range">2026-03-24 11:17:48 ~ 2026-04-28 10:49:48</div>
+              </div>
+              <span class="quest-chevron">▼</span>
+            </div>
+            <div class="quest-group-body" id="qg1-body">
+
+              <!-- Dual: AND condition -->
+              <div class="dual-task">
+                <!-- Left side -->
+                <div class="dual-side">
+                  <div class="reward-box ax">
+                    <div class="reward-num ax-color">100</div>
+                    <div class="reward-unit">AX</div>
+                  </div>
+                  <div class="task-desc">
+                    <div class="task-title">交易 10,000 USDT</div>
+                    <div class="task-prog-row">
+                      <div class="task-prog-bar"><div class="task-prog-fill" style="width:0%"></div></div>
+                      <span class="task-prog-text">0 / 10,000</span>
+                    </div>
+                  </div>
+                  <button class="btn-task">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    交易
+                  </button>
+                </div>
+                <!-- AND connector -->
+                <div class="dual-connector">
+                  <span class="connector-label connector-and">和</span>
+                </div>
+                <!-- Right side -->
+                <div class="dual-side">
+                  <div class="task-desc" style="flex:1;">
+                    <div class="task-title">邀请 2 新用户</div>
+                    <div class="task-prog-row">
+                      <div class="task-prog-bar"><div class="task-prog-fill" style="width:0%"></div></div>
+                      <span class="task-prog-text">0 / 2</span>
+                    </div>
+                  </div>
+                  <button class="btn-task">邀请</button>
+                </div>
+              </div>
+
+              <!-- Single: deposit -->
+              <div class="task-card">
+                <div class="reward-box pts">
+                  <div class="reward-num pts-color">100</div>
+                  <div class="reward-unit pts-color">AX Points</div>
+                </div>
+                <div class="task-body">
+                  <div class="task-desc">
+                    <div class="task-title">充值 1,000 USDT</div>
+                    <div class="task-prog-row">
+                      <div class="task-prog-bar"><div class="task-prog-fill" style="width:0%"></div></div>
+                      <span class="task-prog-text">0 / 1,000</span>
+                    </div>
+                  </div>
+                  <button class="btn-task">充值</button>
+                </div>
+              </div>
+
+              <!-- Single: Discord -->
+              <div class="task-card">
+                <div class="reward-box pts">
+                  <div class="reward-num pts-color">200</div>
+                  <div class="reward-unit pts-color">AX Points</div>
+                </div>
+                <div class="task-body">
+                  <div class="task-desc">
+                    <div class="task-title">加入 Discord 社群</div>
+                    <div class="task-sub">加入 AX Discord 社群获得 200 AX Points 奖励</div>
+                  </div>
+                  <button class="btn-task">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026 13.83 13.83 0 0 0 1.226-1.963.074.074 0 0 0-.041-.104 13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028z"/></svg>
+                    Discord
+                  </button>
+                </div>
+              </div>
+
+              <!-- Single: X/Twitter follow -->
+              <div class="task-card">
+                <div class="reward-box pts">
+                  <div class="reward-num pts-color">300</div>
+                  <div class="reward-unit pts-color">AX Points</div>
+                </div>
+                <div class="task-body">
+                  <div class="task-desc">
+                    <div class="task-title">关注 AX 官方 X 账号</div>
+                    <div class="task-sub">关注并获得 300 AX Points 奖励</div>
+                  </div>
+                  <button class="btn-task">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.258 5.63 5.906-5.63z"/></svg>
+                    去关注
+                  </button>
+                </div>
+              </div>
+
+              <!-- Dual: OR condition -->
+              <div class="dual-task">
+                <div class="dual-side">
+                  <div class="reward-box ax">
+                    <div class="reward-num ax-color" style="font-size:16px;">99,999</div>
+                    <div class="reward-unit ax-color">AX</div>
+                  </div>
+                  <div class="task-desc">
+                    <div class="task-title">交易 10,000 USDT</div>
+                    <div class="task-prog-row">
+                      <div class="task-prog-bar"><div class="task-prog-fill" style="width:0%"></div></div>
+                      <span class="task-prog-text">0 / 10,000</span>
+                    </div>
+                  </div>
+                  <button class="btn-task">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    交易
+                  </button>
+                </div>
+                <div class="dual-connector">
+                  <span class="connector-label connector-or">或</span>
+                </div>
+                <div class="dual-side">
+                  <div class="task-desc" style="flex:1;">
+                    <div class="task-title">充值 1,500 USDT</div>
+                    <div class="task-prog-row">
+                      <div class="task-prog-bar"><div class="task-prog-fill" style="width:0%"></div></div>
+                      <span class="task-prog-text">0 / 1,500</span>
+                    </div>
+                  </div>
+                  <button class="btn-task">充值</button>
+                </div>
+              </div>
+
+              <!-- Single: small deposit -->
+              <div class="task-card">
+                <div class="reward-box pts">
+                  <div class="reward-num pts-color">10</div>
+                  <div class="reward-unit pts-color">AX Points</div>
+                </div>
+                <div class="task-body">
+                  <div class="task-desc">
+                    <div class="task-title">充值 1,000 USDT</div>
+                    <div class="task-prog-row">
+                      <div class="task-prog-bar"><div class="task-prog-fill" style="width:0%"></div></div>
+                      <span class="task-prog-text">0 / 1,000</span>
+                    </div>
+                  </div>
+                  <button class="btn-task">充值</button>
+                </div>
+              </div>
+
+            </div><!-- /quest-group-body -->
+          </div><!-- /quest-group -->
+
+          <!-- Tiered: 交易量任务 -->
+          <div class="tier-block">
+            <div class="tier-block-dot"></div>
+            <div class="tier-head">
+              <div class="tier-title">交易量任务</div>
+            </div>
+            <div class="tier-body">
+              <!-- Rewards row (top labels) -->
+              <div class="tier-rewards-row">
+                <div class="t-spacer"></div>
+                <div class="t-cell" style="text-align:left;"></div>
+                <div class="t-cell">100 积分</div>
+                <div class="t-cell">200 积分</div>
+                <div class="t-cell" style="color:#00e676;">30,000 积分<br>30,000 AX</div>
+              </div>
+              <!-- Bar -->
+              <div class="tier-bar-wrap">
+                <div class="tier-label-col">总奖励</div>
+                <div class="tier-track">
+                  <div class="tier-fill" style="width:0%"></div>
+                  <div class="tier-tick" style="left:33.3%"></div>
+                  <div class="tier-tick" style="left:66.6%"></div>
+                </div>
+              </div>
+              <!-- Amounts row (bottom labels) -->
+              <div class="tier-amounts-row">
+                <div class="t-spacer"></div>
+                <div class="t-cell" style="text-align:left;">0</div>
+                <div class="t-cell">10,000 USDT</div>
+                <div class="t-cell">20,000 USDT</div>
+                <div class="t-cell">30,000 USDT</div>
+              </div>
+              <div class="tier-bar-wrap" style="margin-top:6px;">
+                <div class="tier-label-col">总金额</div>
+                <div class="tier-track">
+                  <div class="tier-fill" style="width:0%"></div>
+                  <div class="tier-tick" style="left:33.3%"></div>
+                  <div class="tier-tick" style="left:66.6%"></div>
+                </div>
+              </div>
+              <div class="tier-amounts-row">
+                <div class="t-spacer"></div>
+                <div class="t-cell" style="text-align:left;">0</div>
+                <div class="t-cell">10,000 USDT</div>
+                <div class="t-cell">20,000 USDT</div>
+                <div class="t-cell">30,000 USDT</div>
+              </div>
+              <!-- Progress info -->
+              <div class="tier-progress-info">
+                <div class="tier-prog-left">
+                  <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                    <rect width="36" height="36" rx="8" fill="rgba(120,80,220,0.12)"/>
+                    <path d="M10 26l4-8 4 4 4-10 4 6" stroke="#9966ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                  </svg>
+                  <div>
+                    <div class="tier-prog-text">距获得下一个奖励进度如下</div>
+                    <div class="tier-prog-val">0 <span class="unit">/ 10,000 USDT</span></div>
+                  </div>
+                </div>
+                <button class="btn-task">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                  交易
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tiered: 入金任务 -->
+          <div class="tier-block">
+            <div class="tier-block-dot"></div>
+            <div class="tier-head">
+              <div class="tier-title">入金任务</div>
+            </div>
+            <div class="tier-body">
+              <div class="tier-rewards-row">
+                <div class="t-spacer"></div>
+                <div class="t-cell" style="text-align:left;"></div>
+                <div class="t-cell">1,000 AX</div>
+                <div class="t-cell">2,000 AX</div>
+                <div class="t-cell" style="color:#00e676;">3,000 积分<br>3,000 AX</div>
+              </div>
+              <div class="tier-bar-wrap">
+                <div class="tier-label-col">总奖励</div>
+                <div class="tier-track">
+                  <div class="tier-fill" style="width:0%"></div>
+                  <div class="tier-tick" style="left:33.3%"></div>
+                  <div class="tier-tick" style="left:66.6%"></div>
+                </div>
+              </div>
+              <div class="tier-amounts-row">
+                <div class="t-spacer"></div>
+                <div class="t-cell" style="text-align:left;">0</div>
+                <div class="t-cell">1,000 USDT</div>
+                <div class="t-cell">2,000 USDT</div>
+                <div class="t-cell">3,000 USDT</div>
+              </div>
+              <div class="tier-bar-wrap" style="margin-top:6px;">
+                <div class="tier-label-col">总金额</div>
+                <div class="tier-track">
+                  <div class="tier-fill" style="width:0%"></div>
+                  <div class="tier-tick" style="left:33.3%"></div>
+                  <div class="tier-tick" style="left:66.6%"></div>
+                </div>
+              </div>
+              <div class="tier-amounts-row">
+                <div class="t-spacer"></div>
+                <div class="t-cell" style="text-align:left;">0</div>
+                <div class="t-cell">1,000 USDT</div>
+                <div class="t-cell">2,000 USDT</div>
+                <div class="t-cell">3,000 USDT</div>
+              </div>
+              <div class="tier-progress-info">
+                <div class="tier-prog-left">
+                  <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                    <rect width="36" height="36" rx="8" fill="rgba(0,230,118,0.06)"/>
+                    <path d="M18 10v4M18 18v4M14 14h4l-2 4h4" stroke="#00e676" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div>
+                    <div class="tier-prog-text">距获得下一个奖励进度如下</div>
+                    <div class="tier-prog-val">0 <span class="unit">/ 1,000 USDT</span></div>
+                  </div>
+                </div>
+                <button class="btn-task">充值</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Max rewards banner -->
+          <div class="max-rewards-banner">
+            <div class="max-rewards-dot"></div>
+            <div class="max-rewards-text">
+              奖励最高可达 <strong>100,000 AX</strong> and <strong>33,910 AX Points</strong>
+            </div>
+          </div>
+
+        </div><!-- /quest-timeline -->
+      </div><!-- /quest-main -->
+
+      <!-- Sidebar -->
+      <div class="quest-sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-head">我的奖励</div>
+          <div class="sidebar-body">
+            <div class="sidebar-row">
+              <div class="sidebar-label">已获得 AX</div>
+              <div class="sidebar-val ax">0</div>
+            </div>
+            <div class="sidebar-row">
+              <div class="sidebar-label">已获得 AX Points</div>
+              <div class="sidebar-val pts">0</div>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-prog-label">任务完成进度</div>
+            <div class="sidebar-prog-wrap">
+              <div class="sidebar-prog-bar"><div class="sidebar-prog-fill" style="width:0%"></div></div>
+              <span class="sidebar-prog-pct">0 / 6</span>
+            </div>
+            <button class="sidebar-claim-btn" id="claim-btn">领取奖励</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /quest-wrap -->
+
+  </div>
+</div>
+
+<!-- RULES -->
+<div class="section-div">
+  <div class="section">
+    <div class="section-title">活动规则</div>
+    <div class="rules-body">
+      <p>1. 活动时间：2026-03-24 11:17 至 2026-04-28 10:49（UTC+8）。</p>
+      <p>2. 参与资格：活动期间完成账户登录并报名，即可参与。</p>
+      <p>3. 任务奖励实时累计，活动结束后 72 小时内统一发放至账户。</p>
+      <p>4. AND 条件任务需同时满足所有子任务方可获奖；OR 条件任务满足任意一项即可获奖。</p>
+      <p>5. 交易量任务与入金任务按实际达成的最高档位发放对应奖励，不叠加计算。</p>
+      <p>6. AX Points 为平台积分，可用于兑换活动资格、手续费减免等权益，不可提取。</p>
+      <p style="color:#333;">7. 平台保留本活动最终解释权，如遇刷量或异常行为，平台有权取消相关用户资格。</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="vertical-align:middle;margin-right:6px;">
+            <polygon points="10,1 19,6 19,14 10,19 1,14 1,6" stroke="#00e676" stroke-width="1.5" fill="none"/>
+            <polygon points="10,5.5 16,9 16,12.5 10,16 4,12.5 4,9" fill="rgba(0,230,118,0.18)"/>
+          </svg>AX
+        </div>
+        <div class="footer-brand-sub">全球资产 24/7 去中心化交易层</div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <div class="footer-col-title">产品</div>
+          <a href="#">Web Pro</a><a href="#">App Store</a><a href="#">Android APK</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">开发者</div>
+          <a href="#">文档</a><a href="#">API</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">支持</div>
+          <a href="#">客服服务</a><a href="#">产品反馈</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">关于我们</div>
+          <a href="#">博客</a><a href="#">隐私政策</a><a href="#">用户协议</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 AX All Rights Reserved</div>
+      <div class="footer-socials">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.258 5.63 5.906-5.63z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026 13.83 13.83 0 0 0 1.226-1.963.074.074 0 0 0-.041-.104 13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028z"/></svg>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Share modal -->
+<div id="share-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;" onclick="document.getElementById('share-modal').style.display='none'">
+  <div style="background:#111;border:1px solid #222;border-radius:16px;padding:28px 32px;width:380px;" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <span style="font-size:16px;font-weight:600;">分享活动</span>
+      <button onclick="document.getElementById('share-modal').style.display='none'" style="background:none;border:none;color:#555;cursor:pointer;font-size:20px;line-height:1;">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
+      <div style="text-align:center;cursor:pointer;"><div style="width:48px;height:48px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ccc"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.258 5.63 5.906-5.63z"/></svg></div><span style="font-size:12px;color:#555;">X</span></div>
+      <div style="text-align:center;cursor:pointer;"><div style="width:48px;height:48px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ccc"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm4.962 7.224c.1-.002.321.023.465.14.14.09.18.222.171.325.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></div><span style="font-size:12px;color:#555;">Telegram</span></div>
+      <div style="text-align:center;cursor:pointer;"><div style="width:48px;height:48px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ccc"><path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026 13.83 13.83 0 0 0 1.226-1.963.074.074 0 0 0-.041-.104 13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028z"/></svg></div><span style="font-size:12px;color:#555;">Discord</span></div>
+      <div style="text-align:center;cursor:pointer;"><div style="width:48px;height:48px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></div><span style="font-size:12px;color:#555;">复制链接</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleGroup(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('closed');
+  }
+</script>
+</body>
+</html>

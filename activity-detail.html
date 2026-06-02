@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>最新活动 · 赢 Tesla 大奖</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0a0a12; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+    /* 导航栏 */
+    .navbar {
+      background: rgba(10,10,18,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* 渐变边框卡片 */
+    .section-card {
+      background: #13132a;
+      border: 1px solid #1e1e3a;
+      border-radius: 16px;
+    }
+
+    /* 倒计时块 */
+    .cd-block {
+      background: linear-gradient(135deg, #1e1e4a, #2a2a5a);
+      border: 1px solid #3a3a6a;
+      border-radius: 10px;
+      min-width: 52px;
+      text-align: center;
+      padding: 8px 12px;
+    }
+
+    /* 进度条 */
+    .pbar { height: 4px; background: #1e1e3a; border-radius: 99px; overflow: hidden; }
+    .pbar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg,#6366f1,#8b5cf6); transition: width .6s ease; }
+
+    /* AND / OR 徽章 */
+    .and-badge {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #1e1e3a; border: 1px solid #3a3a5a;
+      color: #9ca3af; font-size: 12px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .or-badge {
+      padding: 2px 10px; border-radius: 99px;
+      background: linear-gradient(135deg,#6366f1,#8b5cf6);
+      color: #fff; font-size: 11px; font-weight: 700; flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(99,102,241,0.5);
+      display: inline-flex; align-items: center;
+    }
+
+    /* 奖励徽章 */
+    .reward-badge {
+      background: linear-gradient(135deg,#1e1e4a,#2a1a5a);
+      border: 1px solid #3a2a6a; border-radius: 10px; min-width: 76px; text-align: center;
+    }
+
+    /* 按钮 */
+    .btn-p { background: linear-gradient(135deg,#6366f1,#8b5cf6); color: white; border: none; border-radius: 8px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity .2s; }
+    .btn-p:hover { opacity: .85; }
+    .btn-p:disabled { opacity: .35; cursor: not-allowed; }
+    .btn-s { background: transparent; color: #8b8baa; border: 1px solid #3a3a5a; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+
+    /* 任务卡片 */
+    .task-card { background: #0f0f22; border: 1px solid #2a2a4a; border-radius: 12px; transition: border-color .2s; }
+    .task-card:hover { border-color: #4a4a7a; }
+    .task-card.or-task { border-color: rgba(99,102,241,.3); }
+    .task-card.or-task:hover { border-color: rgba(99,102,241,.6); }
+
+    /* 完成态 */
+    .check-circle { width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg,#10b981,#059669); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .done-tag { background: rgba(16,185,129,.15); color: #10b981; border: 1px solid rgba(16,185,129,.3); border-radius: 4px; font-size: 11px; padding: 2px 6px; }
+    .pending-tag { background: rgba(245,158,11,.15); color: #f59e0b; border: 1px solid rgba(245,158,11,.3); border-radius: 4px; font-size: 11px; padding: 2px 6px; }
+
+    /* 我的奖励 — 详情页完整模块 */
+    .reward-stat { background: #0f0f22; border: 1px solid #2a2a4a; border-radius: 12px; flex: 1; padding: 16px; }
+
+    /* 折叠 */
+    .chevron { transition: transform .3s ease; }
+    .chevron.open { transform: rotate(180deg); }
+
+    /* 时间线 */
+    .tl-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,#6366f1 33%,#3a3a6a 33%); transform: translateY(-50%); }
+
+    /* 分享按钮 */
+    .share-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; border-radius: 99px; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: white; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity .2s; }
+    .share-btn:hover { opacity: .88; }
+
+    /* 返回按钮 */
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; color: #9ca3af; font-size: 13px; cursor: pointer; transition: color .15s; text-decoration: none; }
+    .back-btn:hover { color: white; }
+
+    /* 里程碑进度 */
+    .milestone-bar { position: relative; height: 6px; background: #1e1e3a; border-radius: 99px; overflow: visible; }
+    .milestone-bar .fill { height: 100%; background: linear-gradient(90deg,#6366f1,#8b5cf6); border-radius: 99px; }
+    .milestone-dot { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 12px; height: 12px; border-radius: 50%; border: 2px solid; }
+
+    @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+    .fade-in { animation: fadeIn .25s ease; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0a0a12; }
+    ::-webkit-scrollbar-thumb { background: #3a3a6a; border-radius: 3px; }
+  </style>
+</head>
+<body class="min-h-screen text-white pb-24">
+
+  <!-- 导航栏 -->
+  <nav class="navbar sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        </div>
+        <span class="text-white font-bold text-base">AX</span>
+      </div>
+      <span class="text-gray-600">/</span>
+      <a href="activity-center.html" class="back-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        活动中心
+      </a>
+    </div>
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+      <div class="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-[10px] font-bold">张</div>
+      <span class="text-white text-xs">张伟</span>
+    </div>
+  </nav>
+
+  <div class="max-w-2xl mx-auto px-4 pt-6 space-y-4">
+
+    <!-- ── Banner ── -->
+    <div class="section-card p-5">
+      <div class="flex gap-4">
+        <div class="flex-1 min-w-0">
+          <div class="text-[11px] text-purple-400 font-semibold mb-1 tracking-widest uppercase">限时活动</div>
+          <h1 class="text-xl font-bold leading-snug mb-1">最新活动 — 赢 Tesla 大奖</h1>
+          <p class="text-xs text-gray-400 mb-4">到期时间 2027-03-31 11:17:50</p>
+          <div class="flex items-center gap-2 mb-5">
+            <div class="cd-block"><div class="text-2xl font-bold leading-none" id="cd-d">323</div><div class="text-[10px] text-gray-400 mt-1">D</div></div>
+            <span class="text-gray-600 font-bold">:</span>
+            <div class="cd-block"><div class="text-2xl font-bold leading-none" id="cd-h">14</div><div class="text-[10px] text-gray-400 mt-1">H</div></div>
+            <span class="text-gray-600 font-bold">:</span>
+            <div class="cd-block"><div class="text-2xl font-bold leading-none" id="cd-m">22</div><div class="text-[10px] text-gray-400 mt-1">M</div></div>
+            <span class="text-gray-600 font-bold">:</span>
+            <div class="cd-block"><div class="text-2xl font-bold leading-none" id="cd-s">08</div><div class="text-[10px] text-gray-400 mt-1">S</div></div>
+          </div>
+          <button class="share-btn">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            分享活动
+          </button>
+        </div>
+        <div class="w-32 h-28 rounded-xl bg-gradient-to-br from-indigo-900/60 to-purple-900/40 border border-indigo-500/20 flex items-center justify-center flex-shrink-0">
+          <span style="font-size:72px;filter:drop-shadow(0 8px 24px rgba(99,102,241,0.5))">🚗</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 时间线 ── -->
+    <div class="section-card p-5">
+      <h2 class="text-sm font-semibold text-gray-300 mb-5">时间线</h2>
+      <div class="relative px-4">
+        <div class="tl-line"></div>
+        <div class="flex justify-between relative z-10">
+          <div class="text-center">
+            <div class="text-xs text-gray-400 mb-2">报名开始</div>
+            <div class="w-6 h-6 rounded-full bg-indigo-500 border-2 border-indigo-300 flex items-center justify-center mx-auto mb-2 shadow-lg shadow-indigo-500/40">
+              <svg width="10" height="10" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            </div>
+            <div class="text-[11px] text-gray-400">2026-03-24</div>
+            <div class="text-[11px] text-gray-500">11:17:48</div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-gray-400 mb-2">活动开始</div>
+            <div class="w-6 h-6 rounded-full bg-indigo-500 border-2 border-indigo-300 flex items-center justify-center mx-auto mb-2 shadow-lg shadow-indigo-500/40">
+              <svg width="10" height="10" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            </div>
+            <div class="text-[11px] text-gray-400">2026-03-24</div>
+            <div class="text-[11px] text-gray-500">11:17:48</div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-gray-400 mb-2">活动结束</div>
+            <div class="w-6 h-6 rounded-full bg-[#1e1e3a] border-2 border-[#3a3a6a] flex items-center justify-center mx-auto mb-2">
+              <div class="w-2 h-2 rounded-full bg-[#3a3a6a]"></div>
+            </div>
+            <div class="text-[11px] text-gray-400">2027-03-31</div>
+            <div class="text-[11px] text-gray-500">11:17:50</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 我的奖励（详情页完整模块）── -->
+    <div class="section-card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+            <svg width="10" height="10" fill="white" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          </div>
+          <span class="text-sm font-semibold">我的奖励</span>
+          <span class="text-[11px] text-gray-500">· 本活动</span>
+        </div>
+        <button class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">查看明细 →</button>
+      </div>
+
+      <div class="flex gap-3 mb-3">
+        <div class="reward-stat">
+          <div class="text-[11px] text-gray-500 mb-1">已获得</div>
+          <div class="text-lg font-bold">200</div>
+          <div class="text-[11px] text-purple-400">AX Points</div>
+          <div class="mt-2"><span class="done-tag">已到账</span></div>
+        </div>
+        <div class="reward-stat">
+          <div class="text-[11px] text-gray-500 mb-1">待发放</div>
+          <div class="text-lg font-bold text-yellow-400">300</div>
+          <div class="text-[11px] text-yellow-500">USDT</div>
+          <div class="mt-2"><span class="pending-tag">T+1 发放</span></div>
+        </div>
+        <div class="reward-stat">
+          <div class="text-[11px] text-gray-500 mb-1">可领取</div>
+          <div class="text-lg font-bold text-gray-600">—</div>
+          <div class="text-[11px] text-gray-600">完成任务解锁</div>
+          <div class="mt-2"><button class="btn-p text-xs px-3 py-1 opacity-35 cursor-not-allowed" disabled>领取</button></div>
+        </div>
+      </div>
+
+      <!-- 待发放说明 -->
+      <div class="flex items-start gap-2 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-3 py-2">
+        <svg class="flex-shrink-0 mt-0.5" width="13" height="13" fill="#f59e0b" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+        <span class="text-[11px] text-yellow-500/80">关注 X 奖励 300 USDT 审核中，预计明日 11:00 自动到账</span>
+      </div>
+    </div>
+
+    <!-- ── 步骤一：登陆并报名 ── -->
+    <div class="section-card p-5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold flex-shrink-0">1</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold">登陆并报名</span>
+              <span class="done-tag">已完成</span>
+            </div>
+            <div class="text-[11px] text-gray-500 mt-0.5">Before 2026-04-28 10:49:48</div>
+          </div>
+        </div>
+        <div class="check-circle">
+          <svg width="10" height="10" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 步骤二：任务 ── -->
+    <div class="section-card overflow-hidden">
+      <button onclick="toggleSection('tasks','chevron-tasks')" class="w-full flex items-center justify-between p-5 text-left hover:bg-white/5 transition-colors">
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold flex-shrink-0">2</div>
+          <div>
+            <span class="text-sm font-semibold">任务</span>
+            <span class="text-[11px] text-gray-500 ml-2">2026-03-24 — 2026-04-28</span>
+          </div>
+        </div>
+        <svg id="chevron-tasks" class="chevron open" width="16" height="16" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+
+      <div id="tasks" class="px-5 pb-5 space-y-3">
+
+        <!-- AND 任务：交易 + 邀请 → 100 USDT -->
+        <div class="task-card p-4">
+          <div class="flex items-start gap-3">
+            <div class="reward-badge px-3 py-2 flex-shrink-0">
+              <div class="text-base font-bold text-indigo-300">100</div>
+              <div class="text-[10px] text-gray-400">USDT</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap mb-3">
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs text-gray-300 font-medium mb-1">交易 10,000 USDT</div>
+                  <div class="pbar"><div class="pbar-fill" style="width:35%"></div></div>
+                  <div class="text-[10px] text-gray-500 mt-1">3,500 / 10,000</div>
+                </div>
+                <div class="and-badge">+</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs text-gray-300 font-medium mb-1">邀请 2 新用户</div>
+                  <div class="pbar"><div class="pbar-fill" style="width:0%"></div></div>
+                  <div class="text-[10px] text-gray-500 mt-1">0 / 2</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-gray-600">两项同时完成方可获得奖励</div>
+            </div>
+            <div class="flex flex-col gap-1.5 flex-shrink-0">
+              <button class="btn-p text-xs">交易</button>
+              <button class="btn-p text-xs">邀请</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 充值 → 100 AX（进行中） -->
+        <div class="task-card p-4">
+          <div class="flex items-center gap-3">
+            <div class="reward-badge px-3 py-2 flex-shrink-0">
+              <div class="text-base font-bold text-purple-300">100</div>
+              <div class="text-[10px] text-gray-400">AX Points</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs text-gray-300 font-medium mb-1">充值 1,000 USDT</div>
+              <div class="pbar"><div class="pbar-fill" style="width:50%"></div></div>
+              <div class="text-[10px] text-gray-500 mt-1">500 / 1,000</div>
+            </div>
+            <button class="btn-p flex-shrink-0">充值</button>
+          </div>
+        </div>
+
+        <!-- Discord → 200 AX（已完成） -->
+        <div class="task-card p-4 opacity-60">
+          <div class="flex items-center gap-3">
+            <div class="reward-badge px-3 py-2 flex-shrink-0">
+              <div class="text-base font-bold text-purple-300">200</div>
+              <div class="text-[10px] text-gray-400">AX Points</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-xs text-gray-300 font-medium">加入 Discord 社群</span>
+                <span class="done-tag">已完成</span>
+              </div>
+              <div class="text-[10px] text-gray-500">加入 Discord 社群获得 200 AX Points 奖励</div>
+            </div>
+            <div class="check-circle">
+              <svg width="10" height="10" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- 关注 X → 300 USDT（待发放） -->
+        <div class="task-card p-4">
+          <div class="flex items-center gap-3">
+            <div class="reward-badge px-3 py-2 flex-shrink-0">
+              <div class="text-base font-bold text-indigo-300">300</div>
+              <div class="text-[10px] text-gray-400">USDT</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-xs text-gray-300 font-medium">关注 X</span>
+                <span class="pending-tag">待发放</span>
+              </div>
+              <div class="text-[10px] text-gray-500">300 USDT 奖励预计明日到账</div>
+            </div>
+            <button class="btn-s flex-shrink-0 text-xs">已关注</button>
+          </div>
+        </div>
+
+        <!-- Discord → 300 AX（未开始） -->
+        <div class="task-card p-4">
+          <div class="flex items-center gap-3">
+            <div class="reward-badge px-3 py-2 flex-shrink-0">
+              <div class="text-base font-bold text-purple-300">300</div>
+              <div class="text-[10px] text-gray-400">AX Points</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs text-gray-300 font-medium mb-0.5">加入 Discord 社群</div>
+              <div class="text-[10px] text-gray-500">加入 Discord 社群获得 300 AX Points 奖励</div>
+            </div>
+            <button class="btn-p flex-shrink-0 flex items-center gap-1.5 text-xs">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.031.053a19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+              Discord
+            </button>
+          </div>
+        </div>
+
+        <!-- OR 任务：交易 / 充值 → 99,999 USDT（大奖） -->
+        <div class="task-card or-task p-4">
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 text-center px-3 py-2 rounded-xl" style="background:linear-gradient(135deg,#2a1a5a,#3a1a7a);border:1px solid rgba(139,92,246,.4);min-width:76px">
+              <div class="text-base font-bold" style="background:linear-gradient(135deg,#a78bfa,#f0abfc);-webkit-background-clip:text;-webkit-text-fill-color:transparent">99,999</div>
+              <div class="text-[10px] text-purple-400">USDT</div>
+              <div class="text-[9px] text-purple-500 mt-0.5">🏆 大奖</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap mb-3">
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs text-gray-300 font-medium mb-1">交易 10,000 USDT</div>
+                  <div class="pbar"><div class="pbar-fill" style="width:35%"></div></div>
+                  <div class="text-[10px] text-gray-500 mt-1">3,500 / 10,000</div>
+                </div>
+                <div class="or-badge">OR</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs text-gray-300 font-medium mb-1">充值 1,500 USDT</div>
+                  <div class="pbar"><div class="pbar-fill" style="width:33%"></div></div>
+                  <div class="text-[10px] text-gray-500 mt-1">500 / 1,500</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-purple-400/70">任一条件达成即可 · 更容易完成</div>
+            </div>
+            <div class="flex flex-col gap-1.5 flex-shrink-0">
+              <button class="btn-p text-xs">交易</button>
+              <button class="btn-p text-xs">充值</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 充值 → 10 AX -->
+        <div class="task-card p-4">
+          <div class="flex items-center gap-3">
+            <div class="reward-badge px-3 py-2 flex-shrink-0">
+              <div class="text-base font-bold text-purple-300">10</div>
+              <div class="text-[10px] text-gray-400">AX Points</div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs text-gray-300 font-medium mb-1">充值 1,000 USDT</div>
+              <div class="pbar"><div class="pbar-fill" style="width:50%"></div></div>
+              <div class="text-[10px] text-gray-500 mt-1">500 / 1,000</div>
+            </div>
+            <button class="btn-p flex-shrink-0">充值</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 步骤三：交易量任务 ── -->
+    <div class="section-card overflow-hidden">
+      <button onclick="toggleSection('vol','chevron-vol')" class="w-full flex items-center justify-between p-5 text-left hover:bg-white/5 transition-colors">
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold flex-shrink-0">3</div>
+          <span class="text-sm font-semibold">交易量任务</span>
+        </div>
+        <svg id="chevron-vol" class="chevron open" width="16" height="16" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div id="vol" class="px-5 pb-5">
+        <div class="flex justify-between text-[11px] text-gray-500 mb-1">
+          <span>总奖励</span>
+          <div class="flex gap-8"><span>100 积分</span><span>200 积分</span><span class="text-indigo-300 font-semibold">30,000 积分 + 30,000 USDT</span></div>
+        </div>
+        <div class="flex justify-between text-[11px] text-gray-600 mb-3">
+          <span>总金额</span>
+          <div class="flex gap-8"><span>10,000</span><span>20,000</span><span>30,000 USDT</span></div>
+        </div>
+        <div class="milestone-bar mb-4">
+          <div class="fill" style="width:35%"></div>
+          <div class="milestone-dot" style="left:33.3%;background:#1e1e3a;border-color:#6366f1"></div>
+          <div class="milestone-dot" style="left:66.6%;background:#1e1e3a;border-color:#3a3a6a"></div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xl">🎁</div>
+            <div>
+              <div class="text-[11px] text-gray-500">距下一个奖励</div>
+              <div class="text-sm font-bold">3,500 / 10,000 USDT</div>
+            </div>
+          </div>
+          <button class="btn-p">交易</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 步骤四：入金任务 ── -->
+    <div class="section-card overflow-hidden">
+      <button onclick="toggleSection('dep','chevron-dep')" class="w-full flex items-center justify-between p-5 text-left hover:bg-white/5 transition-colors">
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold flex-shrink-0">4</div>
+          <span class="text-sm font-semibold">入金任务</span>
+        </div>
+        <svg id="chevron-dep" class="chevron open" width="16" height="16" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div id="dep" class="px-5 pb-5">
+        <div class="flex justify-between text-[11px] text-gray-500 mb-1">
+          <span>总奖励</span>
+          <div class="flex gap-8"><span>1,000 USDT</span><span>2,000 USDT</span><span class="text-indigo-300 font-semibold">3,000 积分 + 3,000 USDT</span></div>
+        </div>
+        <div class="flex justify-between text-[11px] text-gray-600 mb-3">
+          <span>总金额</span>
+          <div class="flex gap-10"><span>1,000</span><span>2,000</span><span>3,000 USDT</span></div>
+        </div>
+        <div class="milestone-bar mb-4">
+          <div class="fill" style="width:50%"></div>
+          <div class="milestone-dot" style="left:33.3%;background:#1e1e3a;border-color:#6366f1"></div>
+          <div class="milestone-dot" style="left:66.6%;background:#1e1e3a;border-color:#3a3a6a"></div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xl">🎁</div>
+            <div>
+              <div class="text-[11px] text-gray-500">距下一个奖励</div>
+              <div class="text-sm font-bold">500 / 1,000 USDT</div>
+            </div>
+          </div>
+          <button class="btn-p">充值</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部：最高奖励 -->
+    <div class="text-center py-2">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20">
+        <div class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
+        <span class="text-sm text-gray-300">奖励最高可达 </span>
+        <span class="text-sm font-bold text-indigo-300">136,399 USDT</span>
+        <span class="text-sm text-gray-500">and</span>
+        <span class="text-sm font-bold text-purple-300">33,910 AX Points</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 倒计时
+    function tick() {
+      const diff = Math.max(0, new Date('2027-03-31T11:17:50') - new Date());
+      const pad = n => String(n).padStart(2,'0');
+      document.getElementById('cd-d').textContent = pad(Math.floor(diff/86400000));
+      document.getElementById('cd-h').textContent = pad(Math.floor(diff%86400000/3600000));
+      document.getElementById('cd-m').textContent = pad(Math.floor(diff%3600000/60000));
+      document.getElementById('cd-s').textContent = pad(Math.floor(diff%60000/1000));
+    }
+    tick(); setInterval(tick, 1000);
+
+    // 折叠
+    function toggleSection(id, chevronId) {
+      const el = document.getElementById(id);
+      const ch = document.getElementById(chevronId);
+      const open = el.style.display !== 'none';
+      el.style.display = open ? 'none' : 'block';
+      ch.classList.toggle('open', !open);
+    }
+  </script>
+</body>
+</html>

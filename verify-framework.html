@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>官方渠道验证页 — 已实现框架</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"PingFang SC","Helvetica Neue","Microsoft YaHei",Arial,sans-serif;
+  background:#f5f6f8;padding:48px 24px 80px;min-height:100vh;color:#1a1a2e;
+}
+
+/* ── ROOT ── */
+.root-wrap{display:flex;justify-content:center;margin-bottom:0}
+.root-box{
+  background:#fff;border:1.5px solid #c8ccd8;border-radius:14px;
+  padding:14px 40px;text-align:center;
+  box-shadow:0 2px 10px rgba(0,0,0,.07);
+}
+.root-box .t{font-size:16px;font-weight:700;color:#1a1a2e;margin-bottom:3px}
+.root-box .s{font-size:12px;color:#999}
+
+/* ── CONNECTORS ── */
+.v-line{width:1.5px;margin:0 auto;background:#c0c8d8}
+.h-trunk{height:1.5px;background:#c0c8d8;margin:0 auto}
+
+/* ── COLUMNS WRAPPER ── */
+.cols-wrap{display:flex;justify-content:center;gap:20px;position:relative;align-items:flex-start}
+
+/* ── SINGLE COLUMN ── */
+.col{display:flex;flex-direction:column;align-items:center;width:200px}
+.col-v{width:1.5px;flex-shrink:0}
+
+/* ── HEADER BOX ── */
+.hbox{
+  width:100%;border-radius:12px;padding:12px 14px;
+  text-align:center;border:1.5px solid;
+}
+.hbox .ht{font-size:14px;font-weight:700;margin-bottom:3px}
+.hbox .hs{font-size:11px;opacity:.65}
+
+/* ── ITEM BOX ── */
+.ibox{
+  width:100%;border-radius:8px;padding:9px 12px;
+  text-align:center;font-size:12.5px;font-weight:500;
+  border:1.5px solid;line-height:1.4;
+}
+
+/* ── THEME: 导航/结构 slate ── */
+.t-slate .col-v{background:#94a3b8}
+.t-slate .hbox{background:#e8ecf4;border-color:#94a3b8;color:#1e3a5f}
+.t-slate .ibox{background:#f1f5fb;border-color:#b8c8e0;color:#1e3a5f}
+
+/* ── THEME: 页头 teal ── */
+.t-teal .col-v{background:#5aada0}
+.t-teal .hbox{background:#d4f0ec;border-color:#5aada0;color:#134e44}
+.t-teal .ibox{background:#ebf8f5;border-color:#8ed5cc;color:#134e44}
+
+/* ── THEME: 查询区 violet ── */
+.t-violet .col-v{background:#7c84cc}
+.t-violet .hbox{background:#dfe1f8;border-color:#7c84cc;color:#1e2570}
+.t-violet .ibox{background:#edeffd;border-color:#b4b8ec;color:#1e2570}
+
+/* ── THEME: 结果态 amber ── */
+.t-amber .col-v{background:#d4a535}
+.t-amber .hbox{background:#fef3d0;border-color:#d4a535;color:#5c3d00}
+.t-amber .ibox{background:#fffaeb;border-color:#e8cc80;color:#5c3d00}
+
+/* ── THEME: 底部 gray ── */
+.t-gray .col-v{background:#a0aab8}
+.t-gray .hbox{background:#eef0f4;border-color:#a0aab8;color:#3c4555}
+.t-gray .ibox{background:#f5f7fa;border-color:#c8d0dc;color:#3c4555}
+
+/* Sub-item indent */
+.sub-item{
+  display:flex;flex-direction:column;align-items:center;width:100%;
+}
+</style>
+</head>
+<body>
+
+<!-- ROOT -->
+<div class="root-wrap">
+  <div class="root-box">
+    <div class="t">官方渠道验证页</div>
+    <div class="s">verify-100xex.html · 已实现功能框架</div>
+  </div>
+</div>
+
+<!-- Root ↓ trunk -->
+<div class="v-line" style="height:28px"></div>
+<div id="trunk" class="h-trunk" style="width:70%;max-width:1060px"></div>
+
+<!-- COLUMNS -->
+<div class="cols-wrap" id="colsWrap">
+
+  <!-- ① 全局结构 -->
+  <div class="col t-slate">
+    <div class="col-v" style="height:28px"></div>
+    <div class="hbox">
+      <div class="ht">全局结构</div>
+      <div class="hs">页面骨架</div>
+    </div>
+    <div class="col-v" style="height:16px"></div>
+    <div class="sub-item">
+      <div class="ibox">Logo + 导航链接</div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">买币 / 行情 / 合约<br>理财 / 活动 / 安全中心</div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">登录 / 注册按钮</div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">面包屑导航</div>
+    </div>
+  </div>
+
+  <!-- ② 页头区 -->
+  <div class="col t-teal">
+    <div class="col-v" style="height:28px"></div>
+    <div class="hbox">
+      <div class="ht">页头区</div>
+      <div class="hs">信任建立</div>
+    </div>
+    <div class="col-v" style="height:16px"></div>
+    <div class="sub-item">
+      <div class="ibox">页面标题</div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">通用安全说明文案</div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">官方安全验证徽章</div>
+    </div>
+  </div>
+
+  <!-- ③ 验证查询区 -->
+  <div class="col t-violet">
+    <div class="col-v" style="height:28px"></div>
+    <div class="hbox">
+      <div class="ht">验证查询区</div>
+      <div class="hs">核心功能</div>
+    </div>
+    <div class="col-v" style="height:16px"></div>
+    <div class="sub-item">
+      <div class="ibox">平台下拉选择器<br><span style="font-size:11px;opacity:.7">TG / X / FB / IG / Medium / YT</span></div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">@ 前缀 + 账号输入框</div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">立即验证按钮<br><span style="font-size:11px;opacity:.7">含 Loading 状态</span></div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">空输入抖动校验</div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">点击外部关闭下拉<br>ESC 关闭弹窗</div>
+    </div>
+  </div>
+
+  <!-- ④ 三态结果 -->
+  <div class="col t-amber">
+    <div class="col-v" style="height:28px"></div>
+    <div class="hbox">
+      <div class="ht">查询结果（三态）</div>
+      <div class="hs">反馈交互</div>
+    </div>
+    <div class="col-v" style="height:16px"></div>
+    <div class="sub-item">
+      <div class="ibox">✅ 已验证<br><span style="font-size:11px;opacity:.7">内嵌成功卡片<br>平台 / 账号 / 用途 / 时间<br>复制结果 / 分享</span></div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">❌ 非官方渠道<br><span style="font-size:11px;opacity:.7">红色警告弹窗<br>查询内容回显 / 风险提示<br>举报诈骗 / 确认</span></div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">⚠️ 暂无匹配记录<br><span style="font-size:11px;opacity:.7">黄色提示弹窗<br>查询内容回显 / 操作建议<br>确认</span></div>
+    </div>
+  </div>
+
+  <!-- ⑤ 底部区域 -->
+  <div class="col t-gray">
+    <div class="col-v" style="height:28px"></div>
+    <div class="hbox">
+      <div class="ht">底部区域</div>
+      <div class="hs">合规与导航</div>
+    </div>
+    <div class="col-v" style="height:16px"></div>
+    <div class="sub-item">
+      <div class="ibox">安全声明卡片<br><span style="font-size:11px;opacity:.7">免责 · 禁止索要密码转账</span></div>
+      <div class="col-v" style="height:8px"></div>
+      <div class="ibox">页脚链接<br><span style="font-size:11px;opacity:.7">隐私 / 协议 / 风险 / 帮助</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// 动态绘制横向主干线，对齐各列顶端连接点
+window.addEventListener('load', () => {
+  const wrap  = document.getElementById('colsWrap');
+  const trunk = document.getElementById('trunk');
+  const cols  = wrap.querySelectorAll('.col');
+  if (cols.length < 2) return;
+
+  const wRect = wrap.getBoundingClientRect();
+  const first = cols[0].getBoundingClientRect();
+  const last  = cols[cols.length - 1].getBoundingClientRect();
+
+  const left  = first.left  + first.width / 2 - wRect.left;
+  const right = last.left   + last.width  / 2 - wRect.left;
+
+  wrap.style.position = 'relative';
+  const line = document.createElement('div');
+  line.style.cssText = `
+    position:absolute;
+    top:0;
+    left:${left}px;
+    width:${right - left}px;
+    height:1.5px;
+    background:#c0c8d8;
+    pointer-events:none;
+  `;
+  wrap.insertBefore(line, wrap.firstChild);
+  trunk.style.display = 'none';
+});
+</script>
+</body>
+</html>

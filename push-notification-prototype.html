@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PUSH 消息 · 原型</title>
+<style>
+:root{
+  --bg:#090b13;--bg2:#0f1220;--bg3:#161b2e;
+  --card:#191e33;--card2:#1f2540;
+  --border:#252d50;--border2:#2e3860;
+  --primary:#6366f1;--violet:#8b5cf6;
+  --grad:linear-gradient(135deg,#6366f1,#8b5cf6);
+  --gold:#f59e0b;--green:#10b981;--red:#ef4444;--sky:#06b6d4;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#475569;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'SF Pro Display',-apple-system,'PingFang SC',sans-serif;min-height:100vh;}
+
+/* ═══ TOP BAR ═══ */
+.top-bar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;height:44px;position:fixed;top:0;left:0;right:0;z-index:400;
+}
+.top-brand{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;}
+.top-brand .dot{width:7px;height:7px;border-radius:50%;background:var(--grad);}
+.layout-toggle{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:3px;gap:2px;}
+.lt-btn{padding:4px 14px;border-radius:6px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;border:none;background:none;}
+.lt-btn.active{background:var(--grad);color:#fff;}
+
+/* ═══ VIEWS ═══ */
+.view{display:none;padding-top:44px;}
+.view.active{display:block;}
+
+/* ═══════════════════════════════════
+   APP VIEW
+═══════════════════════════════════ */
+.app-shell{max-width:390px;margin:0 auto;background:var(--bg);}
+.app-topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:44px;z-index:100;}
+.app-back{width:30px;height:30px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;}
+.app-topbar-title{font-size:16px;font-weight:700;}
+.app-topbar-sub{font-size:11px;color:var(--text3);}
+
+.app-sec{padding:16px;}
+.app-sec-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px;}
+.app-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:12px;}
+.app-row{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid var(--border);}
+.app-row:last-child{border-bottom:none;}
+.app-row-l{display:flex;align-items:center;gap:11px;}
+.row-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.row-name{font-size:14px;font-weight:600;}
+.row-desc{font-size:11px;color:var(--text3);margin-top:1px;}
+.row-r{display:flex;align-items:center;gap:8px;}
+.freq-sel{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:4px 9px;font-size:11px;color:var(--text2);cursor:pointer;}
+
+/* toggle */
+.tog{position:relative;width:42px;height:24px;flex-shrink:0;}
+.tog input{opacity:0;width:0;height:0;}
+.tog-s{position:absolute;inset:0;border-radius:12px;background:var(--border);cursor:pointer;transition:.3s;}
+.tog-s::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.3s;}
+.tog input:checked+.tog-s{background:var(--primary);}
+.tog input:checked+.tog-s::before{transform:translateX(18px);}
+
+/* DND */
+.dnd-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:15px;margin-bottom:12px;}
+.dnd-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.dnd-title{font-size:14px;font-weight:600;margin-bottom:3px;}
+.dnd-desc{font-size:11px;color:var(--text3);line-height:1.5;}
+.dnd-times{display:flex;align-items:center;gap:8px;}
+.dnd-time{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 12px;text-align:center;cursor:pointer;}
+.dnd-time-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;}
+.dnd-time-val{font-size:17px;font-weight:800;color:var(--primary);}
+
+/* push preview bubbles */
+.preview-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;}
+.preview-lbl{font-size:12px;color:var(--text2);font-weight:600;margin-bottom:10px;}
+.bubble{display:flex;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:11px 13px;margin-bottom:7px;}
+.bubble:last-child{margin-bottom:0;}
+.bubble-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.bubble-body{flex:1;min-width:0;}
+.bubble-meta{display:flex;justify-content:space-between;margin-bottom:2px;}
+.bubble-app{font-size:10px;color:var(--text3);font-weight:700;}
+.bubble-time{font-size:10px;color:var(--text3);}
+.bubble-title{font-size:13px;font-weight:700;margin-bottom:2px;}
+.bubble-text{font-size:11px;color:var(--text2);line-height:1.5;}
+.unread{width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:3px;}
+
+/* ═══════════════════════════════════
+   ADMIN VIEW — left sidebar layout
+═══════════════════════════════════ */
+.admin-layout{display:flex;min-height:calc(100vh - 44px);}
+
+/* ── Sidebar ── */
+.sidebar{
+  width:216px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);
+  position:sticky;top:44px;height:calc(100vh - 44px);overflow-y:auto;
+  display:flex;flex-direction:column;
+}
+.sidebar-logo{padding:18px 16px 10px;font-size:13px;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sidebar-section-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;padding:12px 16px 4px;}
+.nav-item{
+  display:flex;align-items:center;gap:9px;padding:9px 16px;
+  font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;
+  transition:all .15s;border-left:2px solid transparent;
+}
+.nav-item:hover{color:var(--text);background:rgba(99,102,241,.05);}
+.nav-item.active{color:var(--primary);background:rgba(99,102,241,.08);border-left-color:var(--primary);}
+.nav-item .nav-ico{font-size:14px;width:18px;text-align:center;}
+.nav-badge{margin-left:auto;font-size:10px;background:rgba(99,102,241,.15);color:var(--primary);padding:1px 6px;border-radius:10px;font-weight:700;}
+.nav-badge-warn{background:rgba(245,158,11,.15);color:var(--gold);}
+.nav-sub{padding-left:16px;}
+.nav-sub .nav-item{padding:7px 12px 7px 28px;font-size:12px;}
+.nav-sub .nav-item.active{background:rgba(99,102,241,.06);}
+.nav-divider{height:1px;background:var(--border);margin:8px 12px;}
+.sidebar-bottom{margin-top:auto;padding:12px 16px;font-size:11px;color:var(--text3);}
+
+/* ── Main content ── */
+.admin-main{flex:1;min-width:0;padding:24px 28px;overflow-x:auto;}
+
+/* ── Admin pages ── */
+.admin-page{display:none;}
+.admin-page.active{display:block;}
+
+/* Page header */
+.pg-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+.pg-title{font-size:19px;font-weight:800;}
+.pg-desc{font-size:13px;color:var(--text3);margin-top:3px;}
+.pg-actions{display:flex;gap:8px;flex-shrink:0;}
+
+/* Info / warn boxes */
+.info-box{background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);border-radius:11px;padding:11px 15px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px;}
+.info-box strong{color:var(--primary);}
+.warn-box{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:11px;padding:11px 15px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px;}
+.warn-box strong{color:var(--gold);}
+.red-box{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:11px;padding:11px 15px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px;}
+.red-box strong{color:var(--red);}
+
+/* Buttons */
+.btn{padding:7px 15px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+.btn-primary{background:var(--grad);color:#fff;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2);}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);}
+.btn-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:var(--gold);}
+
+/* Pills / badges */
+.pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.pill-on{background:rgba(16,185,129,.12);color:var(--green);}
+.pill-off{background:rgba(71,85,105,.15);color:var(--text3);}
+.pill-high{background:rgba(239,68,68,.12);color:var(--red);}
+.pill-mid{background:rgba(245,158,11,.12);color:var(--gold);}
+.pill-low{background:rgba(99,102,241,.12);color:var(--primary);}
+.pill-sky{background:rgba(6,182,212,.12);color:var(--sky);}
+.pill-sent{background:rgba(16,185,129,.1);color:var(--green);}
+.cat-sports{background:rgba(99,102,241,.1);color:var(--primary);}
+.cat-market{background:rgba(6,182,212,.1);color:var(--sky);}
+.cat-announce{background:rgba(139,92,246,.1);color:var(--violet);}
+.cat-activity{background:rgba(245,158,11,.1);color:var(--gold);}
+
+/* Table */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;}
+.table-top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+.table-top-title{font-size:14px;font-weight:700;}
+.table-acts{display:flex;gap:7px;align-items:center;}
+table{width:100%;border-collapse:collapse;}
+th{background:var(--bg3);padding:10px 14px;text-align:left;font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(99,102,241,.03);}
+.td-preview{font-size:11px;color:var(--text2);line-height:1.5;max-width:260px;}
+.td-preview strong{color:var(--text);font-size:12px;}
+
+/* Table toggle */
+.tg{position:relative;width:34px;height:19px;}
+.tg input{opacity:0;width:0;height:0;}
+.tg-s{position:absolute;inset:0;border-radius:10px;background:var(--border);cursor:pointer;transition:.3s;}
+.tg-s::before{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.3s;}
+.tg input:checked+.tg-s{background:var(--primary);}
+.tg input:checked+.tg-s::before{transform:translateX(15px);}
+
+/* Filter chips */
+.filter-chips{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);color:var(--text2);cursor:pointer;transition:all .2s;background:transparent;}
+.chip:hover{border-color:var(--primary);}
+.chip.active{border-color:var(--primary);background:rgba(99,102,241,.1);color:var(--primary);}
+.chip-count{font-size:10px;opacity:.7;margin-left:3px;}
+
+/* Stats cards row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;}
+.stat-lbl{font-size:11px;color:var(--text3);margin-bottom:5px;}
+.stat-val{font-size:24px;font-weight:800;}
+.stat-delta{font-size:11px;margin-top:3px;}
+.up{color:var(--green);}
+.dn{color:var(--red);}
+
+/* Form */
+.form-grid{display:grid;gap:14px;margin-bottom:14px;}
+.fg2{grid-template-columns:1fr 1fr;}
+.fg3{grid-template-columns:1fr 1fr 1fr;}
+.fg1{grid-template-columns:1fr;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-label{font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+.form-input{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;transition:border .2s;font-family:inherit;}
+.form-input:focus{border-color:var(--primary);}
+.form-input::placeholder{color:var(--text3);}
+.form-sel{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.form-textarea{min-height:70px;resize:vertical;}
+.form-hint{font-size:11px;color:var(--text3);}
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;}
+.form-card-title{font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.fc-tag{font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(99,102,241,.12);color:var(--primary);font-weight:700;}
+.fc-tag-warn{background:rgba(239,68,68,.12);color:var(--red);}
+
+/* Divider */
+.hr{height:1px;background:var(--border);margin:16px 0;}
+
+/* Channel tags */
+.ch{display:inline-flex;align-items:center;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-right:3px;}
+.ch-ios{background:rgba(6,182,212,.1);color:var(--sky);}
+.ch-and{background:rgba(16,185,129,.1);color:var(--green);}
+.ch-in{background:rgba(139,92,246,.1);color:var(--violet);}
+
+/* Threshold row */
+.thresh-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.thresh-row:last-child{border-bottom:none;}
+.thresh-label .t-name{font-size:13px;font-weight:600;}
+.thresh-label .t-desc{font-size:11px;color:var(--text3);margin-top:2px;}
+.thresh-ctrl{display:flex;align-items:center;gap:6px;}
+.thresh-input{width:65px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:13px;color:var(--text);outline:none;text-align:center;}
+.thresh-input:focus{border-color:var(--primary);}
+.thresh-unit{font-size:12px;color:var(--text3);}
+
+/* Send preview device */
+.send-layout{display:flex;gap:24px;align-items:flex-start;}
+.send-form{flex:1;min-width:0;}
+.device-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0;}
+.device{width:264px;background:#181818;border-radius:30px;padding:16px 10px;box-shadow:0 0 0 5px #111,0 20px 60px rgba(0,0,0,.5);}
+.d-screen{background:#000;border-radius:18px;overflow:hidden;padding:10px;}
+.d-status{display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.4);margin-bottom:14px;}
+.d-notif{background:rgba(35,35,35,.95);border-radius:13px;padding:11px;}
+.d-notif-head{display:flex;align-items:center;gap:5px;margin-bottom:5px;}
+.d-app-ico{width:16px;height:16px;border-radius:4px;background:var(--grad);}
+.d-app-name{font-size:9px;color:rgba(255,255,255,.45);font-weight:700;}
+.d-time{margin-left:auto;font-size:9px;color:rgba(255,255,255,.3);}
+.d-title{font-size:12px;font-weight:700;margin-bottom:2px;}
+.d-body{font-size:10px;color:rgba(255,255,255,.65);line-height:1.5;}
+
+/* User group segment builder */
+.segment-box{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px;}
+.seg-opt{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.seg-opt:last-child{border-bottom:none;padding-bottom:0;}
+.seg-radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:1px;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.seg-radio.sel{border-color:var(--primary);background:var(--primary);}
+.seg-radio.sel::after{content:'';width:5px;height:5px;border-radius:50%;background:#fff;}
+.seg-name{font-size:13px;font-weight:600;}
+.seg-desc{font-size:11px;color:var(--text3);margin-top:1px;}
+.seg-count{margin-left:auto;font-size:12px;color:var(--primary);font-weight:700;flex-shrink:0;}
+
+/* Progress */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.prog-label{font-size:12px;color:var(--text2);width:100px;flex-shrink:0;}
+.prog-wrap{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;background:var(--grad);}
+.prog-val{font-size:12px;color:var(--text2);width:36px;text-align:right;flex-shrink:0;}
+
+/* Sub tabs */
+.sub-tabs{display:flex;gap:3px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:3px;width:fit-content;margin-bottom:16px;}
+.sub-tab{padding:6px 16px;border-radius:7px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;}
+.sub-tab.active{background:var(--card2);color:var(--text);}
+
+/* Priority highlight row */
+tr.row-high td:first-child{border-left:2px solid var(--red);}
+tr.row-high td{background:rgba(239,68,68,.02);}
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<div class="top-bar">
+  <div class="top-brand"><div class="dot"></div>PUSH 消息 · 原型</div>
+  <div class="layout-toggle">
+    <button class="lt-btn active" onclick="switchView('admin')">⚙️ 后台管理</button>
+    <button class="lt-btn" onclick="switchView('app')">📱 用户端</button>
+  </div>
+  <div style="font-size:11px;color:var(--text3);">一期需求</div>
+</div>
+
+
+<!-- ================================================================
+  APP VIEW
+================================================================ -->
+<div class="view" id="view-app">
+<div class="app-shell">
+
+  <div class="app-topbar">
+    <div class="app-back">←</div>
+    <div>
+      <div class="app-topbar-title">消息通知设置</div>
+      <div style="font-size:11px;color:var(--text3);">管理推送偏好</div>
+    </div>
+  </div>
+
+  <!-- 效果预览 -->
+  <div class="app-sec">
+    <div class="preview-box">
+      <div class="preview-lbl">📲 锁屏通知示例</div>
+      <div class="bubble">
+        <div class="bubble-ico" style="background:rgba(239,68,68,.15);">⚠️</div>
+        <div class="bubble-body">
+          <div class="bubble-meta"><span class="bubble-app">DEX Trading</span><span class="bubble-time">刚刚</span></div>
+          <div class="bubble-title">爆仓预警</div>
+          <div class="bubble-text">ETH 仓位快撑不住了！当前价 3,180 距强平价 3,050 仅剩 4%，马上补保证金</div>
+        </div>
+        <div class="unread"></div>
+      </div>
+      <div class="bubble">
+        <div class="bubble-ico" style="background:rgba(16,185,129,.15);">💚</div>
+        <div class="bubble-body">
+          <div class="bubble-meta"><span class="bubble-app">DEX Trading</span><span class="bubble-time">5分钟前</span></div>
+          <div class="bubble-title">止盈到手了 🎉</div>
+          <div class="bubble-text">ETH 止盈触发，盈利 +320 USDT（+8.2%），资金已入账</div>
+        </div>
+      </div>
+      <div class="bubble">
+        <div class="bubble-ico" style="background:rgba(16,185,129,.15);">✅</div>
+        <div class="bubble-body">
+          <div class="bubble-meta"><span class="bubble-app">DEX Trading</span><span class="bubble-time">10分钟前</span></div>
+          <div class="bubble-title">入金到账</div>
+          <div class="bubble-text">500 USDT 已到你的账户，余额已更新</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 仓位提醒 -->
+  <div class="app-sec" style="padding-top:0;">
+    <div class="app-sec-label">仓位提醒</div>
+    <div class="app-card">
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(239,68,68,.12);">⚠️</div>
+          <div><div class="row-name">爆仓预警</div><div class="row-desc">仓位接近强平价时立即提醒（重要，建议开启）</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(239,68,68,.08);">💥</div>
+          <div><div class="row-name">仓位已被强平</div><div class="row-desc">强制平仓执行后通知</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(16,185,129,.12);">🎉</div>
+          <div><div class="row-name">止盈触发</div><div class="row-desc">达到你设置的目标收益时通知</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(99,102,241,.12);">🛡️</div>
+          <div><div class="row-name">止损触发</div><div class="row-desc">达到止损价位，已帮你控制亏损</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(99,102,241,.12);">✅</div>
+          <div><div class="row-name">订单成交</div><div class="row-desc">你的限价单 / 市价单成交时通知</div></div>
+        </div>
+        <div class="row-r">
+          <div class="freq-sel">每单 ▾</div>
+          <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 充提通知 -->
+  <div class="app-sec" style="padding-top:0;">
+    <div class="app-sec-label">充提通知</div>
+    <div class="app-card">
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(16,185,129,.12);">💰</div>
+          <div><div class="row-name">入金到账</div><div class="row-desc">充值打入账户时通知</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(16,185,129,.12);">🏧</div>
+          <div><div class="row-name">出金结果</div><div class="row-desc">提现成功 / 提现被拒都会通知你</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(245,158,11,.12);">🎁</div>
+          <div><div class="row-name">返佣到账</div><div class="row-desc">好友交易帮你挣到返佣时通知</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(239,68,68,.12);">🔐</div>
+          <div><div class="row-name">账号安全提醒</div><div class="row-desc">陌生设备 / 异地登录时立即通知</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- 行情 -->
+  <div class="app-sec" style="padding-top:0;">
+    <div class="app-sec-label">行情提醒</div>
+    <div class="app-card">
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(6,182,212,.12);">🎯</div>
+          <div><div class="row-name">我的价格提醒</div><div class="row-desc">你设置的目标价到了就通知</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(245,158,11,.12);">⚡</div>
+          <div><div class="row-name">大幅涨跌警报</div><div class="row-desc">某个币 24 小时内暴涨暴跌时通知</div></div>
+        </div>
+        <div class="row-r">
+          <div class="freq-sel">≥5% ▾</div>
+          <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 平台通知 -->
+  <div class="app-sec" style="padding-top:0;">
+    <div class="app-sec-label">平台通知</div>
+    <div class="app-card">
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(139,92,246,.12);">📢</div>
+          <div><div class="row-name">平台公告</div><div class="row-desc">新币上线、系统公告</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+      <div class="app-row">
+        <div class="app-row-l">
+          <div class="row-ico" style="background:rgba(99,102,241,.12);">🎉</div>
+          <div><div class="row-name">最新活动</div><div class="row-desc">限时活动、奖励发放</div></div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- 免打扰 -->
+  <div class="app-sec" style="padding-top:0;">
+    <div class="app-sec-label">免打扰</div>
+    <div class="dnd-box">
+      <div class="dnd-row">
+        <div>
+          <div class="dnd-title">免打扰时段</div>
+          <div class="dnd-desc" style="font-size:11px;color:var(--text3);line-height:1.5;">时段内只推送爆仓预警、账号安全等重要通知</div>
+        </div>
+        <label class="tog"><input type="checkbox" checked><span class="tog-s"></span></label>
+      </div>
+      <div class="dnd-times">
+        <div class="dnd-time"><div class="dnd-time-lbl">开始</div><div class="dnd-time-val">22:00</div></div>
+        <span style="color:var(--text3);font-size:16px;">→</span>
+        <div class="dnd-time"><div class="dnd-time-lbl">结束</div><div class="dnd-time-val">08:00</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:40px;"></div>
+</div>
+</div><!-- /view-app -->
+
+
+<!-- ================================================================
+  ADMIN VIEW
+================================================================ -->
+<div class="view active" id="view-admin">
+<div class="admin-layout">
+
+  <!-- ── LEFT SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-logo">◈ DEX 管理后台</div>
+
+    <div class="sidebar-section-label">消息管理</div>
+    <div class="nav-item active" onclick="navTo(this,'pg-list-all')">
+      <span class="nav-ico">📋</span>推送消息列表
+    </div>
+
+    <div class="nav-sub">
+      <div class="nav-item active" onclick="navTo(this,'pg-list-all',this)" data-filter="all">
+        <span class="nav-ico">·</span>全部消息
+        <span class="nav-badge">14</span>
+      </div>
+      <div class="nav-item" onclick="navTo(this,'pg-list-all');filterList('info')" data-filter="info">
+        <span class="nav-ico">·</span>信息通知
+        <span class="nav-badge">9</span>
+      </div>
+      <div class="nav-item" onclick="navTo(this,'pg-list-all');filterList('market')" data-filter="market">
+        <span class="nav-ico">·</span>行情异动
+        <span class="nav-badge">4</span>
+      </div>
+      <div class="nav-item" onclick="navTo(this,'pg-list-all');filterList('announce')" data-filter="announce">
+        <span class="nav-ico">·</span>平台公告
+        <span class="nav-badge">1</span>
+      </div>
+      <div class="nav-item" onclick="navTo(this,'pg-list-all');filterList('activity')" data-filter="activity">
+        <span class="nav-ico">·</span>最新活动
+        <span class="nav-badge">1</span>
+      </div>
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="sidebar-section-label">配置</div>
+    <div class="nav-item" onclick="navTo(this,'pg-market')">
+      <span class="nav-ico">📊</span>行情阈值配置
+    </div>
+    <div class="nav-item" onclick="navTo(this,'pg-freq')">
+      <span class="nav-ico">⏱</span>频控管理
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="sidebar-section-label">推送</div>
+    <div class="nav-item" onclick="navTo(this,'pg-send')">
+      <span class="nav-ico">📣</span>手动推送
+    </div>
+    <div class="nav-item" onclick="navTo(this,'pg-logs')">
+      <span class="nav-ico">📈</span>推送记录
+    </div>
+
+    <div class="sidebar-bottom">一期 · v1.0.0</div>
+  </div>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div class="admin-main">
+
+    <!-- ═══════════════════════════════
+      PAGE: 推送消息列表（汇总）
+    ═══════════════════════════════ -->
+    <div class="admin-page active" id="pg-list-all">
+      <div class="pg-head">
+        <div>
+          <div class="pg-title">推送消息列表</div>
+          <div class="pg-desc">统一管理所有推送类型的文案模板、触发规则与开关状态</div>
+        </div>
+        <div class="pg-actions">
+          <button class="btn btn-outline btn-sm">导出配置</button>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>动态变量说明：</strong>
+        在内容中使用 <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{symbol}</code> 交易对 &nbsp;
+        <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{num}</code> 数量 &nbsp;
+        <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{price}</code> 价格 &nbsp;
+        <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{liq_price}</code> 强平价 &nbsp;
+        <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{profit}</code> 盈利 &nbsp;
+        <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{loss}</code> 亏损 &nbsp;
+        <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{rate}</code> 涨跌率 &nbsp;
+        <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{amount}</code> 金额 &nbsp;
+        <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{datetime}</code> 时间 &nbsp;
+        <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{reason}</code> 原因 &nbsp;
+        <code style="background:rgba(99,102,241,.12);padding:1px 5px;border-radius:4px;">{location}</code> 地点
+      </div>
+
+      <!-- Filter chips -->
+      <div class="filter-chips" id="list-filter-chips">
+        <div class="chip active" data-f="all" onclick="filterList('all',this)">全部 <span class="chip-count">14</span></div>
+        <div class="chip" data-f="info" onclick="filterList('info',this)">信息通知 <span class="chip-count">9</span></div>
+        <div class="chip" data-f="market" onclick="filterList('market',this)">行情异动 <span class="chip-count">4</span></div>
+        <div class="chip" data-f="announce" onclick="filterList('announce',this)">平台公告 <span class="chip-count">1</span></div>
+        <div class="chip" data-f="activity" onclick="filterList('activity',this)">最新活动 <span class="chip-count">1</span></div>
+      </div>
+
+      <!-- ── 信息通知 section ── -->
+      <div class="table-wrap list-section" data-cat="info">
+        <div class="table-top">
+          <div class="table-top-title">信息通知 <span style="font-size:12px;color:var(--text3);font-weight:400;margin-left:6px;">用户操作 / 系统事件触发，点对点推送</span></div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>消息类型</th>
+            <th>优先级</th>
+            <th style="min-width:80px;">用户端标题</th>
+            <th style="min-width:260px;">用户端内容预览</th>
+            <th>跳转</th>
+            <th>渠道</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr></thead>
+          <tbody>
+            <!-- 充提 -->
+            <tr>
+              <td><strong>入金到账</strong></td>
+              <td><span class="pill pill-low">普通</span></td>
+              <td>入金到账 ✅</td>
+              <td class="td-preview">{num} USDT 已到你的账户，余额已更新</td>
+              <td style="font-size:12px;color:var(--text2);">充值记录页</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm" onclick="openEdit('入金到账')">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>出金成功</strong></td>
+              <td><span class="pill pill-low">普通</span></td>
+              <td>出金成功</td>
+              <td class="td-preview">你提现的 {num} USDT 已处理完成，即将到达钱包地址</td>
+              <td style="font-size:12px;color:var(--text2);">提现记录页</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>出金被拒</strong> <span style="font-size:10px;color:var(--gold);margin-left:3px;">补充</span></td>
+              <td><span class="pill pill-low">普通</span></td>
+              <td>提现未通过</td>
+              <td class="td-preview">{num} USDT 提现未通过，原因：{reason}，点击查看详情</td>
+              <td style="font-size:12px;color:var(--text2);">提现记录页</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <!-- 仓位 -->
+            <tr class="row-high">
+              <td><strong>爆仓预警</strong></td>
+              <td><span class="pill pill-high">⚡ 高优</span></td>
+              <td>⚠️ 爆仓预警</td>
+              <td class="td-preview">{symbol} 仓位快撑不住了！当前价 {price} 距强平价 {liq_price} 仅剩 {gap}%，马上补保证金</td>
+              <td style="font-size:12px;color:var(--text2);">当前合约页</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <tr class="row-high">
+              <td><strong>仓位已强平</strong></td>
+              <td><span class="pill pill-high">⚡ 高优</span></td>
+              <td>仓位已被强平</td>
+              <td class="td-preview">{symbol} 仓位因保证金不足已被强制平仓，约亏损 {loss} USDT，点击查看</td>
+              <td style="font-size:12px;color:var(--text2);">当前合约页</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>止盈触发</strong></td>
+              <td><span class="pill pill-low">普通</span></td>
+              <td>止盈到手了 🎉</td>
+              <td class="td-preview">{symbol} 止盈触发，盈利 +{profit} USDT（+{rate}%），资金已入账</td>
+              <td style="font-size:12px;color:var(--text2);">当前持仓</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>止损触发</strong></td>
+              <td><span class="pill pill-low">普通</span></td>
+              <td>止损已执行</td>
+              <td class="td-preview">{symbol} 止损触发，亏损 -{loss} USDT（{rate}%），已帮你控制风险</td>
+              <td style="font-size:12px;color:var(--text2);">当前持仓</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>订单成交</strong></td>
+              <td><span class="pill pill-low">普通</span></td>
+              <td>成交啦</td>
+              <td class="td-preview">{symbol} {direction}单成交 {num}，均价 {price}</td>
+              <td style="font-size:12px;color:var(--text2);">当前合约页</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>返佣入账</strong></td>
+              <td><span class="pill pill-low">普通</span></td>
+              <td>返佣到账 💰</td>
+              <td class="td-preview">好友交易帮你赚到 {amount} USDT 返佣，已入账</td>
+              <td style="font-size:12px;color:var(--text2);">资产页</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <tr class="row-high">
+              <td><strong>登录异常</strong> <span style="font-size:10px;color:var(--gold);margin-left:3px;">补充</span></td>
+              <td><span class="pill pill-high">⚡ 高优</span></td>
+              <td>账号安全提醒 🔐</td>
+              <td class="td-preview">新设备在 {location} 登录了你的账号，不是你的话赶快去冻结</td>
+              <td style="font-size:12px;color:var(--text2);">安全中心</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── 行情异动 section ── -->
+      <div class="table-wrap list-section" data-cat="market">
+        <div class="table-top">
+          <div class="table-top-title">行情异动 <span style="font-size:12px;color:var(--text3);font-weight:400;margin-left:6px;">系统监控 / 用户自定义目标价触发</span></div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>消息类型</th>
+            <th>触发逻辑</th>
+            <th>用户端标题</th>
+            <th style="min-width:260px;">用户端内容预览</th>
+            <th>频控</th>
+            <th>渠道</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>目标价提醒↑</strong><div style="font-size:10px;color:var(--text3);margin-top:1px;">用户自设</div></td>
+              <td style="font-size:12px;color:var(--text2);">用户设定目标价<br>价格触达时推送</td>
+              <td>{symbol} 价格突破</td>
+              <td class="td-preview">{symbol} 已突破你设置的 {target_price}，当前 {current_price}，快去看看</td>
+              <td><span style="font-size:11px;color:var(--green);">每价位一次</span></td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>目标价提醒↓</strong><div style="font-size:10px;color:var(--text3);margin-top:1px;">用户自设</div></td>
+              <td style="font-size:12px;color:var(--text2);">用户设定目标价<br>价格触达时推送</td>
+              <td>{symbol} 价格跌破</td>
+              <td class="td-preview">{symbol} 已跌破你设置的 {target_price}，当前 {current_price}，注意风险</td>
+              <td><span style="font-size:11px;color:var(--green);">每价位一次</span></td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>大幅上涨</strong><div style="font-size:10px;color:var(--text3);margin-top:1px;">系统监控</div></td>
+              <td style="font-size:12px;color:var(--text2);">24H涨幅 ≥ 配置阈值<br><a onclick="navTo(null,'pg-market')" style="color:var(--primary);cursor:pointer;font-size:11px;">去配置阈值 →</a></td>
+              <td>{symbol} 暴涨</td>
+              <td class="td-preview">{symbol} 24小时涨了 {rate}%，现在 {current_price}，抓住机会</td>
+              <td><span style="font-size:11px;color:var(--gold);">每标的每日1次</span></td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+            <tr>
+              <td><strong>大幅下跌</strong><div style="font-size:10px;color:var(--text3);margin-top:1px;">系统监控</div></td>
+              <td style="font-size:12px;color:var(--text2);">24H跌幅 ≥ 配置阈值<br><a onclick="navTo(null,'pg-market')" style="color:var(--primary);cursor:pointer;font-size:11px;">去配置阈值 →</a></td>
+              <td>{symbol} 暴跌</td>
+              <td class="td-preview">{symbol} 24小时跌了 {rate}%，现在 {current_price}，注意风险</td>
+              <td><span style="font-size:11px;color:var(--gold);">每标的每日1次</span></td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── 平台公告 section ── -->
+      <div class="table-wrap list-section" data-cat="announce">
+        <div class="table-top">
+          <div class="table-top-title">平台公告 <span style="font-size:12px;color:var(--text3);font-weight:400;margin-left:6px;">系统事件触发，全体推送</span></div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>消息类型</th>
+            <th>触发时机</th>
+            <th>用户端标题</th>
+            <th style="min-width:260px;">用户端内容预览</th>
+            <th>目标用户</th>
+            <th>渠道</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>新币上线</strong></td>
+              <td style="font-size:12px;color:var(--text2);">新币对上线时触发</td>
+              <td>新币上线 🪙</td>
+              <td class="td-preview">DEX Trading 现已上线 {symbol}，成为最早交易者</td>
+              <td><span class="pill pill-sky">全体</span></td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-outline btn-sm">编辑</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── 最新活动 section ── -->
+      <div class="table-wrap list-section" data-cat="activity">
+        <div class="table-top">
+          <div class="table-top-title">最新活动 <span style="font-size:12px;color:var(--text3);font-weight:400;margin-left:6px;">运营手动配置，支持分群推送</span></div>
+          <div class="table-acts">
+            <button class="btn btn-primary btn-sm" onclick="navTo(null,'pg-send')">＋ 新建活动推送</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>消息类型</th>
+            <th>用户端标题（示例）</th>
+            <th style="min-width:240px;">用户端内容示例</th>
+            <th>目标用户群</th>
+            <th>跳转</th>
+            <th>渠道</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>活动推送</strong><div style="font-size:10px;color:var(--text3);margin-top:1px;">运营配置</div></td>
+              <td>限时 0 费率交易 🎁</td>
+              <td class="td-preview">重磅推出 0 费率计划，免手续费交易，额外赢取最高 50,000 USDT</td>
+              <td>
+                <span class="pill pill-sky" style="margin-bottom:2px;display:inline-flex;">全体用户</span><br>
+                <span style="font-size:10px;color:var(--text3);">支持按群体精准推送</span>
+              </td>
+              <td style="font-size:12px;color:var(--text2);">活动落地页</td>
+              <td><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></td>
+              <td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td>
+              <td><button class="btn btn-primary btn-sm" onclick="navTo(null,'pg-send')">配置推送</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- /pg-list-all -->
+
+
+    <!-- ═══════════════════════════════
+      PAGE: 行情阈值配置
+    ═══════════════════════════════ -->
+    <div class="admin-page" id="pg-market">
+      <div class="pg-head">
+        <div>
+          <div class="pg-title">行情阈值配置</div>
+          <div class="pg-desc">配置大幅涨跌的系统监控阈值，"用户自定义目标价提醒"由用户在 App 内设置，此处无需配置</div>
+        </div>
+        <button class="btn btn-primary">保存配置</button>
+      </div>
+
+      <div class="warn-box">
+        <strong>注意区分两类行情通知：</strong>
+        ①「目标价提醒」= 用户在 App 设置目标价，系统到价触发，不受此处阈值影响；
+        ②「大幅涨跌」= 系统统一监控所有标的，按此页阈值触发，全体开启该通知的用户均收到
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div class="form-card">
+          <div class="form-card-title">大幅涨跌阈值 <span class="fc-tag">系统监控</span></div>
+          <div class="thresh-row">
+            <div class="thresh-label"><div class="t-name">大幅上涨触发阈值</div><div class="t-desc">24H 涨幅达到此值时推送</div></div>
+            <div class="thresh-ctrl"><input class="thresh-input" value="5"><span class="thresh-unit">%</span></div>
+          </div>
+          <div class="thresh-row">
+            <div class="thresh-label"><div class="t-name">大幅下跌触发阈值</div><div class="t-desc">24H 跌幅达到此值时推送</div></div>
+            <div class="thresh-ctrl"><input class="thresh-input" value="5"><span class="thresh-unit">%</span></div>
+          </div>
+          <div class="thresh-row">
+            <div class="thresh-label"><div class="t-name">极端行情加推阈值</div><div class="t-desc">超过此值时额外推送一次</div></div>
+            <div class="thresh-ctrl"><input class="thresh-input" value="10"><span class="thresh-unit">%</span></div>
+          </div>
+          <div class="thresh-row">
+            <div class="thresh-label"><div class="t-name">每标的每日最多触发</div><div class="t-desc">同一币种单日推送上限</div></div>
+            <div class="thresh-ctrl"><input class="thresh-input" value="1"><span class="thresh-unit">次</span></div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <div class="form-card-title">监控标的管理</div>
+          <table style="margin-bottom:12px;">
+            <thead><tr><th>标的</th><th>监控中</th><th>今日已推</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td><strong>BTC/USDT</strong></td><td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td><td><span style="color:var(--gold);">1次</span></td><td><button class="btn btn-outline btn-sm">重置</button></td></tr>
+              <tr><td><strong>ETH/USDT</strong></td><td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td><td><span style="color:var(--green);">0次</span></td><td><button class="btn btn-outline btn-sm">重置</button></td></tr>
+              <tr><td><strong>SOL/USDT</strong></td><td><label class="tg"><input type="checkbox" checked><span class="tg-s"></span></label></td><td><span style="color:var(--green);">0次</span></td><td><button class="btn btn-outline btn-sm">重置</button></td></tr>
+              <tr><td><strong>BNB/USDT</strong></td><td><label class="tg"><input type="checkbox"><span class="tg-s"></span></label></td><td>-</td><td><button class="btn btn-outline btn-sm">重置</button></td></tr>
+            </tbody>
+          </table>
+          <button class="btn btn-outline btn-sm">＋ 添加监控标的</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════
+      PAGE: 频控管理
+    ═══════════════════════════════ -->
+    <div class="admin-page" id="pg-freq">
+      <div class="pg-head">
+        <div>
+          <div class="pg-title">频控管理</div>
+          <div class="pg-desc">防止过度打扰。高优先级通知（爆仓预警、登录异常）不受任何频控限制</div>
+        </div>
+        <button class="btn btn-primary">保存</button>
+      </div>
+
+      <div class="red-box">
+        <strong>高优豁免：</strong>以下类型不受频控 & 免打扰时段限制：⚠️ 爆仓预警 &nbsp; 💥 仓位已强平 &nbsp; 🔐 登录异常
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div class="form-card">
+          <div class="form-card-title">全局上限</div>
+          <div class="thresh-row">
+            <div class="thresh-label"><div class="t-name">单用户每日 Push 上限</div><div class="t-desc">超出后静默，站内信仍正常入账</div></div>
+            <div class="thresh-ctrl"><input class="thresh-input" value="20"><span class="thresh-unit">条/天</span></div>
+          </div>
+          <div class="thresh-row">
+            <div class="thresh-label"><div class="t-name">免打扰默认时段</div><div class="t-desc">用户未自定义时使用</div></div>
+            <div class="thresh-ctrl"><span style="font-size:13px;">22:00</span><span class="thresh-unit">—</span><span style="font-size:13px;">08:00</span></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-card-title">各类型频控</div>
+          <div class="thresh-row">
+            <div class="thresh-label"><div class="t-name">订单成交</div><div class="t-desc">多笔可合并推送</div></div>
+            <div class="thresh-ctrl">
+              <select class="form-input form-sel" style="padding:5px 24px 5px 8px;font-size:12px;width:auto;">
+                <option>每笔实时</option><option>合并推送</option>
+              </select>
+            </div>
+          </div>
+          <div class="thresh-row">
+            <div class="thresh-label"><div class="t-name">返佣入账</div><div class="t-desc">多笔可汇总推送</div></div>
+            <div class="thresh-ctrl">
+              <select class="form-input form-sel" style="padding:5px 24px 5px 8px;font-size:12px;width:auto;">
+                <option>每笔实时</option><option>日汇总</option>
+              </select>
+            </div>
+          </div>
+          <div class="thresh-row">
+            <div class="thresh-label"><div class="t-name">活动通知</div><div class="t-desc">运营手动推送</div></div>
+            <div class="thresh-ctrl"><input class="thresh-input" value="2"><span class="thresh-unit">条/天</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════
+      PAGE: 手动推送（活动 + 公告）
+    ═══════════════════════════════ -->
+    <div class="admin-page" id="pg-send">
+      <div class="pg-head">
+        <div>
+          <div class="pg-title">手动推送</div>
+          <div class="pg-desc">发送平台公告或活动通知，支持精准用户群体定向推送</div>
+        </div>
+      </div>
+
+      <div class="send-layout">
+        <div class="send-form">
+
+          <!-- 基本信息 -->
+          <div class="form-card">
+            <div class="form-card-title">推送内容</div>
+            <div class="form-grid fg2" style="margin-bottom:12px;">
+              <div class="form-group">
+                <div class="form-label">通知类型</div>
+                <select class="form-input form-sel" onchange="updatePreview()">
+                  <option>🎉 活动通知</option>
+                  <option>📢 平台公告</option>
+                  <option>🪙 新币上线</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <div class="form-label">跳转位置</div>
+                <select class="form-input form-sel">
+                  <option>活动落地页</option>
+                  <option>交易页</option>
+                  <option>资产页</option>
+                  <option>首页</option>
+                  <option>自定义 URL</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+              <div class="form-label">Push 标题 <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">（最多 30 字）</span></div>
+              <input class="form-input" id="push-title" value="限时 0 费率交易 🎁" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+              <div class="form-label">Push 内容 <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">（最多 100 字）</span></div>
+              <textarea class="form-input form-textarea" id="push-body" oninput="updatePreview();countChar()">重磅推出 0 费率交易计划，全场加密货币免手续费，额外赢取最高 50,000 USDT</textarea>
+              <div class="form-hint" id="char-count">已输入 41 字</div>
+            </div>
+          </div>
+
+          <!-- 目标用户群体 -->
+          <div class="form-card">
+            <div class="form-card-title">目标用户群体 <span class="fc-tag">精准推送</span></div>
+            <div class="form-group" style="margin-bottom:12px;">
+              <div class="form-label">推送范围</div>
+              <select class="form-input form-sel" id="seg-select" onchange="onSegChange(this.value)">
+                <option value="all">全体用户</option>
+                <option value="new">新注册用户（注册 ≤ 7天）</option>
+                <option value="active">活跃用户（近30天有交易）</option>
+                <option value="whale">高净值用户（资产 ≥ 10,000 USDT）</option>
+                <option value="inactive">未激活用户（注册 >14天 未交易）</option>
+                <option value="vip">VIP 用户</option>
+                <option value="custom">自定义 UID 列表</option>
+              </select>
+            </div>
+
+            <!-- Segment presets visual -->
+            <div class="segment-box" id="seg-box">
+              <div class="seg-opt" onclick="selectSeg(this,'all')">
+                <div class="seg-radio sel"></div>
+                <div><div class="seg-name">全体用户</div><div class="seg-desc">所有已开启推送权限的注册用户</div></div>
+                <div class="seg-count">47,200 人</div>
+              </div>
+              <div class="seg-opt" onclick="selectSeg(this,'new')">
+                <div class="seg-radio"></div>
+                <div><div class="seg-name">新注册用户</div><div class="seg-desc">注册时间在 7 天内，首次激活关键</div></div>
+                <div class="seg-count">3,420 人</div>
+              </div>
+              <div class="seg-opt" onclick="selectSeg(this,'active')">
+                <div class="seg-radio"></div>
+                <div><div class="seg-name">活跃用户</div><div class="seg-desc">近 30 天内有交易记录</div></div>
+                <div class="seg-count">28,600 人</div>
+              </div>
+              <div class="seg-opt" onclick="selectSeg(this,'whale')">
+                <div class="seg-radio"></div>
+                <div><div class="seg-name">高净值用户</div><div class="seg-desc">账户总资产 ≥ 10,000 USDT</div></div>
+                <div class="seg-count">8,140 人</div>
+              </div>
+              <div class="seg-opt" onclick="selectSeg(this,'inactive')">
+                <div class="seg-radio"></div>
+                <div><div class="seg-name">未激活用户</div><div class="seg-desc">注册超14天但从未交易，唤醒目标</div></div>
+                <div class="seg-count">5,680 人</div>
+              </div>
+              <div class="seg-opt" onclick="selectSeg(this,'custom')">
+                <div class="seg-radio"></div>
+                <div><div class="seg-name">自定义 UID 列表</div><div class="seg-desc">手动输入或上传 CSV 文件</div></div>
+                <div class="seg-count">-</div>
+              </div>
+            </div>
+
+            <div id="custom-uid-area" style="display:none;margin-top:12px;">
+              <div class="form-group">
+                <div class="form-label">UID 列表</div>
+                <textarea class="form-input form-textarea" placeholder="每行一个 UID，最多 100,000 个&#10;或点击右侧上传 CSV"></textarea>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--bg3);border-radius:10px;margin-top:12px;">
+              <span style="font-size:13px;color:var(--text2);">预计触达用户</span>
+              <span style="font-size:20px;font-weight:800;color:var(--primary);" id="reach-count">47,200</span>
+              <span style="font-size:12px;color:var(--text3);">人（已开推送权限）</span>
+            </div>
+          </div>
+
+          <!-- 发送时间 -->
+          <div class="form-card">
+            <div class="form-card-title">发送时间</div>
+            <div class="form-grid fg2">
+              <div class="form-group">
+                <div class="form-label">发送方式</div>
+                <select class="form-input form-sel" onchange="toggleSchedule(this.value)">
+                  <option value="now">立即发送</option>
+                  <option value="later">定时发送</option>
+                </select>
+              </div>
+              <div class="form-group" id="sch-time" style="opacity:.35;pointer-events:none;">
+                <div class="form-label">定时时间</div>
+                <input class="form-input" type="datetime-local">
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-outline">👁 刷新预览</button>
+            <button class="btn btn-primary" style="flex:1;" onclick="doSend()">🚀 确认发送</button>
+          </div>
+        </div>
+
+        <!-- Device preview -->
+        <div class="device-wrap">
+          <div style="font-size:11px;color:var(--text3);">iOS 锁屏预览</div>
+          <div class="device">
+            <div class="d-screen">
+              <div class="d-status"><span>9:41</span><span>● ▲ ■</span></div>
+              <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:14px;">今日通知</div>
+              <div class="d-notif">
+                <div class="d-notif-head">
+                  <div class="d-app-ico"></div>
+                  <span class="d-app-name">DEX Trading</span>
+                  <span class="d-time">现在</span>
+                </div>
+                <div class="d-title" id="pv-title">限时 0 费率交易 🎁</div>
+                <div class="d-body" id="pv-body">重磅推出 0 费率交易计划，全场加密货币免手续费，额外赢取最高 50,000 USDT</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);">标题最多显示 1 行，内容 2 行</div>
+        </div>
+      </div>
+    </div><!-- /pg-send -->
+
+
+    <!-- ═══════════════════════════════
+      PAGE: 推送记录
+    ═══════════════════════════════ -->
+    <div class="admin-page" id="pg-logs">
+      <div class="pg-head">
+        <div>
+          <div class="pg-title">推送记录</div>
+          <div class="pg-desc">查看历史推送效果与数据统计</div>
+        </div>
+        <button class="btn btn-outline">导出报表</button>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-lbl">今日推送总量</div><div class="stat-val" style="color:var(--primary);">142,830</div><div class="stat-delta up">↑ 12.3% 较昨日</div></div>
+        <div class="stat-card"><div class="stat-lbl">平均触达率</div><div class="stat-val" style="color:var(--green);">78.4%</div><div class="stat-delta up">↑ 2.1%</div></div>
+        <div class="stat-card"><div class="stat-lbl">平均点击率</div><div class="stat-val" style="color:var(--gold);">23.6%</div><div class="stat-delta dn">↓ 0.8%</div></div>
+        <div class="stat-card"><div class="stat-lbl">用户关闭率</div><div class="stat-val" style="color:var(--red);">1.2%</div><div class="stat-delta" style="color:var(--text3);">= 持平</div></div>
+      </div>
+
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="switchSubTab(this,'log-h')">发送历史</div>
+        <div class="sub-tab" onclick="switchSubTab(this,'log-s')">分类统计</div>
+      </div>
+
+      <div id="log-h">
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <select class="form-input form-sel" style="width:auto;padding:6px 24px 6px 10px;font-size:12px;"><option>全部类型</option><option>信息通知</option><option>行情异动</option><option>平台公告</option><option>活动</option></select>
+          <select class="form-input form-sel" style="width:auto;padding:6px 24px 6px 10px;font-size:12px;"><option>最近7天</option><option>最近30天</option></select>
+          <input class="form-input" style="width:180px;" placeholder="搜索标题">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>时间</th><th>类型</th><th>标题</th><th>目标用户群</th><th>发送量</th><th>触达率</th><th>点击率</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td style="font-size:11px;color:var(--text3);">04/28 14:30</td><td><span class="pill cat-activity">活动</span></td><td>限时 0 费率交易</td><td><span style="font-size:12px;">全体用户</span></td><td>47,200</td><td style="color:var(--green);">81.2%</td><td style="color:var(--gold);">28.4%</td><td><span class="pill pill-sent">✓ 完成</span></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+              <tr><td style="font-size:11px;color:var(--text3);">04/28 09:15</td><td><span class="pill cat-market">行情</span></td><td>BTC 暴涨</td><td><span style="font-size:12px;">订阅用户</span></td><td>38,600</td><td style="color:var(--green);">76.3%</td><td style="color:var(--gold);">31.2%</td><td><span class="pill pill-sent">✓ 完成</span></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+              <tr><td style="font-size:11px;color:var(--text3);">04/27 18:42</td><td><span class="pill cat-announce">公告</span></td><td>新币上线 · SOL</td><td><span style="font-size:12px;">全体用户</span></td><td>47,200</td><td style="color:var(--green);">79.8%</td><td style="color:var(--gold);">18.6%</td><td><span class="pill pill-sent">✓ 完成</span></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+              <tr><td style="font-size:11px;color:var(--text3);">04/27 11:00</td><td><span class="pill cat-activity">活动</span></td><td>存款送 100 USDT</td><td><span style="font-size:12px;color:var(--sky);">新注册用户</span></td><td>3,420</td><td style="color:var(--gold);">68.4%</td><td style="color:var(--green);">35.1%</td><td><span class="pill pill-sent">✓ 完成</span></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+              <tr><td style="font-size:11px;color:var(--text3);">04/29 10:00</td><td><span class="pill cat-activity">活动</span></td><td>周末交易竞赛</td><td><span style="font-size:12px;">全体用户</span></td><td>47,200</td><td>-</td><td>-</td><td><span class="pill pill-mid">⏳ 待发</span></td><td><button class="btn btn-danger btn-sm">取消</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="log-s" style="display:none;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>通知类型</th><th>月发送次数</th><th>月发送总量</th><th>平均触达率</th><th>平均点击率</th><th>用户关闭率</th></tr></thead>
+            <tbody>
+              <tr><td><strong>爆仓预警</strong> <span class="pill pill-high">高优</span></td><td>8,420</td><td>12,480</td><td style="color:var(--green);">96.2%</td><td style="color:var(--gold);">72.4%</td><td style="color:var(--green);">0.1%</td></tr>
+              <tr><td><strong>订单成交</strong></td><td>142,600</td><td>380,200</td><td style="color:var(--green);">82.1%</td><td style="color:var(--gold);">41.3%</td><td style="color:var(--green);">0.3%</td></tr>
+              <tr><td><strong>行情异动</strong></td><td>1,240</td><td>48,600,000</td><td style="color:var(--green);">76.8%</td><td style="color:var(--gold);">29.6%</td><td style="color:var(--gold);">1.8%</td></tr>
+              <tr><td><strong>入金到账</strong></td><td>24,100</td><td>24,100</td><td style="color:var(--green);">91.4%</td><td style="color:var(--gold);">38.7%</td><td style="color:var(--green);">0.2%</td></tr>
+              <tr><td><strong>活动通知</strong></td><td>12</td><td>482,400</td><td style="color:var(--gold);">71.3%</td><td style="color:var(--gold);">22.8%</td><td style="color:var(--red);">3.4%</td></tr>
+              <tr><td><strong>返佣入账</strong></td><td>18,600</td><td>18,600</td><td style="color:var(--green);">88.2%</td><td style="color:var(--gold);">45.1%</td><td style="color:var(--green);">0.1%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /pg-logs -->
+
+  </div><!-- /admin-main -->
+</div><!-- /admin-layout -->
+</div><!-- /view-admin -->
+
+
+<!-- ── EDIT MODAL ── -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:600;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:26px;width:540px;max-width:90vw;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div style="font-size:16px;font-weight:800;" id="modal-title">编辑模板</div>
+      <button onclick="closeEdit()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 12px;color:var(--text2);cursor:pointer;font-size:12px;">✕ 关闭</button>
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <div class="form-label">用户端标题</div>
+      <input class="form-input" id="edit-title" placeholder="Push 标题">
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <div class="form-label">用户端内容</div>
+      <textarea class="form-input form-textarea" id="edit-body" placeholder="Push 内容，支持动态变量"></textarea>
+      <div class="form-hint">可用变量：{symbol} {num} {price} {liq_price} {profit} {loss} {rate} {amount} {datetime} {reason} {location}</div>
+    </div>
+    <div class="form-grid fg2" style="margin-bottom:14px;">
+      <div class="form-group">
+        <div class="form-label">推送渠道</div>
+        <select class="form-input form-sel"><option>iOS + Android + 站内信</option><option>iOS + Android</option><option>仅站内信</option></select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">跳转位置</div>
+        <select class="form-input form-sel"><option>充值记录页</option><option>提现记录页</option><option>当前合约页</option><option>当前持仓</option><option>资产页</option><option>安全中心</option><option>活动落地页</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeEdit()" style="background:transparent;border:1px solid var(--border);border-radius:9px;padding:8px 18px;color:var(--text2);cursor:pointer;font-size:13px;font-weight:600;">取消</button>
+      <button style="background:var(--grad);border:none;border-radius:9px;padding:8px 22px;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">保存</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ─ View switch ─ */
+function switchView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.lt-btn').forEach((b,i)=>{
+    b.classList.toggle('active',(v==='admin'&&i===0)||(v==='app'&&i===1));
+  });
+}
+
+/* ─ Sidebar nav ─ */
+function navTo(el, pgId, subEl){
+  document.querySelectorAll('.admin-page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(pgId).classList.add('active');
+  if(el){
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+  }
+}
+
+/* ─ List filter ─ */
+function filterList(cat, chipEl){
+  // chips
+  document.querySelectorAll('.filter-chips .chip').forEach(c=>c.classList.remove('active'));
+  if(chipEl) chipEl.classList.add('active');
+  else {
+    document.querySelectorAll('.filter-chips .chip').forEach(c=>{
+      if(c.dataset.f===cat) c.classList.add('active');
+    });
+  }
+  // sections
+  document.querySelectorAll('.list-section').forEach(s=>{
+    s.style.display = (cat==='all'||s.dataset.cat===cat)?'block':'none';
+  });
+}
+
+/* ─ Edit modal ─ */
+const editContent = {
+  '入金到账':['入金到账 ✅','{num} USDT 已到你的账户，余额已更新'],
+};
+function openEdit(name){
+  document.getElementById('modal-title').textContent = '编辑模板 · '+name;
+  if(editContent[name]){
+    document.getElementById('edit-title').value = editContent[name][0];
+    document.getElementById('edit-body').value = editContent[name][1];
+  }
+  document.getElementById('edit-modal').style.display='flex';
+}
+function closeEdit(){ document.getElementById('edit-modal').style.display='none'; }
+document.getElementById('edit-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('edit-modal')) closeEdit(); });
+
+/* ─ Preview update ─ */
+function updatePreview(){
+  document.getElementById('pv-title').textContent = document.getElementById('push-title').value || '（标题）';
+  document.getElementById('pv-body').textContent = document.getElementById('push-body').value || '（内容）';
+}
+function countChar(){
+  const n = document.getElementById('push-body').value.length;
+  const el = document.getElementById('char-count');
+  el.textContent = `已输入 ${n} 字`;
+  el.style.color = n>100?'var(--red)':'var(--text3)';
+}
+
+/* ─ Segment select ─ */
+const segData = {all:47200,new:3420,active:28600,whale:8140,inactive:5680,vip:12400,custom:0};
+function selectSeg(el, key){
+  el.closest('#seg-box').querySelectorAll('.seg-radio').forEach(r=>r.classList.remove('sel'));
+  el.querySelector('.seg-radio').classList.add('sel');
+  document.getElementById('reach-count').textContent = segData[key]||'-';
+  document.getElementById('custom-uid-area').style.display = key==='custom'?'block':'none';
+}
+function onSegChange(v){
+  document.getElementById('seg-box').querySelectorAll('.seg-opt').forEach((opt,i)=>{
+    const keys=['all','new','active','whale','inactive','vip','custom'];
+    if(keys[i]===v) selectSeg(opt, v);
+  });
+}
+
+/* ─ Schedule ─ */
+function toggleSchedule(v){
+  const el = document.getElementById('sch-time');
+  el.style.opacity = v==='later'?'1':'0.35';
+  el.style.pointerEvents = v==='later'?'auto':'none';
+}
+
+/* ─ Send confirm ─ */
+function doSend(){
+  const t = document.getElementById('push-title').value;
+  if(!t.trim()){alert('请填写推送标题');return;}
+  if(confirm(`确认发送：「${t}」\n该操作不可撤回。`)){
+    alert('推送任务已提交，可在「推送记录」查看进度。');
+  }
+}
+
+/* ─ Sub tabs ─ */
+function switchSubTab(el, target){
+  el.closest('.admin-main').querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('log-h').style.display = target==='log-h'?'block':'none';
+  document.getElementById('log-s').style.display = target==='log-s'?'block':'none';
+}
+</script>
+</body>
+</html>

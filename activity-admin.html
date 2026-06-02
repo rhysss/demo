@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新增活动落地页</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+    background: #0d0f14;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .modal {
+    background: #12151c;
+    border-radius: 12px;
+    width: 900px;
+    max-width: 96vw;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 24px 64px rgba(0,0,0,.7);
+  }
+
+  /* ── Modal header ── */
+  .modal-header {
+    padding: 24px 28px 0;
+    flex-shrink: 0;
+  }
+  .modal-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #3b5bdb;
+    display: inline-block;
+  }
+  .modal-close {
+    position: absolute;
+    top: 20px; right: 22px;
+    background: none; border: none;
+    color: #8a8f9e; font-size: 20px;
+    cursor: pointer; line-height: 1;
+    transition: color .2s;
+  }
+  .modal-close:hover { color: #fff; }
+
+  /* ── Modal body ── */
+  .modal-body {
+    padding: 24px 28px;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: #2a2d38 transparent;
+  }
+  .modal-body::-webkit-scrollbar { width: 6px; }
+  .modal-body::-webkit-scrollbar-thumb { background: #2a2d38; border-radius: 3px; }
+
+  /* ── Section ── */
+  .section { margin-bottom: 28px; }
+  .section-label {
+    font-size: 13px;
+    color: #c0c4d0;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .section-label .req { color: #e55; }
+
+  /* ── Checkbox group ── */
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+  }
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #c8cbd6;
+    user-select: none;
+  }
+  .checkbox-item input[type=checkbox] { display: none; }
+  .checkbox-box {
+    width: 16px; height: 16px;
+    border: 1.5px solid #3a3e4e;
+    border-radius: 3px;
+    background: #1a1d27;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .18s;
+    flex-shrink: 0;
+  }
+  .checkbox-item input:checked + .checkbox-box {
+    background: #3b5bdb;
+    border-color: #3b5bdb;
+  }
+  .checkbox-item input:checked + .checkbox-box::after {
+    content: '';
+    width: 9px; height: 5px;
+    border-left: 1.5px solid #fff;
+    border-bottom: 1.5px solid #fff;
+    transform: rotate(-45deg) translateY(-1px);
+    display: block;
+  }
+
+  /* ── Date range ── */
+  .date-range {
+    background: #1a1d27;
+    border: 1px solid #2a2d38;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    height: 48px;
+    gap: 12px;
+    transition: border-color .2s;
+  }
+  .date-range:focus-within { border-color: #3b5bdb; }
+  .date-range input {
+    background: none; border: none; outline: none;
+    color: #c8cbd6; font-size: 14px;
+    flex: 1; min-width: 0;
+  }
+  .date-range input::placeholder { color: #4a4f62; }
+  .date-arrow { color: #4a4f62; font-size: 13px; flex-shrink: 0; }
+  .date-icon { color: #4a4f62; flex-shrink: 0; }
+
+  /* ── Language chips ── */
+  .lang-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+  }
+
+  /* ── Tab bar ── */
+  .lang-config-box {
+    background: #1a1d27;
+    border: 1px solid #2a2d38;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .tab-bar {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #2a2d38;
+    padding: 0 16px;
+    background: #1a1d27;
+  }
+  .tab-btn {
+    background: none; border: none; outline: none;
+    padding: 14px 16px 12px;
+    font-size: 14px;
+    color: #8a8f9e;
+    cursor: pointer;
+    position: relative;
+    transition: color .2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    color: #3b5bdb;
+  }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: #3b5bdb;
+    border-radius: 2px 2px 0 0;
+  }
+  .tab-spacer { flex: 1; }
+  .collapse-btn {
+    background: none; border: none; outline: none;
+    color: #4a8cff; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+    padding: 4px 8px;
+    transition: color .2s;
+  }
+  .collapse-btn:hover { color: #7aadff; }
+  .collapse-icon { transition: transform .25s; font-style: normal; }
+  .collapse-icon.rotated { transform: rotate(180deg); }
+
+  /* ── Tab panel ── */
+  .tab-panel { display: none; padding: 20px; }
+  .tab-panel.active { display: block; }
+  .tab-panel.collapsed { display: none !important; }
+
+  /* ── Form fields ── */
+  .field { margin-bottom: 18px; }
+  .field-label {
+    font-size: 13px; color: #c0c4d0;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .input-text {
+    width: 100%;
+    background: #12151c;
+    border: 1px solid #2a2d38;
+    border-radius: 7px;
+    padding: 10px 14px;
+    color: #e0e0e0;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+    font-family: inherit;
+  }
+  .input-text::placeholder { color: #3a3e52; }
+  .input-text:focus { border-color: #3b5bdb; }
+  .input-text.error { border-color: #e55; }
+
+  /* ── Upload area ── */
+  .upload-area {
+    margin-bottom: 18px;
+  }
+  .upload-hint {
+    font-size: 12px; color: #4a4f62; margin-top: 6px;
+  }
+  .upload-box {
+    background: #12151c;
+    border: 1px dashed #2a2d38;
+    border-radius: 8px;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    transition: border-color .2s;
+  }
+  .upload-box:hover { border-color: #3b5bdb; }
+  .upload-box input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 2;
+  }
+  .upload-placeholder {
+    height: 120px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    color: #3b5bdb; font-size: 14px;
+  }
+  .upload-preview {
+    display: none;
+    position: relative;
+  }
+  .upload-preview img {
+    width: 100%; height: 160px; object-fit: cover; display: block;
+  }
+  .upload-preview .remove-img {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(0,0,0,.65); border: none; border-radius: 50%;
+    color: #fff; width: 26px; height: 26px; font-size: 14px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    z-index: 3;
+  }
+  .upload-box.has-image .upload-placeholder { display: none; }
+  .upload-box.has-image .upload-preview { display: block; }
+
+  /* ── Rich text block ── */
+  .rich-block {
+    background: #12151c;
+    border: 1px solid #2a2d38;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .rich-block-header {
+    display: flex; align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #2a2d38;
+    gap: 8px;
+  }
+  .rich-block-num {
+    font-size: 12px; color: #8a8f9e;
+  }
+  .rich-block-del {
+    margin-left: auto;
+    background: none; border: none; color: #6a3a3a;
+    cursor: pointer; font-size: 18px; line-height: 1;
+    transition: color .2s;
+  }
+  .rich-block-del:hover { color: #e55; }
+
+  .toolbar {
+    display: flex; align-items: center; gap: 2px;
+    padding: 6px 10px;
+    border-bottom: 1px solid #2a2d38;
+    background: #fff;
+    flex-wrap: wrap;
+  }
+  .toolbar select, .toolbar button {
+    background: none; border: 1px solid transparent;
+    border-radius: 4px; padding: 3px 6px;
+    font-size: 12px; cursor: pointer;
+    color: #333; transition: background .15s;
+  }
+  .toolbar button:hover, .toolbar select:hover { background: #e8e8e8; }
+  .toolbar .sep { width: 1px; height: 16px; background: #ddd; margin: 0 4px; }
+  .rich-editor {
+    min-height: 120px;
+    background: #fff;
+    padding: 12px 14px;
+    color: #222;
+    font-size: 14px;
+    outline: none;
+    line-height: 1.7;
+  }
+  .rich-editor:empty::before {
+    content: attr(data-placeholder);
+    color: #aaa;
+    pointer-events: none;
+  }
+
+  /* ── Add text button ── */
+  .add-block-btn {
+    width: 100%;
+    background: #1a1d27;
+    border: 1px solid #2a2d38;
+    border-radius: 8px;
+    padding: 14px;
+    color: #3b5bdb;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .2s, border-color .2s;
+    margin-top: 4px;
+  }
+  .add-block-btn:hover { background: #1f2335; border-color: #3b5bdb; }
+  .add-block-btn svg { flex-shrink: 0; }
+
+  /* ── Validation banner ── */
+  .error-banner {
+    background: rgba(220,50,50,.12);
+    border: 1px solid rgba(220,50,50,.35);
+    border-radius: 7px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #e07070;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .error-banner.show { display: block; }
+
+  /* ── Modal footer ── */
+  .modal-footer {
+    padding: 16px 28px;
+    border-top: 1px solid #1f2230;
+    display: flex; justify-content: flex-end; gap: 12px;
+    flex-shrink: 0;
+    background: #12151c;
+    border-radius: 0 0 12px 12px;
+  }
+  .btn {
+    padding: 10px 36px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all .2s;
+    letter-spacing: .5px;
+  }
+  .btn-cancel {
+    background: #1e2130;
+    color: #8a8f9e;
+    border: 1px solid #2a2d38;
+  }
+  .btn-cancel:hover { background: #252840; color: #c0c4d0; }
+  .btn-save {
+    background: #3b5bdb;
+    color: #fff;
+  }
+  .btn-save:hover { background: #4c6ef5; }
+  .btn-save:active { transform: scale(.97); }
+
+  /* ── Tooltip ── */
+  .tooltip-wrap { position: relative; display: inline-flex; align-items: center; }
+  .tooltip-icon {
+    width: 15px; height: 15px;
+    border: 1px solid #4a4f62;
+    border-radius: 50%;
+    color: #4a4f62; font-size: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: default; margin-left: 4px; flex-shrink: 0;
+  }
+  .tooltip-box {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%);
+    background: #2a2d38; border-radius: 6px;
+    padding: 7px 12px; font-size: 12px; color: #c0c4d0;
+    white-space: nowrap; z-index: 10;
+    box-shadow: 0 4px 16px rgba(0,0,0,.5);
+  }
+  .tooltip-wrap:hover .tooltip-box { display: block; }
+
+  /* ── Sub-group (卡片 / 落地页 分组) ── */
+  .sub-group {
+    background: #0f1119;
+    border: 1px solid #22263a;
+    border-radius: 8px;
+    padding: 14px 16px 16px;
+    margin-bottom: 14px;
+  }
+  .sub-group-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #4a8cff;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sub-group-label::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 12px;
+    background: #3b5bdb;
+    border-radius: 2px;
+  }
+  .field-hint {
+    font-size: 11px;
+    color: #4a4f62;
+    font-weight: 400;
+    margin-left: 6px;
+  }
+
+  /* ── Steps indicator ── */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 24px;
+    padding: 16px 0 0;
+  }
+  .step {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #4a4f62;
+  }
+  .step.active { color: #3b5bdb; }
+  .step.done { color: #4caf80; }
+  .step-dot {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; flex-shrink: 0;
+  }
+  .step-line {
+    flex: 1; height: 1px; background: #2a2d38; margin: 0 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="modal-overlay">
+  <div class="modal">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>新增活动落地页</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+
+      <!-- Steps -->
+      <div class="steps">
+        <div class="step active" id="step1-ind">
+          <div class="step-dot">1</div>
+          <span>基础配置</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step2-ind">
+          <div class="step-dot">2</div>
+          <span>内容配置</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step3-ind">
+          <div class="step-dot">3</div>
+          <span>完成</span>
+        </div>
+      </div>
+
+      <!-- Error banner -->
+      <div class="error-banner" id="errorBanner"></div>
+
+      <!-- ① 用户群体 -->
+      <div class="section">
+        <div class="section-label"><span class="req">*</span>用户群体</div>
+        <div class="checkbox-group" id="userGroupGroup">
+          <label class="checkbox-item">
+            <input type="checkbox" name="userGroup" value="retail">
+            <span class="checkbox-box"></span>散户
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="userGroup" value="partner_team">
+            <span class="checkbox-box"></span>合伙人及其团队
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="userGroup" value="designated_partner">
+            <span class="checkbox-box"></span>指定合伙人及其团队
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="userGroup" value="crowd_pack">
+            <span class="checkbox-box"></span>人群包
+          </label>
+        </div>
+      </div>
+
+      <!-- ② 活动时间 -->
+      <div class="section">
+        <div class="section-label"><span class="req">*</span>活动时间</div>
+        <div class="date-range" id="dateRangeBox">
+          <input type="datetime-local" id="startDate" placeholder="开始日期">
+          <span class="date-arrow">→</span>
+          <input type="datetime-local" id="endDate" placeholder="结束日期">
+          <span class="date-icon">📅</span>
+        </div>
+      </div>
+
+      <!-- ③ 选择语言 -->
+      <div class="section">
+        <div class="section-label"><span class="req">*</span>选择语言</div>
+        <div class="lang-chips checkbox-group" id="langGroup">
+          <label class="checkbox-item">
+            <input type="checkbox" name="lang" value="zh-cn" checked onchange="onLangChange()">
+            <span class="checkbox-box"></span>简体中文
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="lang" value="zh-tw" onchange="onLangChange()">
+            <span class="checkbox-box"></span>繁体中文
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="lang" value="en" checked onchange="onLangChange()">
+            <span class="checkbox-box"></span>英语
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="lang" value="vi" onchange="onLangChange()">
+            <span class="checkbox-box"></span>越南语
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="lang" value="ru" onchange="onLangChange()">
+            <span class="checkbox-box"></span>俄语
+          </label>
+        </div>
+      </div>
+
+      <!-- ④ 落地页配置 -->
+      <div class="section">
+        <div class="section-label"><span class="req">*</span>落地页配置</div>
+        <div class="lang-config-box">
+
+          <!-- Tab bar -->
+          <div class="tab-bar" id="tabBar">
+            <!-- tabs injected by JS -->
+            <div class="tab-spacer"></div>
+            <button class="collapse-btn" id="collapseBtn" onclick="toggleCollapse()">
+              全部收起 <em class="collapse-icon" id="collapseIcon">∨</em>
+            </button>
+          </div>
+
+          <!-- Tab panels container -->
+          <div id="tabPanels"></div>
+
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="closeModal()">取 消</button>
+      <button class="btn btn-save" onclick="handleSave()">保 存</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Rich block template (hidden) -->
+<template id="richBlockTpl">
+  <div class="rich-block" data-block-id="">
+    <div class="rich-block-header">
+      <span class="rich-block-num">内容块 #<span class="block-idx"></span></span>
+      <button class="rich-block-del" onclick="removeBlock(this)" title="删除此内容块">✕</button>
+    </div>
+    <div class="field" style="padding:14px 14px 0;">
+      <div class="field-label"><span class="req">*</span> 标题</div>
+      <input class="input-text block-title" type="text" placeholder="请输入标题">
+    </div>
+    <div class="field" style="padding:0 14px 14px;">
+      <div class="field-label"><span class="req">*</span> 文本内容</div>
+      <div class="rich-block">
+        <div class="toolbar">
+          <select onchange="execCmd('fontSize', this.value); this.blur()">
+            <option value="3" selected>12pt</option>
+            <option value="1">8pt</option>
+            <option value="2">10pt</option>
+            <option value="4">14pt</option>
+            <option value="5">18pt</option>
+            <option value="6">24pt</option>
+          </select>
+          <div class="sep"></div>
+          <button onclick="execCmd('bold')" title="粗体"><b>B</b></button>
+          <button onclick="execCmd('italic')" title="斜体"><i>I</i></button>
+          <button onclick="execCmd('underline')" title="下划线"><u>U</u></button>
+          <button onclick="execCmd('strikeThrough')" title="删除线"><s>S</s></button>
+          <div class="sep"></div>
+          <button onclick="execCmd('justifyLeft')" title="左对齐">⬅</button>
+          <button onclick="execCmd('justifyCenter')" title="居中">☰</button>
+          <button onclick="execCmd('justifyRight')" title="右对齐">➡</button>
+          <div class="sep"></div>
+          <button onclick="execCmd('insertOrderedList')" title="有序列表">1.</button>
+          <button onclick="execCmd('insertUnorderedList')" title="无序列表">•</button>
+        </div>
+        <div class="rich-editor" contenteditable="true" data-placeholder="请输入文本内容…"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+// ── Language meta ──
+const LANG_META = {
+  'zh-cn': '简体中文',
+  'zh-tw': '繁体中文',
+  'en':    '英语',
+  'vi':    '越南语',
+  'ru':    '俄语',
+};
+
+let collapsed = false;
+let activeTab = null;
+let blockCounters = {}; // { langCode: number }
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  renderTabs();
+});
+
+// ── Lang checkbox change ──
+function onLangChange() {
+  renderTabs();
+}
+
+function getCheckedLangs() {
+  return [...document.querySelectorAll('input[name=lang]:checked')].map(el => el.value);
+}
+
+// ── Render tabs + panels ──
+function renderTabs() {
+  const langs = getCheckedLangs();
+  const tabBar = document.getElementById('tabBar');
+  const tabPanels = document.getElementById('tabPanels');
+
+  // Preserve existing panel data before re-render
+  const existingData = {};
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    const lang = panel.dataset.lang;
+    existingData[lang] = panel;
+  });
+
+  // Remove old tabs (keep spacer and collapse btn)
+  tabBar.querySelectorAll('.tab-btn').forEach(el => el.remove());
+
+  // Validate active tab
+  if (!langs.includes(activeTab)) {
+    activeTab = langs[0] || null;
+  }
+
+  // Inject tabs before spacer
+  const spacer = tabBar.querySelector('.tab-spacer');
+  langs.forEach(lang => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (lang === activeTab ? ' active' : '');
+    btn.dataset.lang = lang;
+    btn.textContent = LANG_META[lang];
+    btn.onclick = () => switchTab(lang);
+    tabBar.insertBefore(btn, spacer);
+  });
+
+  // Panels: keep existing, add new, remove obsolete
+  langs.forEach(lang => {
+    if (!document.querySelector(`.tab-panel[data-lang="${lang}"]`)) {
+      tabPanels.appendChild(buildPanel(lang));
+      blockCounters[lang] = blockCounters[lang] || 0;
+    }
+  });
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    if (!langs.includes(panel.dataset.lang)) {
+      panel.remove();
+    } else {
+      panel.classList.toggle('active', panel.dataset.lang === activeTab);
+    }
+  });
+}
+
+function switchTab(lang) {
+  activeTab = lang;
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.dataset.lang === lang);
+  });
+}
+
+// ── Build a single tab panel ──
+function buildPanel(lang) {
+  const panel = document.createElement('div');
+  panel.className = 'tab-panel' + (lang === activeTab ? ' active' : '');
+  panel.dataset.lang = lang;
+
+  panel.innerHTML = `
+    <!-- 活动名称 -->
+    <div class="field">
+      <div class="field-label"><span class="req">*</span> 活动名称</div>
+      <input class="input-text" type="text" placeholder="请输入活动名称" data-field="activityName">
+    </div>
+
+    <!-- 列表卡片标题组 -->
+    <div class="field sub-group">
+      <div class="sub-group-label">列表卡片</div>
+      <div class="field-row">
+        <div>
+          <div class="field-label"><span class="req">*</span> 卡片标题
+            <span class="field-hint">简短有力，扫视即懂</span>
+          </div>
+          <input class="input-text" type="text" placeholder="如：BTC &amp; ETH 0 費率" data-field="cardTitle">
+        </div>
+        <div>
+          <div class="field-label"><span class="req">*</span> 卡片副标题</div>
+          <input class="input-text" type="text" placeholder="如：披薩節交易瓜分 1 BTC" data-field="cardSubTitle">
+        </div>
+      </div>
+    </div>
+
+    <!-- 落地页标题组 -->
+    <div class="field sub-group">
+      <div class="sub-group-label">落地页</div>
+      <div class="field-row">
+        <div>
+          <div class="field-label"><span class="req">*</span> 页面大标题
+            <span class="field-hint">可比卡片标题更详细</span>
+          </div>
+          <input class="input-text" type="text" placeholder="如：披薩節：享受 0 費率 &amp; 瓜分 1 BTC" data-field="pageTitle">
+        </div>
+        <div>
+          <div class="field-label"><span class="req">*</span> 页面副标题</div>
+          <input class="input-text" type="text" placeholder="如：0 手續費交易 BTC &amp; ETH，贏取獎勵" data-field="pageSubTitle">
+        </div>
+      </div>
+    </div>
+
+    <!-- 活动标签 -->
+    <div class="field">
+      <div class="field-label">活动标签</div>
+      <input class="input-text" type="text" placeholder="如：特邀用户专属 / 热门活动 / 精英交易者" data-field="tag">
+    </div>
+
+    <!-- 封面图 -->
+    <div class="upload-area field">
+      <div class="field-label tooltip-wrap">
+        <span class="req">*</span> 上传封面图片
+        <span class="tooltip-icon">?</span>
+        <div class="tooltip-box">建议尺寸 780×360px，JPG/PNG，≤2MB</div>
+      </div>
+      <div class="upload-box" id="coverBox_${lang}">
+        <input type="file" accept="image/*" onchange="handleUpload(this,'coverBox_${lang}','coverPrev_${lang}')">
+        <div class="upload-placeholder">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b5bdb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          更换素材
+        </div>
+        <div class="upload-preview" id="coverPrev_${lang}">
+          <img src="" alt="封面预览">
+          <button class="remove-img" onclick="removeImg(event,'coverBox_${lang}','coverPrev_${lang}')">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 详情页主图 -->
+    <div class="upload-area field">
+      <div class="field-label tooltip-wrap">
+        上传详情页主图
+        <span class="tooltip-icon">?</span>
+        <div class="tooltip-box">建议尺寸 960×480px，JPG/PNG，≤3MB</div>
+      </div>
+      <div class="upload-box" id="heroBox_${lang}">
+        <input type="file" accept="image/*" onchange="handleUpload(this,'heroBox_${lang}','heroPrev_${lang}')">
+        <div class="upload-placeholder">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b5bdb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          更换素材
+        </div>
+        <div class="upload-preview" id="heroPrev_${lang}">
+          <img src="" alt="主图预览">
+          <button class="remove-img" onclick="removeImg(event,'heroBox_${lang}','heroPrev_${lang}')">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rich content blocks -->
+    <div class="field">
+      <div class="field-label"><span class="req">*</span> 正文内容块</div>
+      <div class="blocks-container" id="blocks_${lang}"></div>
+      <button class="add-block-btn" onclick="addBlock('${lang}')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b5bdb" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        添加文本
+      </button>
+    </div>
+  `;
+
+  // Add first block by default
+  setTimeout(() => {
+    addBlock(lang, panel.querySelector(`.blocks-container`));
+  }, 0);
+
+  return panel;
+}
+
+// ── Add content block ──
+let _globalBlockId = 0;
+function addBlock(lang, containerEl) {
+  const container = containerEl || document.getElementById(`blocks_${lang}`);
+  if (!container) return;
+
+  blockCounters[lang] = (blockCounters[lang] || 0) + 1;
+  const idx = blockCounters[lang];
+  const id = ++_globalBlockId;
+
+  const tpl = document.getElementById('richBlockTpl');
+  const clone = tpl.content.cloneNode(true);
+  const block = clone.querySelector('.rich-block');
+  block.dataset.blockId = id;
+  block.querySelector('.block-idx').textContent = idx;
+
+  container.appendChild(clone);
+  reindexBlocks(container);
+}
+
+function removeBlock(btn) {
+  const block = btn.closest('.rich-block');
+  const container = block.closest('.blocks-container');
+  block.remove();
+  reindexBlocks(container);
+}
+
+function reindexBlocks(container) {
+  container.querySelectorAll(':scope > .rich-block').forEach((b, i) => {
+    b.querySelector('.block-idx').textContent = i + 1;
+  });
+}
+
+// ── Rich text exec ──
+function execCmd(cmd, val) {
+  document.execCommand(cmd, false, val || null);
+}
+
+// ── Image upload ──
+function handleUpload(input, boxId, prevId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const box = document.getElementById(boxId);
+    const prev = document.getElementById(prevId);
+    prev.querySelector('img').src = e.target.result;
+    box.classList.add('has-image');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImg(e, boxId, prevId) {
+  e.stopPropagation();
+  const box = document.getElementById(boxId);
+  const prev = document.getElementById(prevId);
+  prev.querySelector('img').src = '';
+  box.classList.remove('has-image');
+  box.querySelector('input[type=file]').value = '';
+}
+
+// ── Collapse all ──
+function toggleCollapse() {
+  collapsed = !collapsed;
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('collapsed', collapsed);
+  });
+  document.getElementById('collapseBtn').firstChild.textContent = collapsed ? '全部展开 ' : '全部收起 ';
+  document.getElementById('collapseIcon').classList.toggle('rotated', collapsed);
+}
+
+// ── Validation & Save ──
+function handleSave() {
+  const errors = [];
+
+  // User group
+  const groups = [...document.querySelectorAll('input[name=userGroup]:checked')];
+  if (groups.length === 0) errors.push('请至少选择一个用户群体');
+
+  // Dates
+  const start = document.getElementById('startDate').value;
+  const end = document.getElementById('endDate').value;
+  if (!start || !end) errors.push('请选择活动时间');
+  else if (new Date(start) >= new Date(end)) errors.push('结束时间必须晚于开始时间');
+
+  // Langs
+  const langs = getCheckedLangs();
+  if (langs.length === 0) errors.push('请至少选择一种语言');
+
+  // Per-lang required fields
+  langs.forEach(lang => {
+    const label = LANG_META[lang];
+    const panel = document.querySelector(`.tab-panel[data-lang="${lang}"]`);
+    if (!panel) return;
+    const name        = panel.querySelector('[data-field=activityName]')?.value.trim();
+    const cardTitle   = panel.querySelector('[data-field=cardTitle]')?.value.trim();
+    const cardSub     = panel.querySelector('[data-field=cardSubTitle]')?.value.trim();
+    const pageTitle   = panel.querySelector('[data-field=pageTitle]')?.value.trim();
+    const pageSub     = panel.querySelector('[data-field=pageSubTitle]')?.value.trim();
+    if (!name)      errors.push(`【${label}】活动名称不能为空`);
+    if (!cardTitle) errors.push(`【${label}】卡片标题不能为空`);
+    if (!cardSub)   errors.push(`【${label}】卡片副标题不能为空`);
+    if (!pageTitle) errors.push(`【${label}】页面大标题不能为空`);
+    if (!pageSub)   errors.push(`【${label}】页面副标题不能为空`);
+
+    // At least one rich block with content
+    const blocks = panel.querySelectorAll('.rich-editor');
+    if (blocks.length === 0) errors.push(`【${label}】请至少添加一个文本块`);
+  });
+
+  const banner = document.getElementById('errorBanner');
+  if (errors.length > 0) {
+    banner.innerHTML = errors.map(e => `• ${e}`).join('<br>');
+    banner.classList.add('show');
+    banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  banner.classList.remove('show');
+
+  // Success feedback
+  const saveBtn = document.querySelector('.btn-save');
+  saveBtn.textContent = '✓ 已保存';
+  saveBtn.style.background = '#4caf80';
+  setTimeout(() => {
+    saveBtn.textContent = '保 存';
+    saveBtn.style.background = '';
+    // Update steps
+    document.getElementById('step1-ind').classList.remove('active');
+    document.getElementById('step1-ind').classList.add('done');
+    document.getElementById('step2-ind').classList.add('active');
+  }, 1200);
+}
+
+function closeModal() {
+  if (confirm('确认关闭？未保存的内容将丢失。')) {
+    document.querySelector('.modal-overlay').style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>

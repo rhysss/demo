@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>奖励发放中台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f5f7; }
+
+    /* 侧边栏 */
+    .sidebar { width: 220px; min-height: 100vh; background: #1a1b2e; flex-shrink: 0; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13px; color: #8b8baa; cursor: pointer; border-radius: 8px; margin: 2px 10px; transition: all 0.15s; }
+    .nav-item:hover { background: rgba(99,102,241,0.1); color: #a5b4fc; }
+    .nav-item.active { background: rgba(99,102,241,0.2); color: #6366f1; font-weight: 600; }
+    .nav-item .dot { width: 6px; height: 6px; border-radius: 50%; background: #ef4444; }
+
+    /* 状态徽章 */
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .badge-pending  { background: #fef3c7; color: #d97706; }
+    .badge-processing { background: #dbeafe; color: #2563eb; }
+    .badge-done     { background: #d1fae5; color: #059669; }
+    .badge-failed   { background: #fee2e2; color: #dc2626; }
+    .badge-blocked  { background: #fce7f3; color: #db2777; }
+    .badge-active   { background: #d1fae5; color: #059669; }
+    .badge-paused   { background: #f3f4f6; color: #6b7280; }
+
+    /* 卡片 */
+    .card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; }
+
+    /* 统计卡片 */
+    .stat-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #e5e7eb; }
+    .stat-trend-up   { color: #059669; font-size: 11px; }
+    .stat-trend-down { color: #dc2626; font-size: 11px; }
+
+    /* 表格 */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f9fafb; color: #6b7280; font-weight: 600; text-align: left; padding: 10px 14px; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
+    td { padding: 12px 14px; border-bottom: 1px solid #f3f4f6; color: #374151; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f9fafb; }
+
+    /* 按钮 */
+    .btn { padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+    .btn-primary { background: #6366f1; color: white; }
+    .btn-primary:hover { background: #4f46e5; }
+    .btn-danger  { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-ghost   { background: #f3f4f6; color: #6b7280; }
+    .btn-ghost:hover { background: #e5e7eb; }
+    .btn-success { background: #d1fae5; color: #059669; }
+    .btn-success:hover { background: #a7f3d0; }
+    .btn-warning { background: #fef3c7; color: #d97706; }
+
+    /* 输入框 */
+    input, select { border: 1px solid #e5e7eb; border-radius: 7px; padding: 7px 10px; font-size: 13px; color: #374151; outline: none; background: white; width: 100%; }
+    input:focus, select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    label { font-size: 12px; color: #6b7280; font-weight: 500; margin-bottom: 4px; display: block; }
+
+    /* 筛选 Tab */
+    .filter-tab { padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid transparent; color: #6b7280; transition: all 0.15s; }
+    .filter-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
+    .filter-tab:not(.active):hover { background: #f3f4f6; }
+
+    /* 切换开关 */
+    .toggle { position: relative; display: inline-block; width: 36px; height: 20px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: #d1d5db; border-radius: 20px; cursor: pointer; transition: .2s; }
+    .toggle-slider:before { content: ""; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: .2s; }
+    input:checked + .toggle-slider { background: #6366f1; }
+    input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+    /* 弹窗 */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+    .modal-box { background: white; border-radius: 16px; padding: 28px; width: 520px; max-height: 90vh; overflow-y: auto; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); transform: translateY(80px); opacity: 0; transition: all 0.3s; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-success { background: #059669; color: white; }
+    .toast-error   { background: #dc2626; color: white; }
+    .toast-info    { background: #2563eb; color: white; }
+
+    /* 迷你图表（CSS bar chart） */
+    .mini-chart { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
+    .mini-bar { flex: 1; border-radius: 3px 3px 0 0; background: #e0e7ff; transition: background 0.2s; }
+    .mini-bar.highlight { background: #6366f1; }
+
+    /* 风控规则卡片 */
+    .risk-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; }
+    .risk-card.triggered { border-color: #fca5a5; background: #fff5f5; }
+
+    /* 页面切换动画 */
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* 全局暂停横幅 */
+    .pause-banner { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 10px 16px; display: flex; align-items: center; gap-10px; margin-bottom: 20px; }
+
+    /* 数字增长动画 */
+    @keyframes countUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .count-anim { animation: countUp 0.4s ease; }
+  </style>
+</head>
+<body>
+<div class="flex min-h-screen">
+
+  <!-- ── 侧边栏 ── -->
+  <div class="sidebar flex flex-col py-5">
+    <!-- Logo -->
+    <div class="px-5 mb-6">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        </div>
+        <div>
+          <div class="text-white text-sm font-semibold">奖励中台</div>
+          <div class="text-gray-500 text-[10px]">Reward Admin</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-[10px] text-gray-600 px-5 mb-2 tracking-widest uppercase">主菜单</div>
+
+    <nav class="flex flex-col gap-0.5">
+      <div class="nav-item active" onclick="switchPage('dashboard', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        数据看板
+      </div>
+      <div class="nav-item" onclick="switchPage('rules', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01z"/></svg>
+        发放规则
+      </div>
+      <div class="nav-item" onclick="switchPage('queue', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        发放队列
+        <span class="ml-auto bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full">3</span>
+      </div>
+      <div class="nav-item" onclick="switchPage('risk', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        风控规则
+        <span class="dot ml-auto"></span>
+      </div>
+      <div class="nav-item" onclick="switchPage('exceptions', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        异常处理
+        <span class="ml-auto bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full">2</span>
+      </div>
+    </nav>
+
+    <div class="mt-auto px-5">
+      <div class="flex items-center gap-2.5 py-3 border-t border-gray-800">
+        <div class="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-xs text-white font-bold">运</div>
+        <div>
+          <div class="text-xs text-gray-300 font-medium">运营 · 张伟</div>
+          <div class="text-[10px] text-gray-600">超级管理员</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 主内容区 ── -->
+  <div class="flex-1 overflow-auto">
+    <!-- 顶部栏 -->
+    <div class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
+      <div>
+        <div class="text-xs text-gray-400" id="breadcrumb">首页 / 数据看板</div>
+        <div class="text-base font-semibold text-gray-800 mt-0.5" id="page-title">数据看板</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- 全局暂停开关 -->
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
+          <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+          <span class="text-xs text-gray-600 font-medium">自动发放</span>
+          <label class="toggle">
+            <input type="checkbox" checked id="global-switch" onchange="toggleGlobalSwitch(this)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="text-xs text-gray-400">2026-05-16 14:22:08</div>
+      </div>
+    </div>
+
+    <div class="p-6">
+
+      <!-- ══════ 数据看板 ══════ -->
+      <div class="page active" id="page-dashboard">
+        <!-- 全局暂停提示（隐藏默认） -->
+        <div id="pause-banner" class="hidden mb-5 bg-yellow-50 border border-yellow-300 rounded-xl p-4 flex items-center gap-3">
+          <svg width="18" height="18" fill="#d97706" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+          <span class="text-sm text-yellow-800 font-medium">⚠️ 自动发放已全局暂停，所有待发放任务将停止处理，请尽快恢复或排查原因</span>
+          <button class="ml-auto btn btn-warning text-xs" onclick="resumeSwitch()">恢复发放</button>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+          <div class="stat-card">
+            <div class="text-xs text-gray-500 mb-1">今日发放金额</div>
+            <div class="text-2xl font-bold text-gray-800 count-anim">28,450</div>
+            <div class="text-xs text-gray-400">USDT</div>
+            <div class="stat-trend-up mt-2">↑ 12.4% 较昨日</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-xs text-gray-500 mb-1">今日发放笔数</div>
+            <div class="text-2xl font-bold text-gray-800 count-anim">1,284</div>
+            <div class="text-xs text-gray-400">笔</div>
+            <div class="stat-trend-up mt-2">↑ 8.1% 较昨日</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-xs text-gray-500 mb-1">发放成功率</div>
+            <div class="text-2xl font-bold text-green-600 count-anim">98.4%</div>
+            <div class="text-xs text-gray-400">近 7 日</div>
+            <div class="stat-trend-up mt-2">↑ 0.3% 较上周</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-xs text-gray-500 mb-1">风控拦截</div>
+            <div class="text-2xl font-bold text-red-500 count-anim">17</div>
+            <div class="text-xs text-gray-400">今日</div>
+            <div class="stat-trend-down mt-2">↑ 5 较昨日 需关注</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <!-- 近7日发放趋势 -->
+          <div class="card p-5 col-span-2">
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-sm font-semibold text-gray-800">近 7 日发放金额趋势</div>
+              <span class="text-xs text-gray-400">单位：USDT</span>
+            </div>
+            <div class="flex items-end gap-2 h-28">
+              <div class="flex-1 flex flex-col items-center gap-1">
+                <div class="text-[10px] text-gray-400">18,200</div>
+                <div style="height:50%;width:100%" class="bg-indigo-100 rounded-t-md hover:bg-indigo-400 transition-colors cursor-pointer"></div>
+                <div class="text-[10px] text-gray-400">5/10</div>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-1">
+                <div class="text-[10px] text-gray-400">22,100</div>
+                <div style="height:62%;width:100%" class="bg-indigo-100 rounded-t-md hover:bg-indigo-400 transition-colors cursor-pointer"></div>
+                <div class="text-[10px] text-gray-400">5/11</div>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-1">
+                <div class="text-[10px] text-gray-400">19,800</div>
+                <div style="height:55%;width:100%" class="bg-indigo-100 rounded-t-md hover:bg-indigo-400 transition-colors cursor-pointer"></div>
+                <div class="text-[10px] text-gray-400">5/12</div>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-1">
+                <div class="text-[10px] text-gray-400">31,500</div>
+                <div style="height:88%;width:100%" class="bg-indigo-100 rounded-t-md hover:bg-indigo-400 transition-colors cursor-pointer"></div>
+                <div class="text-[10px] text-gray-400">5/13</div>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-1">
+                <div class="text-[10px] text-gray-400">27,300</div>
+                <div style="height:76%;width:100%" class="bg-indigo-100 rounded-t-md hover:bg-indigo-400 transition-colors cursor-pointer"></div>
+                <div class="text-[10px] text-gray-400">5/14</div>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-1">
+                <div class="text-[10px] text-gray-400">25,300</div>
+                <div style="height:70%;width:100%" class="bg-indigo-100 rounded-t-md hover:bg-indigo-400 transition-colors cursor-pointer"></div>
+                <div class="text-[10px] text-gray-400">5/15</div>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-1">
+                <div class="text-[10px] text-indigo-600 font-semibold">28,450</div>
+                <div style="height:79%;width:100%" class="bg-indigo-500 rounded-t-md hover:bg-indigo-600 transition-colors cursor-pointer"></div>
+                <div class="text-[10px] text-indigo-500 font-semibold">今日</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 状态分布 -->
+          <div class="card p-5">
+            <div class="text-sm font-semibold text-gray-800 mb-4">今日队列状态</div>
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-gray-500">已完成</span><span class="text-gray-700 font-medium">1,261 笔</span></div>
+                <div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-green-400 rounded-full" style="width:98.2%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-gray-500">处理中</span><span class="text-gray-700 font-medium">8 笔</span></div>
+                <div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-blue-400 rounded-full" style="width:0.6%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-gray-500">待发放</span><span class="text-gray-700 font-medium">12 笔</span></div>
+                <div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-yellow-400 rounded-full" style="width:0.9%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-gray-500">失败</span><span class="text-gray-700 font-medium">3 笔</span></div>
+                <div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-red-400 rounded-full" style="width:0.2%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-gray-500">风控拦截</span><span class="text-gray-700 font-medium">17 笔</span></div>
+                <div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-pink-400 rounded-full" style="width:1.3%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 告警 -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-sm font-semibold text-gray-800">系统告警</div>
+            <span class="text-xs text-gray-400">最近 24h</span>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-100">
+              <div class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></div>
+              <span class="text-xs text-red-700 flex-1">同一 IP 下发现 4 个账号在 30 分钟内完成邀请任务，已自动拦截并转人工审核</span>
+              <span class="text-[10px] text-gray-400">14:18</span>
+              <button class="btn btn-ghost text-xs py-1 px-2" onclick="switchPage('risk', document.querySelector('.nav-item:nth-child(4)'))">查看</button>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+              <div class="w-2 h-2 rounded-full bg-yellow-400 flex-shrink-0"></div>
+              <span class="text-xs text-yellow-700 flex-1">今日风控拦截数较昨日增长 41.7%，建议关注邀请任务异常</span>
+              <span class="text-[10px] text-gray-400">12:05</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <div class="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"></div>
+              <span class="text-xs text-blue-700 flex-1">T+1 批次已于 11:00 正常执行，共发放 892 笔，金额 16,340 USDT</span>
+              <span class="text-[10px] text-gray-400">11:01</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════ 发放规则 ══════ -->
+      <div class="page" id="page-rules">
+        <div class="flex items-center justify-between mb-5">
+          <div class="text-sm text-gray-500">配置各任务的奖励触发条件与发放参数</div>
+          <button class="btn btn-primary" onclick="openRuleModal()">+ 新增规则</button>
+        </div>
+
+        <div class="card overflow-hidden">
+          <table>
+            <thead>
+              <tr>
+                <th>任务名称</th>
+                <th>奖励类型</th>
+                <th>奖励金额</th>
+                <th>发放时机</th>
+                <th>单用户上限</th>
+                <th>总量上限</th>
+                <th>人工复审</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="font-medium text-gray-800">交易+邀请任务</div><div class="text-[11px] text-gray-400">AND 条件</div></td>
+                <td>USDT</td>
+                <td class="font-semibold text-indigo-600">100</td>
+                <td><span class="badge badge-pending">T+1</span></td>
+                <td>1 次</td>
+                <td><span class="text-gray-800 font-medium">10,000</span> <span class="text-gray-400 text-xs">USDT</span></td>
+                <td>
+                  <label class="toggle"><input type="checkbox" onchange="showToast('规则已更新', 'success')"><span class="toggle-slider"></span></label>
+                </td>
+                <td><span class="badge badge-active">启用</span></td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-ghost py-1 px-2 text-xs" onclick="openRuleModal('edit')">编辑</button>
+                    <button class="btn btn-danger py-1 px-2 text-xs" onclick="showToast('规则已暂停', 'info')">暂停</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><div class="font-medium text-gray-800">充值 1000 USDT</div><div class="text-[11px] text-gray-400">单一条件</div></td>
+                <td>AX Points</td>
+                <td class="font-semibold text-purple-600">100</td>
+                <td><span class="badge badge-done">即时</span></td>
+                <td>1 次</td>
+                <td><span class="text-gray-800 font-medium">50,000</span> <span class="text-gray-400 text-xs">Points</span></td>
+                <td>
+                  <label class="toggle"><input type="checkbox" onchange="showToast('规则已更新', 'success')"><span class="toggle-slider"></span></label>
+                </td>
+                <td><span class="badge badge-active">启用</span></td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-ghost py-1 px-2 text-xs" onclick="openRuleModal('edit')">编辑</button>
+                    <button class="btn btn-danger py-1 px-2 text-xs">暂停</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><div class="font-medium text-gray-800">关注 X</div><div class="text-[11px] text-gray-400">社交任务</div></td>
+                <td>USDT</td>
+                <td class="font-semibold text-indigo-600">300</td>
+                <td><span class="badge badge-pending">T+1</span></td>
+                <td>1 次</td>
+                <td><span class="text-gray-800 font-medium">100,000</span> <span class="text-gray-400 text-xs">USDT</span></td>
+                <td>
+                  <label class="toggle"><input type="checkbox" checked onchange="showToast('规则已更新', 'success')"><span class="toggle-slider"></span></label>
+                </td>
+                <td><span class="badge badge-active">启用</span></td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-ghost py-1 px-2 text-xs" onclick="openRuleModal('edit')">编辑</button>
+                    <button class="btn btn-danger py-1 px-2 text-xs">暂停</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><div class="font-medium text-gray-800">大奖：交易/充值</div><div class="text-[11px] text-gray-400">OR 条件</div></td>
+                <td>USDT</td>
+                <td class="font-semibold text-indigo-600">99,999</td>
+                <td><span class="badge badge-pending">T+1</span></td>
+                <td>1 次</td>
+                <td><span class="text-gray-800 font-medium">1</span> <span class="text-gray-400 text-xs">名额</span></td>
+                <td>
+                  <label class="toggle"><input type="checkbox" checked onchange="showToast('规则已更新', 'success')"><span class="toggle-slider"></span></label>
+                </td>
+                <td><span class="badge badge-active">启用</span></td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-ghost py-1 px-2 text-xs" onclick="openRuleModal('edit')">编辑</button>
+                    <button class="btn btn-danger py-1 px-2 text-xs">暂停</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><div class="font-medium text-gray-800">加入 Discord</div><div class="text-[11px] text-gray-400">社交任务</div></td>
+                <td>AX Points</td>
+                <td class="font-semibold text-purple-600">200</td>
+                <td><span class="badge badge-done">即时</span></td>
+                <td>1 次</td>
+                <td><span class="text-gray-800 font-medium">不限</span></td>
+                <td>
+                  <label class="toggle"><input type="checkbox" onchange="showToast('规则已更新', 'success')"><span class="toggle-slider"></span></label>
+                </td>
+                <td><span class="badge badge-paused">暂停</span></td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-ghost py-1 px-2 text-xs" onclick="openRuleModal('edit')">编辑</button>
+                    <button class="btn btn-success py-1 px-2 text-xs" onclick="showToast('规则已启用', 'success')">启用</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══════ 发放队列 ══════ -->
+      <div class="page" id="page-queue">
+        <!-- 筛选 -->
+        <div class="flex items-center gap-2 mb-4 flex-wrap">
+          <button class="filter-tab active" onclick="filterQueue('all', this)">全部 <span class="ml-1 text-[10px] opacity-70">1,284</span></button>
+          <button class="filter-tab" onclick="filterQueue('pending', this)">待发放 <span class="ml-1 text-[10px] opacity-70">12</span></button>
+          <button class="filter-tab" onclick="filterQueue('processing', this)">处理中 <span class="ml-1 text-[10px] opacity-70">8</span></button>
+          <button class="filter-tab" onclick="filterQueue('done', this)">已完成 <span class="ml-1 text-[10px] opacity-70">1,261</span></button>
+          <button class="filter-tab" onclick="filterQueue('failed', this)">失败 <span class="ml-1 text-[10px] opacity-70 text-red-400">3</span></button>
+          <button class="filter-tab" onclick="filterQueue('blocked', this)">风控拦截 <span class="ml-1 text-[10px] opacity-70 text-pink-400">17</span></button>
+          <div class="ml-auto flex gap-2">
+            <button class="btn btn-primary text-xs" onclick="showToast('已批量通过待发放队列', 'success')">批量通过</button>
+            <button class="btn btn-ghost text-xs">导出</button>
+          </div>
+        </div>
+
+        <div class="card overflow-hidden">
+          <table id="queue-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="w-4 h-4" onclick="toggleAll(this)"></th>
+                <th>用户</th>
+                <th>任务</th>
+                <th>奖励</th>
+                <th>触发时间</th>
+                <th>预计发放</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-status="blocked">
+                <td><input type="checkbox" class="w-4 h-4"></td>
+                <td><div class="font-medium">u_8821xx</div><div class="text-[10px] text-gray-400">IP: 103.22.x.x</div></td>
+                <td>邀请 2 新用户</td>
+                <td><span class="font-semibold text-indigo-600">100 USDT</span></td>
+                <td class="text-gray-400 text-xs">05-16 14:10</td>
+                <td class="text-gray-400 text-xs">—</td>
+                <td><span class="badge badge-blocked">风控拦截</span></td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-success py-1 px-2 text-xs" onclick="approveRow(this)">通过</button>
+                    <button class="btn btn-danger py-1 px-2 text-xs" onclick="rejectRow(this)">驳回</button>
+                  </div>
+                </td>
+              </tr>
+              <tr data-status="blocked">
+                <td><input type="checkbox" class="w-4 h-4"></td>
+                <td><div class="font-medium">u_4432xx</div><div class="text-[10px] text-gray-400">IP: 103.22.x.x</div></td>
+                <td>邀请 2 新用户</td>
+                <td><span class="font-semibold text-indigo-600">100 USDT</span></td>
+                <td class="text-gray-400 text-xs">05-16 14:09</td>
+                <td class="text-gray-400 text-xs">—</td>
+                <td><span class="badge badge-blocked">风控拦截</span></td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-success py-1 px-2 text-xs" onclick="approveRow(this)">通过</button>
+                    <button class="btn btn-danger py-1 px-2 text-xs" onclick="rejectRow(this)">驳回</button>
+                  </div>
+                </td>
+              </tr>
+              <tr data-status="pending">
+                <td><input type="checkbox" class="w-4 h-4"></td>
+                <td><div class="font-medium">u_2290xx</div><div class="text-[10px] text-gray-400">正常账号</div></td>
+                <td>关注 X</td>
+                <td><span class="font-semibold text-indigo-600">300 USDT</span></td>
+                <td class="text-gray-400 text-xs">05-16 13:55</td>
+                <td class="text-gray-400 text-xs">05-17 11:00</td>
+                <td><span class="badge badge-pending">待发放</span></td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-ghost py-1 px-2 text-xs">详情</button>
+                  </div>
+                </td>
+              </tr>
+              <tr data-status="pending">
+                <td><input type="checkbox" class="w-4 h-4"></td>
+                <td><div class="font-medium">u_9913xx</div><div class="text-[10px] text-gray-400">正常账号</div></td>
+                <td>关注 X · 人工审核中</td>
+                <td><span class="font-semibold text-indigo-600">300 USDT</span></td>
+                <td class="text-gray-400 text-xs">05-16 11:20</td>
+                <td class="text-gray-400 text-xs">审核通过后</td>
+                <td><span class="badge badge-pending">待发放</span></td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-success py-1 px-2 text-xs" onclick="approveRow(this)">通过</button>
+                    <button class="btn btn-danger py-1 px-2 text-xs" onclick="rejectRow(this)">驳回</button>
+                  </div>
+                </td>
+              </tr>
+              <tr data-status="processing">
+                <td><input type="checkbox" class="w-4 h-4"></td>
+                <td><div class="font-medium">u_7741xx</div><div class="text-[10px] text-gray-400">正常账号</div></td>
+                <td>充值 1000 USDT</td>
+                <td><span class="font-semibold text-purple-600">100 AX Points</span></td>
+                <td class="text-gray-400 text-xs">05-16 14:21</td>
+                <td class="text-gray-400 text-xs">处理中...</td>
+                <td><span class="badge badge-processing">处理中</span></td>
+                <td><button class="btn btn-ghost py-1 px-2 text-xs">详情</button></td>
+              </tr>
+              <tr data-status="failed">
+                <td><input type="checkbox" class="w-4 h-4"></td>
+                <td><div class="font-medium">u_3312xx</div><div class="text-[10px] text-red-400">账户已封禁</div></td>
+                <td>加入 Discord</td>
+                <td><span class="font-semibold text-purple-600">200 AX Points</span></td>
+                <td class="text-gray-400 text-xs">05-16 09:15</td>
+                <td class="text-red-400 text-xs">发放失败 ×3</td>
+                <td><span class="badge badge-failed">失败</span></td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-warning py-1 px-2 text-xs" onclick="showToast('已加入人工处理池', 'info')">人工处理</button>
+                  </div>
+                </td>
+              </tr>
+              <tr data-status="done">
+                <td><input type="checkbox" class="w-4 h-4"></td>
+                <td><div class="font-medium">u_1180xx</div><div class="text-[10px] text-gray-400">正常账号</div></td>
+                <td>加入 Discord</td>
+                <td><span class="font-semibold text-purple-600">200 AX Points</span></td>
+                <td class="text-gray-400 text-xs">05-16 08:30</td>
+                <td class="text-gray-400 text-xs">05-16 08:30</td>
+                <td><span class="badge badge-done">已完成</span></td>
+                <td><button class="btn btn-ghost py-1 px-2 text-xs">详情</button></td>
+              </tr>
+              <tr data-status="done">
+                <td><input type="checkbox" class="w-4 h-4"></td>
+                <td><div class="font-medium">u_5502xx</div><div class="text-[10px] text-gray-400">正常账号</div></td>
+                <td>充值 1000 USDT</td>
+                <td><span class="font-semibold text-purple-600">100 AX Points</span></td>
+                <td class="text-gray-400 text-xs">05-16 07:12</td>
+                <td class="text-gray-400 text-xs">05-16 07:12</td>
+                <td><span class="badge badge-done">已完成</span></td>
+                <td><button class="btn btn-ghost py-1 px-2 text-xs">详情</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══════ 风控规则 ══════ -->
+      <div class="page" id="page-risk">
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <!-- 自动拦截规则 -->
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-sm font-semibold text-gray-800">自动拦截规则</div>
+              <button class="btn btn-primary text-xs" onclick="showToast('规则已保存', 'success')">保存修改</button>
+            </div>
+            <div class="space-y-3">
+              <div class="risk-card triggered">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                    <span class="text-xs font-semibold text-red-700">同IP多账号检测</span>
+                    <span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded">今日触发 4 次</span>
+                  </div>
+                  <label class="toggle"><input type="checkbox" checked onchange="showToast('规则已更新', 'success')"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="text-xs text-gray-500">同IP账号数超过</span>
+                  <input type="number" value="3" class="w-16 text-center text-sm" />
+                  <span class="text-xs text-gray-500">个则拦截</span>
+                </div>
+              </div>
+
+              <div class="risk-card">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                    <span class="text-xs font-semibold text-gray-700">异常交易量检测</span>
+                  </div>
+                  <label class="toggle"><input type="checkbox" checked onchange="showToast('规则已更新', 'success')"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="text-xs text-gray-500">30分钟内交易超过</span>
+                  <input type="number" value="5" class="w-16 text-center text-sm" />
+                  <span class="text-xs text-gray-500">次则转人工</span>
+                </div>
+              </div>
+
+              <div class="risk-card">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                    <span class="text-xs font-semibold text-gray-700">大额强制人工审核</span>
+                  </div>
+                  <label class="toggle"><input type="checkbox" checked onchange="showToast('规则已更新', 'success')"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="text-xs text-gray-500">单笔超过</span>
+                  <input type="number" value="1000" class="w-24 text-center text-sm" />
+                  <span class="text-xs text-gray-500">USDT 必须人工确认</span>
+                </div>
+              </div>
+
+              <div class="risk-card">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                    <span class="text-xs font-semibold text-gray-700">新注册账号冷静期</span>
+                  </div>
+                  <label class="toggle"><input type="checkbox" onchange="showToast('规则已更新', 'success')"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="text-xs text-gray-500">注册不足</span>
+                  <input type="number" value="24" class="w-16 text-center text-sm" />
+                  <span class="text-xs text-gray-500">小时的账号延迟发放</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 黑名单管理 -->
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-sm font-semibold text-gray-800">黑名单管理</div>
+              <button class="btn btn-primary text-xs" onclick="addBlacklist()">+ 添加</button>
+            </div>
+            <div class="space-y-2" id="blacklist">
+              <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-100 rounded-lg">
+                <div class="flex-1">
+                  <div class="text-xs font-medium text-gray-800">u_3312xx</div>
+                  <div class="text-[10px] text-gray-400">加入原因：账户异常，多次发放失败</div>
+                </div>
+                <span class="text-[10px] text-red-500">05-15 09:20</span>
+                <button class="btn btn-ghost py-1 px-2 text-xs" onclick="removeBlacklist(this)">移除</button>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-100 rounded-lg">
+                <div class="flex-1">
+                  <div class="text-xs font-medium text-gray-800">u_7788xx</div>
+                  <div class="text-[10px] text-gray-400">加入原因：疑似机器人刷量行为</div>
+                </div>
+                <span class="text-[10px] text-red-500">05-14 16:45</span>
+                <button class="btn btn-ghost py-1 px-2 text-xs" onclick="removeBlacklist(this)">移除</button>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-100 rounded-lg">
+                <div class="flex-1">
+                  <div class="text-xs font-medium text-gray-800">IP: 192.168.x.x 段</div>
+                  <div class="text-[10px] text-gray-400">加入原因：IP 段异常注册</div>
+                </div>
+                <span class="text-[10px] text-red-500">05-12 11:10</span>
+                <button class="btn btn-ghost py-1 px-2 text-xs" onclick="removeBlacklist(this)">移除</button>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-100">
+              <div class="text-xs font-semibold text-gray-700 mb-3">风控触发记录（今日）</div>
+              <div class="space-y-1.5">
+                <div class="flex justify-between text-xs"><span class="text-gray-500">同IP多账号</span><span class="text-red-500 font-semibold">4 次</span></div>
+                <div class="flex justify-between text-xs"><span class="text-gray-500">异常交易量</span><span class="text-yellow-500 font-semibold">8 次</span></div>
+                <div class="flex justify-between text-xs"><span class="text-gray-500">大额人工审核</span><span class="text-blue-500 font-semibold">5 次</span></div>
+                <div class="flex justify-between text-xs"><span class="text-gray-500">黑名单拦截</span><span class="text-red-500 font-semibold">3 次</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 灰度配置 -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-sm font-semibold text-gray-800">灰度发布配置</div>
+              <div class="text-xs text-gray-400 mt-0.5">新规则上线前先对部分用户生效，验证无误后再全量放开</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <div class="text-xs text-gray-500 mb-2">当前灰度比例</div>
+              <div class="flex items-center gap-2">
+                <input type="range" min="0" max="100" value="10" class="flex-1" oninput="document.getElementById('gray-val').textContent=this.value+'%'" />
+                <span class="text-sm font-bold text-indigo-600 w-10 text-right" id="gray-val">10%</span>
+              </div>
+              <div class="text-[10px] text-gray-400 mt-1">约影响 128 位用户</div>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <div class="text-xs text-gray-500 mb-1">当前规则版本</div>
+              <div class="text-sm font-bold text-gray-800">v2.1.3</div>
+              <div class="text-[10px] text-gray-400 mt-1">上线时间：05-14 10:00</div>
+              <div class="text-[10px] text-green-600 mt-0.5">✓ 灰度验证通过</div>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <div class="text-xs text-gray-500 mb-2">操作</div>
+              <div class="flex flex-col gap-2">
+                <button class="btn btn-primary text-xs" onclick="showToast('已全量发布至所有用户', 'success')">全量发布</button>
+                <button class="btn btn-ghost text-xs" onclick="showToast('已回滚至 v2.1.2', 'info')">回滚上一版本</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════ 异常处理 ══════ -->
+      <div class="page" id="page-exceptions">
+        <div class="grid grid-cols-3 gap-4 mb-5">
+          <div class="stat-card border-red-200 bg-red-50">
+            <div class="text-xs text-red-500 mb-1">待处理异常</div>
+            <div class="text-2xl font-bold text-red-600">2</div>
+            <div class="text-xs text-red-400">需要人工介入</div>
+          </div>
+          <div class="stat-card border-yellow-200 bg-yellow-50">
+            <div class="text-xs text-yellow-600 mb-1">自动重试中</div>
+            <div class="text-2xl font-bold text-yellow-600">1</div>
+            <div class="text-xs text-yellow-500">第 2 次重试</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-xs text-gray-500 mb-1">今日已处理</div>
+            <div class="text-2xl font-bold text-gray-800">8</div>
+            <div class="text-xs text-gray-400">平均处理时长 4 min</div>
+          </div>
+        </div>
+
+        <div class="card overflow-hidden mb-4">
+          <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="text-sm font-semibold text-gray-800">异常处理队列</div>
+            <button class="btn btn-ghost text-xs">导出报告</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>用户</th>
+                <th>任务</th>
+                <th>奖励</th>
+                <th>失败原因</th>
+                <th>重试次数</th>
+                <th>最后尝试</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="font-medium">u_3312xx</div><div class="text-[10px] text-red-400">账户状态异常</div></td>
+                <td>加入 Discord</td>
+                <td><span class="font-semibold text-purple-600">200 AX Points</span></td>
+                <td><span class="text-xs text-red-500">账户已封禁，无法入账</span></td>
+                <td><span class="badge badge-failed">3 / 3</span></td>
+                <td class="text-xs text-gray-400">05-16 10:45</td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-success py-1 px-2 text-xs" onclick="resolveException(this, '已手动完成发放')">手动发放</button>
+                    <button class="btn btn-danger py-1 px-2 text-xs" onclick="resolveException(this, '已驳回并通知用户')">驳回</button>
+                    <button class="btn btn-ghost py-1 px-2 text-xs">审计日志</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><div class="font-medium">u_5519xx</div><div class="text-[10px] text-gray-400">正常账号</div></td>
+                <td>关注 X（大额）</td>
+                <td><span class="font-semibold text-indigo-600">300 USDT</span></td>
+                <td><span class="text-xs text-yellow-600">触发大额人工审核规则</span></td>
+                <td><span class="badge badge-pending">等待人工</span></td>
+                <td class="text-xs text-gray-400">05-16 09:30</td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-success py-1 px-2 text-xs" onclick="resolveException(this, '已审核通过，加入发放队列')">审核通过</button>
+                    <button class="btn btn-danger py-1 px-2 text-xs" onclick="resolveException(this, '已驳回')">驳回</button>
+                    <button class="btn btn-ghost py-1 px-2 text-xs">查看行为</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><div class="font-medium">u_8833xx</div><div class="text-[10px] text-gray-400">正常账号</div></td>
+                <td>充值 1000 USDT</td>
+                <td><span class="font-semibold text-purple-600">100 AX Points</span></td>
+                <td><span class="text-xs text-blue-500">网络超时，自动重试中</span></td>
+                <td><span class="badge badge-processing">2 / 3</span></td>
+                <td class="text-xs text-gray-400">05-16 14:18</td>
+                <td>
+                  <div class="flex gap-1">
+                    <button class="btn btn-ghost py-1 px-2 text-xs" onclick="showToast('已强制立即重试', 'info')">立即重试</button>
+                    <button class="btn btn-ghost py-1 px-2 text-xs">审计日志</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 审计日志 -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-sm font-semibold text-gray-800">操作审计日志</div>
+            <span class="text-xs text-gray-400">所有操作不可删除</span>
+          </div>
+          <div class="space-y-2" id="audit-log">
+            <div class="flex items-start gap-3 text-xs">
+              <span class="text-gray-400 w-32 flex-shrink-0">05-16 14:18:32</span>
+              <span class="text-blue-600 w-16 flex-shrink-0">张伟</span>
+              <span class="text-gray-600">批量通过风控拦截队列，涉及 <strong>3 笔</strong> 交易记录</span>
+            </div>
+            <div class="flex items-start gap-3 text-xs">
+              <span class="text-gray-400 w-32 flex-shrink-0">05-16 11:02:15</span>
+              <span class="text-blue-600 w-16 flex-shrink-0">系统</span>
+              <span class="text-gray-600">T+1 批次执行完成，发放 <strong>892 笔</strong>，金额 <strong>16,340 USDT</strong></span>
+            </div>
+            <div class="flex items-start gap-3 text-xs">
+              <span class="text-gray-400 w-32 flex-shrink-0">05-15 17:33:10</span>
+              <span class="text-blue-600 w-16 flex-shrink-0">李敏</span>
+              <span class="text-gray-600">将用户 u_7788xx 加入黑名单，原因：疑似机器人刷量</span>
+            </div>
+            <div class="flex items-start gap-3 text-xs">
+              <span class="text-gray-400 w-32 flex-shrink-0">05-15 10:20:44</span>
+              <span class="text-blue-600 w-16 flex-shrink-0">张伟</span>
+              <span class="text-gray-600">修改风控规则「同IP多账号检测」阈值：5 → 3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /p-6 -->
+  </div><!-- /main -->
+</div><!-- /flex -->
+
+<!-- ── 新增/编辑规则弹窗 ── -->
+<div class="modal-overlay hidden" id="rule-modal">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <div class="text-base font-semibold text-gray-800" id="modal-title">新增发放规则</div>
+      <button class="text-gray-400 hover:text-gray-600" onclick="closeRuleModal()">✕</button>
+    </div>
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label>任务名称</label>
+          <input type="text" placeholder="如：关注 X 奖励" />
+        </div>
+        <div>
+          <label>奖励类型</label>
+          <select>
+            <option>USDT</option>
+            <option>AX Points</option>
+          </select>
+        </div>
+        <div>
+          <label>奖励金额</label>
+          <input type="number" placeholder="0" />
+        </div>
+        <div>
+          <label>发放时机</label>
+          <select>
+            <option>即时发放（T+0）</option>
+            <option>次日批次（T+1）</option>
+          </select>
+        </div>
+        <div>
+          <label>单用户上限（次）</label>
+          <input type="number" placeholder="1" />
+        </div>
+        <div>
+          <label>活动总量上限</label>
+          <input type="number" placeholder="不填则不限" />
+        </div>
+      </div>
+      <div>
+        <label>条件类型</label>
+        <select>
+          <option>单一条件</option>
+          <option>AND（两项都满足）</option>
+          <option>OR（任一满足）</option>
+        </select>
+      </div>
+      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+        <div>
+          <div class="text-xs font-medium text-gray-700">强制人工复审</div>
+          <div class="text-[11px] text-gray-400">触发后不自动发放，需运营确认</div>
+        </div>
+        <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button class="btn btn-primary flex-1" onclick="saveRule()">保存规则</button>
+      <button class="btn btn-ghost flex-1" onclick="closeRuleModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg width="14" height="14" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+  const pages = { dashboard: '数据看板', rules: '发放规则', queue: '发放队列', risk: '风控规则', exceptions: '异常处理' };
+
+  function switchPage(id, navEl) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    if (navEl) navEl.classList.add('active');
+    document.getElementById('page-title').textContent = pages[id];
+    document.getElementById('breadcrumb').textContent = '首页 / ' + pages[id];
+  }
+
+  function filterQueue(status, btn) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const rows = document.querySelectorAll('#queue-table tbody tr');
+    rows.forEach(row => {
+      if (status === 'all' || row.dataset.status === status) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  function toggleAll(cb) {
+    document.querySelectorAll('#queue-table tbody input[type=checkbox]').forEach(c => c.checked = cb.checked);
+  }
+
+  function approveRow(btn) {
+    const row = btn.closest('tr');
+    row.querySelector('.badge').className = 'badge badge-done';
+    row.querySelector('.badge').textContent = '已完成';
+    btn.closest('td').innerHTML = '<span class="text-xs text-green-600">✓ 已通过</span>';
+    showToast('已通过，加入发放队列', 'success');
+    addAuditLog('张伟', '手动通过用户发放申请');
+  }
+
+  function rejectRow(btn) {
+    const row = btn.closest('tr');
+    row.querySelector('.badge').className = 'badge badge-failed';
+    row.querySelector('.badge').textContent = '已驳回';
+    btn.closest('td').innerHTML = '<span class="text-xs text-red-500">✕ 已驳回</span>';
+    showToast('已驳回，将通知用户', 'info');
+    addAuditLog('张伟', '驳回用户发放申请');
+  }
+
+  function resolveException(btn, msg) {
+    const row = btn.closest('tr');
+    row.style.opacity = '0.4';
+    btn.closest('td').innerHTML = '<span class="text-xs text-green-600 font-medium">已处理</span>';
+    showToast(msg, 'success');
+    addAuditLog('张伟', msg);
+  }
+
+  function openRuleModal(mode) {
+    document.getElementById('modal-title').textContent = mode === 'edit' ? '编辑发放规则' : '新增发放规则';
+    document.getElementById('rule-modal').classList.remove('hidden');
+  }
+
+  function closeRuleModal() {
+    document.getElementById('rule-modal').classList.add('hidden');
+  }
+
+  function saveRule() {
+    closeRuleModal();
+    showToast('规则已保存', 'success');
+    addAuditLog('张伟', '新增/编辑发放规则');
+  }
+
+  function toggleGlobalSwitch(cb) {
+    const banner = document.getElementById('pause-banner');
+    if (!cb.checked) {
+      banner.classList.remove('hidden');
+      showToast('⚠️ 自动发放已全局暂停', 'error');
+      document.querySelector('.nav-item.active + .nav-item, #global-switch').closest('.flex').querySelector('.w-2').style.background = '#ef4444';
+    } else {
+      banner.classList.add('hidden');
+      showToast('自动发放已恢复', 'success');
+    }
+  }
+
+  function resumeSwitch() {
+    document.getElementById('global-switch').checked = true;
+    document.getElementById('pause-banner').classList.add('hidden');
+    showToast('自动发放已恢复', 'success');
+  }
+
+  function addBlacklist() {
+    const id = 'u_' + Math.floor(Math.random()*9000+1000) + 'xx';
+    const el = document.createElement('div');
+    el.className = 'flex items-center gap-3 p-3 bg-red-50 border border-red-100 rounded-lg';
+    el.innerHTML = `<div class="flex-1"><div class="text-xs font-medium text-gray-800">${id}</div><div class="text-[10px] text-gray-400">手动添加</div></div><span class="text-[10px] text-red-500">刚刚</span><button class="btn btn-ghost py-1 px-2 text-xs" onclick="removeBlacklist(this)">移除</button>`;
+    document.getElementById('blacklist').prepend(el);
+    showToast('已加入黑名单', 'success');
+  }
+
+  function removeBlacklist(btn) {
+    btn.closest('.flex').remove();
+    showToast('已从黑名单移除', 'info');
+  }
+
+  function addAuditLog(user, action) {
+    const now = new Date();
+    const ts = `05-16 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    const el = document.createElement('div');
+    el.className = 'flex items-start gap-3 text-xs';
+    el.innerHTML = `<span class="text-gray-400 w-32 flex-shrink-0">${ts}</span><span class="text-blue-600 w-16 flex-shrink-0">${user}</span><span class="text-gray-600">${action}</span>`;
+    const log = document.getElementById('audit-log');
+    if (log) log.prepend(el);
+  }
+
+  let toastTimer;
+  function showToast(msg, type) {
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-msg');
+    toast.className = 'toast show toast-' + type;
+    toastMsg.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  // 点击弹窗外关闭
+  document.getElementById('rule-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeRuleModal();
+  });
+</script>
+</body>
+</html>

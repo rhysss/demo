@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PUSH 消息需求文档 v1.0</title>
+<style>
+/* ── Print / PDF 样式 ── */
+@page {
+  size: A4;
+  margin: 20mm 18mm 20mm 18mm;
+}
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .page-break { page-break-before: always; }
+  h2 { page-break-after: avoid; }
+  table { page-break-inside: avoid; }
+  .section { page-break-inside: avoid; }
+}
+
+/* ── Base ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #f5f7fa;
+  color: #1a1d2e;
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* ── Print button ── */
+.print-bar {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  font-size: 13px;
+}
+.print-btn {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.print-btn:hover { opacity: .85; }
+
+/* ── Doc wrapper ── */
+.doc {
+  max-width: 860px;
+  margin: 24px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+  overflow: hidden;
+}
+
+/* ── Cover ── */
+.cover {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #0c4a6e 100%);
+  color: #fff;
+  padding: 48px 48px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 280px; height: 280px;
+  border-radius: 50%;
+  background: rgba(99,102,241,.2);
+}
+.cover::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: 100px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(6,182,212,.15);
+}
+.cover-tag {
+  display: inline-block;
+  background: rgba(99,102,241,.3);
+  border: 1px solid rgba(99,102,241,.5);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  color: #a5b4fc;
+}
+.cover-title {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+}
+.cover-sub {
+  font-size: 15px;
+  color: rgba(255,255,255,.65);
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+.cover-meta {
+  display: flex;
+  gap: 32px;
+  position: relative;
+  z-index: 1;
+}
+.cover-meta-item { }
+.cover-meta-label {
+  font-size: 10px;
+  color: rgba(255,255,255,.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+.cover-meta-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+}
+
+/* ── Body content ── */
+.body-content { padding: 40px 48px; }
+
+/* ── Headings ── */
+h1 { font-size: 22px; font-weight: 900; color: #1e1b4b; margin-bottom: 6px; }
+h2 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e1b4b;
+  margin: 32px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #6366f1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+h2 .h2-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 18px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+h3::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(#6366f1, #8b5cf6);
+  flex-shrink: 0;
+}
+
+p { margin-bottom: 10px; color: #374151; }
+
+/* ── Info boxes ── */
+.box {
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 12px 0;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+.box-blue { background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; }
+.box-blue strong { color: #4338ca; }
+.box-yellow { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.box-yellow strong { color: #b45309; }
+.box-red { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.box-red strong { color: #dc2626; }
+.box-green { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+.box-green strong { color: #059669; }
+
+/* ── Tags / Pills ── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  margin: 1px 2px;
+}
+.tag-high { background: #fee2e2; color: #dc2626; }
+.tag-mid { background: #fef3c7; color: #b45309; }
+.tag-low { background: #e0e7ff; color: #4338ca; }
+.tag-green { background: #d1fae5; color: #065f46; }
+.tag-sky { background: #e0f2fe; color: #0369a1; }
+.tag-violet { background: #ede9fe; color: #6d28d9; }
+.tag-new { background: #fef9c3; color: #854d0e; font-size: 10px; }
+
+/* ── Tables ── */
+.tbl-wrap { overflow-x: auto; margin: 12px 0 20px; border-radius: 10px; border: 1px solid #e2e8f0; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead tr { background: #f1f5f9; }
+th {
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  white-space: nowrap;
+  border-bottom: 1px solid #e2e8f0;
+}
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #374151;
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f8fafc; }
+.td-title { font-weight: 700; color: #1e293b; }
+.td-preview { color: #64748b; font-size: 11.5px; line-height: 1.6; }
+.td-note { color: #94a3b8; font-size: 11px; }
+tr.tr-high td { background: #fef2f2; }
+tr.tr-high td:first-child { border-left: 3px solid #ef4444; }
+
+/* ── Numbered list ── */
+ol, ul { padding-left: 20px; margin-bottom: 10px; color: #374151; }
+li { margin-bottom: 5px; }
+li strong { color: #1e293b; }
+
+/* ── Variable chip ── */
+.var {
+  display: inline-block;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 4px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-family: 'SF Mono', Consolas, monospace;
+  color: #4338ca;
+  margin: 1px;
+}
+
+/* ── Section divider ── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 20px;
+}
+.section-divider .sd-line { flex: 1; height: 1px; background: #e2e8f0; }
+.section-divider .sd-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* ── Summary matrix ── */
+.matrix { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0 20px; }
+.matrix-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+}
+.matrix-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.matrix-card-items { display: flex; flex-direction: column; gap: 4px; }
+.matrix-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #64748b;
+}
+.matrix-item::before { content: '·'; color: #94a3b8; }
+
+/* ── Channel row ── */
+.ch-row { display: flex; gap: 6px; align-items: center; }
+.ch { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+.ch-ios { background: #e0f2fe; color: #0369a1; }
+.ch-and { background: #dcfce7; color: #166534; }
+.ch-in { background: #ede9fe; color: #6d28d9; }
+
+/* ── Footer ── */
+.doc-footer {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  padding: 16px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* ── Highlight row ── */
+.hl { background: #fef3c7; }
+</style>
+</head>
+<body>
+
+<!-- 打印按钮（不打印） -->
+<div class="print-bar no-print">
+  <span>PUSH 消息需求文档 v1.0 &nbsp;·&nbsp; 2026-04-28</span>
+  <button class="print-btn" onclick="window.print()">🖨 打印 / 导出 PDF</button>
+</div>
+
+<div class="doc">
+
+  <!-- ── 封面 ── -->
+  <div class="cover">
+    <div class="cover-tag">产品需求文档 · 一期</div>
+    <div class="cover-title">PUSH 消息<br>推送通知系统</div>
+    <div class="cover-sub">DEX 交易平台 · APP Push 通知一期需求</div>
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <div class="cover-meta-label">文档版本</div>
+        <div class="cover-meta-val">v1.0</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="cover-meta-label">更新日期</div>
+        <div class="cover-meta-val">2026-04-28</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="cover-meta-label">涉及模块</div>
+        <div class="cover-meta-val">APP Push · 后台配置</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="cover-meta-label">推送类型总数</div>
+        <div class="cover-meta-val">14 种</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="body-content">
+
+    <!-- ═══════════════════════════════
+      1. 需求背景
+    ═══════════════════════════════ -->
+    <h2><span class="h2-num">1</span>需求背景</h2>
+    <p>在正确的时间，以正确的方式，将有价值的信息传递给正确的用户，促使其采取正确的行动（打开 App、查看行情、进行交易等），同时避免过度打扰。</p>
+
+    <div class="box box-blue">
+      <strong>核心设计原则：</strong>高优先级通知（爆仓预警、强平通知、登录异常）不受任何频控与免打扰限制，确保用户在关键时刻能第一时间获知风险；其余类型通知遵循频控规则，保障体验。
+    </div>
+
+    <!-- ── 一期范围概览 ── -->
+    <h3>一期涉及内容</h3>
+    <div class="matrix">
+      <div class="matrix-card">
+        <div class="matrix-card-title">🔔 信息通知 <span style="font-size:10px;color:#94a3b8;font-weight:400;">9 种</span></div>
+        <div class="matrix-card-items">
+          <div class="matrix-item">入金到账</div>
+          <div class="matrix-item">出金成功 / 出金被拒</div>
+          <div class="matrix-item">⚡ 爆仓预警（高优）</div>
+          <div class="matrix-item">💥 仓位已强平（高优）</div>
+          <div class="matrix-item">止盈触发 / 止损触发</div>
+          <div class="matrix-item">订单成交</div>
+          <div class="matrix-item">返佣入账</div>
+          <div class="matrix-item">🔐 登录异常（高优）</div>
+        </div>
+      </div>
+      <div class="matrix-card">
+        <div class="matrix-card-title">📊 行情异动 <span style="font-size:10px;color:#94a3b8;font-weight:400;">4 种</span></div>
+        <div class="matrix-card-items">
+          <div class="matrix-item">目标价提醒↑（用户自设）</div>
+          <div class="matrix-item">目标价提醒↓（用户自设）</div>
+          <div class="matrix-item">大幅上涨（系统监控）</div>
+          <div class="matrix-item">大幅下跌（系统监控）</div>
+        </div>
+      </div>
+      <div class="matrix-card">
+        <div class="matrix-card-title">📢 平台运营 <span style="font-size:10px;color:#94a3b8;font-weight:400;">2 种</span></div>
+        <div class="matrix-card-items">
+          <div class="matrix-item">新币上线（系统触发）</div>
+          <div class="matrix-item">最新活动（运营手动推）</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 推送渠道 ── -->
+    <h3>推送渠道说明</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>渠道</th><th>说明</th><th>适用场景</th></tr></thead>
+        <tbody>
+          <tr><td class="td-title"><span class="ch ch-ios">iOS</span> APNs</td><td>苹果官方推送服务，需用户授权</td><td>所有类型通知</td></tr>
+          <tr><td class="td-title"><span class="ch ch-and">And</span> FCM</td><td>Google 推送服务，需用户授权</td><td>所有类型通知</td></tr>
+          <tr><td class="td-title"><span class="ch ch-in">站内</span> 站内信</td><td>App 内消息中心，无需授权，静默入账</td><td>当用户未开推送权限时 fallback</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════
+      2. Push 内容 & 节点（信息通知）
+    ═══════════════════════════════ -->
+    <div class="page-break"></div>
+    <h2><span class="h2-num">2</span>信息通知</h2>
+    <p>由用户操作或系统事件触发，点对点推送至对应用户。爆仓预警、强平通知、登录异常为高优先级，不受频控限制。</p>
+
+    <h3>充值 / 提现</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th style="width:100px;">节点</th><th style="width:110px;">用户端标题</th><th>用户端内容（文案示例）</th><th>跳转位置</th><th>渠道</th><th>备注</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="td-title">入金到账</td>
+            <td>入金到账 ✅</td>
+            <td class="td-preview">{num} USDT 已到你的账户，余额已更新</td>
+            <td>充值记录页</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+            <td class="td-note">-</td>
+          </tr>
+          <tr>
+            <td class="td-title">出金成功</td>
+            <td>出金成功</td>
+            <td class="td-preview">你提现的 {num} USDT 已处理完成，即将到达钱包地址</td>
+            <td>提现记录页</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+            <td class="td-note">-</td>
+          </tr>
+          <tr>
+            <td class="td-title">出金被拒 <span class="tag tag-new">补充</span></td>
+            <td>提现未通过</td>
+            <td class="td-preview">{num} USDT 提现未通过，原因：{reason}，点击查看详情</td>
+            <td>提现记录页</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+            <td class="td-note">原文档未包含</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>仓位提醒</h3>
+    <div class="box box-red">
+      <strong>高优先级说明：</strong>爆仓预警、仓位已强平 不受频控和免打扰时段限制，确保用户在任意时刻均可收到。文案采用通俗易懂语言，避免专业术语让普通用户感到困惑。
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th style="width:100px;">节点</th><th>优先级</th><th style="width:110px;">用户端标题</th><th>用户端内容（文案示例）</th><th>跳转位置</th><th>渠道</th></tr></thead>
+        <tbody>
+          <tr class="tr-high">
+            <td class="td-title">爆仓预警</td>
+            <td><span class="tag tag-high">⚡ 高优</span></td>
+            <td>⚠️ 爆仓预警</td>
+            <td class="td-preview">{symbol} 仓位快撑不住了！当前价 {price} 距强平价 {liq_price} 仅剩 {gap}%，马上补保证金</td>
+            <td>当前合约页</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+          </tr>
+          <tr class="tr-high">
+            <td class="td-title">仓位已强平</td>
+            <td><span class="tag tag-high">⚡ 高优</span></td>
+            <td>仓位已被强平</td>
+            <td class="td-preview">{symbol} 仓位因保证金不足已被强制平仓，约亏损 {loss} USDT，点击查看</td>
+            <td>当前合约页</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+          </tr>
+          <tr>
+            <td class="td-title">止盈触发</td>
+            <td><span class="tag tag-low">普通</span></td>
+            <td>止盈到手了 🎉</td>
+            <td class="td-preview">{symbol} 止盈触发，盈利 +{profit} USDT（+{rate}%），资金已入账</td>
+            <td>当前持仓</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+          </tr>
+          <tr>
+            <td class="td-title">止损触发</td>
+            <td><span class="tag tag-low">普通</span></td>
+            <td>止损已执行</td>
+            <td class="td-preview">{symbol} 止损触发，亏损 -{loss} USDT（{rate}%），已帮你控制风险</td>
+            <td>当前持仓</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+          </tr>
+          <tr>
+            <td class="td-title">订单成交</td>
+            <td><span class="tag tag-low">普通</span></td>
+            <td>成交啦</td>
+            <td class="td-preview">{symbol} {direction}单成交 {num}，均价 {price}</td>
+            <td>当前合约页</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>账户 / 收益</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th style="width:100px;">节点</th><th>优先级</th><th style="width:110px;">用户端标题</th><th>用户端内容（文案示例）</th><th>跳转位置</th><th>渠道</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="td-title">返佣入账</td>
+            <td><span class="tag tag-low">普通</span></td>
+            <td>返佣到账 💰</td>
+            <td class="td-preview">好友交易帮你赚到 {amount} USDT 返佣，已入账</td>
+            <td>资产页</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+          </tr>
+          <tr class="tr-high">
+            <td class="td-title">登录异常 <span class="tag tag-new">补充</span></td>
+            <td><span class="tag tag-high">⚡ 高优</span></td>
+            <td>账号安全提醒 🔐</td>
+            <td class="td-preview">新设备在 {location} 登录了你的账号，不是你的话赶快去冻结</td>
+            <td>安全中心</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════
+      3. 行情异动
+    ═══════════════════════════════ -->
+    <div class="page-break"></div>
+    <h2><span class="h2-num">3</span>行情异动</h2>
+
+    <div class="box box-yellow">
+      <strong>重要：两类行情通知逻辑不同，不可混淆。</strong><br>
+      ① <strong>目标价提醒</strong>：用户在 App 内自主设置目标价，到价即推，每个价位仅触发一次，后台无需配置阈值<br>
+      ② <strong>大幅涨跌</strong>：系统统一监控所有已选标的，按后台配置的阈值触发，每标的每日最多推 N 次
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th style="width:110px;">节点</th><th>触发逻辑</th><th style="width:110px;">用户端标题</th><th>用户端内容（文案示例）</th><th>频控</th><th>渠道</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="td-title">目标价提醒↑<br><span class="tag tag-sky">用户自设</span></td>
+            <td style="font-size:12px;">用户在 App 设置目标价<br>价格触达时推送</td>
+            <td>{symbol} 价格突破</td>
+            <td class="td-preview">{symbol} 已突破你设置的 {target_price}，当前 {current_price}，快去看看</td>
+            <td style="font-size:11px;">每价位一次</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span></div></td>
+          </tr>
+          <tr>
+            <td class="td-title">目标价提醒↓<br><span class="tag tag-sky">用户自设</span></td>
+            <td style="font-size:12px;">用户在 App 设置目标价<br>价格触达时推送</td>
+            <td>{symbol} 价格跌破</td>
+            <td class="td-preview">{symbol} 已跌破你设置的 {target_price}，当前 {current_price}，注意风险</td>
+            <td style="font-size:11px;">每价位一次</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span></div></td>
+          </tr>
+          <tr>
+            <td class="td-title">大幅上涨<br><span class="tag tag-mid">系统监控</span></td>
+            <td style="font-size:12px;">24H涨幅 ≥ 阈值（后台配置，默认 5%）<br>极端行情 ≥ 10% 可额外触发一次</td>
+            <td>{symbol} 暴涨</td>
+            <td class="td-preview">{symbol} 24小时涨了 {rate}%，现在 {current_price}，抓住机会</td>
+            <td style="font-size:11px;">每标的每日 1 次<br>（极端加推 1 次）</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span></div></td>
+          </tr>
+          <tr>
+            <td class="td-title">大幅下跌<br><span class="tag tag-mid">系统监控</span></td>
+            <td style="font-size:12px;">24H跌幅 ≥ 阈值（后台配置，默认 5%）<br>极端行情 ≥ 10% 可额外触发一次</td>
+            <td>{symbol} 暴跌</td>
+            <td class="td-preview">{symbol} 24小时跌了 {rate}%，现在 {current_price}，注意风险</td>
+            <td style="font-size:11px;">每标的每日 1 次<br>（极端加推 1 次）</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════
+      4. 平台公告 / 最新活动
+    ═══════════════════════════════ -->
+    <h2><span class="h2-num">4</span>平台公告 &amp; 最新活动</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th style="width:80px;">分类</th><th style="width:90px;">节点</th><th style="width:110px;">用户端标题</th><th>用户端内容（文案示例）</th><th>目标用户</th><th>跳转</th><th>渠道</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="td-title">平台公告</td>
+            <td>新币上线</td>
+            <td>新币上线 🪙</td>
+            <td class="td-preview">DEX Trading 现已上线 {symbol}，成为最早交易者</td>
+            <td><span class="tag tag-sky">全体用户</span></td>
+            <td>对应交易页</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+          </tr>
+          <tr>
+            <td class="td-title">最新活动</td>
+            <td>活动上新</td>
+            <td>自定义（运营填写）</td>
+            <td class="td-preview">示例：重磅推出 0 费率计划，免手续费交易，额外赢取最高 50,000 USDT</td>
+            <td>
+              <span class="tag tag-sky">全体用户</span>
+              <span class="tag tag-green">新注册</span>
+              <span class="tag tag-low">活跃用户</span>
+              <span class="tag tag-violet">高净值</span>
+              <span class="tag tag-mid">未激活</span>
+              等
+            </td>
+            <td>活动落地页</td>
+            <td><div class="ch-row"><span class="ch ch-ios">iOS</span><span class="ch ch-and">And</span><span class="ch ch-in">站内</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="box box-green">
+      <strong>活动推送支持的用户群体（精准推送）：</strong><br>
+      • <strong>全体用户</strong>：所有已开推送权限用户（约 47,200 人）<br>
+      • <strong>新注册用户</strong>：注册时间 ≤ 7 天，适合新手引导活动<br>
+      • <strong>活跃用户</strong>：近 30 天内有交易记录，适合交易竞赛<br>
+      • <strong>高净值用户</strong>：账户总资产 ≥ 10,000 USDT，适合 VIP 专属活动<br>
+      • <strong>未激活用户</strong>：注册超 14 天从未交易，适合唤醒活动<br>
+      • <strong>自定义 UID 列表</strong>：手动输入或 CSV 导入，最多 100,000 条
+    </div>
+
+
+    <!-- ═══════════════════════════════
+      5. 动态变量说明
+    ═══════════════════════════════ -->
+    <h2><span class="h2-num">5</span>动态变量说明</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>变量</th><th>含义</th><th>示例值</th><th>适用场景</th></tr></thead>
+        <tbody>
+          <tr><td><span class="var">{symbol}</span></td><td>交易对标的</td><td>ETHUSDT</td><td>仓位提醒、行情异动、订单成交</td></tr>
+          <tr><td><span class="var">{num}</span></td><td>数量</td><td>0.5</td><td>充值、提现、成交数量</td></tr>
+          <tr><td><span class="var">{price}</span></td><td>当前价格</td><td>3,180</td><td>爆仓预警、订单成交均价</td></tr>
+          <tr><td><span class="var">{liq_price}</span></td><td>强平价</td><td>3,050</td><td>爆仓预警</td></tr>
+          <tr><td><span class="var">{gap}</span></td><td>距强平百分比</td><td>4%</td><td>爆仓预警</td></tr>
+          <tr><td><span class="var">{profit}</span></td><td>盈利金额（USDT）</td><td>320</td><td>止盈触发</td></tr>
+          <tr><td><span class="var">{loss}</span></td><td>亏损金额（USDT）</td><td>120</td><td>止损触发、强平通知</td></tr>
+          <tr><td><span class="var">{rate}</span></td><td>盈亏率 / 涨跌幅</td><td>8.2%</td><td>止盈止损、行情异动</td></tr>
+          <tr><td><span class="var">{amount}</span></td><td>金额（USDT）</td><td>50</td><td>返佣入账</td></tr>
+          <tr><td><span class="var">{direction}</span></td><td>买卖方向</td><td>做多</td><td>订单成交</td></tr>
+          <tr><td><span class="var">{target_price}</span></td><td>用户设置的目标价</td><td>$100,000</td><td>目标价提醒</td></tr>
+          <tr><td><span class="var">{current_price}</span></td><td>当前价格</td><td>$101,240</td><td>行情异动</td></tr>
+          <tr><td><span class="var">{datetime}</span></td><td>时间（含时区）</td><td>2026/04/28 11:03 (UTC+8)</td><td>充值、提现</td></tr>
+          <tr><td><span class="var">{reason}</span></td><td>拒绝原因</td><td>地址不合规</td><td>出金被拒</td></tr>
+          <tr><td><span class="var">{location}</span></td><td>登录地点</td><td>北京, 中国</td><td>登录异常</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════
+      6. 后台配置说明
+    ═══════════════════════════════ -->
+    <div class="page-break"></div>
+    <h2><span class="h2-num">6</span>后台配置说明</h2>
+
+    <h3>6.1 推送消息列表</h3>
+    <p>后台以统一列表形式管理所有 14 种推送类型，分四个分类展示（信息通知 / 行情异动 / 平台公告 / 最新活动），支持：</p>
+    <ul>
+      <li>逐类型开关控制（全局生效，覆盖用户个人设置）</li>
+      <li>编辑各类型的用户端标题 / 内容模板，变更次日生效</li>
+      <li>配置各类型跳转目标页面</li>
+      <li>配置推送渠道（iOS / Android / 站内信）</li>
+    </ul>
+
+    <h3>6.2 行情阈值配置</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>配置项</th><th>默认值</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>大幅上涨触发阈值</td><td>5%</td><td>24H涨幅达到此值时触发大幅上涨推送</td></tr>
+          <tr><td>大幅下跌触发阈值</td><td>5%</td><td>24H跌幅达到此值时触发大幅下跌推送</td></tr>
+          <tr><td>极端行情加推阈值</td><td>10%</td><td>涨跌幅超过此值时可在当日额外推送一次</td></tr>
+          <tr><td>每标的每日最多触发</td><td>1 次</td><td>同一标的在同一天的推送上限，极端加推不计入</td></tr>
+          <tr><td>监控标的列表</td><td>-</td><td>后台维护需监控的交易对列表，支持单独开关</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>6.3 频控管理</h3>
+    <div class="box box-red">
+      <strong>以下三类不受任何频控 & 免打扰限制：</strong>⚠️ 爆仓预警 &nbsp; 💥 仓位已强平 &nbsp; 🔐 登录异常
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>配置项</th><th>默认值</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>单用户每日 Push 总上限</td><td>20 条 / 天</td><td>超出上限后静默处理，站内信仍正常入账</td></tr>
+          <tr><td>免打扰默认时段</td><td>22:00 – 08:00</td><td>用户未自定义时使用平台默认值；高优通知不受限</td></tr>
+          <tr><td>订单成交合并推送</td><td>每笔实时</td><td>可配置为 N 分钟内合并一条推送</td></tr>
+          <tr><td>返佣入账推送频率</td><td>每笔实时</td><td>可配置为日汇总推送</td></tr>
+          <tr><td>活动通知每日上限</td><td>2 条 / 天</td><td>单用户每天最多收到 N 条活动推送</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>6.4 手动推送（运营）</h3>
+    <p>运营可在后台配置并发送平台公告 / 活动通知，流程如下：</p>
+    <ol>
+      <li>填写 <strong>通知类型</strong>（活动通知 / 平台公告 / 新币上线）</li>
+      <li>填写 <strong>Push 标题</strong>（最多 30 字）和 <strong>Push 内容</strong>（最多 100 字）</li>
+      <li>配置 <strong>跳转位置</strong>（活动落地页 / 交易页 / 自定义 URL）</li>
+      <li>选择 <strong>目标用户群体</strong>（全体 / 新注册 / 活跃 / 高净值 / 未激活 / 自定义 UID）</li>
+      <li>选择 <strong>发送时间</strong>（立即发送 / 定时发送）</li>
+      <li>预览 <strong>iOS 锁屏效果</strong> 后确认发送</li>
+    </ol>
+
+    <h3>6.5 推送记录 &amp; 统计</h3>
+    <p>支持查看历史推送记录及分类数据统计：</p>
+    <ul>
+      <li>每条记录显示：发送时间、通知类型、目标用户群体、发送量、触达率、点击率、状态</li>
+      <li>支持按类型、时间范围筛选，支持导出报表</li>
+      <li>分类统计：各推送类型的月度发送量、平均触达率、平均点击率、用户关闭率</li>
+    </ul>
+
+
+    <!-- ═══════════════════════════════
+      7. 用户端通知设置
+    ═══════════════════════════════ -->
+    <h2><span class="h2-num">7</span>用户端通知设置</h2>
+    <p>用户可在 App「消息通知设置」页面自主管理推送偏好，分为四个分组：</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>分组</th><th>开关项</th><th>默认状态</th><th>特殊说明</th></tr></thead>
+        <tbody>
+          <tr>
+            <td rowspan="5" style="vertical-align:middle;font-weight:700;">仓位提醒</td>
+            <td>⚠️ 爆仓预警</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>高优，不受免打扰限制，建议用户保持开启</td>
+          </tr>
+          <tr>
+            <td>💥 仓位已强平</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>高优，不受免打扰限制</td>
+          </tr>
+          <tr>
+            <td>🎉 止盈触发</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>🛡️ 止损触发</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>✅ 订单成交</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>支持选择推送频率（每单 / 合并推送）</td>
+          </tr>
+          <tr>
+            <td rowspan="4" style="vertical-align:middle;font-weight:700;">充提通知</td>
+            <td>💰 入金到账</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>🏧 出金结果</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>包含出金成功和出金被拒两种情况</td>
+          </tr>
+          <tr>
+            <td>🎁 返佣到账</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>🔐 账号安全提醒</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>高优，不受免打扰限制，强烈建议保持开启</td>
+          </tr>
+          <tr>
+            <td rowspan="2" style="vertical-align:middle;font-weight:700;">行情提醒</td>
+            <td>🎯 我的价格提醒</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>用户自设目标价</td>
+          </tr>
+          <tr>
+            <td>⚡ 大幅涨跌警报</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>支持选择阈值（≥5% / ≥10%）</td>
+          </tr>
+          <tr>
+            <td rowspan="2" style="vertical-align:middle;font-weight:700;">平台通知</td>
+            <td>📢 平台公告</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>🎉 最新活动</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">免打扰</td>
+            <td>免打扰时段</td>
+            <td><span class="tag tag-green">默认开启</span></td>
+            <td>默认 22:00 – 08:00；时段内仅推高优通知</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════
+      8. 补充说明 & 待确认事项
+    ═══════════════════════════════ -->
+    <h2><span class="h2-num">8</span>补充说明 &amp; 待确认事项</h2>
+
+    <div class="box box-yellow">
+      <strong>以下事项需与开发确认：</strong>
+      <ol style="margin-top:8px;padding-left:18px;">
+        <li><strong>爆仓预警触发条件</strong>：当前文案中 {gap} 表示距强平百分比，触发阈值（如距强平价 ≤ N% 时触发）需与后端确认具体数值</li>
+        <li><strong>大幅涨跌计算周期</strong>：目前定义为 24H 涨跌幅，若有需要可扩展至 1H / 4H 等周期</li>
+        <li><strong>站内信 fallback 规则</strong>：用户未授权推送时是否自动降级为站内信，需确认 fallback 范围（建议所有重要通知均 fallback）</li>
+        <li><strong>订单成交合并推送</strong>：合并规则（时间窗口 / 单次最多合并 N 条）需产研对齐</li>
+        <li><strong>多设备处理</strong>：同一用户登录多台设备时，推送是否发所有设备还是仅最近活跃设备</li>
+        <li><strong>登录异常判断逻辑</strong>：新设备 / 异地登录的判断维度需与安全团队对齐</li>
+      </ol>
+    </div>
+
+  </div><!-- /body-content -->
+
+  <div class="doc-footer">
+    <span>DEX 预测市场 · PUSH 消息需求文档 v1.0</span>
+    <span>更新时间：2026-04-28 &nbsp;·&nbsp; 一期</span>
+  </div>
+</div>
+
+</body>
+</html>

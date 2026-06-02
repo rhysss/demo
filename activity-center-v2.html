@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>活动中心</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d0d0d;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'PingFang SC', sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* NAV */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: #0d0d0d;
+      border-bottom: 1px solid #1e1e1e;
+      height: 56px;
+      display: flex; align-items: center;
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      width: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-left { display: flex; align-items: center; gap: 28px; }
+    .nav-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
+    .nav-badge {
+      font-size: 11px; font-weight: 600;
+      background: rgba(0,230,118,0.1); color: #00e676;
+      border: 1px solid rgba(0,230,118,0.3);
+      padding: 2px 7px; border-radius: 4px;
+    }
+    .nav-link { font-size: 14px; color: #666; cursor: pointer; transition: color 0.15s; }
+    .nav-link:hover { color: #aaa; }
+    .nav-link.active { color: #fff; }
+    .nav-airdrop {
+      display: flex; align-items: center; gap: 6px;
+      border: 1px solid rgba(0,230,118,0.45); color: #00e676;
+      padding: 5px 14px; border-radius: 9999px; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .nav-airdrop:hover { background: rgba(0,230,118,0.08); }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+    .btn-deposit {
+      background: #00e676; color: #000; font-weight: 700;
+      padding: 7px 20px; border-radius: 9999px; font-size: 14px;
+      border: none; cursor: pointer; transition: opacity 0.15s;
+    }
+    .btn-deposit:hover { opacity: 0.88; }
+    .nav-wallet { font-size: 13px; color: #666; cursor: pointer; }
+
+    /* HERO */
+    .hero {
+      background: #0d0d0d;
+      border-bottom: 1px solid #1e1e1e;
+      overflow: hidden;
+    }
+    .hero-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      min-height: 260px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .hero-text { padding: 52px 0; }
+    .hero-title { font-size: 42px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 12px; }
+    .hero-sub { font-size: 15px; color: #555; }
+    .hero-art { width: 420px; flex-shrink: 0; }
+
+    /* FILTER BAR (两层) */
+    .tabbar {
+      position: sticky; top: 56px; z-index: 90;
+      background: #0d0d0d; border-bottom: 1px solid #1e1e1e;
+    }
+    /* 第一层：活动类型 tabs */
+    .type-row {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #161616;
+    }
+    .type-tabs { display: flex; overflow-x: auto; scrollbar-width: none; }
+    .type-tabs::-webkit-scrollbar { display: none; }
+    .type-tab {
+      padding: 13px 0; margin-right: 32px;
+      font-size: 14px; color: #555; cursor: pointer; white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .type-tab:hover:not(.active) { color: #999; }
+    .type-tab.active { color: #fff; border-bottom-color: #00e676; }
+    /* 第二层：状态胶囊 */
+    .status-row {
+      max-width: 1200px; margin: 0 auto; padding: 10px 24px;
+    }
+    .status-pills { display: flex; gap: 0; background: #161616; border-radius: 9999px; padding: 3px; width: fit-content; }
+    .status-pill {
+      padding: 6px 20px; border-radius: 9999px; font-size: 13px;
+      color: #555; cursor: pointer; transition: all 0.18s; white-space: nowrap;
+    }
+    .status-pill:hover:not(.active) { color: #999; }
+    .status-pill.active { background: #2a2a2a; color: #fff; }
+
+    .rewards-summary { display: flex; align-items: center; gap: 12px; }
+    .rewards-amount { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #555; }
+    .rewards-amount strong { font-size: 18px; font-weight: 700; color: #fff; margin: 0 2px; }
+    .tip-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 15px; height: 15px; border-radius: 50%;
+      background: #1e1e1e; border: 1px solid #2a2a2a;
+      font-size: 9px; color: #555; cursor: help; font-style: italic;
+    }
+    .btn-outline {
+      border: 1px solid #333; color: #bbb; background: transparent;
+      padding: 7px 18px; border-radius: 9999px; font-size: 13px;
+      cursor: pointer; transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-outline:hover { border-color: #666; color: #fff; }
+
+    /* MAIN */
+    .main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* CARD GRID */
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    .activity-card {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px; overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .activity-card:hover { border-color: #333; transform: translateY(-2px); }
+
+    .card-banner { width: 100%; height: 200px; position: relative; overflow: hidden; }
+    .card-body { padding: 16px 20px 20px; }
+    .card-title { font-size: 15px; font-weight: 500; color: #ddd; margin-bottom: 12px; line-height: 1.45; }
+    .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .card-time { font-size: 12px; color: #3a3a3a; }
+    .card-time span { color: #555; }
+
+    .badge {
+      position: absolute; top: 12px; right: 12px;
+      font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .badge-hot { background: #c62828; color: #fff; }
+    .badge-new { background: #1565c0; color: #fff; }
+    .badge-ended { background: #1e1e1e; color: #444; }
+
+    .btn-view {
+      flex-shrink: 0;
+      border: 1px solid #2a2a2a; color: #888; background: transparent;
+      padding: 6px 16px; border-radius: 9999px; font-size: 13px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-view:hover { border-color: #555; color: #ddd; }
+
+    /* EMPTY STATE */
+    .empty { text-align: center; padding: 100px 0; }
+
+    /* ── GROWTH BAR ── */
+    .growth-bar {
+      border-bottom: 1px solid #1a1a1a;
+      background: #0d0d0d;
+    }
+    .growth-bar-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    }
+    .growth-level { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .level-badge {
+      font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .level-lv1 { background: rgba(77,154,255,0.12); color: #4d9aff; border: 1px solid rgba(77,154,255,0.2); }
+    .level-lv2 { background: rgba(0,230,118,0.12); color: #00e676; border: 1px solid rgba(0,230,118,0.2); }
+    .level-lv3 { background: rgba(255,170,0,0.12); color: #ffaa00; border: 1px solid rgba(255,170,0,0.2); }
+    .level-lv4 { background: rgba(200,80,255,0.12); color: #cc50ff; border: 1px solid rgba(200,80,255,0.2); }
+    .growth-xp { display: flex; align-items: center; gap: 10px; flex: 1; max-width: 360px; }
+    .xp-label { font-size: 12px; color: #444; white-space: nowrap; }
+    .xp-bar { flex: 1; height: 4px; background: #1e1e1e; border-radius: 2px; }
+    .xp-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #00e676, #00c860); }
+    .xp-next { font-size: 11px; color: #333; white-space: nowrap; }
+    .growth-stats { display: flex; gap: 24px; }
+    .growth-stat { text-align: right; }
+    .growth-stat-val { font-size: 14px; font-weight: 700; color: #ddd; }
+    .growth-stat-label { font-size: 11px; color: #444; margin-top: 1px; }
+    .growth-unlock-hint { font-size: 12px; color: #333; display: flex; align-items: center; gap: 6px; }
+    .growth-unlock-hint span { color: #ffaa00; }
+
+    /* ── ONBOARDING PATH (新手礼包) ── */
+    .onboarding-banner {
+      background: linear-gradient(135deg, #060f06 0%, #0a180a 100%);
+      border: 1px solid rgba(0,230,118,0.15);
+      border-radius: 12px; padding: 20px 24px; margin-bottom: 20px;
+      position: relative; overflow: hidden;
+    }
+    .onboarding-banner::before {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: rgba(0,230,118,0.04);
+    }
+    .ob-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .ob-title { font-size: 15px; font-weight: 600; color: #e0ffe0; display: flex; align-items: center; gap: 8px; }
+    .ob-tag { font-size: 10px; font-weight: 700; background: rgba(0,230,118,0.15); color: #00e676; border: 1px solid rgba(0,230,118,0.25); padding: 2px 8px; border-radius: 3px; letter-spacing: 0.5px; }
+    .ob-close { background: none; border: none; color: #333; cursor: pointer; font-size: 16px; line-height: 1; }
+    .ob-steps { display: flex; gap: 12px; }
+    .ob-step {
+      flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #1e1e1e;
+      border-radius: 8px; padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px;
+      transition: border-color 0.15s;
+    }
+    .ob-step.done { border-color: rgba(0,230,118,0.25); }
+    .ob-step-num {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+    }
+    .ob-step-num.done { background: #00e676; color: #000; }
+    .ob-step-num.todo { background: #1e1e1e; color: #555; border: 1px solid #2a2a2a; }
+    .ob-step-info { flex: 1; }
+    .ob-step-name { font-size: 13px; font-weight: 500; color: #ccc; }
+    .ob-step-reward { font-size: 12px; color: #00e676; font-weight: 600; margin-top: 2px; }
+    .ob-step-arrow { font-size: 14px; color: #2a2a2a; }
+    .ob-total { margin-top: 14px; font-size: 13px; color: #555; display: flex; align-items: center; gap: 8px; }
+    .ob-total strong { color: #00e676; }
+
+    /* ── CARD SOCIAL PROOF ── */
+    .card-social {
+      position: absolute; bottom: 10px; left: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-participants {
+      display: flex; align-items: center; gap: 4px;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 3px 8px; border-radius: 9999px; font-size: 11px; color: #aaa;
+    }
+    .card-participants .dot { width: 5px; height: 5px; border-radius: 50%; background: #00e676; flex-shrink: 0; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .card-urgency {
+      display: flex; align-items: center; gap: 4px;
+      background: rgba(198,40,40,0.7); backdrop-filter: blur(4px);
+      padding: 3px 8px; border-radius: 9999px; font-size: 11px; color: #ffaaaa; font-weight: 600;
+    }
+    .card-checkin-streak {
+      background: rgba(255,170,0,0.75); backdrop-filter: blur(4px);
+      padding: 3px 8px; border-radius: 9999px; font-size: 11px; color: #fff; font-weight: 600;
+    }
+
+    /* ── RECOMMEND TAG ── */
+    .card-recommend-tag {
+      position: absolute; top: 0; left: 0; right: 0;
+      background: linear-gradient(90deg, rgba(0,230,118,0.18), transparent);
+      border-top: 2px solid #00e676;
+      padding: 5px 14px; font-size: 10px; color: #00e676; font-weight: 700;
+      letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;
+    }
+
+    /* ── CHECKIN CARD ── */
+    .checkin-banner { background: linear-gradient(150deg, #080a12 0%, #0c1020 100%); }
+    .streak-dots { display: flex; gap: 5px; margin-top: 10px; }
+    .streak-dot {
+      width: 20px; height: 20px; border-radius: 50%; font-size: 9px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .streak-dot.done { background: #00e676; color: #000; }
+    .streak-dot.today { background: rgba(0,230,118,0.2); color: #00e676; border: 1.5px solid #00e676; }
+    .streak-dot.todo { background: #1a1a1a; color: #333; border: 1px solid #252525; }
+
+    /* ── CARD MINI PROGRESS ── */
+    .card-mini-progress {
+      margin-top: 10px; padding-top: 10px; border-top: 1px solid #1a1a1a;
+    }
+    .card-mini-prog-label { display: flex; justify-content: space-between; font-size: 11px; color: #444; margin-bottom: 5px; }
+    .card-mini-prog-bar { height: 3px; background: #1e1e1e; border-radius: 2px; }
+    .card-mini-prog-fill { height: 100%; border-radius: 2px; background: #00e676; }
+
+    /* ── EARLY BIRD BANNER ── */
+    .early-bird-banner {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,170,0,0.05); border: 1px solid rgba(255,170,0,0.15);
+      border-radius: 8px; padding: 10px 16px; margin-bottom: 20px;
+    }
+    .eb-icon { font-size: 16px; }
+    .eb-text { font-size: 13px; color: #888; flex: 1; }
+    .eb-text strong { color: #ffaa00; }
+    .eb-count { font-size: 13px; font-weight: 700; color: #ffaa00; white-space: nowrap; }
+    .eb-count span { font-size: 11px; color: #555; font-weight: 400; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid #1a1a1a; background: #0a0a0a; padding: 48px 0 32px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .footer-top { display: flex; justify-content: space-between; margin-bottom: 40px; }
+    .footer-brand-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .footer-brand-sub { font-size: 13px; color: #3a3a3a; }
+    .footer-links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 48px; }
+    .footer-col-title { font-size: 13px; color: #555; margin-bottom: 12px; }
+    .footer-col a { display: block; font-size: 13px; color: #333; margin-bottom: 8px; transition: color 0.15s; }
+    .footer-col a:hover { color: #666; }
+    .footer-bottom {
+      border-top: 1px solid #1a1a1a; padding-top: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-copy { font-size: 13px; color: #2e2e2e; }
+    .footer-socials { display: flex; gap: 18px; }
+    .footer-socials svg { fill: #2e2e2e; transition: fill 0.15s; cursor: pointer; }
+    .footer-socials svg:hover { fill: #555; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <div class="nav-logo">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+          <polygon points="10,1 19,6 19,14 10,19 1,14 1,6" stroke="#00e676" stroke-width="1.5" fill="none"/>
+          <polygon points="10,5.5 16,9 16,12.5 10,16 4,12.5 4,9" fill="rgba(0,230,118,0.2)"/>
+        </svg>
+        AX
+      </div>
+      <span class="nav-badge">合约V2 Beta</span>
+      <a href="#" class="nav-link">现货</a>
+      <a href="#" class="nav-link">投资组合</a>
+      <a href="#" class="nav-link">积分</a>
+      <a href="#" class="nav-link">策略</a>
+      <a href="activity-center-v2.html" class="nav-link active">奖励</a>
+      <a href="#" class="nav-link">更多 ▾</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-airdrop">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Airdrop
+      </div>
+      <button class="btn-deposit">充值</button>
+      <div class="nav-wallet">0x0B6e...629434 ▾</div>
+    </div>
+  </div>
+</nav>
+
+<!-- GROWTH BAR -->
+<div class="growth-bar">
+  <div class="growth-bar-inner">
+    <div class="growth-level">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+        <polygon points="10,1 19,6 19,14 10,19 1,14 1,6" stroke="#4d9aff" stroke-width="1.5" fill="none"/>
+        <polygon points="10,5.5 16,9 16,12.5 10,16 4,12.5 4,9" fill="rgba(77,154,255,0.2)"/>
+      </svg>
+      <span class="level-badge level-lv1">Lv.2 进阶交易员</span>
+    </div>
+    <div class="growth-xp">
+      <span class="xp-label">经验值</span>
+      <div class="xp-bar"><div class="xp-fill" style="width:62%"></div></div>
+      <span class="xp-next">1,240 / 2,000 XP</span>
+    </div>
+    <div class="growth-unlock-hint">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffaa00" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      再完成 <span>2 个活动</span> 升至 Lv.3，解锁手续费返佣特权
+    </div>
+    <div class="growth-stats">
+      <div class="growth-stat">
+        <div class="growth-stat-val">12,400</div>
+        <div class="growth-stat-label">已获 AX</div>
+      </div>
+      <div class="growth-stat">
+        <div class="growth-stat-val" style="color:#9966ff;">3,200</div>
+        <div class="growth-stat-label">AX Points</div>
+      </div>
+      <div class="growth-stat">
+        <div class="growth-stat-val" style="color:#ffaa00;">7</div>
+        <div class="growth-stat-label">连续签到</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h1 class="hero-title">活动中心</h1>
+      <p class="hero-sub">完成任务，领取奖励，开始您的数字货币之旅。</p>
+    </div>
+    <div class="hero-art">
+      <!-- Circuit board / node network illustration -->
+      <svg width="420" height="260" viewBox="0 0 420 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="glow-center" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stop-color="#00e676" stop-opacity="0.07"/>
+            <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="node-glow">
+            <feGaussianBlur stdDeviation="2.5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- Background glow -->
+        <ellipse cx="210" cy="130" rx="180" ry="110" fill="url(#glow-center)"/>
+
+        <!-- Circuit trace lines (horizontal + vertical grid) -->
+        <g stroke="#1c1c1c" stroke-width="1">
+          <line x1="60"  y1="60"  x2="200" y2="60"/>
+          <line x1="200" y1="60"  x2="200" y2="130"/>
+          <line x1="200" y1="130" x2="360" y2="130"/>
+          <line x1="360" y1="130" x2="360" y2="80"/>
+          <line x1="60"  y1="60"  x2="60"  y2="180"/>
+          <line x1="60"  y1="180" x2="140" y2="180"/>
+          <line x1="140" y1="180" x2="140" y2="130"/>
+          <line x1="140" y1="130" x2="280" y2="130"/>
+          <line x1="280" y1="130" x2="280" y2="200"/>
+          <line x1="280" y1="200" x2="360" y2="200"/>
+          <line x1="360" y1="200" x2="360" y2="130"/>
+          <line x1="200" y1="60"  x2="360" y2="60"/>
+          <line x1="360" y1="60"  x2="360" y2="80"/>
+          <line x1="100" y1="60"  x2="100" y2="20"/>
+          <line x1="260" y1="60"  x2="260" y2="20"/>
+          <line x1="100" y1="20"  x2="260" y2="20"/>
+          <line x1="60"  y1="120" x2="20"  y2="120"/>
+          <line x1="20"  y1="120" x2="20"  y2="200"/>
+          <line x1="20"  y1="200" x2="60"  y2="200"/>
+        </g>
+        <!-- Accent trace (green) -->
+        <g stroke="#00e676" stroke-width="0.8" opacity="0.35">
+          <line x1="200" y1="130" x2="140" y2="130"/>
+          <line x1="140" y1="130" x2="140" y2="180"/>
+          <line x1="200" y1="130" x2="200" y2="60"/>
+          <line x1="280" y1="130" x2="280" y2="200"/>
+        </g>
+
+        <!-- Nodes (junction squares) -->
+        <g fill="#141414" stroke="#282828" stroke-width="1">
+          <rect x="55"  y="55"  width="10" height="10" rx="2"/>
+          <rect x="195" y="55"  width="10" height="10" rx="2"/>
+          <rect x="355" y="55"  width="10" height="10" rx="2"/>
+          <rect x="355" y="75"  width="10" height="10" rx="2"/>
+          <rect x="135" y="125" width="10" height="10" rx="2"/>
+          <rect x="355" y="125" width="10" height="10" rx="2"/>
+          <rect x="275" y="125" width="10" height="10" rx="2"/>
+          <rect x="55"  y="175" width="10" height="10" rx="2"/>
+          <rect x="135" y="175" width="10" height="10" rx="2"/>
+          <rect x="275" y="195" width="10" height="10" rx="2"/>
+          <rect x="355" y="195" width="10" height="10" rx="2"/>
+          <rect x="95"  y="15"  width="10" height="10" rx="2"/>
+          <rect x="255" y="15"  width="10" height="10" rx="2"/>
+          <rect x="15"  y="115" width="10" height="10" rx="2"/>
+          <rect x="15"  y="195" width="10" height="10" rx="2"/>
+          <rect x="55"  y="115" width="10" height="10" rx="2"/>
+        </g>
+        <!-- Active node (main hub — glowing green) -->
+        <g filter="url(#node-glow)">
+          <rect x="193" y="123" width="14" height="14" rx="3" fill="#0d1f14" stroke="#00e676" stroke-width="1.2"/>
+          <rect x="197" y="127" width="6"  height="6"  rx="1" fill="#00e676" opacity="0.7"/>
+        </g>
+        <!-- Secondary active node -->
+        <g filter="url(#node-glow)" opacity="0.6">
+          <rect x="273" y="193" width="14" height="14" rx="3" fill="#0d1f14" stroke="#00e676" stroke-width="1"/>
+          <rect x="277" y="197" width="6"  height="6"  rx="1" fill="#00e676" opacity="0.5"/>
+        </g>
+
+        <!-- IC chips -->
+        <g>
+          <!-- Chip 1 -->
+          <rect x="76"  y="88" width="48" height="32" rx="3" fill="#0f0f0f" stroke="#222" stroke-width="1"/>
+          <line x1="82"  y1="88" x2="82"  y2="82" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="90"  y1="88" x2="90"  y2="82" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="98"  y1="88" x2="98"  y2="82" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="106" y1="88" x2="106" y2="82" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="82"  y1="120" x2="82"  y2="126" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="90"  y1="120" x2="90"  y2="126" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="98"  y1="120" x2="98"  y2="126" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="106" y1="120" x2="106" y2="126" stroke="#1e1e1e" stroke-width="1"/>
+          <rect x="82" y="94" width="36" height="20" rx="2" fill="#111" stroke="#1a1a1a" stroke-width="0.5"/>
+          <line x1="86" y1="100" x2="112" y2="100" stroke="#1c1c1c" stroke-width="0.5"/>
+          <line x1="86" y1="104" x2="112" y2="104" stroke="#1c1c1c" stroke-width="0.5"/>
+          <line x1="86" y1="108" x2="112" y2="108" stroke="#1c1c1c" stroke-width="0.5"/>
+          <!-- Chip 2 (larger, center-right) -->
+          <rect x="216" y="68" width="64" height="44" rx="3" fill="#0f0f0f" stroke="#222" stroke-width="1"/>
+          <line x1="224" y1="68" x2="224" y2="60" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="234" y1="68" x2="234" y2="60" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="244" y1="68" x2="244" y2="60" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="254" y1="68" x2="254" y2="60" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="264" y1="68" x2="264" y2="60" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="224" y1="112" x2="224" y2="120" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="234" y1="112" x2="234" y2="120" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="244" y1="112" x2="244" y2="120" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="254" y1="112" x2="254" y2="120" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="264" y1="112" x2="264" y2="120" stroke="#00e676" stroke-width="1" opacity="0.5"/>
+          <rect x="224" y="76" width="44" height="28" rx="2" fill="#111" stroke="#1a1a1a" stroke-width="0.5"/>
+          <line x1="228" y1="82" x2="264" y2="82" stroke="#1c1c1c" stroke-width="0.5"/>
+          <line x1="228" y1="87" x2="264" y2="87" stroke="#1c1c1c" stroke-width="0.5"/>
+          <line x1="228" y1="92" x2="264" y2="92" stroke="#00e676" stroke-width="0.4" opacity="0.25"/>
+          <line x1="228" y1="97" x2="264" y2="97" stroke="#1c1c1c" stroke-width="0.5"/>
+          <!-- Chip 3 (bottom) -->
+          <rect x="152" y="148" width="44" height="28" rx="3" fill="#0f0f0f" stroke="#222" stroke-width="1"/>
+          <line x1="158" y1="148" x2="158" y2="142" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="167" y1="148" x2="167" y2="142" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="176" y1="148" x2="176" y2="142" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="185" y1="148" x2="185" y2="142" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="158" y1="176" x2="158" y2="182" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="167" y1="176" x2="167" y2="182" stroke="#00e676" stroke-width="1" opacity="0.4"/>
+          <line x1="176" y1="176" x2="176" y2="182" stroke="#1e1e1e" stroke-width="1"/>
+          <line x1="185" y1="176" x2="185" y2="182" stroke="#1e1e1e" stroke-width="1"/>
+          <rect x="158" y="154" width="30" height="16" rx="2" fill="#111" stroke="#1a1a1a" stroke-width="0.5"/>
+          <line x1="162" y1="159" x2="184" y2="159" stroke="#1c1c1c" stroke-width="0.5"/>
+          <line x1="162" y1="164" x2="184" y2="164" stroke="#1c1c1c" stroke-width="0.5"/>
+        </g>
+
+        <!-- Pulse dots along traces -->
+        <circle cx="200" cy="95"  r="2.5" fill="#00e676" opacity="0.55"/>
+        <circle cx="200" cy="95"  r="5"   fill="#00e676" opacity="0.08"/>
+        <circle cx="280" cy="165" r="2"   fill="#00e676" opacity="0.4"/>
+        <circle cx="140" cy="155" r="1.8" fill="#00e676" opacity="0.35"/>
+
+        <!-- Corner decorations -->
+        <line x1="8"   y1="8"  x2="22"  y2="8"  stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="8"   y1="8"  x2="8"   y2="22" stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="398" y1="8"  x2="412" y2="8"  stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="412" y1="8"  x2="412" y2="22" stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="8"   y1="252" x2="22" y2="252" stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="8"   y1="238" x2="8"  y2="252" stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="398" y1="252" x2="412" y2="252" stroke="#1a1a1a" stroke-width="1.2"/>
+        <line x1="412" y1="238" x2="412" y2="252" stroke="#1a1a1a" stroke-width="1.2"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="tabbar">
+  <!-- 第一层：活动类型 -->
+  <div class="type-row">
+    <div class="type-tabs">
+      <div class="type-tab active" data-type="all"     onclick="switchType(this)">全部</div>
+      <div class="type-tab"        data-type="trading" onclick="switchType(this)">交易大赛</div>
+      <div class="type-tab"        data-type="newbie"  onclick="switchType(this)">新手任务</div>
+      <div class="type-tab"        data-type="deposit" onclick="switchType(this)">充值有礼</div>
+      <div class="type-tab"        data-type="referral"onclick="switchType(this)">邀请好友</div>
+      <div class="type-tab"        data-type="airdrop" onclick="switchType(this)">限时空投</div>
+      <div class="type-tab"        data-type="social"  onclick="switchType(this)">社交任务</div>
+      <div class="type-tab"        data-type="checkin" onclick="switchType(this)">每日签到</div>
+    </div>
+    <div class="rewards-summary">
+      <div class="rewards-amount">
+        <span>已获得奖励</span>
+        <span class="tip-icon" title="活动结束后 T+1 发放至账户">i</span>
+        <strong>12,400</strong>
+        <span>AX</span>
+      </div>
+      <button class="btn-outline" onclick="location.href='activity-detail-v2.html'">查看明细</button>
+    </div>
+  </div>
+  <!-- 第二层：状态胶囊 -->
+  <div class="status-row">
+    <div class="status-pills">
+      <div class="status-pill active" data-status="ongoing"  onclick="switchStatus(this)">进行中</div>
+      <div class="status-pill"        data-status="upcoming" onclick="switchStatus(this)">即将上线</div>
+      <div class="status-pill"        data-status="ended"    onclick="switchStatus(this)">已结束</div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<main class="main">
+
+  <!-- 新手礼包引导路径 -->
+  <div class="onboarding-banner" id="onboarding-banner">
+    <div class="ob-head">
+      <div class="ob-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+        新手礼包 · 完成即领
+        <span class="ob-tag">限新用户</span>
+      </div>
+      <button class="ob-close" onclick="document.getElementById('onboarding-banner').style.display='none'">×</button>
+    </div>
+    <div class="ob-steps">
+      <div class="ob-step done">
+        <div class="ob-step-num done">✓</div>
+        <div class="ob-step-info">
+          <div class="ob-step-name">注册账号</div>
+          <div class="ob-step-reward">+100 AX</div>
+        </div>
+      </div>
+      <div class="ob-step-arrow">→</div>
+      <div class="ob-step done">
+        <div class="ob-step-num done">✓</div>
+        <div class="ob-step-info">
+          <div class="ob-step-name">完成 KYC</div>
+          <div class="ob-step-reward">+200 AX</div>
+        </div>
+      </div>
+      <div class="ob-step-arrow">→</div>
+      <div class="ob-step todo">
+        <div class="ob-step-num todo">3</div>
+        <div class="ob-step-info">
+          <div class="ob-step-name">首次充值 ≥ 100 USDT</div>
+          <div class="ob-step-reward" style="color:#555;">+500 AX</div>
+        </div>
+      </div>
+      <div class="ob-step-arrow">→</div>
+      <div class="ob-step todo">
+        <div class="ob-step-num todo">4</div>
+        <div class="ob-step-info">
+          <div class="ob-step-name">完成首笔交易</div>
+          <div class="ob-step-reward" style="color:#555;">+1,200 AX</div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-total">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+      新手礼包总价值 <strong>2,000 AX</strong> · 已领取 300 AX · 剩余步骤需在注册后 <strong>14 天</strong>内完成
+    </div>
+  </div>
+
+  <!-- 早鸟提醒 -->
+  <div class="early-bird-banner">
+    <span class="eb-icon">🔥</span>
+    <div class="eb-text">早鸟福利：前 <strong>500 名</strong> 参与「大宗商品交易季」额外获得 <strong>10,000 AX</strong> 奖励</div>
+    <div class="eb-count">已参与 <span id="eb-joined">387</span> / 500 <span>名额</span></div>
+  </div>
+
+  <div class="card-grid" id="card-grid">
+
+      <!-- 交易大赛 -->
+      <div class="activity-card" data-type="trading" data-status="ongoing" onclick="location.href='activity-detail-v2.html'">
+        <div class="card-banner" style="background:linear-gradient(150deg,#060f06 0%,#0b1a0b 100%);">
+          <!-- 推荐标签 -->
+          <div class="card-recommend-tag">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#00e676"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
+            根据你的交易记录推荐
+          </div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:22px 26px;padding-top:34px;">
+            <div>
+              <p style="font-size:12px;color:#3d5e2e;margin-bottom:10px;">交易黄金、白银等大宗商品，参与奖池瓜分</p>
+              <div style="font-size:20px;font-weight:700;line-height:1.35;color:#e8ffe0;">
+                1,000,000 AX<br><span style="font-size:14px;color:#4a7a3a;font-weight:400;">+ 100,000 USDT</span>
+              </div>
+              <button onclick="event.stopPropagation()" style="margin-top:14px;border:1.5px solid #00e676;color:#00e676;background:transparent;padding:6px 18px;border-radius:9999px;font-size:13px;cursor:pointer;font-weight:500;" onmouseover="this.style.background='rgba(0,230,118,0.1)'" onmouseout="this.style.background='transparent'">立即参与 →</button>
+            </div>
+            <div style="flex-shrink:0;margin-left:12px;">
+              <svg width="94" height="94" viewBox="0 0 94 94">
+                <rect x="34" y="74" width="26" height="5" rx="2" fill="#161a03"/>
+                <rect x="28" y="79" width="38" height="8" rx="3" fill="#131703" stroke="#232805" stroke-width="0.8"/>
+                <rect x="42" y="54" width="10" height="22" fill="#111604"/>
+                <path d="M14,6 Q14,50 47,54 Q80,50 80,6 Z" fill="#141903" stroke="#252b05" stroke-width="1.2"/>
+                <path d="M14,17 Q5,17 5,28 Q5,42 16,46" fill="none" stroke="#202806" stroke-width="1.2"/>
+                <path d="M80,17 Q89,17 89,28 Q89,42 78,46" fill="none" stroke="#202806" stroke-width="1.2"/>
+                <polygon points="47,18 51,29 63,29 54,36 57,47 47,41 37,47 40,36 31,29 43,29" fill="#1d2405"/>
+                <circle cx="76" cy="14" r="12" fill="#1a2a06" stroke="rgba(0,230,118,0.5)" stroke-width="1"/>
+                <text x="76" y="19" text-anchor="middle" fill="#00e676" font-size="9" font-weight="700">AX</text>
+              </svg>
+            </div>
+          </div>
+          <!-- 社会证明 -->
+          <div class="card-social">
+            <div class="card-participants"><span class="dot"></span>4,821 人参与</div>
+            <div class="card-urgency">⏰ 仅剩 11 天</div>
+          </div>
+          <div class="badge badge-hot">HOT</div>
+          <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.5);color:#aaa;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;letter-spacing:0.5px;">交易大赛</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">大宗商品交易季开启，参与瓜分 1,000,000 AX</h3>
+          <div class="card-meta">
+            <div class="card-time">活动时间：<span>11/02/2026 17:00 – 11/03/2026 08:00</span></div>
+            <button class="btn-view" onclick="event.stopPropagation();location.href='activity-detail-v2.html'">查看活动</button>
+          </div>
+          <!-- 里程碑进度 -->
+          <div class="card-mini-progress">
+            <div class="card-mini-prog-label">
+              <span>奖池进度</span><span style="color:#00e676;">6B / 4B USDT（已解锁最大奖池）</span>
+            </div>
+            <div class="card-mini-prog-bar"><div class="card-mini-prog-fill" style="width:100%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 新手任务 -->
+      <div class="activity-card" data-type="newbie" data-status="ongoing" onclick="location.href='activity-detail-v2.html'">
+        <div class="card-banner" style="background:linear-gradient(150deg,#070a14 0%,#0b0f1e 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:22px 26px;">
+            <div>
+              <p style="font-size:12px;color:#2d3d5e;margin-bottom:10px;">新用户专属 · 完成即领，无门槛</p>
+              <div style="font-size:20px;font-weight:700;line-height:1.35;">
+                最高领取<br><span style="color:#4d9aff;">5,000 AX</span>
+              </div>
+              <p style="font-size:12px;color:#263450;margin-top:10px;">注册 + 首次充值 + 首次交易</p>
+            </div>
+            <div style="flex-shrink:0;margin-left:12px;">
+              <svg width="88" height="100" viewBox="0 0 88 100">
+                <rect x="8" y="10" width="72" height="22" rx="5" fill="#0d1428" stroke="#1a2640" stroke-width="1"/>
+                <circle cx="22" cy="21" r="7" fill="#0a1020" stroke="#1a3070" stroke-width="1"/>
+                <text x="22" y="25" text-anchor="middle" fill="#3366cc" font-size="8" font-weight="700">1</text>
+                <rect x="34" y="17" width="36" height="3" rx="1.5" fill="#1a2640"/>
+                <line x1="34" y1="23" x2="60" y2="23" stroke="#111e30" stroke-width="2" stroke-linecap="round"/>
+                <rect x="8" y="38" width="72" height="22" rx="5" fill="#0d1428" stroke="#1a2640" stroke-width="1"/>
+                <circle cx="22" cy="49" r="7" fill="#0a1020" stroke="#1a3070" stroke-width="1"/>
+                <text x="22" y="53" text-anchor="middle" fill="#3366cc" font-size="8" font-weight="700">2</text>
+                <rect x="34" y="45" width="36" height="3" rx="1.5" fill="#1a2640"/>
+                <line x1="34" y1="51" x2="55" y2="51" stroke="#111e30" stroke-width="2" stroke-linecap="round"/>
+                <rect x="8" y="66" width="72" height="22" rx="5" fill="#0a1428" stroke="rgba(77,154,255,0.3)" stroke-width="1"/>
+                <circle cx="22" cy="77" r="7" fill="#0a1224" stroke="rgba(77,154,255,0.5)" stroke-width="1"/>
+                <text x="22" y="81" text-anchor="middle" fill="#4d9aff" font-size="8" font-weight="700">3</text>
+                <rect x="34" y="73" width="36" height="3" rx="1.5" fill="#1e3060"/>
+                <line x1="34" y1="79" x2="50" y2="79" stroke="#1a2848" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="72" cy="77" r="10" fill="#1a2a50" stroke="rgba(77,154,255,0.4)" stroke-width="1"/>
+                <text x="72" y="81" text-anchor="middle" fill="#4d9aff" font-size="7" font-weight="700">AX</text>
+              </svg>
+            </div>
+          </div>
+          <div class="card-social">
+            <div class="card-participants"><span class="dot"></span>12,047 人完成</div>
+          </div>
+          <div class="badge badge-new">NEW</div>
+          <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.5);color:#aaa;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;letter-spacing:0.5px;">新手任务</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">新手上路，完成三步任务领取最高 5,000 AX</h3>
+          <div class="card-meta">
+            <div class="card-time">活动时间：<span>长期有效</span></div>
+            <button class="btn-view" onclick="event.stopPropagation();location.href='activity-detail-v2.html'">查看活动</button>
+          </div>
+          <div class="card-mini-progress">
+            <div class="card-mini-prog-label">
+              <span>我的进度</span><span style="color:#4d9aff;">2 / 3 步已完成</span>
+            </div>
+            <div class="card-mini-prog-bar"><div class="card-mini-prog-fill" style="width:66%;background:#4d9aff;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ★ 每日签到（新增活动类型） -->
+      <div class="activity-card" data-type="checkin" data-status="ongoing" onclick="location.href='activity-detail-quest.html'">
+        <div class="card-banner checkin-banner">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:22px 26px;">
+            <div>
+              <p style="font-size:12px;color:#2a3a5a;margin-bottom:8px;">每天签到 · 连续累计翻倍奖励</p>
+              <div style="font-size:20px;font-weight:700;line-height:1.35;">
+                今日签到<br><span style="color:#00e676;">+50 AX</span>
+                <span style="font-size:13px;color:#1e3a2e;font-weight:400;"> · 连续 7 天</span>
+              </div>
+              <div class="streak-dots">
+                <div class="streak-dot done">✓</div>
+                <div class="streak-dot done">✓</div>
+                <div class="streak-dot done">✓</div>
+                <div class="streak-dot done">✓</div>
+                <div class="streak-dot done">✓</div>
+                <div class="streak-dot done">✓</div>
+                <div class="streak-dot today">今</div>
+                <div class="streak-dot todo" style="width:24px;font-size:8px;color:#2a4a2a;">周日<br>+200</div>
+              </div>
+            </div>
+            <div style="flex-shrink:0;margin-left:12px;">
+              <svg width="88" height="100" viewBox="0 0 88 100">
+                <!-- Calendar -->
+                <rect x="8" y="18" width="72" height="72" rx="8" fill="#0c1420" stroke="#162040" stroke-width="1.2"/>
+                <rect x="8" y="18" width="72" height="22" rx="8" fill="#0e1a2e" stroke="#162040" stroke-width="1.2"/>
+                <rect x="8" y="30" width="72" height="10" fill="#0e1a2e"/>
+                <line x1="28" y1="10" x2="28" y2="26" stroke="#1a3060" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="60" y1="10" x2="60" y2="26" stroke="#1a3060" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Grid dots representing days -->
+                <g fill="#1a2840">
+                  <circle cx="26" cy="56" r="6"/><circle cx="44" cy="56" r="6"/><circle cx="62" cy="56" r="6"/>
+                  <circle cx="26" cy="74" r="6"/><circle cx="44" cy="74" r="6"/><circle cx="62" cy="74" r="6"/>
+                </g>
+                <!-- Checked days -->
+                <circle cx="26" cy="56" r="6" fill="#0a2010" stroke="rgba(0,230,118,0.4)"/>
+                <text x="26" y="59" text-anchor="middle" fill="#00e676" font-size="7" font-weight="700">✓</text>
+                <circle cx="44" cy="56" r="6" fill="#0a2010" stroke="rgba(0,230,118,0.4)"/>
+                <text x="44" y="59" text-anchor="middle" fill="#00e676" font-size="7" font-weight="700">✓</text>
+                <circle cx="62" cy="56" r="6" fill="#0a2010" stroke="rgba(0,230,118,0.4)"/>
+                <text x="62" y="59" text-anchor="middle" fill="#00e676" font-size="7" font-weight="700">✓</text>
+                <circle cx="26" cy="74" r="6" fill="#0a2010" stroke="rgba(0,230,118,0.4)"/>
+                <text x="26" y="77" text-anchor="middle" fill="#00e676" font-size="7" font-weight="700">✓</text>
+                <!-- Today highlight -->
+                <circle cx="44" cy="74" r="7" fill="#00e676" opacity="0.9"/>
+                <text x="44" y="77" text-anchor="middle" fill="#000" font-size="8" font-weight="800">今</text>
+                <!-- AX token -->
+                <circle cx="74" cy="22" r="10" fill="#0d2010" stroke="rgba(0,230,118,0.5)" stroke-width="1"/>
+                <text x="74" y="26" text-anchor="middle" fill="#00e676" font-size="7" font-weight="700">AX</text>
+              </svg>
+            </div>
+          </div>
+          <div class="card-social">
+            <div class="card-participants"><span class="dot"></span>28,394 人今日已签</div>
+            <div class="card-checkin-streak">🔥 7天连续</div>
+          </div>
+          <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.5);color:#aaa;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;letter-spacing:0.5px;">每日签到</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">每日签到领 AX，连续 7 天额外解锁 200 AX 周奖励</h3>
+          <div class="card-meta">
+            <div class="card-time">活动时间：<span>长期有效 · 每日 00:00 重置</span></div>
+            <button class="btn-view" onclick="event.stopPropagation();" style="background:#00e676;color:#000;border-color:#00e676;font-weight:700;">立即签到</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 充值有礼 -->
+      <div class="activity-card" data-type="deposit" data-status="ongoing" onclick="location.href='activity-detail-v2.html'">
+        <div class="card-banner" style="background:linear-gradient(150deg,#0e0a04 0%,#1a1206 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:22px 26px;">
+            <div>
+              <p style="font-size:12px;color:#5a4010;margin-bottom:10px;">首次充值 · 按档位发放 AX</p>
+              <div style="font-size:20px;font-weight:700;line-height:1.35;">
+                充值返赠<br><span style="color:#ffaa00;">最高 20%</span>
+              </div>
+              <p style="font-size:12px;color:#4a3408;margin-top:10px;">充值越多，AX 返赠越多</p>
+            </div>
+            <div style="flex-shrink:0;margin-left:12px;">
+              <svg width="88" height="100" viewBox="0 0 88 100">
+                <!-- Vault/safe -->
+                <rect x="8" y="20" width="66" height="60" rx="6" fill="#1a1006" stroke="#2e1e08" stroke-width="1.2"/>
+                <circle cx="41" cy="50" r="20" fill="#110c04" stroke="#3a2a0a" stroke-width="1"/>
+                <circle cx="41" cy="50" r="12" fill="#0e0a04" stroke="#2a1e08" stroke-width="0.8"/>
+                <!-- Dial marks -->
+                <line x1="41" y1="32" x2="41" y2="36" stroke="#3a2a0a" stroke-width="1.5"/>
+                <line x1="41" y1="64" x2="41" y2="68" stroke="#3a2a0a" stroke-width="1.5"/>
+                <line x1="23" y1="50" x2="27" y2="50" stroke="#3a2a0a" stroke-width="1.5"/>
+                <line x1="55" y1="50" x2="59" y2="50" stroke="#3a2a0a" stroke-width="1.5"/>
+                <line x1="41" y1="50" x2="41" y2="40" stroke="#ffaa00" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+                <!-- Handle -->
+                <rect x="72" y="44" width="8" height="12" rx="4" fill="#1e1408" stroke="#3a2a0a" stroke-width="1"/>
+                <!-- Coin slot -->
+                <rect x="22" y="16" width="20" height="5" rx="1" fill="#141006" stroke="#2a1e08" stroke-width="0.8"/>
+                <!-- Falling AX coins -->
+                <circle cx="32" cy="13" r="5" fill="#2a1e06" stroke="rgba(255,170,0,0.5)" stroke-width="0.8"/>
+                <text x="32" y="17" text-anchor="middle" fill="#ffaa00" font-size="5" font-weight="700">AX</text>
+                <circle cx="46" cy="8" r="4" fill="#241a05" stroke="rgba(255,170,0,0.35)" stroke-width="0.8"/>
+                <text x="46" y="12" text-anchor="middle" fill="#cc8800" font-size="4" font-weight="700">AX</text>
+              </svg>
+            </div>
+          </div>
+          <div class="card-social">
+            <div class="card-participants"><span class="dot"></span>6,238 人参与</div>
+            <div class="card-urgency">⏰ 剩 14 天</div>
+          </div>
+          <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.5);color:#aaa;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;letter-spacing:0.5px;">充值有礼</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">充值即返 AX，首次充值最高返赠 20%</h3>
+          <div class="card-meta">
+            <div class="card-time">活动时间：<span>01/06/2026 00:00 – 30/06/2026 23:59</span></div>
+            <button class="btn-view" onclick="event.stopPropagation();location.href='activity-detail-v2.html'">查看活动</button>
+          </div>
+          <div class="card-mini-progress">
+            <div class="card-mini-prog-label">
+              <span>本月充值奖励已发放</span><span style="color:#ffaa00;">82%</span>
+            </div>
+            <div class="card-mini-prog-bar"><div class="card-mini-prog-fill" style="width:82%;background:#ffaa00;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 邀请好友 -->
+      <div class="activity-card" data-type="referral" data-status="ongoing" onclick="location.href='activity-detail-v2.html'">
+        <div class="card-banner" style="background:linear-gradient(150deg,#0b0814 0%,#0f0c1e 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:22px 26px;">
+            <div>
+              <p style="font-size:12px;color:#3d2855;margin-bottom:10px;">邀请好友 · 永久共享手续费</p>
+              <div style="font-size:20px;font-weight:700;line-height:1.35;">
+                邀请返佣<br><span style="color:#9955ff;">最高 40%</span>
+              </div>
+              <p style="font-size:12px;color:#30204a;margin-top:10px;">无上限 · 实时到账</p>
+            </div>
+            <div style="flex-shrink:0;margin-left:12px;">
+              <svg width="88" height="100" viewBox="0 0 88 100">
+                <circle cx="44" cy="26" r="14" fill="#120e1e" stroke="#261844" stroke-width="1.2"/>
+                <circle cx="44" cy="26" r="6" fill="#1a0e2a"/>
+                <text x="44" y="30" text-anchor="middle" fill="#6622bb" font-size="7" font-weight="700">YOU</text>
+                <circle cx="16" cy="65" r="10" fill="#100c1a" stroke="#1e1240" stroke-width="1"/>
+                <circle cx="72" cy="65" r="10" fill="#100c1a" stroke="#1e1240" stroke-width="1"/>
+                <circle cx="44" cy="88" r="10" fill="#100c1a" stroke="#1e1240" stroke-width="1"/>
+                <line x1="44" y1="40" x2="16" y2="55" stroke="#261844" stroke-width="1.2"/>
+                <line x1="44" y1="40" x2="72" y2="55" stroke="#261844" stroke-width="1.2"/>
+                <line x1="44" y1="40" x2="44" y2="78" stroke="#261844" stroke-width="1.2"/>
+                <circle cx="16" cy="65" r="3" fill="#3d1566"/>
+                <circle cx="72" cy="65" r="3" fill="#3d1566"/>
+                <circle cx="44" cy="88" r="3" fill="#3d1566"/>
+                <!-- AX token floating -->
+                <circle cx="75" cy="20" r="9" fill="#1e103a" stroke="rgba(153,85,255,0.5)" stroke-width="1"/>
+                <text x="75" y="24" text-anchor="middle" fill="#9955ff" font-size="6" font-weight="700">AX</text>
+              </svg>
+            </div>
+          </div>
+          <div class="card-social">
+            <div class="card-participants"><span class="dot"></span>9,104 人参与</div>
+          </div>
+          <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.5);color:#aaa;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;letter-spacing:0.5px;">邀请好友</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">邀请好友交易，永久获得最高 40% 手续费 AX 返佣</h3>
+          <div class="card-meta">
+            <div class="card-time">活动时间：<span>长期有效</span></div>
+            <button class="btn-view" onclick="event.stopPropagation();location.href='activity-detail-v2.html'">查看活动</button>
+          </div>
+          <div class="card-mini-progress">
+            <div class="card-mini-prog-label">
+              <span>我的邀请返佣</span><span style="color:#9955ff;">已赚 1,840 AX</span>
+            </div>
+            <div class="card-mini-prog-bar"><div class="card-mini-prog-fill" style="width:37%;background:#9955ff;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 限时空投 -->
+      <div class="activity-card" data-type="airdrop" data-status="ongoing" onclick="location.href='activity-detail-v2.html'">
+        <div class="card-banner" style="background:linear-gradient(150deg,#0e0706 0%,#1a0c08 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:22px 26px;">
+            <div>
+              <p style="font-size:12px;color:#5a2a10;margin-bottom:10px;">限时免费领取 · 先到先得</p>
+              <div style="font-size:20px;font-weight:700;line-height:1.35;">
+                AX 空投<br><span style="color:#ff6622;">总量 500,000</span>
+              </div>
+              <p style="font-size:12px;color:#4a2008;margin-top:10px;">持仓快照 · 按比例分配</p>
+            </div>
+            <div style="flex-shrink:0;margin-left:12px;">
+              <svg width="88" height="100" viewBox="0 0 88 100">
+                <!-- Parachute -->
+                <path d="M44,44 Q20,20 10,44 Z" fill="#1e0e08" stroke="#3a1a0a" stroke-width="1.2"/>
+                <path d="M44,44 Q68,20 78,44 Z" fill="#1a0c06" stroke="#3a1a0a" stroke-width="1.2"/>
+                <path d="M10,44 Q44,48 78,44" fill="none" stroke="#2a1208" stroke-width="1"/>
+                <!-- Lines to package -->
+                <line x1="20" y1="44" x2="40" y2="72" stroke="#2a1208" stroke-width="0.8"/>
+                <line x1="44" y1="48" x2="44" y2="72" stroke="#2a1208" stroke-width="0.8"/>
+                <line x1="68" y1="44" x2="48" y2="72" stroke="#2a1208" stroke-width="0.8"/>
+                <!-- Package / coin -->
+                <rect x="34" y="72" width="20" height="20" rx="4" fill="#1e1006" stroke="rgba(255,102,34,0.5)" stroke-width="1"/>
+                <text x="44" y="86" text-anchor="middle" fill="#ff6622" font-size="8" font-weight="700">AX</text>
+                <!-- Falling mini tokens -->
+                <circle cx="20" cy="75" r="5" fill="#1a0c06" stroke="rgba(255,102,34,0.3)" stroke-width="0.8"/>
+                <text x="20" y="79" text-anchor="middle" fill="#cc4a18" font-size="4">AX</text>
+                <circle cx="68" cy="82" r="4" fill="#1a0c06" stroke="rgba(255,102,34,0.25)" stroke-width="0.8"/>
+                <text x="68" y="86" text-anchor="middle" fill="#cc4a18" font-size="3.5">AX</text>
+              </svg>
+            </div>
+          </div>
+          <div class="card-social">
+            <div class="card-participants"><span class="dot"></span>21,560 人已登记</div>
+            <div class="card-urgency" id="airdrop-countdown">⏰ 计算中…</div>
+          </div>
+          <div class="badge badge-hot" style="background:#c24a10;">限时</div>
+          <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.5);color:#aaa;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;letter-spacing:0.5px;">限时空投</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">第一季 AX 空投开放，总量 500,000 持仓快照分配</h3>
+          <div class="card-meta">
+            <div class="card-time">活动时间：<span>快照：2026/05/31 23:59</span></div>
+            <button class="btn-view" onclick="event.stopPropagation();location.href='activity-detail-v2.html'">查看活动</button>
+          </div>
+          <div class="card-mini-progress">
+            <div class="card-mini-prog-label">
+              <span>空投登记进度</span><span style="color:#ff6622;">21,560 / 50,000 地址</span>
+            </div>
+            <div class="card-mini-prog-bar"><div class="card-mini-prog-fill" style="width:43%;background:#ff6622;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 社交任务 -->
+      <div class="activity-card" data-type="social" data-status="ongoing" onclick="location.href='activity-detail-v2.html'">
+        <div class="card-banner" style="background:linear-gradient(150deg,#060a10 0%,#0a0e18 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:22px 26px;">
+            <div>
+              <p style="font-size:12px;color:#1e3050;margin-bottom:10px;">关注 / 转发 / 加群 即可参与</p>
+              <div style="font-size:20px;font-weight:700;line-height:1.35;">
+                社交任务<br><span style="color:#22aaff;">领取 500 AX</span>
+              </div>
+              <p style="font-size:12px;color:#182840;margin-top:10px;">X · Discord · Telegram</p>
+            </div>
+            <div style="flex-shrink:0;margin-left:12px;">
+              <svg width="88" height="100" viewBox="0 0 88 100">
+                <!-- X icon -->
+                <circle cx="24" cy="28" r="16" fill="#0e1420" stroke="#1a2840" stroke-width="1"/>
+                <text x="18" y="22" fill="#aaa" font-size="10" font-weight="700">X</text>
+                <line x1="17" y1="20" x2="31" y2="36" stroke="#ccc" stroke-width="1.5"/>
+                <line x1="31" y1="20" x2="17" y2="36" stroke="#ccc" stroke-width="1.5"/>
+                <!-- Discord icon -->
+                <circle cx="64" cy="28" r="16" fill="#0e1220" stroke="#182240" stroke-width="1"/>
+                <path d="M55,30 Q58,22 64,22 Q70,22 73,30 Q70,36 64,36 Q58,36 55,30 Z" fill="none" stroke="#5566aa" stroke-width="1"/>
+                <circle cx="61" cy="29" r="2" fill="#5566aa"/>
+                <circle cx="67" cy="29" r="2" fill="#5566aa"/>
+                <!-- Telegram icon -->
+                <circle cx="44" cy="68" r="18" fill="#0c1420" stroke="#182040" stroke-width="1"/>
+                <path d="M33,68 L44,58 L55,68" fill="none" stroke="#22aaff" stroke-width="1.2"/>
+                <path d="M38,68 L44,74 L50,63" fill="none" stroke="#22aaff" stroke-width="1.2"/>
+                <!-- Connecting lines -->
+                <line x1="32" y1="40" x2="38" y2="52" stroke="#1a2840" stroke-width="0.8"/>
+                <line x1="56" y1="40" x2="50" y2="52" stroke="#1a2840" stroke-width="0.8"/>
+                <!-- AX token -->
+                <circle cx="78" cy="72" r="9" fill="#0e1a30" stroke="rgba(34,170,255,0.4)" stroke-width="1"/>
+                <text x="78" y="76" text-anchor="middle" fill="#22aaff" font-size="6" font-weight="700">AX</text>
+              </svg>
+            </div>
+          </div>
+          <div class="card-social">
+            <div class="card-participants"><span class="dot"></span>33,812 人完成</div>
+          </div>
+          <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.5);color:#aaa;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;letter-spacing:0.5px;">社交任务</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">完成 X / Discord / Telegram 社交任务，领取 500 AX</h3>
+          <div class="card-meta">
+            <div class="card-time">活动时间：<span>长期有效</span></div>
+            <button class="btn-view" onclick="event.stopPropagation();location.href='activity-detail-v2.html'">查看活动</button>
+          </div>
+          <div class="card-mini-progress">
+            <div class="card-mini-prog-label">
+              <span>我的完成进度</span><span style="color:#22aaff;">1 / 3 项已完成</span>
+            </div>
+            <div class="card-mini-prog-bar"><div class="card-mini-prog-fill" style="width:33%;background:#22aaff;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 已结束：春节交易大赛 -->
+      <div class="activity-card" data-type="trading" data-status="ended" style="opacity:0.5;pointer-events:none;display:none;">
+        <div class="card-banner" style="background:#0e0e0e;">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;padding:22px 26px;">
+            <div>
+              <div style="font-size:20px;font-weight:700;color:#444;">春节交易大赛</div>
+              <div style="font-size:13px;color:#2e2e2e;margin-top:8px;">奖池：500,000 AX</div>
+            </div>
+          </div>
+          <div class="badge badge-ended">已结束</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title" style="color:#444;">春节期间交易竞赛，瓜分 500,000 AX</h3>
+          <div class="card-meta">
+            <div class="card-time">活动时间：<span>2025/01/20 – 2025/02/10</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 已结束：周年庆充值有礼 -->
+      <div class="activity-card" data-type="deposit" data-status="ended" style="opacity:0.5;pointer-events:none;display:none;">
+        <div class="card-banner" style="background:#0e0e0e;">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;padding:22px 26px;">
+            <div>
+              <div style="font-size:20px;font-weight:700;color:#444;">周年庆充值有礼</div>
+              <div style="font-size:13px;color:#2e2e2e;margin-top:8px;">最高奖励：20,000 AX</div>
+            </div>
+          </div>
+          <div class="badge badge-ended">已结束</div>
+        </div>
+        <div class="card-body">
+          <h3 class="card-title" style="color:#444;">周年庆充值返利，最高领取 20,000 AX</h3>
+          <div class="card-meta">
+            <div class="card-time">活动时间：<span>2024/11/01 – 2024/11/30</span></div>
+          </div>
+        </div>
+      </div>
+
+  </div><!-- /card-grid -->
+
+  <!-- 空状态 -->
+  <div id="empty-state" style="display:none;text-align:center;padding:100px 0;">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1.5" style="margin-bottom:16px;"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+    <p style="color:#333;font-size:15px;" id="empty-msg">暂无相关活动</p>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="vertical-align:middle;margin-right:6px;">
+            <polygon points="10,1 19,6 19,14 10,19 1,14 1,6" stroke="#00e676" stroke-width="1.5" fill="none"/>
+            <polygon points="10,5.5 16,9 16,12.5 10,16 4,12.5 4,9" fill="rgba(0,230,118,0.18)"/>
+          </svg>edgeX
+        </div>
+        <div class="footer-brand-sub">全球资产 24/7 去中心化交易层</div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <div class="footer-col-title">产品</div>
+          <a href="#">Web Pro</a><a href="#">谷歌应用商店</a><a href="#">App Store</a><a href="#">Android APK</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">开发者</div>
+          <a href="#">文档</a><a href="#">API</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">支持</div>
+          <a href="#">客服服务</a><a href="#">产品反馈</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">关于我们</div>
+          <a href="#">博客</a><a href="#">审计报告</a><a href="#">EDGE MiCA 白皮书</a><a href="#">隐私政策</a><a href="#">用户协议</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 edgeX All Rights Reserved</div>
+      <div class="footer-socials">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.258 5.63 5.906-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026 13.83 13.83 0 0 0 1.226-1.963.074.074 0 0 0-.041-.104 13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  let activeType   = 'all';
+  let activeStatus = 'ongoing';
+
+  function switchType(el) {
+    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    activeType = el.dataset.type;
+    applyFilter();
+  }
+
+  function switchStatus(el) {
+    document.querySelectorAll('.status-pill').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    activeStatus = el.dataset.status;
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const cards = document.querySelectorAll('#card-grid .activity-card');
+    let visible = 0;
+    cards.forEach(card => {
+      const typeOk   = activeType === 'all' || card.dataset.type === activeType;
+      const statusOk = card.dataset.status === activeStatus;
+      const show     = typeOk && statusOk;
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    const empty = document.getElementById('empty-state');
+    const msg   = document.getElementById('empty-msg');
+    if (visible === 0) {
+      empty.style.display = 'block';
+      msg.textContent = activeStatus === 'upcoming' ? '即将上线新活动，敬请期待' : '暂无相关活动';
+    } else {
+      empty.style.display = 'none';
+    }
+  }
+
+  // 初始化：只显示进行中
+  applyFilter();
+
+  // 早鸟名额实时递增模拟（每 8–15s +1）
+  let ebCount = 387;
+  const ebEl = document.getElementById('eb-joined');
+  function tickEarlyBird() {
+    if (ebCount < 499) {
+      ebCount++;
+      if (ebEl) ebEl.textContent = ebCount;
+    }
+    setTimeout(tickEarlyBird, 8000 + Math.random() * 7000);
+  }
+  setTimeout(tickEarlyBird, 8000 + Math.random() * 7000);
+
+  // 空投快照倒计时（至 2026/05/31 23:59）
+  function updateAirdropCountdown() {
+    const end = new Date('2026-05-31T23:59:00');
+    const now = new Date();
+    const diff = end - now;
+    const el = document.getElementById('airdrop-countdown');
+    if (!el) return;
+    if (diff <= 0) { el.textContent = '⏰ 已截止'; return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    el.textContent = d > 0 ? `⏰ 剩 ${d} 天 ${h} 小时` : `⏰ 剩 ${h}:${String(m).padStart(2,'0')}`;
+  }
+  updateAirdropCountdown();
+  setInterval(updateAirdropCountdown, 60000);
+</script>
+</body>
+</html>

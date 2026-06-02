@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>价格突破预警配置</title>
+<style>
+:root{
+  --bg:#f5f7fa;--card:#fff;--border:#e4e8f0;
+  --primary:#6366f1;--plight:#eef2ff;--violet:#8b5cf6;
+  --green:#10b981;--glight:#dcfce7;--red:#ef4444;--rlight:#fee2e2;
+  --gold:#f59e0b;--glight2:#fffbeb;
+  --sky:#06b6d4;--skylight:#ecfeff;
+  --text:#1e293b;--text2:#64748b;--text3:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'PingFang SC',-apple-system,'Microsoft YaHei',sans-serif;min-height:100vh;padding:32px 24px;}
+.page-wrap{max-width:1100px;margin:0 auto;}
+.page-title{font-size:20px;font-weight:800;margin-bottom:4px;}
+.page-desc{font-size:13px;color:var(--text2);margin-bottom:24px;}
+
+/* ── Info box ── */
+.info-box{border-radius:10px;padding:11px 15px;font-size:12.5px;line-height:1.7;margin-bottom:20px;}
+.ib-blue{background:var(--plight);border:1px solid #c7d2fe;color:#3730a3;}
+.ib-blue strong{color:#4338ca;}
+.ib-orange{background:var(--glight2);border:1px solid #fde68a;color:#92400e;}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:20px;overflow:hidden;}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);}
+.card-title{font-size:14px;font-weight:700;}
+.card-body{padding:0;}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.sym-tabs{display:flex;gap:6px;flex-wrap:wrap;flex:1;}
+.sym-tab{padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:.15s;}
+.sym-tab:hover{border-color:var(--primary);color:var(--primary);}
+.sym-tab.act{background:var(--plight);border-color:var(--primary);color:var(--primary);}
+.search-box{display:flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;background:#fff;font-size:12px;color:var(--text2);}
+.search-box input{border:none;outline:none;font-size:12px;color:var(--text);width:130px;}
+
+/* ── Table ── */
+table{width:100%;border-collapse:collapse;}
+thead tr{background:#fafbff;}
+th{padding:10px 16px;font-size:11.5px;font-weight:700;color:var(--text2);text-align:left;border-bottom:1.5px solid var(--border);white-space:nowrap;}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafbff;}
+
+/* ── Coin cell ── */
+.coin-cell{display:flex;align-items:center;gap:8px;}
+.coin-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.coin-name{font-weight:700;font-size:13px;}
+.coin-pair{font-size:11px;color:var(--text3);}
+
+/* ── Direction badge ── */
+.dir-up{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:var(--glight);color:#166534;border:1px solid #bbf7d0;}
+.dir-dn{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:var(--rlight);color:#991b1b;border:1px solid #fecaca;}
+
+/* ── Price cells ── */
+.target-price{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;}
+.target-price.up{color:var(--green);}
+.target-price.dn{color:var(--red);}
+.cur-price{font-size:12px;color:var(--text2);}
+.price-gap{font-size:11px;margin-top:2px;}
+.price-gap.near{color:var(--gold);}
+.price-gap.far{color:var(--text3);}
+
+/* ── Group tag ── */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.tag-blue{background:var(--plight);color:var(--primary);}
+.tag-violet{background:#ede9fe;color:#6d28d9;}
+.tag-sky{background:var(--skylight);color:#0e7490;}
+.tag-gray{background:#f1f5f9;color:var(--text2);}
+.tag-gold{background:#fef3c7;color:#b45309;}
+
+/* ── Trigger type ── */
+.once-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:#f1f5f9;color:var(--text2);font-weight:600;}
+.repeat-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--skylight);color:#0e7490;font-weight:600;}
+
+/* ── Preview text ── */
+.preview-text{font-size:12px;color:var(--text2);max-width:220px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+
+/* ── Toggle ── */
+.toggle-wrap{display:flex;align-items:center;gap:6px;}
+.toggle{position:relative;width:38px;height:20px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;}
+.slider{position:absolute;inset:0;background:#cbd5e1;border-radius:20px;transition:.2s;}
+.slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+.toggle input:checked+.slider{background:var(--primary);}
+.toggle input:checked+.slider:before{transform:translateX(18px);}
+.toggle-label{font-size:12px;color:var(--text2);}
+
+/* ── Action btns ── */
+.act-btn{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid;transition:.15s;}
+.btn-edit{border-color:var(--primary);color:var(--primary);background:#fff;}
+.btn-edit:hover{background:var(--plight);}
+.btn-del{border-color:#fca5a5;color:var(--red);background:#fff;margin-left:4px;}
+.btn-del:hover{background:var(--rlight);}
+.btn-primary{padding:7px 16px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-primary:hover{background:#4f46e5;}
+.btn-outline{padding:7px 16px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;}
+
+/* ── Stats strip ── */
+.stats-strip{display:flex;gap:0;border-bottom:1px solid var(--border);}
+.stat-item{flex:1;padding:14px 20px;text-align:center;border-right:1px solid var(--border);}
+.stat-item:last-child{border-right:none;}
+.stat-num{font-size:22px;font-weight:800;}
+.stat-num.up{color:var(--green);}
+.stat-num.dn{color:var(--red);}
+.stat-num.neu{color:var(--primary);}
+.stat-label{font-size:12px;color:var(--text2);margin-top:2px;}
+
+/* ── Empty row ── */
+.empty-row td{text-align:center;padding:36px;color:var(--text3);font-size:13px;}
+
+/* ── Modal ── */
+.modal-mask{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:.2s;}
+.modal-mask.open{opacity:1;pointer-events:auto;}
+.modal{background:#fff;border-radius:20px;width:580px;max-width:95vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.95);transition:.2s;}
+.modal-mask.open .modal{transform:scale(1);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);}
+.modal-head h3{font-size:15px;font-weight:800;}
+.modal-close{width:28px;height:28px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1;}
+.modal-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+/* ── Form ── */
+.form-row{margin-bottom:18px;}
+.form-label{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.form-label .req{color:var(--red);}
+.form-control{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);outline:none;transition:.15s;background:#fff;}
+.form-control:focus{border-color:var(--primary);}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+
+/* ── Direction selector ── */
+.dir-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.dir-opt{border:2px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:10px;}
+.dir-opt:hover{border-color:var(--primary);}
+.dir-opt.sel-up{border-color:var(--green);background:#f0fdf4;}
+.dir-opt.sel-dn{border-color:var(--red);background:#fff5f5;}
+.dir-opt-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.dir-opt-icon.up{background:var(--glight);color:var(--green);}
+.dir-opt-icon.dn{background:var(--rlight);color:var(--red);}
+.dir-opt-text strong{display:block;font-size:13px;font-weight:700;}
+.dir-opt-text span{font-size:11px;color:var(--text2);}
+
+/* ── Trigger type ── */
+.trigger-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.trigger-opt{border:2px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;transition:.15s;}
+.trigger-opt:hover{border-color:var(--primary);}
+.trigger-opt.sel{border-color:var(--primary);background:var(--plight);}
+.trigger-opt strong{display:block;font-size:13px;font-weight:700;margin-bottom:2px;}
+.trigger-opt span{font-size:11px;color:var(--text2);}
+
+/* ── Price ref bar ── */
+.price-ref{background:#fafbff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-top:8px;}
+.price-ref-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.price-ref-row:last-child{margin-bottom:0;}
+.price-ref-label{font-size:12px;color:var(--text2);}
+.price-ref-val{font-size:13px;font-weight:700;}
+.price-bar-wrap{margin-top:8px;position:relative;}
+.price-bar-bg{height:6px;background:#e2e8f0;border-radius:3px;position:relative;}
+.price-bar-fill{position:absolute;top:0;left:0;height:6px;border-radius:3px;}
+.price-bar-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px var(--primary);}
+.price-bar-target{position:absolute;top:-16px;transform:translateX(-50%);font-size:10px;font-weight:700;white-space:nowrap;}
+
+/* ── Group selector ── */
+.group-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.group-opt{border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;transition:.15s;text-align:center;}
+.group-opt:hover{border-color:var(--primary);}
+.group-opt.sel{border-color:var(--primary);background:var(--plight);}
+.group-opt strong{display:block;font-size:12px;font-weight:700;}
+.group-opt span{font-size:10px;color:var(--text2);}
+
+/* ── Preview card ── */
+.push-preview{background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:16px;padding:16px;color:#fff;margin-top:6px;}
+.push-preview-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.push-preview-app{font-size:11px;color:rgba(255,255,255,.6);}
+.push-preview-time{font-size:11px;color:rgba(255,255,255,.4);margin-left:auto;}
+.push-preview-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.push-preview-body{font-size:12px;color:rgba(255,255,255,.75);line-height:1.5;}
+
+/* ── Cooldown section ── */
+.cooldown-row{display:flex;align-items:center;gap:10px;margin-top:6px;}
+.cooldown-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--plight);color:var(--primary);}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="page-title">📍 具体价格预警配置</div>
+  <div class="page-desc">当标的价格突破指定价位时，向目标用户群发送推送通知；支持一次性触发和持续监控两种模式</div>
+
+  <div class="info-box ib-blue">
+    <strong>与涨跌幅预警的区别：</strong>涨跌幅预警关注的是"X分钟内涨/跌了多少%"，价格突破预警关注的是"价格有没有到达某个绝对价位"。<br>
+    适合场景：BTC 突破 10 万美元、ETH 跌破 3000 USDT 等具有市场意义的价格关口。
+  </div>
+
+  <!-- 汇总统计 -->
+  <div class="card">
+    <div class="stats-strip">
+      <div class="stat-item">
+        <div class="stat-num neu" id="total-count">7</div>
+        <div class="stat-label">规则总数</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num up" id="up-count">4</div>
+        <div class="stat-label">上涨突破</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num dn" id="dn-count">3</div>
+        <div class="stat-label">下跌突破</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num neu">2</div>
+        <div class="stat-label">今日已触发</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num neu">5</div>
+        <div class="stat-label">启用中</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 规则列表 -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">价格预警规则</div>
+      </div>
+      <button class="btn-primary" onclick="openModal()">＋ 添加预警规则</button>
+    </div>
+
+    <!-- 标的过滤 + 搜索 -->
+    <div class="toolbar">
+      <div class="sym-tabs">
+        <div class="sym-tab act" onclick="filterSym('all',this)">全部</div>
+        <div class="sym-tab" onclick="filterSym('BTC',this)">BTC</div>
+        <div class="sym-tab" onclick="filterSym('ETH',this)">ETH</div>
+        <div class="sym-tab" onclick="filterSym('SOL',this)">SOL</div>
+        <div class="sym-tab" onclick="filterSym('BNB',this)">BNB</div>
+        <div class="sym-tab" onclick="filterSym('XRP',this)">XRP</div>
+      </div>
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="搜索价格 / 标的…" oninput="filterSearch(this.value)">
+      </div>
+      <select class="form-control" style="width:auto;padding:5px 10px;font-size:12px;" onchange="filterDir(this.value)">
+        <option value="all">全部方向</option>
+        <option value="up">上涨突破</option>
+        <option value="dn">下跌突破</option>
+      </select>
+    </div>
+
+    <!-- 表格 -->
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>标的</th>
+            <th>预警方向</th>
+            <th>目标价格</th>
+            <th>当前价格 / 距离</th>
+            <th>触发用户群</th>
+            <th>触发方式</th>
+            <th>推送内容预览</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="rule-tbody">
+          <!-- BTC 上 -->
+          <tr data-sym="BTC" data-dir="up">
+            <td>
+              <div class="coin-cell">
+                <div class="coin-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">₿</div>
+                <div>
+                  <div class="coin-name">BTC</div>
+                  <div class="coin-pair">BTC/USDT</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="dir-up">↑ 上涨突破</span></td>
+            <td>
+              <div class="target-price up">100,000</div>
+              <div class="cur-price">目标 USDT</div>
+            </td>
+            <td>
+              <div style="font-size:13px;font-weight:600;">94,320 USDT</div>
+              <div class="price-gap near">距目标还差 ≈ 5.98% ⚡</div>
+            </td>
+            <td><span class="tag tag-blue">全体用户</span></td>
+            <td><span class="once-badge">一次性</span></td>
+            <td><div class="preview-text">🚀 BTC 突破历史关口！价格已达 100,000 USDT，市场迎来重大里程碑</div></td>
+            <td>
+              <div class="toggle-wrap">
+                <label class="toggle"><input type="checkbox" checked onchange="toggleRule(this)"><span class="slider"></span></label>
+                <span class="toggle-label">启用</span>
+              </div>
+            </td>
+            <td>
+              <button class="act-btn btn-edit" onclick="openModal('btc-up-100k')">编辑</button>
+              <button class="act-btn btn-del" onclick="delRule(this)">删除</button>
+            </td>
+          </tr>
+          <!-- BTC 上 90k -->
+          <tr data-sym="BTC" data-dir="up">
+            <td>
+              <div class="coin-cell">
+                <div class="coin-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">₿</div>
+                <div>
+                  <div class="coin-name">BTC</div>
+                  <div class="coin-pair">BTC/USDT</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="dir-up">↑ 上涨突破</span></td>
+            <td>
+              <div class="target-price up">95,000</div>
+              <div class="cur-price">目标 USDT</div>
+            </td>
+            <td>
+              <div style="font-size:13px;font-weight:600;">94,320 USDT</div>
+              <div class="price-gap near">距目标还差 ≈ 0.72% ⚡</div>
+            </td>
+            <td><span class="tag tag-violet">活跃用户</span></td>
+            <td><span class="repeat-badge">持续监控</span></td>
+            <td><div class="preview-text">BTC 突破 95,000 USDT！请注意仓位变化</div></td>
+            <td>
+              <div class="toggle-wrap">
+                <label class="toggle"><input type="checkbox" checked onchange="toggleRule(this)"><span class="slider"></span></label>
+                <span class="toggle-label">启用</span>
+              </div>
+            </td>
+            <td>
+              <button class="act-btn btn-edit" onclick="openModal()">编辑</button>
+              <button class="act-btn btn-del" onclick="delRule(this)">删除</button>
+            </td>
+          </tr>
+          <!-- BTC 跌 -->
+          <tr data-sym="BTC" data-dir="dn">
+            <td>
+              <div class="coin-cell">
+                <div class="coin-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">₿</div>
+                <div>
+                  <div class="coin-name">BTC</div>
+                  <div class="coin-pair">BTC/USDT</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="dir-dn">↓ 下跌突破</span></td>
+            <td>
+              <div class="target-price dn">85,000</div>
+              <div class="cur-price">目标 USDT</div>
+            </td>
+            <td>
+              <div style="font-size:13px;font-weight:600;">94,320 USDT</div>
+              <div class="price-gap far">高于目标 ≈ 11.0%</div>
+            </td>
+            <td><span class="tag tag-sky">持仓用户</span></td>
+            <td><span class="repeat-badge">持续监控</span></td>
+            <td><div class="preview-text">⚠️ BTC 跌破 85,000 USDT！请注意仓位安全，避免爆仓风险</div></td>
+            <td>
+              <div class="toggle-wrap">
+                <label class="toggle"><input type="checkbox" checked onchange="toggleRule(this)"><span class="slider"></span></label>
+                <span class="toggle-label">启用</span>
+              </div>
+            </td>
+            <td>
+              <button class="act-btn btn-edit" onclick="openModal()">编辑</button>
+              <button class="act-btn btn-del" onclick="delRule(this)">删除</button>
+            </td>
+          </tr>
+          <!-- ETH 上 -->
+          <tr data-sym="ETH" data-dir="up">
+            <td>
+              <div class="coin-cell">
+                <div class="coin-icon" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">Ξ</div>
+                <div>
+                  <div class="coin-name">ETH</div>
+                  <div class="coin-pair">ETH/USDT</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="dir-up">↑ 上涨突破</span></td>
+            <td>
+              <div class="target-price up">4,000</div>
+              <div class="cur-price">目标 USDT</div>
+            </td>
+            <td>
+              <div style="font-size:13px;font-weight:600;">3,214 USDT</div>
+              <div class="price-gap far">距目标还差 ≈ 24.5%</div>
+            </td>
+            <td><span class="tag tag-blue">全体用户</span></td>
+            <td><span class="once-badge">一次性</span></td>
+            <td><div class="preview-text">🚀 ETH 突破 4,000 USDT！牛市信号已来</div></td>
+            <td>
+              <div class="toggle-wrap">
+                <label class="toggle"><input type="checkbox" onchange="toggleRule(this)"><span class="slider"></span></label>
+                <span class="toggle-label" style="color:var(--text3)">关闭</span>
+              </div>
+            </td>
+            <td>
+              <button class="act-btn btn-edit" onclick="openModal()">编辑</button>
+              <button class="act-btn btn-del" onclick="delRule(this)">删除</button>
+            </td>
+          </tr>
+          <!-- ETH 跌 -->
+          <tr data-sym="ETH" data-dir="dn">
+            <td>
+              <div class="coin-cell">
+                <div class="coin-icon" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">Ξ</div>
+                <div>
+                  <div class="coin-name">ETH</div>
+                  <div class="coin-pair">ETH/USDT</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="dir-dn">↓ 下跌突破</span></td>
+            <td>
+              <div class="target-price dn">3,000</div>
+              <div class="cur-price">目标 USDT</div>
+            </td>
+            <td>
+              <div style="font-size:13px;font-weight:600;">3,214 USDT</div>
+              <div class="price-gap near">高于目标 ≈ 7.1% ⚡</div>
+            </td>
+            <td><span class="tag tag-violet">活跃用户</span></td>
+            <td><span class="repeat-badge">持续监控</span></td>
+            <td><div class="preview-text">⚠️ ETH 跌破 3,000 USDT，当前价 {price}，请关注持仓风险</div></td>
+            <td>
+              <div class="toggle-wrap">
+                <label class="toggle"><input type="checkbox" checked onchange="toggleRule(this)"><span class="slider"></span></label>
+                <span class="toggle-label">启用</span>
+              </div>
+            </td>
+            <td>
+              <button class="act-btn btn-edit" onclick="openModal()">编辑</button>
+              <button class="act-btn btn-del" onclick="delRule(this)">删除</button>
+            </td>
+          </tr>
+          <!-- SOL 上 -->
+          <tr data-sym="SOL" data-dir="up">
+            <td>
+              <div class="coin-cell">
+                <div class="coin-icon" style="background:linear-gradient(135deg,#10b981,#059669)">◎</div>
+                <div>
+                  <div class="coin-name">SOL</div>
+                  <div class="coin-pair">SOL/USDT</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="dir-up">↑ 上涨突破</span></td>
+            <td>
+              <div class="target-price up">250</div>
+              <div class="cur-price">目标 USDT</div>
+            </td>
+            <td>
+              <div style="font-size:13px;font-weight:600;">182.4 USDT</div>
+              <div class="price-gap far">距目标还差 ≈ 37.1%</div>
+            </td>
+            <td><span class="tag tag-gold">高净值用户</span></td>
+            <td><span class="once-badge">一次性</span></td>
+            <td><div class="preview-text">SOL 突破 250 USDT！Solana 生态迎来新高</div></td>
+            <td>
+              <div class="toggle-wrap">
+                <label class="toggle"><input type="checkbox" checked onchange="toggleRule(this)"><span class="slider"></span></label>
+                <span class="toggle-label">启用</span>
+              </div>
+            </td>
+            <td>
+              <button class="act-btn btn-edit" onclick="openModal()">编辑</button>
+              <button class="act-btn btn-del" onclick="delRule(this)">删除</button>
+            </td>
+          </tr>
+          <!-- BNB 跌 -->
+          <tr data-sym="BNB" data-dir="dn">
+            <td>
+              <div class="coin-cell">
+                <div class="coin-icon" style="background:linear-gradient(135deg,#f59e0b,#b45309)">B</div>
+                <div>
+                  <div class="coin-name">BNB</div>
+                  <div class="coin-pair">BNB/USDT</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="dir-dn">↓ 下跌突破</span></td>
+            <td>
+              <div class="target-price dn">550</div>
+              <div class="cur-price">目标 USDT</div>
+            </td>
+            <td>
+              <div style="font-size:13px;font-weight:600;">605.8 USDT</div>
+              <div class="price-gap far">高于目标 ≈ 10.2%</div>
+            </td>
+            <td><span class="tag tag-sky">持仓用户</span></td>
+            <td><span class="repeat-badge">持续监控</span></td>
+            <td><div class="preview-text">⚠️ BNB 跌破 550 USDT，注意仓位安全</div></td>
+            <td>
+              <div class="toggle-wrap">
+                <label class="toggle"><input type="checkbox" onchange="toggleRule(this)"><span class="slider"></span></label>
+                <span class="toggle-label" style="color:var(--text3)">关闭</span>
+              </div>
+            </td>
+            <td>
+              <button class="act-btn btn-edit" onclick="openModal()">编辑</button>
+              <button class="act-btn btn-del" onclick="delRule(this)">删除</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 逻辑说明 -->
+  <div class="info-box ib-orange" style="margin-bottom:0;">
+    <strong>触发方式说明：</strong>
+    「<strong>一次性</strong>」—— 价格首次穿越目标位时推送，触发后自动停用该规则，适合重大关口（如BTC 10万）。
+    「<strong>持续监控</strong>」—— 每次价格重新穿越目标位时都推送，适合关键支撑/压力位的长期监控，触发后会有冷却期（默认 30 分钟）避免重复打扰。
+  </div>
+
+</div>
+
+<!-- ═══════════════ 添加/编辑 Modal ═══════════════ -->
+<div class="modal-mask" id="modal-mask" onclick="maskClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-title">添加价格预警规则</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- 1. 标的 -->
+      <div class="form-row">
+        <div class="form-label">交易对 <span class="req">*</span></div>
+        <select class="form-control" id="f-symbol" onchange="updatePreview()">
+          <option value="BTC">BTC / USDT &nbsp;（当前价：94,320 USDT）</option>
+          <option value="ETH">ETH / USDT &nbsp;（当前价：3,214 USDT）</option>
+          <option value="SOL">SOL / USDT &nbsp;（当前价：182.4 USDT）</option>
+          <option value="BNB">BNB / USDT &nbsp;（当前价：605.8 USDT）</option>
+          <option value="XRP">XRP / USDT &nbsp;（当前价：2.14 USDT）</option>
+        </select>
+      </div>
+
+      <!-- 2. 方向 -->
+      <div class="form-row">
+        <div class="form-label">预警方向 <span class="req">*</span></div>
+        <div class="dir-selector">
+          <div class="dir-opt sel-up" id="dir-up" onclick="selectDir('up')">
+            <div class="dir-opt-icon up">↑</div>
+            <div class="dir-opt-text">
+              <strong>上涨突破</strong>
+              <span>价格涨到目标价时推送</span>
+            </div>
+          </div>
+          <div class="dir-opt" id="dir-dn" onclick="selectDir('dn')">
+            <div class="dir-opt-icon dn">↓</div>
+            <div class="dir-opt-text">
+              <strong>下跌突破</strong>
+              <span>价格跌到目标价时推送</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 目标价格 -->
+      <div class="form-row">
+        <div class="form-label">目标价格（USDT） <span class="req">*</span></div>
+        <input type="number" class="form-control" id="f-price" placeholder="输入价格，如 100000" min="0" step="any" oninput="updatePriceRef()">
+        <!-- 参考价格条 -->
+        <div class="price-ref" id="price-ref-box">
+          <div class="price-ref-row">
+            <span class="price-ref-label">当前价格</span>
+            <span class="price-ref-val" id="ref-cur">94,320 USDT</span>
+          </div>
+          <div class="price-ref-row">
+            <span class="price-ref-label">距目标</span>
+            <span class="price-ref-val" id="ref-gap" style="color:var(--text3)">—</span>
+          </div>
+          <div class="price-ref-row">
+            <span class="price-ref-label">近7日高 / 低</span>
+            <span class="price-ref-val" id="ref-hl" style="font-size:12px;color:var(--text2)">96,880 / 89,240 USDT</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. 触发方式 -->
+      <div class="form-row">
+        <div class="form-label">触发方式</div>
+        <div class="trigger-opts">
+          <div class="trigger-opt sel" id="trig-once" onclick="selectTrig('once')">
+            <strong>一次性触发</strong>
+            <span>首次穿越目标价推送，触发后停用</span>
+          </div>
+          <div class="trigger-opt" id="trig-repeat" onclick="selectTrig('repeat')">
+            <strong>持续监控</strong>
+            <span>每次穿越都推送，含冷却期设置</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 持续监控冷却（仅持续模式显示） -->
+      <div class="form-row" id="cooldown-row" style="display:none;">
+        <div class="form-label">触发后冷却时间</div>
+        <div class="cooldown-row">
+          <select class="form-control" style="width:160px;" onchange="updatePreview()">
+            <option>15 分钟</option>
+            <option selected>30 分钟</option>
+            <option>1 小时</option>
+            <option>2 小时</option>
+            <option>4 小时</option>
+          </select>
+          <span style="font-size:12px;color:var(--text2)">同一规则冷却期内不重复推送</span>
+        </div>
+      </div>
+
+      <!-- 5. 用户群 -->
+      <div class="form-row">
+        <div class="form-label">推送用户群</div>
+        <div class="group-grid">
+          <div class="group-opt sel" onclick="selectGroup(this)">
+            <strong>全体用户</strong>
+            <span>47,200 人</span>
+          </div>
+          <div class="group-opt" onclick="selectGroup(this)">
+            <strong>活跃用户</strong>
+            <span>近30天有交易 · 28,600</span>
+          </div>
+          <div class="group-opt" onclick="selectGroup(this)">
+            <strong>持仓用户</strong>
+            <span>当前有仓位 · 12,400</span>
+          </div>
+          <div class="group-opt" onclick="selectGroup(this)">
+            <strong>高净值用户</strong>
+            <span>≥10K USDT · 8,140</span>
+          </div>
+          <div class="group-opt" onclick="selectGroup(this)">
+            <strong>新注册用户</strong>
+            <span>≤7天 · 3,420</span>
+          </div>
+          <div class="group-opt" onclick="selectGroup(this)">
+            <strong>自定义 UID</strong>
+            <span>手动输入</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. 推送标题 -->
+      <div class="form-row-2">
+        <div>
+          <div class="form-label">推送标题</div>
+          <input type="text" class="form-control" id="f-title" value="🚀 BTC 突破重要关口！" oninput="updatePreview()">
+        </div>
+        <div>
+          <div class="form-label">动态变量</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;">
+            <span class="tag tag-gray" style="cursor:pointer;" onclick="insertVar('{symbol}')">&#123;symbol&#125;</span>
+            <span class="tag tag-gray" style="cursor:pointer;" onclick="insertVar('{price}')">&#123;price&#125;</span>
+            <span class="tag tag-gray" style="cursor:pointer;" onclick="insertVar('{target}')">&#123;target&#125;</span>
+            <span class="tag tag-gray" style="cursor:pointer;" onclick="insertVar('{gap}')">&#123;gap&#125;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. 推送内容 -->
+      <div class="form-row">
+        <div class="form-label">推送内容</div>
+        <textarea class="form-control" id="f-body" rows="3" oninput="updatePreview()">BTC 已突破 {target} USDT，当前价 {price}，市场迎来重大里程碑，点击查看实时行情</textarea>
+      </div>
+
+      <!-- 8. 推送预览 -->
+      <div class="form-row">
+        <div class="form-label">推送效果预览</div>
+        <div class="push-preview">
+          <div class="push-preview-header">
+            <span style="font-size:18px;">📱</span>
+            <span class="push-preview-app">DEX Exchange</span>
+            <span class="push-preview-time">刚刚</span>
+          </div>
+          <div class="push-preview-title" id="prev-title">🚀 BTC 突破重要关口！</div>
+          <div class="push-preview-body" id="prev-body">BTC 已突破 100,000 USDT，当前价 94,320 USDT，市场迎来重大里程碑，点击查看实时行情</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn-primary" onclick="saveRule()">保存规则</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Symbol current prices ── */
+const curPrices = {BTC:94320,ETH:3214,SOL:182.4,BNB:605.8,XRP:2.14};
+const hl7d = {
+  BTC:{h:96880,l:89240},ETH:{h:3480,l:2980},
+  SOL:{h:198,l:161},BNB:{h:635,l:578},XRP:{h:2.41,l:1.89}
+};
+
+let curDir = 'up';
+let curTrig = 'once';
+
+/* ── Filter ── */
+function filterSym(sym, el) {
+  document.querySelectorAll('.sym-tab').forEach(t => t.classList.remove('act'));
+  el.classList.add('act');
+  document.querySelectorAll('#rule-tbody tr').forEach(tr => {
+    tr.style.display = (sym === 'all' || tr.dataset.sym === sym) ? '' : 'none';
+  });
+}
+function filterDir(val) {
+  document.querySelectorAll('#rule-tbody tr').forEach(tr => {
+    if (val === 'all') { tr.style.display = ''; return; }
+    tr.style.display = tr.dataset.dir === val ? '' : 'none';
+  });
+}
+function filterSearch(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#rule-tbody tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+/* ── Toggle ── */
+function toggleRule(cb) {
+  const label = cb.closest('.toggle-wrap').querySelector('.toggle-label');
+  if (cb.checked) { label.textContent = '启用'; label.style.color = ''; }
+  else { label.textContent = '关闭'; label.style.color = 'var(--text3)'; }
+}
+
+/* ── Delete ── */
+function delRule(btn) {
+  if (!confirm('确定删除这条预警规则？')) return;
+  btn.closest('tr').remove();
+  updateStats();
+}
+function updateStats() {
+  const rows = [...document.querySelectorAll('#rule-tbody tr')];
+  document.getElementById('total-count').textContent = rows.length;
+  document.getElementById('up-count').textContent = rows.filter(r => r.dataset.dir === 'up').length;
+  document.getElementById('dn-count').textContent = rows.filter(r => r.dataset.dir === 'dn').length;
+}
+
+/* ── Modal ── */
+function openModal(id) {
+  document.getElementById('modal-mask').classList.add('open');
+  document.getElementById('modal-title').textContent = id ? '编辑价格预警规则' : '添加价格预警规则';
+  updatePreview();
+}
+function closeModal() { document.getElementById('modal-mask').classList.remove('open'); }
+function maskClick(e) { if (e.target.id === 'modal-mask') closeModal(); }
+
+/* ── Direction ── */
+function selectDir(dir) {
+  curDir = dir;
+  document.getElementById('dir-up').className = 'dir-opt' + (dir === 'up' ? ' sel-up' : '');
+  document.getElementById('dir-dn').className  = 'dir-opt' + (dir === 'dn' ? ' sel-dn' : '');
+  updatePriceRef();
+  updatePreview();
+}
+
+/* ── Trigger ── */
+function selectTrig(t) {
+  curTrig = t;
+  document.getElementById('trig-once').classList.toggle('sel', t === 'once');
+  document.getElementById('trig-repeat').classList.toggle('sel', t === 'repeat');
+  document.getElementById('cooldown-row').style.display = t === 'repeat' ? '' : 'none';
+}
+
+/* ── Group ── */
+function selectGroup(el) {
+  document.querySelectorAll('.group-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+/* ── Variable insert ── */
+function insertVar(v) {
+  const el = document.activeElement;
+  if (el && (el.id === 'f-title' || el.id === 'f-body')) {
+    const s = el.selectionStart, e = el.selectionEnd;
+    el.value = el.value.slice(0,s) + v + el.value.slice(e);
+    el.setSelectionRange(s+v.length, s+v.length);
+  } else {
+    const body = document.getElementById('f-body');
+    body.value += v;
+  }
+  updatePreview();
+}
+
+/* ── Price ref bar ── */
+function updatePriceRef() {
+  const sym  = document.getElementById('f-symbol').value;
+  const cur  = curPrices[sym] || 0;
+  const hl   = hl7d[sym] || {h:0,l:0};
+  const tgt  = parseFloat(document.getElementById('f-price').value) || 0;
+
+  document.getElementById('ref-cur').textContent = formatPrice(cur) + ' USDT';
+  document.getElementById('ref-hl').textContent  = formatPrice(hl.h) + ' / ' + formatPrice(hl.l) + ' USDT';
+
+  if (tgt > 0) {
+    const diff = ((tgt - cur) / cur * 100);
+    const sign = diff >= 0 ? '+' : '';
+    document.getElementById('ref-gap').textContent = sign + diff.toFixed(2) + '% (' + (diff >= 0 ? '还需上涨' : '已超跌') + Math.abs(diff).toFixed(2) + '%)';
+    document.getElementById('ref-gap').style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+  } else {
+    document.getElementById('ref-gap').textContent = '—';
+    document.getElementById('ref-gap').style.color = 'var(--text3)';
+  }
+}
+
+/* ── Preview ── */
+function updatePreview() {
+  const sym   = document.getElementById('f-symbol').value;
+  const cur   = curPrices[sym] || 0;
+  const tgt   = document.getElementById('f-price').value || '???';
+  let title   = document.getElementById('f-title').value;
+  let body    = document.getElementById('f-body').value;
+  const gap   = tgt && cur ? (Math.abs(parseFloat(tgt) - cur) / cur * 100).toFixed(2) + '%' : '?%';
+
+  const rep = s => s
+    .replace(/\{symbol\}/g, sym)
+    .replace(/\{price\}/g, formatPrice(cur) + ' USDT')
+    .replace(/\{target\}/g, tgt ? formatPrice(parseFloat(tgt)) + ' USDT' : '???')
+    .replace(/\{gap\}/g, gap);
+
+  document.getElementById('prev-title').textContent = rep(title);
+  document.getElementById('prev-body').textContent  = rep(body);
+  updatePriceRef();
+}
+
+function formatPrice(n) {
+  if (!n) return '0';
+  if (n >= 1000) return n.toLocaleString('en-US', {maximumFractionDigits:0});
+  if (n >= 10)   return n.toLocaleString('en-US', {maximumFractionDigits:2});
+  return n.toFixed(4);
+}
+
+/* ── Save (mock) ── */
+function saveRule() {
+  const sym   = document.getElementById('f-symbol').value;
+  const price = document.getElementById('f-price').value;
+  const title = document.getElementById('f-title').value;
+  if (!price) { alert('请输入目标价格'); return; }
+  alert(`规则已保存：${sym} ${curDir === 'up' ? '上涨突破' : '下跌突破'} ${price} USDT\n推送标题：${title}`);
+  closeModal();
+}
+</script>
+</body>
+</html>
