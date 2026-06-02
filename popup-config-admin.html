@@ -226,7 +226,7 @@
     transition: background 0.1s;
   }
   .modal-close:hover { background: #e5e7eb; }
-  .modal-body { padding: 24px; }
+  .modal-body { padding: 24px; position: relative; }
   .modal-footer {
     padding: 16px 24px; border-top: 1px solid #f3f4f6;
     display: flex; justify-content: flex-end; gap: 10px;
@@ -273,13 +273,94 @@
   }
   .channel-chip:hover:not(.selected) { border-color: #d1d5db; background: #f9fafb; }
 
-  .lang-selector { display: flex; flex-wrap: wrap; gap: 8px; }
-  .lang-chip {
-    padding: 6px 14px; border-radius: 8px; border: 1.5px solid #e8eaf0;
-    font-size: 13px; cursor: pointer; transition: all 0.15s; color: #6b7280;
+  /* Lang tab bar */
+  .lang-tab-bar {
+    display: flex; align-items: center; gap: 0;
+    border-bottom: 2px solid #f0f0f5; margin-bottom: 0;
+    padding: 0 24px; overflow-x: auto; flex-wrap: nowrap;
+    scrollbar-width: none;
   }
-  .lang-chip.selected { border-color: #6c63ff; background: #f5f3ff; color: #6c63ff; font-weight: 500; }
-  .lang-chip:hover:not(.selected) { border-color: #d1d5db; background: #f9fafb; }
+  .lang-tab-bar::-webkit-scrollbar { display: none; }
+  .lang-tab {
+    padding: 10px 16px; font-size: 13px; font-weight: 500;
+    color: #6b7280; cursor: pointer; border-bottom: 2px solid transparent;
+    margin-bottom: -2px; white-space: nowrap; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px; position: relative;
+  }
+  .lang-tab:hover { color: #374151; }
+  .lang-tab.active { color: #6c63ff; border-bottom-color: #6c63ff; font-weight: 600; }
+  .lang-tab .tab-close {
+    width: 16px; height: 16px; border-radius: 50%; background: #e5e7eb;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #6b7280; cursor: pointer; transition: all 0.1s;
+    opacity: 0;
+  }
+  .lang-tab:hover .tab-close { opacity: 1; }
+  .lang-tab .tab-close:hover { background: #fca5a5; color: #dc2626; }
+  .lang-tab-add {
+    padding: 8px 12px; font-size: 12px; color: #6c63ff; font-weight: 600;
+    background: none; border: none; cursor: pointer; white-space: nowrap;
+    border-radius: 6px; transition: background 0.15s;
+  }
+  .lang-tab-add:hover { background: #f5f3ff; }
+
+  /* Lang panel */
+  .lang-panel { display: none; padding: 20px 24px; }
+  .lang-panel.active { display: block; }
+
+  /* Content module (image + link) */
+  .content-module {
+    border: 1.5px solid #e8eaf0; border-radius: 12px;
+    overflow: hidden; margin-bottom: 12px;
+    transition: border-color 0.15s;
+  }
+  .content-module:hover { border-color: #c7c4f5; }
+  .content-module-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 16px; background: #f9fafb;
+    border-bottom: 1px solid #e8eaf0; cursor: pointer;
+    user-select: none;
+  }
+  .content-module-header-left { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #374151; }
+  .module-index {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #6c63ff; color: #fff; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .content-module-actions { display: flex; gap: 6px; }
+  .module-action-btn {
+    padding: 3px 8px; border-radius: 5px; border: 1px solid #e5e7eb;
+    font-size: 11px; color: #6b7280; background: #fff; cursor: pointer;
+    transition: all 0.1s;
+  }
+  .module-action-btn:hover { background: #f3f4f6; }
+  .module-action-btn.danger:hover { background: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+  .content-module-body { padding: 16px; }
+
+  .add-module-btn {
+    width: 100%; padding: 11px; border: 1.5px dashed #d1d5db;
+    border-radius: 10px; background: none; font-size: 13px;
+    color: #6c63ff; font-weight: 500; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .add-module-btn:hover { border-color: #6c63ff; background: #f5f3ff; }
+
+  /* Lang picker dropdown */
+  .lang-picker {
+    position: absolute; background: #fff; border-radius: 12px;
+    border: 1px solid #e8eaf0; box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    padding: 12px; width: 280px; z-index: 100;
+    display: none;
+  }
+  .lang-picker.open { display: block; }
+  .lang-picker-title { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; padding: 0 4px; }
+  .lang-picker-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .lang-picker-item {
+    padding: 5px 12px; border-radius: 6px; border: 1.5px solid #e8eaf0;
+    font-size: 12px; cursor: pointer; color: #374151; transition: all 0.12s;
+  }
+  .lang-picker-item:hover:not(.disabled) { border-color: #6c63ff; background: #f5f3ff; color: #6c63ff; }
+  .lang-picker-item.disabled { opacity: 0.35; cursor: not-allowed; }
 
   .img-upload {
     border: 2px dashed #e8eaf0; border-radius: 10px; padding: 24px;
@@ -519,79 +600,49 @@
     </div>
 
     <div class="modal-body">
+
       <!-- 基础信息 -->
       <div class="form-section">
         <div class="form-section-title"><span class="icon">📝</span> 基础信息</div>
-
         <div class="form-group">
           <label class="form-label">弹窗名称 <span class="required">*</span></label>
           <input class="form-input" id="f_name" placeholder="用于后台识别，不展示给用户" maxlength="50">
           <div class="form-hint">仅内部使用，最多 50 字符</div>
         </div>
-
         <div class="form-group">
           <label class="form-label">发布渠道 <span class="required">*</span></label>
           <div class="channel-selector">
-            <div class="channel-chip selected" onclick="toggleChannel(this, 'web')">🌐 Web 端</div>
-            <div class="channel-chip" onclick="toggleChannel(this, 'app')">📱 App 端</div>
-            <div class="channel-chip" onclick="toggleChannel(this, 'both')">🔀 全渠道</div>
+            <div class="channel-chip selected" onclick="toggleChannel(this)">🌐 Web 端</div>
+            <div class="channel-chip" onclick="toggleChannel(this)">📱 App 端</div>
+            <div class="channel-chip" onclick="toggleChannel(this)">🔀 全渠道</div>
           </div>
           <div class="form-hint">选择弹窗展示的渠道，可多选</div>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">语言 <span class="required">*</span></label>
-          <div class="lang-selector" id="langSelector">
-            <div class="lang-chip selected" onclick="selectLang(this, 'zh-CN')">简体中文</div>
-            <div class="lang-chip" onclick="selectLang(this, 'zh-TW')">繁體中文</div>
-            <div class="lang-chip" onclick="selectLang(this, 'en')">English</div>
-            <div class="lang-chip" onclick="selectLang(this, 'vi')">Tiếng Việt</div>
-            <div class="lang-chip" onclick="selectLang(this, 'de')">Deutsch</div>
-            <div class="lang-chip" onclick="selectLang(this, 'es')">Español</div>
-            <div class="lang-chip" onclick="selectLang(this, 'ja')">日本語</div>
-            <div class="lang-chip" onclick="selectLang(this, 'ko')">한국어</div>
-            <div class="lang-chip" onclick="selectLang(this, 'ms')">Bahasa Melayu</div>
-            <div class="lang-chip" onclick="selectLang(this, 'pt')">Português</div>
-            <div class="lang-chip" onclick="selectLang(this, 'ru')">Русский</div>
-          </div>
-          <div class="form-hint">每条弹窗仅支持配置一种语言</div>
-        </div>
-
       </div>
 
-      <!-- 图片配置 -->
-      <div class="form-section">
-        <div class="form-section-title"><span class="icon">🖼️</span> 图片配置</div>
-
-        <div class="form-group">
-          <label class="form-label">弹窗图片</label>
-          <div class="img-upload" id="imgUpload" onclick="triggerUpload()">
-            <input type="file" id="imgInput" accept="image/*" onchange="handleImageUpload(event)" style="display:none">
-            <div id="uploadPlaceholder">
-              <div class="img-upload-icon">🖼️</div>
-              <p>点击上传图片</p>
-              <span>推荐尺寸 750×400px，支持 JPG / PNG / GIF，最大 2MB</span>
-            </div>
-            <img id="imgPreviewEl" class="img-preview" alt="预览">
-          </div>
-        </div>
-
+      <!-- 语言 + 内容模块 -->
+      <div class="form-section" style="margin-bottom:0">
+        <div class="form-section-title"><span class="icon">🌐</span> 语言内容配置</div>
       </div>
 
-      <!-- 跳转配置 -->
-      <div class="form-section">
-        <div class="form-section-title"><span class="icon">🔗</span> 跳转配置</div>
+      <!-- 语言 Tab 栏 -->
+      <div class="lang-tab-bar" id="langTabBar">
+        <div class="lang-tab active" data-lang="zh-CN" onclick="switchLangTab('zh-CN')">简体中文</div>
+        <button class="lang-tab-add" onclick="openLangPicker()">＋ 添加语言</button>
+      </div>
 
-        <div class="form-group">
-            <label class="form-label">跳转链接 <span class="required">*</span></label>
-            <input class="form-input" id="f_link" placeholder="https:// 或 app://page/...">
-          </div>
+      <!-- 各语言内容面板 -->
+      <div id="langPanels"></div>
+
+      <!-- 语言选择浮层 -->
+      <div class="lang-picker" id="langPicker">
+        <div class="lang-picker-title">选择语言</div>
+        <div class="lang-picker-grid" id="langPickerGrid"></div>
       </div>
 
       <!-- 展示规则 -->
-      <div class="form-section">
+      <div class="form-section" style="margin-top:20px">
         <div class="form-section-title"><span class="icon">⏰</span> 展示规则</div>
-
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">开始时间 <span class="required">*</span></label>
@@ -602,8 +653,6 @@
             <input class="form-input" type="datetime-local" id="f_end">
           </div>
         </div>
-
-
       </div>
 
     </div>
@@ -762,11 +811,8 @@ function openModal() {
     document.getElementById('modalTitle').textContent = '新建弹窗';
     document.getElementById('modalSubtitle').textContent = '填写弹窗配置信息';
     document.getElementById('f_name').value = '';
-    document.getElementById('f_title').value = '';
-    document.getElementById('f_link').value = '';
-    document.getElementById('f_img_url').value = '';
+    initLangUI();
   }
-  // set default datetime
   const now = new Date();
   const fmt = d => d.toISOString().slice(0,16);
   document.getElementById('f_start').value = fmt(now);
@@ -784,9 +830,191 @@ function handleOverlayClick(e) {
 function toggleChannel(el) {
   el.classList.toggle('selected');
 }
-function selectLang(el) {
-  document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
+
+// ── 语言 Tab 系统 ──────────────────────────────────────────
+const ALL_LANGS = [
+  { code:'zh-CN', label:'简体中文' }, { code:'zh-TW', label:'繁體中文' },
+  { code:'en',    label:'English' }, { code:'vi',    label:'Tiếng Việt' },
+  { code:'de',    label:'Deutsch' }, { code:'es',    label:'Español' },
+  { code:'ja',    label:'日本語'   }, { code:'ko',    label:'한국어' },
+  { code:'ms',    label:'Bahasa Melayu' }, { code:'pt', label:'Português' },
+  { code:'ru',    label:'Русский' }
+];
+
+let activeLangs = ['zh-CN'];   // 已添加的语言
+let currentLangTab = 'zh-CN';  // 当前激活的 tab
+// modules[lang] = [ {id, imgUrl, link}, ... ]
+let langModules = { 'zh-CN': [{ id: 1, imgUrl: '', link: '' }] };
+let moduleCounter = 2;
+
+function initLangUI() {
+  activeLangs = ['zh-CN'];
+  currentLangTab = 'zh-CN';
+  langModules = { 'zh-CN': [{ id: 1, imgUrl: '', link: '' }] };
+  moduleCounter = 2;
+  renderLangTabs();
+  renderLangPanels();
+}
+
+function renderLangTabs() {
+  const bar = document.getElementById('langTabBar');
+  bar.innerHTML = activeLangs.map(code => {
+    const lang = ALL_LANGS.find(l => l.code === code);
+    const isDefault = code === activeLangs[0];
+    return `<div class="lang-tab ${code === currentLangTab ? 'active' : ''}" data-lang="${code}" onclick="switchLangTab('${code}')">
+      ${lang.label}
+      ${!isDefault ? `<span class="tab-close" onclick="removeLangTab(event,'${code}')">✕</span>` : ''}
+    </div>`;
+  }).join('') + `<button class="lang-tab-add" onclick="openLangPicker()">＋ 添加语言</button>`;
+}
+
+function renderLangPanels() {
+  const container = document.getElementById('langPanels');
+  container.innerHTML = activeLangs.map(code => `
+    <div class="lang-panel ${code === currentLangTab ? 'active' : ''}" id="panel-${code}">
+      <div id="modules-${code}">
+        ${(langModules[code] || []).map((m, i) => renderModule(code, m, i)).join('')}
+      </div>
+      <button class="add-module-btn" onclick="addModule('${code}')">＋ 新增图片 / 链接组合</button>
+    </div>
+  `).join('');
+}
+
+function renderModule(lang, m, index) {
+  const canDelete = (langModules[lang] || []).length > 1;
+  return `<div class="content-module" id="module-${m.id}">
+    <div class="content-module-header" onclick="toggleModuleCollapse(${m.id})">
+      <div class="content-module-header-left">
+        <div class="module-index">${index + 1}</div>
+        图片 &amp; 链接
+      </div>
+      <div class="content-module-actions" onclick="event.stopPropagation()">
+        ${index > 0 ? `<button class="module-action-btn" onclick="moveModule('${lang}',${m.id},'up')">↑</button>` : ''}
+        ${canDelete ? `<button class="module-action-btn danger" onclick="deleteModule('${lang}',${m.id})">删除</button>` : ''}
+      </div>
+    </div>
+    <div class="content-module-body" id="module-body-${m.id}">
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">弹窗图片</label>
+        <div class="img-upload" onclick="triggerModuleUpload(${m.id})">
+          <input type="file" id="img-input-${m.id}" accept="image/*"
+            onchange="handleModuleImage(event,${m.id},'${lang}')" style="display:none">
+          <div id="img-placeholder-${m.id}" ${m.imgUrl ? 'style="display:none"' : ''}>
+            <div class="img-upload-icon">🖼️</div>
+            <p>点击上传图片</p>
+            <span>推荐 750×400px，JPG/PNG/GIF，最大 2MB</span>
+          </div>
+          <img id="img-preview-${m.id}" class="img-preview"
+            src="${m.imgUrl}" alt="" ${m.imgUrl ? 'style="display:block"' : ''}>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">跳转链接 <span class="required">*</span></label>
+        <input class="form-input" id="link-${m.id}" placeholder="https:// 或 app://page/..."
+          value="${m.link}"
+          oninput="updateModuleLink(${m.id},'${lang}',this.value)">
+      </div>
+    </div>
+  </div>`;
+}
+
+function switchLangTab(code) {
+  currentLangTab = code;
+  renderLangTabs();
+  document.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('panel-' + code);
+  if (panel) panel.classList.add('active');
+}
+
+function removeLangTab(e, code) {
+  e.stopPropagation();
+  if (!confirm(`确认删除「${ALL_LANGS.find(l=>l.code===code).label}」的所有配置？`)) return;
+  activeLangs = activeLangs.filter(c => c !== code);
+  delete langModules[code];
+  if (currentLangTab === code) currentLangTab = activeLangs[0];
+  renderLangTabs();
+  renderLangPanels();
+}
+
+function openLangPicker() {
+  const picker = document.getElementById('langPicker');
+  const grid = document.getElementById('langPickerGrid');
+  grid.innerHTML = ALL_LANGS.map(l => {
+    const added = activeLangs.includes(l.code);
+    return `<div class="lang-picker-item ${added ? 'disabled' : ''}"
+      onclick="${added ? '' : `addLangTab('${l.code}')`}">${l.label}</div>`;
+  }).join('');
+  picker.classList.toggle('open');
+  // 点外关闭
+  setTimeout(() => {
+    document.addEventListener('click', closeLangPickerOutside, { once: true });
+  }, 0);
+}
+
+function closeLangPickerOutside(e) {
+  const picker = document.getElementById('langPicker');
+  if (!picker.contains(e.target)) picker.classList.remove('open');
+}
+
+function addLangTab(code) {
+  document.getElementById('langPicker').classList.remove('open');
+  if (activeLangs.includes(code)) return;
+  activeLangs.push(code);
+  langModules[code] = [{ id: moduleCounter++, imgUrl: '', link: '' }];
+  currentLangTab = code;
+  renderLangTabs();
+  renderLangPanels();
+}
+
+function addModule(lang) {
+  langModules[lang].push({ id: moduleCounter++, imgUrl: '', link: '' });
+  renderLangPanels();
+  switchLangTab(lang);
+}
+
+function deleteModule(lang, id) {
+  langModules[lang] = langModules[lang].filter(m => m.id !== id);
+  renderLangPanels();
+  switchLangTab(lang);
+}
+
+function moveModule(lang, id, dir) {
+  const arr = langModules[lang];
+  const idx = arr.findIndex(m => m.id === id);
+  if (dir === 'up' && idx > 0) {
+    [arr[idx-1], arr[idx]] = [arr[idx], arr[idx-1]];
+  }
+  renderLangPanels();
+  switchLangTab(lang);
+}
+
+function toggleModuleCollapse(id) {
+  const body = document.getElementById('module-body-' + id);
+  if (body) body.style.display = body.style.display === 'none' ? '' : 'none';
+}
+
+function triggerModuleUpload(id) {
+  document.getElementById('img-input-' + id).click();
+}
+
+function handleModuleImage(e, id, lang) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const m = (langModules[lang] || []).find(m => m.id === id);
+    if (m) m.imgUrl = ev.target.result;
+    const preview = document.getElementById('img-preview-' + id);
+    const placeholder = document.getElementById('img-placeholder-' + id);
+    if (preview) { preview.src = ev.target.result; preview.style.display = 'block'; }
+    if (placeholder) placeholder.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateModuleLink(id, lang, val) {
+  const m = (langModules[lang] || []).find(m => m.id === id);
+  if (m) m.link = val;
 }
 function toggleChip(el) { el.classList.toggle('selected'); }
 function selectFreq(el) {
