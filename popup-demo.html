@@ -181,6 +181,44 @@
   }
   .popup-skip:hover { color: rgba(255,255,255,0.6); }
 
+  /* ── Rules panel ── */
+  .rules-panel {
+    position: fixed; top: 76px; right: 20px;
+    width: 320px; background: rgba(18,20,34,0.96);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
+    padding: 16px; z-index: 900;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    opacity: 0; pointer-events: none; transform: translateX(12px);
+    transition: opacity 0.25s, transform 0.25s;
+  }
+  .rules-panel.visible { opacity: 1; pointer-events: all; transform: translateX(0); }
+  .rules-title {
+    font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.5);
+    text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px;
+  }
+  .rule-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 10px; border-radius: 8px; margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .rule-item.pass { background: rgba(16,185,129,0.08); }
+  .rule-item.fail { background: rgba(239,68,68,0.08); }
+  .rule-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+  .rule-name { font-weight: 600; color: #fff; white-space: nowrap; flex-shrink: 0; min-width: 56px; }
+  .rule-detail { color: rgba(255,255,255,0.45); line-height: 1.4; }
+  .rules-result { margin-top: 10px; }
+  .result-pass {
+    background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2);
+    color: #10b981; font-size: 12px; font-weight: 600;
+    padding: 8px 12px; border-radius: 8px; text-align: center;
+  }
+  .result-fail {
+    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+    color: #ef4444; font-size: 12px; font-weight: 600;
+    padding: 8px 12px; border-radius: 8px; text-align: center;
+  }
+
   /* ── Demo controls ── */
   .demo-bar {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -312,68 +350,186 @@
   </div>
 </div>
 
+<!-- 规则状态面板 -->
+<div class="rules-panel" id="rulesPanel">
+  <div class="rules-title">⚙️ 展示规则检测</div>
+  <div class="rules-list" id="rulesList"></div>
+  <div class="rules-result" id="rulesResult"></div>
+</div>
+
 <!-- Demo bar -->
 <div class="demo-bar">
   <span>弹窗演示</span>
-  <button class="demo-btn" onclick="showPopup()">▶ 重新弹出</button>
+  <button class="demo-btn" onclick="resetAndTrigger()">▶ 重置并重新触发</button>
+  <button class="demo-btn" onclick="clearStorage()">🗑 清除记录</button>
 </div>
 
 <script>
 // ── 模拟从后台拉取的弹窗配置 ──
 const POPUP_CONFIG = {
   id: 'popup_003',
+  enabled: true,                       // 启用开关
   title: '新用户注册礼包',
   desc: '完成注册即可领取 10 USDT 体验金，参与交易还可解锁更多奖励，数量有限先到先得！',
-  image_url: '',          // 空则使用占位图
+  image_url: '',
   link: 'https://100xex.com/register',
   btn_text: '立即领取',
   tag: '新人专享',
-  start_at: '2026-06-01T00:00:00Z',
-  end_at: '2026-06-30T23:59:59Z',
-  lang: 'zh-CN',
-  channel: 'web'
+  start_at: '2026-06-01T00:00:00Z',    // 开始时间
+  end_at: '2026-06-30T23:59:59Z',      // 结束时间
+  frequency: 'once_per_day',           // once | once_per_day | always
+  channel: 'web',                      // web | app | both
+  lang: 'zh-CN'
 };
 
-function showPopup() {
-  // 渲染配置
+// ── 展示规则引擎 ──
+function checkRules(config) {
+  const now = new Date();
+  const results = [];
+
+  // 规则1：启用开关
+  results.push({
+    name: '启用开关',
+    pass: config.enabled,
+    detail: config.enabled ? '已启用' : '已停用，跳过展示'
+  });
+
+  // 规则2：渠道匹配
+  const currentChannel = 'web'; // 当前页面渠道
+  const channelMatch = config.channel === 'both' || config.channel === currentChannel;
+  results.push({
+    name: '渠道匹配',
+    pass: channelMatch,
+    detail: `配置渠道：${config.channel}，当前渠道：${currentChannel}`
+  });
+
+  // 规则3：时间范围
+  const start = new Date(config.start_at);
+  const end = new Date(config.end_at);
+  const inRange = now >= start && now <= end;
+  results.push({
+    name: '展示时间',
+    pass: inRange,
+    detail: inRange
+      ? `在有效期内（${fmtDate(start)} ~ ${fmtDate(end)}）`
+      : `不在有效期内（${fmtDate(start)} ~ ${fmtDate(end)}）`
+  });
+
+  // 规则4：展示频率
+  const freqKey = `popup_freq_${config.id}`;
+  const freqVal = localStorage.getItem(freqKey);
+  let freqPass = true;
+  let freqDetail = '';
+
+  if (config.frequency === 'once') {
+    freqPass = !freqVal;
+    freqDetail = freqPass ? '仅一次 — 尚未展示过' : '仅一次 — 已展示过，不再展示';
+  } else if (config.frequency === 'once_per_day') {
+    const today = new Date().toDateString();
+    freqPass = freqVal !== today;
+    freqDetail = freqPass ? `每天一次 — 今日（${today}）尚未展示` : `每天一次 — 今日已展示过`;
+  } else {
+    freqDetail = '每次都展示';
+  }
+  results.push({ name: '展示频率', pass: freqPass, detail: freqDetail });
+
+  return results;
+}
+
+function fmtDate(d) {
+  return d.toLocaleDateString('zh-CN', { month:'2-digit', day:'2-digit' });
+}
+
+function renderRulesPanel(results) {
+  const allPass = results.every(r => r.pass);
+  const list = document.getElementById('rulesList');
+  const result = document.getElementById('rulesResult');
+
+  list.innerHTML = results.map(r => `
+    <div class="rule-item ${r.pass ? 'pass' : 'fail'}">
+      <span class="rule-icon">${r.pass ? '✅' : '❌'}</span>
+      <span class="rule-name">${r.name}</span>
+      <span class="rule-detail">${r.detail}</span>
+    </div>
+  `).join('');
+
+  result.innerHTML = allPass
+    ? '<div class="result-pass">✅ 所有规则通过，弹窗将展示</div>'
+    : '<div class="result-fail">🚫 规则未通过，弹窗不展示</div>';
+
+  document.getElementById('rulesPanel').classList.add('visible');
+  return allPass;
+}
+
+// ── 记录展示频率 ──
+function recordFrequency(config) {
+  const freqKey = `popup_freq_${config.id}`;
+  if (config.frequency === 'once') {
+    localStorage.setItem(freqKey, 'shown');
+  } else if (config.frequency === 'once_per_day') {
+    localStorage.setItem(freqKey, new Date().toDateString());
+  }
+}
+
+// ── 主入口：触发弹窗（带规则检测） ──
+function triggerPopup() {
+  const results = checkRules(POPUP_CONFIG);
+  const pass = renderRulesPanel(results);
+  console.log('[popup] rules', results);
+
+  if (!pass) {
+    console.log('[popup] blocked by rules');
+    return;
+  }
+
+  // 渲染弹窗内容
   document.getElementById('popupTitle').textContent = POPUP_CONFIG.title;
   document.getElementById('popupDesc').textContent = POPUP_CONFIG.desc;
   document.getElementById('popupBtn').textContent = POPUP_CONFIG.btn_text;
-
   if (POPUP_CONFIG.image_url) {
     document.getElementById('popupImgArea').innerHTML =
-      `<img src="${POPUP_CONFIG.image_url}" alt="弹窗图片">`;
+      `<img src="${POPUP_CONFIG.image_url}" alt="">`;
   }
 
+  // 记录频率
+  recordFrequency(POPUP_CONFIG);
+
+  // 展示
   const overlay = document.getElementById('popupOverlay');
   overlay.classList.add('visible');
-
-  // 记录展示行为（实际接埋点 SDK）
-  console.log('[popup] impression', { id: POPUP_CONFIG.id, channel: POPUP_CONFIG.channel });
+  console.log('[popup] impression', { id: POPUP_CONFIG.id });
 }
 
 function closePopup() {
-  const overlay = document.getElementById('popupOverlay');
-  overlay.classList.remove('visible');
-
-  // 记录关闭行为
+  document.getElementById('popupOverlay').classList.remove('visible');
   console.log('[popup] close', { id: POPUP_CONFIG.id });
 }
 
 function handlePopupClick() {
-  // 记录点击行为
   console.log('[popup] click', { id: POPUP_CONFIG.id, link: POPUP_CONFIG.link });
   closePopup();
-  // 实际跳转：window.location.href = POPUP_CONFIG.link;
+  // window.location.href = POPUP_CONFIG.link;
 }
 
-// 点击遮罩关闭
+function resetAndTrigger() {
+  document.getElementById('rulesPanel').classList.remove('visible');
+  setTimeout(triggerPopup, 200);
+}
+
+function clearStorage() {
+  localStorage.removeItem(`popup_freq_${POPUP_CONFIG.id}`);
+  document.getElementById('rulesResult').innerHTML =
+    '<div class="result-pass" style="background:rgba(251,191,36,0.1);color:#fbbf24">🗑 记录已清除，可重新触发</div>';
+  console.log('[popup] storage cleared');
+}
+
+// 遮罩关闭
 document.getElementById('popupOverlay').addEventListener('click', function(e) {
   if (e.target === this) closePopup();
 });
 
-// 页面加载后 800ms 自动弹出
-setTimeout(showPopup, 800);
+// 页面加载 800ms 后自动触发
+setTimeout(triggerPopup, 800);
 </script>
 </body>
 </html>
