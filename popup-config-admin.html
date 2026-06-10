@@ -70,23 +70,6 @@
   .btn-danger:hover { background: #fef2f2; }
   .btn-sm { padding: 5px 12px; font-size: 12px; }
 
-  /* Channel tabs */
-  .channel-tabs {
-    display: flex; gap: 0;
-  }
-  .channel-tab {
-    padding: 14px 18px; font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: all 0.15s; color: #6b7280;
-    display: flex; align-items: center; gap: 7px;
-    border-bottom: 2px solid transparent; margin-bottom: -1px;
-  }
-  .channel-tab.active { color: #6c63ff; border-bottom-color: #6c63ff; font-weight: 600; }
-  .channel-tab:not(.active):hover { color: #374151; }
-  .channel-badge {
-    font-size: 11px; padding: 1px 6px; border-radius: 10px;
-    font-weight: 600; background: #e5e7eb; color: #6b7280;
-  }
-  .channel-tab.active .channel-badge { background: #ede9fe; color: #6c63ff; }
 
   /* Stats row */
   .stats-row { display: flex; gap: 16px; margin-bottom: 24px; }
@@ -536,47 +519,39 @@
           <button class="btn btn-primary" onclick="openModal()">＋ 新建弹窗</button>
         </div>
 
-        <!-- 渠道 Tab + 搜索筛选同行 -->
+        <!-- 搜索 + 筛选同行 -->
         <div class="top-card-toolbar">
-          <div class="channel-tabs">
-            <div class="channel-tab active" onclick="switchChannel('all', this)">
-              全部 <span class="channel-badge">12</span>
-            </div>
-            <div class="channel-tab" onclick="switchChannel('web', this)">
-              🌐 Web <span class="channel-badge">7</span>
-            </div>
-            <div class="channel-tab" onclick="switchChannel('app', this)">
-              📱 App <span class="channel-badge">5</span>
-            </div>
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="搜索弹窗名称..." oninput="filterTable(this.value)">
           </div>
-          <div class="top-card-filters">
-            <div class="search-box">
-              <span class="search-icon">🔍</span>
-              <input type="text" placeholder="搜索弹窗名称..." oninput="filterTable(this.value)">
-            </div>
-            <div class="filter-bar">
-              <select class="filter-select" onchange="filterStatus(this.value)">
-                <option value="">全部状态</option>
-                <option value="active">进行中</option>
-                <option value="scheduled">待发布</option>
-                <option value="ended">已结束</option>
-                <option value="draft">草稿</option>
-              </select>
-              <select class="filter-select" onchange="filterLang(this.value)">
-                <option value="">全部语言</option>
-                <option value="zh-CN">简体中文</option>
-                <option value="zh-TW">繁體中文</option>
-                <option value="en">English</option>
-                <option value="vi">Tiếng Việt</option>
-                <option value="de">Deutsch</option>
-                <option value="es">Español</option>
-                <option value="ja">日本語</option>
-                <option value="ko">한국어</option>
-                <option value="ms">Bahasa Melayu</option>
-                <option value="pt">Português</option>
-                <option value="ru">Русский</option>
-              </select>
-            </div>
+          <div class="filter-bar">
+            <select class="filter-select" onchange="switchChannel(this.value)">
+              <option value="all">全部渠道</option>
+              <option value="web">🌐 Web</option>
+              <option value="app">📱 App</option>
+            </select>
+            <select class="filter-select" onchange="filterStatus(this.value)">
+              <option value="">全部状态</option>
+              <option value="active">进行中</option>
+              <option value="scheduled">待发布</option>
+              <option value="ended">已结束</option>
+              <option value="draft">草稿</option>
+            </select>
+            <select class="filter-select" onchange="filterLang(this.value)">
+              <option value="">全部语言</option>
+              <option value="zh-CN">简体中文</option>
+              <option value="zh-TW">繁體中文</option>
+              <option value="en">English</option>
+              <option value="vi">Tiếng Việt</option>
+              <option value="de">Deutsch</option>
+              <option value="es">Español</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="ms">Bahasa Melayu</option>
+              <option value="pt">Português</option>
+              <option value="ru">Русский</option>
+            </select>
           </div>
         </div>
       </div>
@@ -814,10 +789,8 @@ function renderTable() {
   `).join('');
 }
 
-function switchChannel(ch, el) {
+function switchChannel(ch) {
   currentChannel = ch;
-  document.querySelectorAll('.channel-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
   renderTable();
 }
 function filterStatus(v) { currentStatus = v; renderTable(); }
