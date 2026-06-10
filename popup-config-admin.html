@@ -630,11 +630,11 @@
         <div class="form-group">
           <label class="form-label">发布渠道 <span class="required">*</span></label>
           <div class="channel-selector">
-            <div class="channel-chip selected" onclick="toggleChannel(this)">🌐 Web 端</div>
-            <div class="channel-chip" onclick="toggleChannel(this)">📱 App 端</div>
-            <div class="channel-chip" onclick="toggleChannel(this)">🔀 全渠道</div>
+            <div class="channel-chip selected" onclick="selectChannel(this)">🌐 Web 端</div>
+            <div class="channel-chip" onclick="selectChannel(this)">📱 App 端</div>
+            <div class="channel-chip" onclick="selectChannel(this)">🔀 全渠道</div>
           </div>
-          <div class="form-hint">选择弹窗展示的渠道，可多选</div>
+          <div class="form-hint">选择弹窗展示的渠道</div>
         </div>
       </div>
 
@@ -674,14 +674,6 @@
         <div class="form-group">
           <label class="form-label">展示频率 <span class="required">*</span></label>
           <div class="freq-radio-group">
-            <label class="freq-radio-item">
-              <input type="radio" name="f_freq" value="once" id="freq_once">
-              <div class="freq-radio-box">
-                <div class="freq-radio-icon">1️⃣</div>
-                <div class="freq-radio-label">仅一次</div>
-                <div class="freq-radio-desc">用户看过后不再展示</div>
-              </div>
-            </label>
             <label class="freq-radio-item">
               <input type="radio" name="f_freq" value="once_per_day" id="freq_day" checked>
               <div class="freq-radio-box">
@@ -874,8 +866,9 @@ function handleOverlayClick(e) {
   if (e.target === document.getElementById('modalOverlay')) closeModal();
 }
 
-function toggleChannel(el) {
-  el.classList.toggle('selected');
+function selectChannel(el) {
+  document.querySelectorAll('.channel-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
 }
 
 // ── 语言 Tab 系统 ──────────────────────────────────────────
