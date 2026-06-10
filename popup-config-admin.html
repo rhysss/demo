@@ -396,6 +396,24 @@
   .freq-opt.selected { border-color: #6c63ff; background: #f5f3ff; color: #6c63ff; font-weight: 500; }
   .freq-opt .freq-icon { font-size: 18px; margin-bottom: 4px; }
 
+  /* Freq radio group */
+  .freq-radio-group { display: flex; gap: 10px; }
+  .freq-radio-item { flex: 1; cursor: pointer; }
+  .freq-radio-item input[type=radio] { display: none; }
+  .freq-radio-box {
+    border: 1.5px solid #e8eaf0; border-radius: 10px; padding: 12px 10px;
+    text-align: center; transition: all 0.15s; background: #fff;
+  }
+  .freq-radio-box:hover { border-color: #c7c4f5; background: #fafbff; }
+  .freq-radio-item input:checked + .freq-radio-box {
+    border-color: #6c63ff; background: #f5f3ff;
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.1);
+  }
+  .freq-radio-icon { font-size: 20px; margin-bottom: 6px; }
+  .freq-radio-label { font-size: 13px; font-weight: 600; color: #1a1a2e; margin-bottom: 3px; }
+  .freq-radio-item input:checked + .freq-radio-box .freq-radio-label { color: #6c63ff; }
+  .freq-radio-desc { font-size: 11px; color: #9ca3af; line-height: 1.4; }
+
   /* Preview panel */
   .preview-panel {
     position: fixed; right: 32px; top: 50%;
@@ -651,6 +669,35 @@
           <div class="form-group">
             <label class="form-label">结束时间 <span class="required">*</span></label>
             <input class="form-input" type="datetime-local" id="f_end">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">展示频率 <span class="required">*</span></label>
+          <div class="freq-radio-group">
+            <label class="freq-radio-item">
+              <input type="radio" name="f_freq" value="once" id="freq_once">
+              <div class="freq-radio-box">
+                <div class="freq-radio-icon">1️⃣</div>
+                <div class="freq-radio-label">仅一次</div>
+                <div class="freq-radio-desc">用户看过后不再展示</div>
+              </div>
+            </label>
+            <label class="freq-radio-item">
+              <input type="radio" name="f_freq" value="once_per_day" id="freq_day" checked>
+              <div class="freq-radio-box">
+                <div class="freq-radio-icon">📅</div>
+                <div class="freq-radio-label">每天一次</div>
+                <div class="freq-radio-desc">每自然日最多展示一次</div>
+              </div>
+            </label>
+            <label class="freq-radio-item">
+              <input type="radio" name="f_freq" value="always" id="freq_always">
+              <div class="freq-radio-box">
+                <div class="freq-radio-icon">🔄</div>
+                <div class="freq-radio-label">每次都展示</div>
+                <div class="freq-radio-desc">每次进入页面都展示</div>
+              </div>
+            </label>
           </div>
         </div>
       </div>
