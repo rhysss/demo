@@ -931,7 +931,6 @@ function renderLangPanels() {
       <div id="modules-${code}">
         ${(langModules[code] || []).map((m, i) => renderModule(code, m, i)).join('')}
       </div>
-      <button class="add-module-btn" onclick="addModule('${code}')">＋ 新增图片 / 链接组合</button>
     </div>
   `).join('');
 }
