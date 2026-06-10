@@ -881,16 +881,16 @@ const ALL_LANGS = [
   { code:'ru',    label:'Русский' }
 ];
 
-let activeLangs = ['zh-CN'];   // 已添加的语言
-let currentLangTab = 'zh-CN';  // 当前激活的 tab
+let activeLangs = ['en'];       // 已添加的语言
+let currentLangTab = 'en';     // 当前激活的 tab
 // modules[lang] = [ {id, imgUrl, link}, ... ]
-let langModules = { 'zh-CN': [{ id: 1, imgUrl: '', link: '' }] };
+let langModules = { 'en': [{ id: 1, imgUrl: '', link: '' }] };
 let moduleCounter = 2;
 
 function initLangUI() {
-  activeLangs = ['zh-CN'];
-  currentLangTab = 'zh-CN';
-  langModules = { 'zh-CN': [{ id: 1, imgUrl: '', link: '' }] };
+  activeLangs = ['en'];
+  currentLangTab = 'en';
+  langModules = { 'en': [{ id: 1, imgUrl: '', link: '' }] };
   moduleCounter = 2;
   renderLangTabs();
   renderLangPanels();
