@@ -621,9 +621,9 @@
         <div class="form-group">
           <label class="form-label">发布渠道 <span class="required">*</span></label>
           <div class="channel-selector">
-            <div class="channel-chip selected" onclick="selectChannel(this)">🌐 Web 端</div>
-            <div class="channel-chip" onclick="selectChannel(this)">📱 App 端</div>
-            <div class="channel-chip" onclick="selectChannel(this)">🔀 全渠道</div>
+            <div class="channel-chip selected" onclick="selectChannel(this,'web')">🌐 Web 端</div>
+            <div class="channel-chip" onclick="selectChannel(this,'app')">📱 App 端</div>
+            <div class="channel-chip" onclick="selectChannel(this,'both')">🔀 全渠道</div>
           </div>
           <div class="form-hint">选择弹窗展示的渠道</div>
         </div>
@@ -855,9 +855,12 @@ function handleOverlayClick(e) {
   if (e.target === document.getElementById('modalOverlay')) closeModal();
 }
 
-function selectChannel(el) {
+let currentEditChannel = 'web'; // web | app | both
+function selectChannel(el, ch) {
   document.querySelectorAll('.channel-chip').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
+  currentEditChannel = ch;
+  renderLangPanels();
 }
 
 // ── 语言 Tab 系统 ──────────────────────────────────────────
@@ -872,14 +875,16 @@ const ALL_LANGS = [
 
 let activeLangs = ['en'];       // 已添加的语言
 let currentLangTab = 'en';     // 当前激活的 tab
-// modules[lang] = [ {id, imgUrl, link}, ... ]
-let langModules = { 'en': [{ id: 1, imgUrl: '', link: '' }] };
+// modules[lang] = [ {id, imgUrl, linkWeb, linkApp}, ... ]
+let langModules = { 'en': [{ id: 1, imgUrl: '', linkWeb: '', linkApp: '' }] };
 let moduleCounter = 2;
 
 function initLangUI() {
+  currentEditChannel = 'web';
+  document.querySelectorAll('.channel-chip').forEach((c, i) => c.classList.toggle('selected', i === 0));
   activeLangs = ['en'];
   currentLangTab = 'en';
-  langModules = { 'en': [{ id: 1, imgUrl: '', link: '' }] };
+  langModules = { 'en': [{ id: 1, imgUrl: '', linkWeb: '', linkApp: '' }] };
   moduleCounter = 2;
   renderLangTabs();
   renderLangPanels();
@@ -936,12 +941,7 @@ function renderModule(lang, m, index) {
             src="${m.imgUrl}" alt="" ${m.imgUrl ? 'style="display:block"' : ''}>
         </div>
       </div>
-      <div class="form-group" style="margin-bottom:0">
-        <label class="form-label">跳转链接 <span class="required">*</span></label>
-        <input class="form-input" id="link-${m.id}" placeholder="https:// 或 app://page/..."
-          value="${m.link}"
-          oninput="updateModuleLink(${m.id},'${lang}',this.value)">
-      </div>
+      ${renderLinkInputs(lang, m)}
     </div>
   </div>`;
 }
@@ -988,14 +988,14 @@ function addLangTab(code) {
   document.getElementById('langPicker').classList.remove('open');
   if (activeLangs.includes(code)) return;
   activeLangs.push(code);
-  langModules[code] = [{ id: moduleCounter++, imgUrl: '', link: '' }];
+  langModules[code] = [{ id: moduleCounter++, imgUrl: '', linkWeb: '', linkApp: '' }];
   currentLangTab = code;
   renderLangTabs();
   renderLangPanels();
 }
 
 function addModule(lang) {
-  langModules[lang].push({ id: moduleCounter++, imgUrl: '', link: '' });
+  langModules[lang].push({ id: moduleCounter++, imgUrl: '', linkWeb: '', linkApp: '' });
   renderLangPanels();
   switchLangTab(lang);
 }
@@ -1040,9 +1040,36 @@ function handleModuleImage(e, id, lang) {
   reader.readAsDataURL(file);
 }
 
-function updateModuleLink(id, lang, val) {
+function renderLinkInputs(lang, m) {
+  if (currentEditChannel === 'both') {
+    return `
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">🌐 Web 跳转链接 <span class="required">*</span></label>
+        <input class="form-input" id="link-web-${m.id}" placeholder="https://..."
+          value="${m.linkWeb}"
+          oninput="updateModuleLink(${m.id},'${lang}','linkWeb',this.value)">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">📱 App 跳转链接 <span class="required">*</span></label>
+        <input class="form-input" id="link-app-${m.id}" placeholder="app://page/..."
+          value="${m.linkApp}"
+          oninput="updateModuleLink(${m.id},'${lang}','linkApp',this.value)">
+      </div>`;
+  }
+  const isWeb = currentEditChannel === 'web';
+  const field = isWeb ? 'linkWeb' : 'linkApp';
+  return `
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">跳转链接 <span class="required">*</span></label>
+        <input class="form-input" id="link-${m.id}" placeholder="${isWeb ? 'https://...' : 'app://page/...'}"
+          value="${isWeb ? m.linkWeb : m.linkApp}"
+          oninput="updateModuleLink(${m.id},'${lang}','${field}',this.value)">
+      </div>`;
+}
+
+function updateModuleLink(id, lang, field, val) {
   const m = (langModules[lang] || []).find(m => m.id === id);
-  if (m) m.link = val;
+  if (m) m[field] = val;
 }
 function toggleChip(el) { el.classList.toggle('selected'); }
 function selectFreq(el) {
