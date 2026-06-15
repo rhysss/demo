@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>操作区空间方案对比</title>
+<style>
+  :root{
+    --bg:#0b0e11; --panel:#12161c; --line:rgba(255,255,255,0.06);
+    --txt:#eaecef; --dim:#848e9c; --green:#0ecb81; --red:#f6465d;
+    --green-soft:rgba(14,203,129,0.12); --green-border:rgba(14,203,129,0.45);
+    --red-soft:rgba(246,70,93,0.12); --red-border:rgba(246,70,93,0.45);
+    --fill:rgba(255,255,255,0.06); --fill-hover:rgba(255,255,255,0.12);
+    --border:rgba(255,255,255,0.14); --r:7px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    padding:34px 26px 80px;line-height:1.5}
+  .wrap{max-width:1280px;margin:0 auto}
+  h1{font-size:20px;font-weight:600;margin-bottom:6px}
+  .sub{color:var(--dim);font-size:13px;margin-bottom:30px}
+  .opt{margin-bottom:36px}
+  .tag{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;
+    letter-spacing:.4px;padding:5px 11px;border-radius:6px;margin-bottom:6px;
+    background:var(--green-soft);color:var(--green)}
+  .tag .n{background:var(--green);color:#06281b;width:18px;height:18px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+  .desc{font-size:12.5px;color:var(--dim);margin-bottom:13px}
+  .desc b{color:var(--txt)}
+
+  /* dense table */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:1040px}
+  th,td{text-align:left;padding:14px 10px;white-space:nowrap;font-size:13px}
+  th{color:var(--dim);font-size:11.5px;font-weight:400;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{padding-left:20px}
+  td:last-child,th:last-child{padding-right:18px;text-align:right}
+  .name{font-weight:600;font-size:14px}
+  .meta{margin-top:6px;display:flex;gap:5px}
+  .pill{font-size:10.5px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.08);color:var(--dim)}
+  .pill.long{background:var(--green-soft);color:var(--green)}
+  .sub2{display:block;color:var(--dim);font-size:11.5px;margin-top:4px}
+  .green{color:var(--green)} .red{color:var(--red)} .orange{color:#f0a020}
+  .pnl{color:var(--green);font-weight:600}
+
+  /* buttons */
+  .btn{font-size:12.5px;font-weight:500;height:32px;padding:0 13px;border-radius:var(--r);
+    display:inline-flex;align-items:center;gap:5px;cursor:pointer;border:1px solid transparent;
+    transition:.15s;white-space:nowrap}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--green);color:#06281b;font-weight:600}
+  .btn-primary:hover{background:#14e08f}
+  .btn-sec{background:var(--fill);color:var(--txt);border-color:var(--border)}
+  .btn-sec:hover{background:var(--fill-hover);border-color:rgba(255,255,255,.28)}
+  .btn-feat.red{background:var(--red-soft);color:var(--red);border-color:var(--red-border)}
+  .btn-feat.red:hover{background:rgba(246,70,93,.2)}
+  .btn-feat.green{background:var(--green-soft);color:var(--green);border-color:var(--green-border)}
+  .btn-feat.green:hover{background:rgba(14,203,129,.2)}
+  .ic{width:14px;height:14px;flex:none}
+  .acts{display:inline-flex;gap:8px;align-items:center;justify-content:flex-end}
+
+  /* kebab */
+  .kebab{width:32px;height:32px;border-radius:var(--r);border:1px solid var(--border);
+    background:var(--fill);color:var(--txt);cursor:pointer;display:inline-flex;
+    align-items:center;justify-content:center;font-size:18px;letter-spacing:1px;line-height:1}
+  .kebab:hover{background:var(--fill-hover)}
+  .menu-wrap{position:relative;display:inline-block}
+  .menu{position:absolute;right:0;top:38px;background:#1b2027;border:1px solid var(--border);
+    border-radius:9px;padding:6px;min-width:148px;z-index:20;display:none;
+    box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .menu.open{display:block}
+  .menu button{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;
+    color:var(--txt);font-size:13px;padding:9px 11px;border-radius:6px;cursor:pointer;text-align:left}
+  .menu button:hover{background:var(--fill)}
+  .menu button.red{color:var(--red)} .menu button.green{color:var(--green)}
+
+  /* icon-only */
+  .iconbtn{width:32px;height:32px;border-radius:var(--r);border:1px solid var(--border);
+    background:var(--fill);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+    color:var(--txt);transition:.15s;position:relative}
+  .iconbtn:hover{background:var(--fill-hover)}
+  .iconbtn.red{color:var(--red);background:var(--red-soft);border-color:var(--red-border)}
+  .iconbtn.green{color:var(--green);background:var(--green-soft);border-color:var(--green-border)}
+  .iconbtn.primary{color:#06281b;background:var(--green);border:none}
+  .iconbtn[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:40px;
+    left:50%;transform:translateX(-50%);background:#000;color:#fff;font-size:11px;
+    padding:4px 8px;border-radius:5px;white-space:nowrap;z-index:30}
+
+  /* hover-reveal */
+  .reveal .acts-full{opacity:0;transform:translateX(8px);transition:.18s;pointer-events:none}
+  .reveal:hover .acts-full{opacity:1;transform:none;pointer-events:auto}
+  .reveal .resting{color:var(--dim);font-size:18px;letter-spacing:1px;transition:.18s}
+  .reveal:hover .resting{opacity:0}
+  .reveal-cell{position:relative;min-height:32px;display:flex;justify-content:flex-end;align-items:center}
+  .reveal .acts-full{position:absolute;right:0;top:50%;transform:translate(8px,-50%)}
+  .reveal:hover .acts-full{transform:translate(0,-50%)}
+  .hint{font-size:11.5px;color:var(--dim);margin-top:9px}
+  .hint b{color:var(--txt)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>操作区省空间方案（左侧数据列保留完整）</h1>
+  <p class="sub">同一张密集表，对比三种让操作区「按需占用空间」的做法。可点开菜单、可 hover 体验。</p>
+
+  <!-- OPTION 1 -->
+  <div class="opt">
+    <span class="tag"><span class="n">1</span>主操作 + 收纳菜单</span>
+    <p class="desc">只常驻 <b>市价平仓</b>，其余收进 <b>⋯</b> 菜单。操作区最窄，最适合列特别多的场景。</p>
+    <div class="panel">
+      <table>
+        <thead><tr>
+          <th>合约</th><th>数量</th><th>开仓均价</th><th>标记价格</th><th>预估强平价</th>
+          <th>未实现盈亏</th><th>保证金</th><th>维持保证金率</th><th>止盈止损</th><th>操作</th>
+        </tr></thead>
+        <tbody><tr>
+          <td><div class="name">BTCUSDT</div><div class="meta"><span class="pill long">L</span><span class="pill">100x</span></div></td>
+          <td>3.0 BTC<span class="sub2">≈36.59 BTC</span></td>
+          <td>78,156.7</td><td>78,156.7</td><td class="orange">67,231.23</td>
+          <td class="pnl">+248.12<span class="sub2 green">+0.31%</span></td>
+          <td>2881.23</td><td>0.98%</td><td>--</td>
+          <td>
+            <div class="acts">
+              <button class="btn btn-primary">市价平仓</button>
+              <div class="menu-wrap">
+                <button class="kebab" onclick="tog(this)">⋯</button>
+                <div class="menu">
+                  <button>加仓</button>
+                  <button>平仓</button>
+                  <button class="red">🛡 防爆盾</button>
+                  <button class="green">⛨ 护财符</button>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr></tbody>
+      </table>
+    </div>
+    <p class="hint"><b>取舍：</b>次要操作多一次点击；但换来最大的横向空间。可把 1~2 个高频操作也常驻，菜单只放低频项。</p>
+  </div>
+
+  <!-- OPTION 2 -->
+  <div class="opt">
+    <span class="tag"><span class="n">2</span>图标化 + Tooltip</span>
+    <p class="desc">全部压成图标按钮，hover 出名称。比文字短很多，操作仍一字排开、无需二次点击。</p>
+    <div class="panel">
+      <table>
+        <thead><tr>
+          <th>合约</th><th>数量</th><th>开仓均价</th><th>标记价格</th><th>预估强平价</th>
+          <th>未实现盈亏</th><th>保证金</th><th>维持保证金率</th><th>止盈止损</th><th>操作</th>
+        </tr></thead>
+        <tbody><tr>
+          <td><div class="name">BTCUSDT</div><div class="meta"><span class="pill long">L</span><span class="pill">100x</span></div></td>
+          <td>3.0 BTC<span class="sub2">≈36.59 BTC</span></td>
+          <td>78,156.7</td><td>78,156.7</td><td class="orange">67,231.23</td>
+          <td class="pnl">+248.12<span class="sub2 green">+0.31%</span></td>
+          <td>2881.23</td><td>0.98%</td><td>--</td>
+          <td>
+            <div class="acts">
+              <button class="iconbtn" data-tip="加仓"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+              <button class="iconbtn" data-tip="平仓"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+              <button class="iconbtn red" data-tip="防爆盾"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5z"/></svg></button>
+              <button class="iconbtn green" data-tip="护财符"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5z"/><path d="m9 11 2 2 4-4"/></svg></button>
+              <button class="iconbtn primary" data-tip="市价平仓"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+            </div>
+          </td>
+        </tr></tbody>
+      </table>
+    </div>
+    <p class="hint"><b>取舍：</b>抽象操作（加仓/平仓）图标识别度偏低，依赖 tooltip，纯触屏不友好。适合配合短文字或重度用户。</p>
+  </div>
+
+  <!-- OPTION 3 -->
+  <div class="opt">
+    <span class="tag"><span class="n">3</span>Hover 显形（桌面端）</span>
+    <p class="desc">默认操作列几乎不占地，<b>鼠标移到整行</b>时按钮组才滑出。把空间还给数据。</p>
+    <div class="panel">
+      <table>
+        <thead><tr>
+          <th>合约</th><th>数量</th><th>开仓均价</th><th>标记价格</th><th>预估强平价</th>
+          <th>未实现盈亏</th><th>保证金</th><th>维持保证金率</th><th>止盈止损</th><th>操作</th>
+        </tr></thead>
+        <tbody><tr class="reveal">
+          <td><div class="name">BTCUSDT</div><div class="meta"><span class="pill long">L</span><span class="pill">100x</span></div></td>
+          <td>3.0 BTC<span class="sub2">≈36.59 BTC</span></td>
+          <td>78,156.7</td><td>78,156.7</td><td class="orange">67,231.23</td>
+          <td class="pnl">+248.12<span class="sub2 green">+0.31%</span></td>
+          <td>2881.23</td><td>0.98%</td><td>--</td>
+          <td>
+            <div class="reveal-cell">
+              <span class="resting">⋯</span>
+              <div class="acts acts-full">
+                <button class="btn btn-sec">加仓</button>
+                <button class="btn btn-sec">平仓</button>
+                <button class="btn btn-feat red"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5z"/></svg>防爆盾</button>
+                <button class="btn btn-primary">市价平仓</button>
+              </div>
+            </div>
+          </td>
+        </tr></tbody>
+      </table>
+    </div>
+    <p class="hint"><b>取舍：</b>桌面体验最干净，但触屏没有 hover——移动端要退化成 ⋯ 菜单或常驻按钮。</p>
+  </div>
+</div>
+
+<script>
+  function tog(btn){
+    var m = btn.nextElementSibling;
+    var wasOpen = m.classList.contains('open');
+    document.querySelectorAll('.menu.open').forEach(function(x){x.classList.remove('open')});
+    if(!wasOpen) m.classList.add('open');
+  }
+  document.addEventListener('click', function(e){
+    if(!e.target.closest('.menu-wrap'))
+      document.querySelectorAll('.menu.open').forEach(function(x){x.classList.remove('open')});
+  });
+</script>
+</body>
+</html>
