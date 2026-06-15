@@ -1044,7 +1044,7 @@ function renderLinkInputs(lang, m) {
   if (currentEditChannel === 'both') {
     return `
       <div class="form-group" style="margin-bottom:12px">
-        <label class="form-label">🌐 Web 跳转链接 <span class="required">*</span></label>
+        <label class="form-label">🌐 Web / H5 跳转链接 <span class="required">*</span></label>
         <input class="form-input" id="link-web-${m.id}" placeholder="https://..."
           value="${m.linkWeb}"
           oninput="updateModuleLink(${m.id},'${lang}','linkWeb',this.value)">
