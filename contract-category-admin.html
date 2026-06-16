@@ -427,15 +427,20 @@
     }).join('');
     dd.classList.add('show');
   }
+  let keepDD=false;
   function toggleSym(c){
+    keepDD=true; // selecting re-renders the dropdown; keep it open for continuous add/remove
     const i=selSyms.indexOf(c);
     if(i>=0) selSyms.splice(i,1); else selSyms.push(c);
     renderPicker();
     searchSym(document.getElementById('symSearch').value);
     document.getElementById('symSearch').focus();
   }
-  // close dropdown on outside click
-  document.addEventListener('click', e=>{ const w=e.target.closest('.search-wrap'); if(!w){ const dd=document.getElementById('symDD'); if(dd) dd.classList.remove('show'); } });
+  // close dropdown on outside click (skip the click that just toggled — its re-render detaches the node)
+  document.addEventListener('click', e=>{
+    if(keepDD){ keepDD=false; return; }
+    const w=e.target.closest('.search-wrap'); if(!w){ const dd=document.getElementById('symDD'); if(dd) dd.classList.remove('show'); }
+  });
   function pickDel(i){ selSyms.splice(i,1); renderPicker(); }
 
   fStatus.addEventListener('change',()=> fStatusTxt.textContent=fStatus.checked?'启用':'停用');
