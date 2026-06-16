@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>合约品类分类配置</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+  /* ---------- shell ---------- */
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 220px; background: #1a1a2e; color: #a0a8c0; flex-shrink: 0; display: flex; flex-direction: column; }
+  .sidebar-logo { padding: 20px 24px; font-size: 16px; font-weight: 700; color: #fff; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: 10px; }
+  .sidebar-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: #6c63ff; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-group-label { padding: 8px 24px 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; color: #4a5280; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; cursor: pointer; transition: all .15s; border-left: 3px solid transparent; }
+  .nav-item:hover { background: rgba(255,255,255,.05); color: #fff; }
+  .nav-item.active { background: rgba(108,99,255,.15); color: #fff; border-left-color: #6c63ff; }
+  .nav-icon { width: 16px; opacity: .75; }
+
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { background: #fff; padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e8eaf0; flex-shrink: 0; }
+  .crumb { font-size: 13px; color: #9095a8; }
+  .crumb b { color: #1a1a2e; font-weight: 600; }
+  .topbar-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #6c63ff, #a78bfa); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 600; }
+  .content { flex: 1; overflow-y: auto; padding: 24px 32px; }
+
+  /* ---------- buttons ---------- */
+  .btn { padding: 8px 18px; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: #6c63ff; color: #fff; }
+  .btn-primary:hover { background: #5b52e0; }
+  .btn-outline { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+  .btn-outline:hover { background: #f9fafb; }
+  .btn-text { background: none; color: #6c63ff; padding: 4px 8px; }
+  .btn-text.danger { color: #ef4444; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+  /* ---------- page header ---------- */
+  .ph { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .ph h1 { font-size: 20px; font-weight: 700; }
+  .ph p { font-size: 13px; color: #6b7280; margin-top: 4px; max-width: 660px; line-height: 1.6; }
+
+  /* view switch */
+  .view-seg { display: inline-flex; background: #e9eaf1; border-radius: 9px; padding: 3px; margin-bottom: 16px; }
+  .view-seg button { border: none; background: none; font-size: 13px; padding: 7px 16px; border-radius: 7px; cursor: pointer; color: #6b7280; font-weight: 500; }
+  .view-seg button.on { background: #fff; color: #1a1a2e; box-shadow: 0 1px 3px rgba(0,0,0,.1); font-weight: 600; }
+  .view-seg button .tag { font-size: 10px; opacity: .65; margin-left: 4px; }
+
+  /* ---------- toolbar / scope ---------- */
+  .scope-bar { background: #fff; border: 1px solid #e8eaf0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 22px; margin-bottom: 18px; flex-wrap: wrap; }
+  .scope-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .scope-item label { color: #6b7280; }
+  select, input[type=text], input[type=number], textarea { font-family: inherit; font-size: 13px; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 8px; color: #1a1a2e; background: #fff; outline: none; }
+  select:focus, input:focus, textarea:focus { border-color: #6c63ff; box-shadow: 0 0 0 3px rgba(108,99,255,.12); }
+
+  /* ---------- layout split ---------- */
+  .split { display: flex; gap: 20px; align-items: flex-start; }
+  .col-list { flex: 1; min-width: 0; }
+  .col-preview { width: 320px; flex-shrink: 0; position: sticky; top: 0; }
+
+  /* ---------- card / table ---------- */
+  .card { background: #fff; border: 1px solid #e8eaf0; border-radius: 12px; overflow: hidden; }
+  .card-head { padding: 14px 18px; border-bottom: 1px solid #eef0f4; display: flex; align-items: center; justify-content: space-between; }
+  .card-head .t { font-size: 14px; font-weight: 600; }
+  .card-head .hint { font-size: 12px; color: #9095a8; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; padding: 11px 14px; background: #fafbfc; border-bottom: 1px solid #eef0f4; }
+  tbody td { padding: 12px 14px; border-bottom: 1px solid #f2f3f7; font-size: 13px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr.dragging { opacity: .4; }
+  tbody tr.drag-over td { box-shadow: inset 0 2px 0 #6c63ff; }
+  .drag-handle { cursor: grab; color: #c0c4cc; font-size: 16px; user-select: none; }
+  .sort-no { font-weight: 700; font-size: 15px; color: #1a1a2e; }
+  .sort-no.fixed { color: #6c63ff; }
+  .sort-pin { font-size: 10px; background: #eef0ff; color: #6c63ff; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
+  .cat-name { font-weight: 600; }
+  .cat-key { font-size: 11px; color: #9095a8; font-family: ui-monospace, Menlo, monospace; }
+
+  .cnt { font-weight: 700; }
+  .cnt small { font-weight: 400; color: #9095a8; font-size: 11px; margin-left: 3px; }
+
+  .switch { position: relative; display: inline-block; width: 38px; height: 22px; cursor: pointer; }
+  .switch input { display: none; }
+  .slider { position: absolute; inset: 0; background: #cdd1dc; border-radius: 22px; transition: .2s; }
+  .slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+  .switch input:checked + .slider { background: #6c63ff; }
+  .switch input:checked + .slider::before { transform: translateX(16px); }
+
+  .row-actions { display: flex; gap: 2px; justify-content: flex-end; }
+  .sys-tag { font-size: 10px; color: #9095a8; border: 1px solid #e3e5ec; padding: 1px 6px; border-radius: 4px; }
+
+  /* ---------- token reverse view ---------- */
+  .ro-banner { background: #eef0ff; border: 1px solid #d9d6ff; color: #5b52e0; font-size: 12px; padding: 9px 14px; border-radius: 8px; margin-bottom: 14px; line-height: 1.5; }
+  .tk-sym { font-weight: 700; font-family: ui-monospace, Menlo, monospace; }
+  .tag-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 9px; border-radius: 14px; margin: 2px 4px 2px 0; background: #f3f4f8; color: #555c75; }
+  .tag-chip .src { font-size: 9px; padding: 0 4px; border-radius: 4px; }
+  .tag-chip .src.manual { background: #e9f7ef; color: #10b981; }
+  .tag-chip .src.all { background: #fff7e6; color: #fa8c16; }
+
+  /* ---------- mobile preview ---------- */
+  .phone { width: 320px; background: #fff; border: 1px solid #e8eaf0; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.06); }
+  .phone-cap { padding: 10px 14px; font-size: 12px; color: #9095a8; border-bottom: 1px solid #eef0f4; display: flex; justify-content: space-between; align-items: center; }
+  .phone-screen { background: #0f1320; }
+  .pv-l1 { display: flex; gap: 18px; padding: 12px 14px 0; font-size: 14px; color: #6b7280; overflow-x: auto; }
+  .pv-l1 .on { color: #fff; font-weight: 700; position: relative; }
+  .pv-l1 .on::after { content: ''; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); width: 18px; height: 3px; border-radius: 2px; background: #6c63ff; }
+  .pv-l2 { display: flex; gap: 8px; padding: 16px 14px 10px; overflow-x: auto; }
+  .pv-chip { flex-shrink: 0; font-size: 12px; padding: 5px 12px; border-radius: 16px; background: #1c2030; color: #aeb4c6; white-space: nowrap; }
+  .pv-chip.active { background: #6c63ff; color: #fff; }
+  .pv-l3 { display: flex; gap: 16px; padding: 6px 14px 14px; font-size: 12px; color: #6b7280; border-top: 1px solid #1c2030; margin-top: 4px; }
+  .pv-l3 .on { color: #e2e8f0; }
+  .pv-more { flex-shrink: 0; color: #6b7280; font-size: 13px; align-self: center; padding-left: 2px; }
+
+  /* ---------- drawer ---------- */
+  .mask { position: fixed; inset: 0; background: rgba(15,19,32,.45); opacity: 0; visibility: hidden; transition: .2s; z-index: 40; }
+  .mask.show { opacity: 1; visibility: visible; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: 540px; max-width: 94vw; background: #f7f8fa; transform: translateX(100%); transition: transform .25s ease; z-index: 50; display: flex; flex-direction: column; }
+  .drawer.show { transform: translateX(0); }
+  .drawer-head { padding: 18px 24px; background: #fff; border-bottom: 1px solid #e8eaf0; display: flex; justify-content: space-between; align-items: center; }
+  .drawer-head .t { font-size: 16px; font-weight: 700; }
+  .drawer-head .x { cursor: pointer; color: #9095a8; font-size: 20px; line-height: 1; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+  .drawer-foot { padding: 14px 24px; background: #fff; border-top: 1px solid #e8eaf0; display: flex; justify-content: flex-end; gap: 10px; }
+
+  .fld { margin-bottom: 18px; }
+  .fld > label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 7px; }
+  .fld > label .req { color: #ef4444; margin-left: 2px; }
+  .fld .desc { font-size: 12px; color: #9095a8; margin-top: 6px; line-height: 1.5; }
+  .fld input[type=text], .fld select, .fld textarea { width: 100%; }
+
+  .lang-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+  .lang-tab { font-size: 12px; padding: 4px 12px; border-radius: 6px; background: #eef0f4; color: #6b7280; cursor: pointer; }
+  .lang-tab.on { background: #6c63ff; color: #fff; }
+  .lang-pane { display: none; } .lang-pane.on { display: block; }
+
+  /* manual ordered picker */
+  .pane { background: #fff; border: 1px solid #e8eaf0; border-radius: 10px; padding: 14px; margin-top: 6px; }
+  .mp-label { font-size: 12px; color: #6b7280; margin: 2px 0 8px; display:flex; justify-content:space-between; align-items:center; }
+  /* selected: header toolbar + scrollable body */
+  .sel-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .sel-title { font-size: 12px; color: #6b7280; }
+  .sel-title b { color: #1a1a2e; }
+  .sel-tools { display: flex; align-items: center; gap: 6px; }
+  .sel-filter { font-size: 12px !important; padding: 5px 9px !important; width: 130px; }
+  .mini-btn { font-size: 12px; color: #6b7280; background: #fff; border: 1px solid #d8dbe5; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+  .mini-btn:hover { color: #ef4444; border-color: #fca5a5; }
+  .sel-list { display: flex; flex-direction: column; gap: 6px; min-height: 40px; max-height: 264px; overflow-y: auto; padding-right: 4px; }
+  .sel-list::-webkit-scrollbar { width: 8px; }
+  .sel-list::-webkit-scrollbar-thumb { background: #d8dbe5; border-radius: 4px; }
+  .sel-empty { font-size: 12px; color: #b4b9c8; padding: 10px; text-align: center; border: 1px dashed #e0e3ec; border-radius: 8px; }
+  .sel-item { display: flex; align-items: center; gap: 8px; background: #f7f8fc; border: 1px solid #e9ebf3; border-radius: 8px; padding: 6px 10px; font-size: 13px; }
+  .sel-item .sn { color: #9095a8; font-size: 12px; font-weight: 400; margin-left: 2px; }
+  .sel-more { font-size: 11px; color: #9095a8; text-align: center; padding: 6px; }
+  .sel-item .nm { font-weight: 600; font-family: ui-monospace, Menlo, monospace; }
+  .sel-item .mini { background:none; border:none; cursor:pointer; color:#9095a8; font-size:12px; padding:2px 5px; border-radius:5px; }
+  .sel-item .mini:hover { background:#eef0f4; color:#6c63ff; }
+  .pool { margin-top: 12px; border-top: 1px dashed #e8eaf0; padding-top: 12px; }
+  .search-wrap { position: relative; }
+  .search-wrap input { width: 100%; padding-left: 32px; }
+  .search-wrap .ico { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #b4b9c8; font-size: 13px; pointer-events: none; }
+  .search-dd { position: absolute; left: 0; right: 0; top: calc(100% + 4px); background: #fff; border: 1px solid #e3e5ec; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.12); max-height: 240px; overflow-y: auto; z-index: 6; display: none; }
+  .search-dd.show { display: block; }
+  .dd-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #f4f5f8; }
+  .dd-item:last-child { border-bottom: none; }
+  .dd-item:hover { background: #f5f6fb; }
+  .dd-item .l { display: flex; align-items: baseline; gap: 8px; }
+  .dd-item .sc { font-weight: 600; font-family: ui-monospace, Menlo, monospace; }
+  .dd-item .sn { color: #9095a8; font-size: 12px; }
+  .dd-item .add-ico { color: #6c63ff; font-size: 14px; font-weight: 700; }
+  .dd-item.added .sc, .dd-item.added .sn { opacity: .55; }
+  .dd-item.added:hover { background: #fef2f2; }
+  .dd-item .added-tag { font-size: 11px; color: #10b981; }
+  .dd-item .dd-rm { font-size: 11px; color: #ef4444; margin-left: 8px; display: none; }
+  .dd-item.added:hover .added-tag { display: none; }
+  .dd-item.added:hover .dd-rm { display: inline; }
+  .dd-empty { padding: 14px; text-align: center; color: #b4b9c8; font-size: 12px; }
+
+  .note { background: #fffbe6; border: 1px solid #ffe58f; color: #8a6d3b; font-size: 12px; padding: 8px 12px; border-radius: 8px; line-height: 1.5; }
+  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1a1a2e; color: #fff; font-size: 13px; padding: 10px 22px; border-radius: 8px; opacity: 0; transition: .25s; z-index: 80; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="dot"></span> 100xex 运营中台</div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">行情运营</div>
+      <div class="nav-item"><span class="nav-icon">▤</span> 行情首页配置</div>
+      <div class="nav-item active"><span class="nav-icon">▥</span> 合约品类分类</div>
+      <div class="nav-item"><span class="nav-icon">▦</span> 自选/榜单配置</div>
+      <div class="nav-item"><span class="nav-icon">◷</span> 交易对管理</div>
+      <div class="nav-group-label">活动运营</div>
+      <div class="nav-item"><span class="nav-icon">◈</span> 弹窗配置</div>
+      <div class="nav-item"><span class="nav-icon">✦</span> 活动中心</div>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">行情运营 / <b>合约品类分类配置</b></div>
+      <div class="topbar-avatar">R</div>
+    </div>
+
+    <div class="content">
+      <div class="ph">
+        <div>
+          <h1>合约品类分类配置</h1>
+          <p>配置「合约」页二级品类筛选标签栏。<b>分类→手动选币归类</b>，配置后实时下发至客户端。</p>
+        </div>
+        <button class="btn btn-primary" id="addBtn" onclick="openDrawer()">＋ 新增分类</button>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="t">分类列表 <span style="color:#9095a8;font-weight:400">（按排序值升序排列）</span></span>
+          <span class="hint">共 <b id="cnt">7</b> 个 · 启用 <b id="cntOn">6</b></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:90px">排序</th>
+              <th>分类名称</th>
+              <th style="width:120px">代币数</th>
+              <th style="width:80px">状态</th>
+              <th style="width:120px;text-align:right">操作</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="note" style="margin-top:14px">「全部」为系统默认分类，聚合该一级 Tab 下全部交易对，不可删除 / 改归属，仅可调排序与文案。其余分类通过手动指定币种归类。</div>
+    </div>
+  </div>
+</div>
+
+<!-- drawer -->
+<div class="mask" id="mask" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <span class="t" id="drawerTitle">新增分类</span>
+    <span class="x" onclick="closeDrawer()">✕</span>
+  </div>
+  <div class="drawer-body">
+    <div class="fld">
+      <label>分类名称<span class="req">*</span></label>
+      <div class="lang-tabs">
+        <div class="lang-tab on" data-l="0" onclick="langTab(0)">繁中</div>
+        <div class="lang-tab" data-l="1" onclick="langTab(1)">简中</div>
+        <div class="lang-tab" data-l="2" onclick="langTab(2)">EN</div>
+      </div>
+      <div class="lang-pane on" data-l="0"><input type="text" id="nm_tw" placeholder="如：核心資產"></div>
+      <div class="lang-pane" data-l="1"><input type="text" id="nm_cn" placeholder="如：核心资产"></div>
+      <div class="lang-pane" data-l="2"><input type="text" id="nm_en" placeholder="如：Core Assets"></div>
+      <div class="desc">未填写的语言将回退展示繁中文案。</div>
+    </div>
+
+    <div class="fld">
+      <label>分类标识 Key<span class="req">*</span></label>
+      <input type="text" id="key" placeholder="英文唯一标识，如 core_assets（用于埋点与接口）">
+    </div>
+
+    <div class="fld">
+      <label>排序<span class="req">*</span></label>
+      <input type="number" id="sortNo" min="2" step="1" style="width:140px" placeholder="如 2">
+      <div class="desc">数字越小越靠前，须为<b>唯一</b>整数、不可重复。系统分类「全部」固定为 <b>1</b> 且置顶，其余分类请使用 ≥2 的数字。</div>
+    </div>
+
+    <div class="fld">
+      <label>币种归属（手动指定）<span class="req">*</span></label>
+      <!-- system category: locked note -->
+      <div class="note hidden" id="sysNote">系统分类，自动聚合该一级 Tab 下全部交易对，无需也不可手动指定。</div>
+      <!-- manual picker -->
+      <div class="pane" id="manualPane">
+        <div class="sel-head">
+          <span class="sel-title">已选 <b id="symCnt">0</b> 个</span>
+          <div class="sel-tools">
+            <input type="text" class="sel-filter" id="selFilter" placeholder="筛选已选币种" oninput="renderPicker()">
+            <button type="button" class="mini-btn" onclick="clearSel()">清空</button>
+          </div>
+        </div>
+        <div class="sel-list" id="selList"></div>
+        <div class="pool">
+          <div class="mp-label"><span>添加币种</span></div>
+          <div class="search-wrap">
+            <span class="ico">⌕</span>
+            <input type="text" id="symSearch" placeholder="搜索币种代码 / 名称，如 BTC、比特币" autocomplete="off"
+                   oninput="searchSym(this.value)" onfocus="searchSym(this.value)">
+            <div class="search-dd" id="symDD"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fld">
+      <label>状态</label>
+      <label class="switch"><input type="checkbox" id="fStatus" checked><span class="slider"></span></label>
+      <span style="font-size:13px;color:#6b7280;margin-left:8px" id="fStatusTxt">启用</span>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-outline" onclick="closeDrawer()">取消</button>
+    <button class="btn btn-primary" onclick="saveCat()">保存</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ---------- data ---------- */
+  let cats = [
+    { key:'all',       nm:{tw:'全部',cn:'全部',en:'All'},          syms:[], sort:1, on:true,  sys:true,  total:248 },
+    { key:'new',       nm:{tw:'新上',cn:'新上',en:'New'},          syms:['TAO','ENA','ONDO','EIGEN'], sort:2, on:true,  sys:false },
+    { key:'core',      nm:{tw:'核心資產',cn:'核心资产',en:'Core'},  syms:['BTC','ETH','SOL','BNB','XRP'], sort:3, on:true,  sys:false },
+    { key:'metal',     nm:{tw:'貴金屬',cn:'贵金属',en:'Metals'},    syms:['XAU','XAG','XPT','XPD'], sort:4, on:true,  sys:false },
+    { key:'commodity', nm:{tw:'商品',cn:'商品',en:'Commodity'},     syms:['WTI','BRENT','NG','HG'], sort:5, on:true,  sys:false },
+    { key:'preipo',    nm:{tw:'Pre-IPO',cn:'Pre-IPO',en:'Pre-IPO'},syms:['NVDA·Pre','xAI·Pre'], sort:6, on:true,  sys:false },
+    { key:'stock',     nm:{tw:'股票',cn:'股票',en:'Stocks'},        syms:['NVDA','TSLA','AAPL','MSFT'], sort:7, on:false, sys:false },
+  ];
+  /* 全部代币库（搜索数据源） */
+  const ALL_TOKENS = [
+    {c:'BTC',n:'比特币'},{c:'ETH',n:'以太坊'},{c:'SOL',n:'Solana'},{c:'BNB',n:'币安币'},{c:'XRP',n:'瑞波币'},
+    {c:'DOGE',n:'狗狗币'},{c:'ADA',n:'艾达币'},{c:'AVAX',n:'雪崩'},{c:'LINK',n:'Chainlink'},{c:'TON',n:'Toncoin'},
+    {c:'SUI',n:'Sui'},{c:'APT',n:'Aptos'},{c:'ARB',n:'Arbitrum'},{c:'OP',n:'Optimism'},{c:'MATIC',n:'Polygon'},
+    {c:'DOT',n:'波卡'},{c:'ATOM',n:'Cosmos'},{c:'NEAR',n:'NEAR'},{c:'FIL',n:'Filecoin'},{c:'LTC',n:'莱特币'},
+    {c:'BCH',n:'比特币现金'},{c:'TRX',n:'波场'},{c:'UNI',n:'Uniswap'},{c:'AAVE',n:'Aave'},{c:'INJ',n:'Injective'},
+    {c:'PEPE',n:'Pepe'},{c:'WIF',n:'dogwifhat'},{c:'BONK',n:'Bonk'},{c:'FLOKI',n:'Floki'},{c:'SHIB',n:'柴犬币'},
+    {c:'TAO',n:'Bittensor'},{c:'ENA',n:'Ethena'},{c:'ONDO',n:'Ondo'},{c:'EIGEN',n:'EigenLayer'},{c:'W',n:'Wormhole'},
+    {c:'IO',n:'io.net'},{c:'ZK',n:'zkSync'},{c:'BLAST',n:'Blast'},{c:'SAGA',n:'Saga'},{c:'REZ',n:'Renzo'},
+    {c:'XAU',n:'黄金'},{c:'XAG',n:'白银'},{c:'XPT',n:'铂金'},{c:'XPD',n:'钯金'},
+    {c:'WTI',n:'美原油'},{c:'BRENT',n:'布伦特原油'},{c:'NG',n:'天然气'},{c:'HG',n:'铜'},{c:'XCO',n:'可可'},
+    {c:'NVDA',n:'英伟达'},{c:'TSLA',n:'特斯拉'},{c:'AAPL',n:'苹果'},{c:'MSFT',n:'微软'},{c:'AMZN',n:'亚马逊'},
+    {c:'GOOG',n:'谷歌'},{c:'META',n:'Meta'},{c:'AMD',n:'AMD'},{c:'NVDA·Pre',n:'英伟达·Pre-IPO'},{c:'xAI·Pre',n:'xAI·Pre-IPO'},
+  ];
+  const ALL = ALL_TOKENS.map(t=>t.c);
+  const NAME = Object.fromEntries(ALL_TOKENS.map(t=>[t.c,t.n]));
+  const count = c => c.sys ? c.total : c.syms.length;
+
+  /* ---------- category table ---------- */
+  function render(){
+    cats.sort((a,b)=>a.sort-b.sort);
+    const tb = document.getElementById('tbody'); tb.innerHTML='';
+    cats.forEach((c,i)=>{
+      const tr=document.createElement('tr'); tr.dataset.i=i;
+      const n=count(c); const nsub=c.sys?'<small>全量</small>':'';
+      const sortCell=c.sys
+        ? `<span class="sort-no fixed">1</span><span class="sort-pin">置顶</span>`
+        : `<span class="sort-no">${c.sort}</span>`;
+      tr.innerHTML=`
+        <td>${sortCell}</td>
+        <td><span class="cat-name">${c.nm.tw}</span>${c.sys?' <span class="sys-tag">系统</span>':''}<br><span class="cat-key">${c.key}</span></td>
+        <td><span class="cnt">${n}</span>${nsub}</td>
+        <td><label class="switch"><input type="checkbox" ${c.on?'checked':''} onchange="toggle(${i})"><span class="slider"></span></label></td>
+        <td><div class="row-actions">
+          <button class="btn-text btn-sm" onclick="openDrawer(${i})">编辑</button>
+          ${c.sys?'':`<button class="btn-text btn-sm danger" onclick="del(${i})">删除</button>`}
+        </div></td>`;
+      tb.appendChild(tr);
+    });
+    document.getElementById('cnt').textContent=cats.length;
+    document.getElementById('cntOn').textContent=cats.filter(c=>c.on).length;
+  }
+
+  function toggle(i){ cats[i].on=!cats[i].on; render(); }
+  function del(i){ if(confirm('确认删除分类「'+cats[i].nm.tw+'」？')){ cats.splice(i,1); render(); toast('已删除'); } }
+
+  /* ---------- drawer ---------- */
+  let editI=null, selSyms=[];
+  function openDrawer(i){
+    editI=(typeof i==='number')?i:null;
+    document.getElementById('drawerTitle').textContent=editI===null?'新增分类':'编辑分类';
+    const nextSort = (cats.length?Math.max(...cats.map(x=>x.sort)):1)+1;
+    const c=editI===null
+      ? {key:'',nm:{tw:'',cn:'',en:''},syms:[],sort:nextSort,on:true,sys:false}
+      : cats[editI];
+    nm_tw.value=c.nm.tw; nm_cn.value=c.nm.cn; nm_en.value=c.nm.en; key.value=c.key; key.disabled=!!c.sys;
+    sortNo.value=c.sys?1:c.sort; sortNo.disabled=!!c.sys;
+    // manual vs system locked
+    document.getElementById('sysNote').classList.toggle('hidden', !c.sys);
+    document.getElementById('manualPane').classList.toggle('hidden', !!c.sys);
+    selSyms=[...(c.syms||[])]; document.getElementById('selFilter').value=''; renderPicker();
+    document.getElementById('symSearch').value=''; document.getElementById('symDD').classList.remove('show');
+    fStatus.checked=c.on; fStatusTxt.textContent=c.on?'启用':'停用';
+    langTab(0);
+    document.getElementById('mask').classList.add('show');
+    document.getElementById('drawer').classList.add('show');
+  }
+  function closeDrawer(){ document.getElementById('mask').classList.remove('show'); document.getElementById('drawer').classList.remove('show'); }
+
+  function langTab(l){ document.querySelectorAll('.lang-tab').forEach(t=>t.classList.toggle('on',+t.dataset.l===l)); document.querySelectorAll('.lang-pane').forEach(p=>p.classList.toggle('on',+p.dataset.l===l)); }
+
+  /* manual ordered picker */
+  function renderPicker(){
+    const sl=document.getElementById('selList');
+    const fv=(document.getElementById('selFilter').value||'').trim();
+    const f=fv.toUpperCase();
+    document.getElementById('symCnt').textContent=selSyms.length;
+    if(!selSyms.length){ sl.innerHTML='<div class="sel-empty">尚未选择，从下方搜索框添加</div>'; return; }
+    const rows=selSyms.map((s,idx)=>({s,idx})).filter(r=> !f || r.s.toUpperCase().includes(f) || (NAME[r.s]||'').includes(fv));
+    if(!rows.length){ sl.innerHTML='<div class="sel-empty">没有匹配「'+fv+'」的已选币种</div>'; return; }
+    sl.innerHTML='';
+    rows.forEach(({s,idx})=>{
+      const it=document.createElement('div'); it.className='sel-item';
+      const nm=NAME[s]?`<span class="sn">${NAME[s]}</span>`:'';
+      it.innerHTML=`<span class="nm">${s}</span>${nm}<span style="flex:1"></span>
+        <button class="mini" onclick="pickDel(${idx})">移除</button>`;
+      sl.appendChild(it);
+    });
+  }
+  function clearSel(){ if(!selSyms.length) return; if(confirm('确认清空已选的 '+selSyms.length+' 个币种？')){ selSyms=[]; renderPicker(); } }
+
+  /* search-to-add */
+  function searchSym(q){
+    const dd=document.getElementById('symDD'); q=(q||'').trim();
+    const list = ALL_TOKENS.filter(t => !q || t.c.toUpperCase().includes(q.toUpperCase()) || t.n.includes(q)).slice(0,50);
+    if(!list.length){ dd.innerHTML='<div class="dd-empty">未找到匹配的币种</div>'; dd.classList.add('show'); return; }
+    dd.innerHTML = list.map(t=>{
+      const added = selSyms.includes(t.c);
+      return `<div class="dd-item${added?' added':''}" onclick="toggleSym('${t.c}')">
+        <span class="l"><span class="sc">${t.c}</span><span class="sn">${t.n}</span></span>
+        ${added?'<span class="added-tag">✓ 已加入</span><span class="dd-rm">移除</span>':'<span class="add-ico">＋ 添加</span>'}
+      </div>`;
+    }).join('');
+    dd.classList.add('show');
+  }
+  function toggleSym(c){
+    const i=selSyms.indexOf(c);
+    if(i>=0) selSyms.splice(i,1); else selSyms.push(c);
+    renderPicker();
+    searchSym(document.getElementById('symSearch').value);
+    document.getElementById('symSearch').focus();
+  }
+  // close dropdown on outside click
+  document.addEventListener('click', e=>{ const w=e.target.closest('.search-wrap'); if(!w){ const dd=document.getElementById('symDD'); if(dd) dd.classList.remove('show'); } });
+  function pickDel(i){ selSyms.splice(i,1); renderPicker(); }
+
+  fStatus.addEventListener('change',()=> fStatusTxt.textContent=fStatus.checked?'启用':'停用');
+
+  function saveCat(){
+    if(!nm_tw.value.trim()){ toast('请填写分类名称（繁中）'); langTab(0); return; }
+    if(!key.value.trim()){ toast('请填写分类标识 Key'); return; }
+    const sys = editI!==null && cats[editI].sys;
+    let sortVal = 1;
+    if(!sys){
+      sortVal = parseInt(sortNo.value,10);
+      if(!Number.isInteger(sortVal) || sortVal<1){ toast('请填写有效的排序数字'); return; }
+      if(sortVal===1){ toast('排序 1 已被「全部」占用，请使用 ≥2 的数字'); return; }
+      const dup = cats.some((x,idx)=> idx!==editI && x.sort===sortVal);
+      if(dup){ toast('排序值 '+sortVal+' 已被占用，请换一个'); return; }
+    }
+    const obj={ key:key.value.trim(), nm:{tw:nm_tw.value.trim(),cn:nm_cn.value.trim(),en:nm_en.value.trim()},
+      syms: sys?[]:[...selSyms], sort: sortVal, on:fStatus.checked, sys, total: sys?cats[editI].total:undefined };
+    if(editI===null) cats.push(obj); else cats[editI]=obj;
+    closeDrawer(); render(); toast('已保存，点击右上角发布生效');
+  }
+
+  function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),1900); }
+
+  render();
+</script>
+</body>
+</html>

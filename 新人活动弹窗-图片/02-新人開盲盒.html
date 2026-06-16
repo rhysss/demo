@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:385px;height:550px;overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","PingFang SC","Microsoft YaHei",sans-serif;}
+  .popup{width:385px;height:550px;background:#fff;border-radius:24px;overflow:hidden;
+    display:flex;flex-direction:column;}
+  .art{height:312px;position:relative;display:flex;align-items:center;justify-content:center;}
+  .halo{position:absolute;width:240px;height:240px;border-radius:50%;top:36px;filter:blur(2px);z-index:0;}
+  .art svg{position:relative;z-index:1;}
+  .body{flex:1;padding:4px 30px 30px;text-align:center;display:flex;flex-direction:column;}
+  .title{font-size:27px;font-weight:800;color:#1a1a1a;letter-spacing:.5px;}
+  .sub{margin-top:12px;font-size:15px;color:#8a8f96;line-height:1.5;}
+  .sub b{font-weight:800;}
+  .o{color:#ff7a18;}
+  .cta{margin-top:auto;width:100%;height:56px;border-radius:28px;background:#111;color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;letter-spacing:1px;}
+  .confetti{position:absolute;border-radius:2px;z-index:1;}
+</style></head><body><div class="popup">
+    <div class="art"><div class="halo" style="background:radial-gradient(circle,#ece8ff,transparent 68%);"></div><svg viewBox="0 0 230 230" width="230" height="230">
+    <defs><linearGradient id="boxFront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a7bff"/><stop offset="1" stop-color="#5a45e0"/></linearGradient>
+    <linearGradient id="boxTop" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a99bff"/><stop offset="1" stop-color="#8a7bff"/></linearGradient></defs>
+    <ellipse cx="115" cy="186" rx="66" ry="14" fill="rgba(90,69,224,.14)"/>
+    <rect x="58" y="100" width="114" height="86" rx="10" fill="url(#boxFront)"/>
+    <polygon points="58,100 115,76 172,100 115,124" fill="url(#boxTop)"/>
+    <rect x="104" y="100" width="22" height="86" fill="#ffd17a"/>
+    <polygon points="104,100 115,76 126,76 137,100 126,124" fill="#ffdf9a" opacity=".9"/>
+    <path d="M115 76 c-22 -30 -52 -10 -26 8 M115 76 c22 -30 52 -10 26 8" fill="none" stroke="#ffd17a" stroke-width="8" stroke-linecap="round"/>
+    <text x="115" y="160" text-anchor="middle" font-size="42" font-weight="800" fill="#fff" opacity=".95">?</text></svg></div>
+    <div class="body"><div class="title">新人開盲盒</div><div class="sub">註冊即送神秘盲盒，<b class="o">100% 必中</b><br>最高可得 <b style="color:#1a1a1a">1,000 USDT</b></div><div class="cta">開盒領獎</div></div>
+  </div></body></html>

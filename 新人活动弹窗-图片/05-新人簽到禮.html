@@ -1,0 +1,29 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:385px;height:550px;overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","PingFang SC","Microsoft YaHei",sans-serif;}
+  .popup{width:385px;height:550px;background:#fff;border-radius:24px;overflow:hidden;
+    display:flex;flex-direction:column;}
+  .art{height:312px;position:relative;display:flex;align-items:center;justify-content:center;}
+  .halo{position:absolute;width:240px;height:240px;border-radius:50%;top:36px;filter:blur(2px);z-index:0;}
+  .art svg{position:relative;z-index:1;}
+  .body{flex:1;padding:4px 30px 30px;text-align:center;display:flex;flex-direction:column;}
+  .title{font-size:27px;font-weight:800;color:#1a1a1a;letter-spacing:.5px;}
+  .sub{margin-top:12px;font-size:15px;color:#8a8f96;line-height:1.5;}
+  .sub b{font-weight:800;}
+  .o{color:#ff7a18;}
+  .cta{margin-top:auto;width:100%;height:56px;border-radius:28px;background:#111;color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;letter-spacing:1px;}
+  .confetti{position:absolute;border-radius:2px;z-index:1;}
+</style></head><body><div class="popup">
+    <div class="art"><div class="halo" style="background:radial-gradient(circle,#ffe2d6,transparent 68%);"></div><svg viewBox="0 0 230 230" width="230" height="230">
+    <defs><linearGradient id="cal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a4d"/><stop offset="1" stop-color="#ff6a2c"/></linearGradient></defs>
+    <ellipse cx="115" cy="194" rx="62" ry="12" fill="rgba(255,106,44,.14)"/>
+    <rect x="58" y="64" width="114" height="116" rx="16" fill="#fff" stroke="#f0f0f2" stroke-width="2"/>
+    <rect x="58" y="64" width="114" height="34" rx="16" fill="url(#cal)"/><rect x="58" y="80" width="114" height="18" fill="url(#cal)"/>
+    <rect x="84" y="50" width="12" height="26" rx="6" fill="#ffb98a"/><rect x="134" y="50" width="12" height="26" rx="6" fill="#ffb98a"/>
+    <path d="M88 132 l18 18 l34 -38" fill="none" stroke="#ff6a2c" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="178" cy="70" r="5" fill="#ffc24d"/><circle cx="50" cy="116" r="4" fill="#ff7a18"/></svg></div>
+    <div class="body"><div class="title">新人簽到禮</div><div class="sub">報名後連續簽到 7 天<br>最高領取 <b class="o">288 USDT</b> 獎勵</div><div class="cta">報名並簽到</div></div>
+  </div></body></html>
