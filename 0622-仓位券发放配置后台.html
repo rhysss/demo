@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>仓位券管理 · 发放配置（后台）</title>
+<style>
+  :root{
+    --primary:#4d6cfa;
+    --primary-deep:#3a55e0;
+    --primary-soft:#eef1ff;
+    --success:#15b886;
+    --success-soft:#e9f9f2;
+    --danger:#e0564f;
+    --danger-soft:#fdeeed;
+    --warning:#e6a23c;
+    --warning-soft:#fff6ee;
+    --purple:#7b6cf0;
+    --purple-soft:#f1efff;
+    --text:#1f2329;
+    --text-2:#4e5969;
+    --muted:#86909c;
+    --placeholder:#c0c4cc;
+    --line:#e9ebf0;
+    --line-2:#f0f2f5;
+    --bg:#f3f5f8;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+    font-size:14px;
+  }
+  .wrap{max-width:1320px;margin:0 auto;padding:20px 24px 60px;}
+
+  /* ── breadcrumb / page head ── */
+  .crumb{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-bottom:14px;}
+  .crumb .dot{width:5px;height:5px;border-radius:50%;background:var(--primary);}
+  .crumb b{color:var(--text);font-weight:600;}
+
+  /* ── card ── */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 3px rgba(20,30,60,.04);}
+
+  /* ── filter bar ── */
+  .filters{padding:18px 20px 6px;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field .lab{font-size:12px;color:var(--muted);font-weight:500;}
+  .field .ctl,.field input,.field select{
+    height:34px;border:1px solid var(--line);border-radius:8px;background:#fbfcfe;
+    padding:0 11px;font-size:13px;color:var(--text);outline:none;min-width:150px;
+  }
+  .field input::placeholder{color:var(--placeholder);}
+  .field input:focus,.field select:focus{border-color:var(--primary);background:#fff;}
+  .filter-acts{display:flex;gap:10px;margin-left:auto;}
+
+  /* ── buttons ── */
+  .btn{height:34px;padding:0 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--text-2);display:inline-flex;align-items:center;gap:6px;transition:.15s;}
+  .btn:hover{border-color:#cdd3e0;}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .btn.primary:hover{background:var(--primary-deep);border-color:var(--primary-deep);}
+  .btn.ghost-primary{color:var(--primary);border-color:#c5cffb;background:var(--primary-soft);}
+  .btn.sm{height:28px;padding:0 11px;font-size:12px;border-radius:6px;}
+  .btn.danger-text{border:none;background:none;color:var(--danger);padding:0 6px;}
+  .btn.link{border:none;background:none;color:var(--primary);padding:0 6px;}
+  .btn svg{display:block;}
+
+  /* ── action row ── */
+  .acts{display:flex;align-items:center;gap:12px;padding:14px 20px;border-top:1px solid var(--line-2);}
+  .acts .spacer{flex:1;}
+  .acts .hint{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+
+  /* ── table ── */
+  .tbl-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:980px;}
+  thead th{
+    background:#f7f8fb;color:var(--muted);font-weight:600;text-align:left;
+    padding:11px 14px;white-space:nowrap;border-bottom:1px solid var(--line);font-size:12px;
+  }
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--line-2);color:var(--text-2);white-space:nowrap;vertical-align:middle;}
+  tbody tr:hover{background:#fafbff;}
+  .mono{font-variant-numeric:tabular-nums;color:var(--text);}
+  .face{font-weight:700;color:var(--text);}
+  .syms{display:flex;gap:5px;flex-wrap:wrap;max-width:230px;white-space:normal;}
+  .chip{font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;border:1px solid #d9d2ff;color:var(--purple);background:#faf9ff;}
+  .chip.more{border-color:var(--line);color:var(--muted);background:#f5f6f8;}
+  /* reward type tag */
+  .rtype{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:6px;}
+  .rtype.voucher{color:var(--purple);background:var(--purple-soft);}
+  .rtype.credit{color:var(--primary);background:var(--primary-soft);}
+
+  /* status badge */
+  .st{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px;}
+  .st::before{content:"";width:6px;height:6px;border-radius:50%;}
+  .st.unused{color:var(--primary);background:var(--primary-soft);}
+  .st.unused::before{background:var(--primary);}
+  .st.using{color:var(--success);background:var(--success-soft);}
+  .st.using::before{background:var(--success);}
+  .st.settled{color:var(--muted);background:#f0f2f5;}
+  .st.settled::before{background:var(--muted);}
+  .st.expired{color:var(--warning);background:var(--warning-soft);}
+  .st.expired::before{background:var(--warning);}
+  .st.void{color:var(--danger);background:var(--danger-soft);}
+  .st.void::before{background:var(--danger);}
+
+  /* ── pagination ── */
+  .pager{display:flex;align-items:center;justify-content:flex-end;gap:14px;padding:14px 20px;color:var(--muted);font-size:13px;}
+  .pager .pages{display:flex;gap:6px;}
+  .pager .pages span{min-width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:7px;background:#fff;cursor:pointer;padding:0 6px;}
+  .pager .pages span.on{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+  /* ══════════ modal ══════════ */
+  .mask{position:fixed;inset:0;background:rgba(20,24,40,.45);opacity:0;pointer-events:none;transition:.2s;z-index:50;}
+  .mask.show{opacity:1;pointer-events:auto;}
+  .modal{
+    position:fixed;left:50%;top:50%;transform:translate(-50%,-48%) scale(.98);
+    width:680px;max-width:94vw;max-height:90vh;background:#fff;border-radius:14px;z-index:51;
+    display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:.22s;
+    box-shadow:0 30px 80px rgba(20,24,60,.3);
+  }
+  .modal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  .m-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line-2);}
+  .m-head .mt{font-size:16px;font-weight:700;}
+  .m-head .mt small{font-size:12px;font-weight:500;color:var(--muted);margin-left:8px;}
+  .m-x{cursor:pointer;color:var(--muted);width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:7px;}
+  .m-x:hover{background:#f2f3f6;}
+  .m-body{padding:20px 22px;overflow-y:auto;}
+  .m-foot{display:flex;align-items:center;gap:12px;padding:14px 22px;border-top:1px solid var(--line-2);}
+  .m-foot .spacer{flex:1;}
+  .m-foot .bal{font-size:13px;color:var(--text-2);}
+  .m-foot .bal b{color:var(--text);font-variant-numeric:tabular-nums;}
+
+  /* section */
+  .sec{margin-bottom:20px;}
+  .sec:last-child{margin-bottom:0;}
+  .sec-h{display:flex;align-items:center;font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;}
+  .sec-h .tip{font-size:12px;font-weight:500;color:var(--muted);margin-left:auto;}
+
+  /* form rows */
+  .frow{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;}
+  .frow:last-child{margin-bottom:0;}
+  .flab{width:84px;flex:none;text-align:right;font-size:13px;color:var(--text-2);padding-top:9px;}
+  .flab .req{color:var(--danger);margin-right:2px;}
+  .fctl{flex:1;min-width:0;}
+  .inp,select.inp{width:100%;height:36px;border:1px solid var(--line);border-radius:8px;padding:0 12px;font-size:13px;color:var(--text);outline:none;background:#fff;}
+  .inp:focus{border-color:var(--primary);}
+  .inp.short{width:170px;}
+  .with-unit{display:inline-flex;align-items:center;width:200px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:0 12px;}
+  .with-unit input{flex:1;border:none;outline:none;height:36px;font-size:13px;font-variant-numeric:tabular-nums;width:100%;}
+  .with-unit .u{font-size:12px;color:var(--muted);}
+  .with-unit:focus-within{border-color:var(--primary);}
+  .ftip{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;}
+
+  /* symbol multi-select */
+  .sym-pool{display:flex;flex-wrap:wrap;gap:9px;}
+  .sym-opt{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--line);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;background:#fff;transition:.12s;}
+  .sym-opt:hover{border-color:#c5cffb;}
+  .sym-opt.on{border-color:var(--purple);color:var(--purple);background:var(--purple-soft);}
+  .sym-opt .bx{width:15px;height:15px;border-radius:4px;border:1.5px solid #c8cdd8;display:flex;align-items:center;justify-content:center;}
+  .sym-opt.on .bx{background:var(--purple);border-color:var(--purple);color:#fff;}
+  .sym-opt .bx svg{opacity:0;}
+  .sym-opt.on .bx svg{opacity:1;}
+
+  /* validity mode */
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .seg button{height:36px;padding:0 16px;border:none;background:#fff;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;border-right:1px solid var(--line);}
+  .seg button:last-child{border-right:none;}
+  .seg button.on{background:var(--primary);color:#fff;}
+
+  /* multi-language rule editor */
+  .lang-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .lang-tab{font-size:12px;font-weight:600;padding:5px 11px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--text-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.12s;}
+  .lang-tab:hover{border-color:#c5cffb;}
+  .lang-tab.on{border-color:var(--primary);color:var(--primary);background:var(--primary-soft);}
+  .lang-tab .dot2{width:6px;height:6px;border-radius:50%;background:#d4d8e0;}
+  .lang-tab.filled .dot2{background:var(--success);}
+  textarea.inp{width:100%;height:auto;min-height:128px;padding:10px 12px;line-height:1.65;resize:vertical;font-family:inherit;}
+
+  /* fixed-rule note */
+  .rule-note{display:flex;gap:9px;background:#fafbff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--text-2);line-height:1.6;}
+  .rule-note svg{flex:none;margin-top:2px;color:var(--primary);}
+  .rule-note b{color:var(--text);font-weight:700;}
+
+  /* user rows */
+  .urow{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .urow .idx{width:54px;flex:none;font-size:12px;color:var(--muted);}
+  .urow .inp{flex:1;}
+  .urow .qty{width:120px;flex:none;}
+  .urow .del{cursor:pointer;color:var(--muted);width:32px;height:32px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--line);background:#fff;}
+  .urow .del:hover{color:var(--danger);border-color:#f3c9c6;background:var(--danger-soft);}
+  .add-user{margin-top:4px;}
+
+  /* toast */
+  .toast{position:fixed;left:50%;top:24px;transform:translateX(-50%) translateY(-20px);background:#1f2329;color:#fff;
+    padding:11px 20px;border-radius:10px;font-size:13px;z-index:80;opacity:0;pointer-events:none;transition:.22s;display:flex;align-items:center;gap:8px;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="crumb"><span>运营工具</span><span class="dot"></span><b>仓位券管理</b></div>
+
+  <div class="panel">
+    <!-- filter bar -->
+    <div class="filters">
+      <div class="field"><span class="lab">用户ID</span><input placeholder="请输入用户ID"></div>
+      <div class="field"><span class="lab">mobile</span><input placeholder="请输入手机号"></div>
+      <div class="field"><span class="lab">email</span><input placeholder="email"></div>
+      <div class="field"><span class="lab">用户uid</span><input placeholder="用户uid"></div>
+      <div class="field"><span class="lab">券状态</span>
+        <select><option>全部状态</option><option>未使用</option><option>使用中</option><option>已结算</option><option>已过期</option><option>已作废</option></select>
+      </div>
+      <div class="filter-acts">
+        <button class="btn primary" onclick="toast('已按条件查询')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>查询</button>
+        <button class="btn" onclick="toast('已重置筛选')">重置</button>
+        <button class="btn" onclick="toast('正在导出…')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 18h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>导出</button>
+      </div>
+    </div>
+
+    <!-- action row -->
+    <div class="acts">
+      <button class="btn primary" onclick="openIssue()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>发放奖励</button>
+      <div class="spacer"></div>
+      <div class="hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8h.01M11 12h1v4h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        仓位券＝平台出资体验保证金，杠杆 5×、亏损以券面额为上限
+      </div>
+    </div>
+
+    <!-- table -->
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>id</th><th>用户uid</th><th>email</th>
+            <th>奖励类型</th><th>券面额</th><th>适用标的</th><th>有效期至</th>
+            <th>发放时间</th><th>审核员</th><th>券状态</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- pager -->
+    <div class="pager">
+      <span id="total">共 6 条</span>
+      <select class="field" style="height:30px;border:1px solid var(--line);border-radius:7px;padding:0 8px;"><option>10条/页</option><option>20条/页</option></select>
+      <div class="pages"><span>‹</span><span class="on">1</span><span>2</span><span>3</span><span>…</span><span>›</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 发放仓位券 modal（MVP） ══════════ -->
+<div class="mask" id="mask" onclick="closeIssue()"></div>
+<div class="modal" id="modal">
+  <div class="m-head">
+    <div class="mt">发放奖励 <small>体验金 / 仓位券</small></div>
+    <div class="m-x" onclick="closeIssue()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+  </div>
+
+  <div class="m-body">
+
+    <!-- 券属性 -->
+    <div class="sec">
+      <div class="frow">
+        <div class="flab"><span class="req">*</span>奖励类型</div>
+        <div class="fctl">
+          <div class="seg" id="typeSeg">
+            <button onclick="setType('体验金')">体验金</button>
+            <button class="on" onclick="setType('仓位券')">仓位券</button>
+          </div>
+          <div class="ftip" id="typeTip">仓位券＝平台出资体验保证金，盈亏按券规则结算。</div>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="flab"><span class="req">*</span><span id="amtLabel">券面额</span></div>
+        <div class="fctl">
+          <span class="with-unit"><input id="fFace" type="number" value="100" oninput="syncCost()"><span class="u">USDT</span></span>
+          <div class="ftip" id="amtTip">＝ 开仓时由平台全额出资的体验保证金，也是该券的<b style="color:var(--text)">亏损上限</b>。</div>
+        </div>
+      </div>
+      <div class="frow" id="symRow">
+        <div class="flab"><span class="req">*</span>适用标的</div>
+        <div class="fctl">
+          <div class="sym-pool" id="symPool"></div>
+          <div class="ftip">可多选；单券适用多标的时，用户开仓前在前端选择其一。<span id="symCount" style="color:var(--purple);font-weight:600;"></span></div>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="flab">有效期</div>
+        <div class="fctl">
+          <div class="seg" id="expSeg">
+            <button class="on" onclick="setExp('rel')">领取后 N 天</button>
+            <button onclick="setExp('fixed')">固定到期日</button>
+          </div>
+          <div id="expRel" style="margin-top:12px;">
+            <span class="with-unit" style="width:150px;"><input id="fDays" type="number" value="7"><span class="u">天后过期</span></span>
+          </div>
+          <div id="expFixed" style="margin-top:12px;display:none;">
+            <input class="inp short" id="fDate" type="datetime-local" value="2026-06-29T23:59">
+          </div>
+          <div class="ftip">到期未使用自动作废并回收额度。</div>
+        </div>
+      </div>
+      <div class="frow" id="ruleRow">
+        <div class="flab">规则说明</div>
+        <div class="fctl">
+          <div class="lang-tabs" id="langTabs"></div>
+          <textarea class="inp" id="ruleText" oninput="onRuleInput()" placeholder="请输入该语言下的券规则说明…"></textarea>
+          <div class="ftip">前端券「ⓘ 规则说明」弹窗按用户语言展示；未配置的语言自动回退到简体中文。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 发放对象 -->
+    <div class="sec">
+      <div class="sec-h">发放对象<span class="tip" id="userTip">已添加 0 个用户</span></div>
+      <div id="userRows"></div>
+      <button class="btn ghost-primary sm add-user" onclick="addUser()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>添加用户</button>
+    </div>
+
+  </div>
+
+  <div class="m-foot">
+    <div class="bal">体验金可用额度 <b>6714.84</b> USDT｜本次预计消耗 <b id="costBal" style="color:var(--primary)">0.00</b> USDT</div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="closeIssue()">取消</button>
+    <button class="btn primary" onclick="confirmIssue()">确认发放</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── data ── */
+const ALL_SYMS=['AAPL-USD 永续','TSLA-USD 永续','NVDA-USD 永续','MSFT-USD 永续','AMZN-USD 永续','GOOGL-USD 永续','META-USD 永续'];
+let selSyms=['AAPL-USD 永续','TSLA-USD 永续','NVDA-USD 永续'], expMode='rel', curType='仓位券';
+
+/* ── seed table ── */
+const ROWS=[
+  {id:541,type:'仓位券',uid:'10102069',email:'zhangxinyi5555@qq.com',face:100,syms:['AAPL-USD 永续','TSLA-USD 永续','NVDA-USD 永续'],exp:'2026-06-29 23:59',issued:'2026-06-22 15:39',admin:'admin',status:'unused',stt:'未使用'},
+  {id:540,type:'仓位券',uid:'10001205',email:'245982816@qq.com',face:100,syms:['NVDA-USD 永续'],exp:'2026-06-29 23:59',issued:'2026-06-22 09:28',admin:'admin',status:'using',stt:'使用中'},
+  {id:539,type:'体验金',uid:'10018966',email:'526062819@qq.com',face:50,syms:[],exp:'2026-07-05 23:59',issued:'2026-06-21 22:41',admin:'cony',status:'settled',stt:'已结算'},
+  {id:538,type:'仓位券',uid:'10047725',email:'848902576@qq.com',face:100,syms:['AAPL-USD 永续','TSLA-USD 永续','NVDA-USD 永续'],exp:'2026-06-18 23:59',issued:'2026-06-11 22:15',admin:'cony',status:'expired',stt:'已过期'},
+  {id:537,type:'体验金',uid:'10018966',email:'526062819@qq.com',face:200,syms:[],exp:'2026-07-10 23:59',issued:'2026-06-20 20:31',admin:'admin',status:'void',stt:'已作废'},
+  {id:536,type:'仓位券',uid:'10001205',email:'245982816@qq.com',face:50,syms:['TSLA-USD 永续'],exp:'2026-07-05 23:59',issued:'2026-06-20 18:02',admin:'admin',status:'unused',stt:'未使用'}
+];
+let nextId=542;
+
+function renderTable(){
+  document.getElementById('tbody').innerHTML=ROWS.map(r=>{
+    const chips=(r.type==='仓位券')
+      ? r.syms.slice(0,2).map(s=>'<span class="chip">'+s.replace(' 永续','')+'</span>').join('')+
+        (r.syms.length>2?'<span class="chip more">+'+(r.syms.length-2)+'</span>':'')
+      : '<span style="color:var(--placeholder)">—</span>';
+    const typeTag='<span class="rtype '+(r.type==='仓位券'?'voucher':'credit')+'">'+r.type+'</span>';
+    const op=(r.status==='unused')
+      ? '<button class="btn danger-text" onclick="voidRow('+r.id+')">作废</button>'
+      : (r.status==='using'?'<button class="btn link" onclick="toast(\'查看用户持仓\')">查看持仓</button>':'<span style="color:var(--placeholder)">—</span>');
+    return '<tr>'+
+      '<td class="mono">'+r.id+'</td>'+
+      '<td class="mono">'+r.uid+'</td>'+
+      '<td>'+r.email+'</td>'+
+      '<td>'+typeTag+'</td>'+
+      '<td class="face">'+r.face+' U</td>'+
+      '<td><div class="syms">'+chips+'</div></td>'+
+      '<td class="mono">'+r.exp+'</td>'+
+      '<td class="mono">'+r.issued+'</td>'+
+      '<td>'+r.admin+'</td>'+
+      '<td><span class="st '+r.status+'">'+r.stt+'</span></td>'+
+      '<td>'+op+'</td>'+
+    '</tr>';
+  }).join('');
+  document.getElementById('total').textContent='共 '+ROWS.length+' 条';
+}
+function voidRow(id){const r=ROWS.find(x=>x.id===id);if(r){r.status='void';r.stt='已作废';renderTable();toast('券 #'+id+' 已作废并回收额度');}}
+
+/* ── modal open/close ── */
+const mask=document.getElementById('mask'),modal=document.getElementById('modal');
+function openIssue(){mask.classList.add('show');modal.classList.add('show');}
+function closeIssue(){mask.classList.remove('show');modal.classList.remove('show');}
+
+/* ── multi-language rule editor ── */
+const LANGS=[{c:'zh',n:'简体中文'},{c:'zh-Hant',n:'繁體中文'},{c:'en',n:'English'},{c:'ja',n:'日本語'},{c:'ko',n:'한국어'}];
+const ruleText={
+  'zh':'1. 平台出资：用券开仓的体验保证金由平台出资，与你的自有资金严格隔离，开仓不扣你一分钱。\n2. 盈利归你：平仓后盈利部分自动进入可用余额，可提现，或转入合约继续交易。\n3. 亏损平台承担：体验仓若亏损由平台承担，最多亏至券面额，触达即自动平仓，绝不影响你的本金。\n4. 限定标的与有效期：本券仅适用于指定标的，须在有效期内使用，过期作废。',
+  'en':'1. Funded by platform: the experience margin is fully funded by the platform and isolated from your own funds — opening a position costs you nothing.\n2. Profits are yours: realized profits go to your available balance after closing — withdrawable or reusable for trading.\n3. Losses covered by platform: losses are borne by the platform up to the voucher face value, auto-closed on reaching it, never touching your principal.\n4. Eligible symbols & validity: applicable only to designated symbols, must be used before expiry.',
+  'zh-Hant':'','ja':'','ko':''
+};
+let curLang='zh';
+function renderLangTabs(){
+  document.getElementById('langTabs').innerHTML=LANGS.map(l=>{
+    const filled=(ruleText[l.c]||'').trim().length>0;
+    return '<div class="lang-tab'+(curLang===l.c?' on':'')+(filled?' filled':'')+'" onclick="setLang(\''+l.c+'\')"><span class="dot2"></span>'+l.n+'</div>';
+  }).join('');
+}
+function setLang(c){
+  ruleText[curLang]=document.getElementById('ruleText').value;   // 切换前保存
+  curLang=c;
+  document.getElementById('ruleText').value=ruleText[c]||'';
+  renderLangTabs();
+}
+function onRuleInput(){ruleText[curLang]=document.getElementById('ruleText').value;renderLangTabs();}
+
+/* ── reward type ── */
+function setType(t){
+  curType=t;
+  document.querySelectorAll('#typeSeg button').forEach((b,i)=>b.classList.toggle('on',(t==='体验金')===(i===0)));
+  const voucher=t==='仓位券';
+  document.getElementById('symRow').style.display=voucher?'':'none';
+  document.getElementById('ruleRow').style.display=voucher?'':'none';
+  document.getElementById('amtLabel').textContent=voucher?'券面额':'发放金额';
+  document.getElementById('amtTip').innerHTML=voucher
+    ? '＝ 开仓时由平台全额出资的体验保证金，也是该券的<b style="color:var(--text)">亏损上限</b>。'
+    : '直接发放到用户体验金账户的金额，可用于合约抵扣。';
+  document.getElementById('typeTip').textContent=voucher
+    ? '仓位券＝平台出资体验保证金，盈亏按券规则结算。'
+    : '体验金＝直接到账的体验额度，无标的/杠杆限制。';
+  syncCost();
+}
+
+/* ── symbol multi-select ── */
+function renderSymPool(){
+  document.getElementById('symPool').innerHTML=ALL_SYMS.map(s=>{
+    const on=selSyms.includes(s);
+    return '<div class="sym-opt'+(on?' on':'')+'" onclick="toggleSym(\''+s+'\')">'+
+      '<span class="bx"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'+s+'</div>';
+  }).join('');
+  document.getElementById('symCount').textContent=selSyms.length?'已选 '+selSyms.length+' 个标的':'';
+}
+function toggleSym(s){
+  if(selSyms.includes(s)) selSyms=selSyms.filter(x=>x!==s); else selSyms.push(s);
+  renderSymPool();
+}
+
+/* ── validity ── */
+function setExp(m){
+  expMode=m;
+  document.querySelectorAll('#expSeg button').forEach((b,i)=>b.classList.toggle('on',(m==='rel')===(i===0)));
+  document.getElementById('expRel').style.display=m==='rel'?'':'none';
+  document.getElementById('expFixed').style.display=m==='fixed'?'':'none';
+}
+
+/* ── user rows ── */
+let userIdx=0;
+function addUser(uid='',qty=1){
+  userIdx++;
+  const div=document.createElement('div');div.className='urow';
+  div.innerHTML='<span class="idx">用户 '+userIdx+'</span>'+
+    '<input class="inp" placeholder="用户ID / uid" value="'+uid+'" oninput="syncCost()">'+
+    '<span class="with-unit qty"><input type="number" min="1" value="'+qty+'" oninput="syncCost()"><span class="u">张</span></span>'+
+    '<div class="del" onclick="this.parentNode.remove();renumber();syncCost()">'+
+    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 7h12M9 7V5h6v2M8 7l1 12h6l1-12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>';
+  document.getElementById('userRows').appendChild(div);
+  renumber();syncCost();
+}
+function renumber(){
+  let i=0;document.querySelectorAll('#userRows .urow .idx').forEach(el=>{i++;el.textContent='用户 '+i;});
+  userIdx=i;
+}
+function userStats(){
+  let users=0,coupons=0;
+  document.querySelectorAll('#userRows .urow').forEach(r=>{
+    const id=r.querySelector('.inp').value.trim();
+    const q=parseInt(r.querySelector('.qty input').value)||0;
+    if(id){users++;coupons+=q;}
+  });
+  return {users,coupons};
+}
+
+/* ── cost ── */
+function syncCost(){
+  const face=parseFloat(document.getElementById('fFace').value)||0;
+  const {users,coupons}=userStats();
+  document.getElementById('userTip').textContent='已添加 '+users+' 个用户 · 共 '+coupons+' 张';
+  document.getElementById('costBal').textContent=(face*coupons).toFixed(2);
+}
+
+/* ── confirm ── */
+function confirmIssue(){
+  if(curType==='仓位券'&&!selSyms.length){toast('请至少选择 1 个适用标的');return;}
+  const {users,coupons}=userStats();
+  if(!users){toast('请添加发放对象');return;}
+  const face=parseFloat(document.getElementById('fFace').value)||0;
+  const exp= expMode==='rel'?'(领取后'+document.getElementById('fDays').value+'天)':(document.getElementById('fDate').value||'').replace('T',' ');
+  const syms=curType==='仓位券'?[...selSyms]:[];
+  document.querySelectorAll('#userRows .urow').forEach(r=>{
+    const id=r.querySelector('.inp').value.trim();if(!id)return;
+    ROWS.unshift({id:nextId++,type:curType,uid:id,email:'—',face,syms,exp,issued:'2026-06-22 16:00',admin:'admin',status:'unused',stt:'未使用'});
+  });
+  renderTable();closeIssue();
+  toast('已发放 '+coupons+' 份'+curType+'给 '+users+' 个用户');
+}
+
+/* ── toast ── */
+let tt;function toast(m){const t=document.getElementById('toast');
+  t.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#15b886" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'+m;
+  t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1800);}
+
+/* ── init ── */
+renderTable();
+renderSymPool();
+document.getElementById('ruleText').value=ruleText[curLang]||'';
+renderLangTabs();
+addUser('10102069',1);
+addUser();
+setType('仓位券');
+</script>
+</body>
+</html>

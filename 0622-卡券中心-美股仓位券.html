@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卡券中心 · 美股仓位券</title>
+<style>
+  :root{
+    --text:#1a1a1a;
+    --muted:#9aa0a8;
+    --muted2:#b5bac1;
+    --line:#eceef1;
+    --purple:#7b6cf0;
+    --purple-deep:#6a5ae0;
+    --purple-soft:#ece8ff;
+    --purple-soft2:#f3f0ff;
+    --teal:#19c0c4;
+    --bg:#f4f5f7;
+    --card:#ffffff;
+    --pill-gray:#eceef1;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;background:#e9ebef;
+    font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','PingFang TC','Microsoft YaHei',sans-serif;
+    color:var(--text);
+    display:flex;justify-content:center;align-items:flex-start;gap:30px;padding:28px 20px;flex-wrap:wrap;
+  }
+
+  /* ── phone frame ── */
+  .phone{
+    width:390px;background:var(--bg);border-radius:44px;
+    box-shadow:0 24px 70px rgba(20,20,40,.28);
+    overflow:hidden;position:relative;border:10px solid #0c0c12;
+  }
+  .screen{height:820px;overflow-y:auto;background:var(--bg);position:relative;}
+  .screen::-webkit-scrollbar{display:none;}
+
+  /* ── status bar ── */
+  .statusbar{
+    height:48px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 26px;font-weight:600;font-size:15px;background:var(--bg);
+    position:sticky;top:0;z-index:30;
+  }
+  .sb-icons{display:flex;align-items:center;gap:6px;}
+
+  /* ── nav ── */
+  .nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:6px 18px 2px;background:var(--bg);position:sticky;top:48px;z-index:29;
+  }
+  .nav-right{display:flex;align-items:center;gap:20px;}
+  .icon-btn{display:flex;align-items:center;justify-content:center;cursor:pointer;}
+
+  .title{font-size:30px;font-weight:800;letter-spacing:-.5px;padding:10px 20px 6px;}
+
+  /* ── tabs ── */
+  .tabs{
+    display:flex;align-items:center;gap:26px;padding:6px 20px 0;position:relative;
+  }
+  .tab{font-size:17px;color:var(--muted);font-weight:600;padding-bottom:12px;cursor:pointer;position:relative;}
+  .tab.active{color:var(--text);font-weight:700;}
+  .tab.active::after{
+    content:"";position:absolute;left:0;right:0;bottom:6px;height:3px;border-radius:3px;
+    background:var(--text);width:22px;margin:auto;
+  }
+  .tab .cnt{color:var(--muted);font-weight:600;}
+  .tab-add{margin-left:auto;color:var(--text);cursor:pointer;padding-bottom:12px;}
+  .tabs-line{height:1px;background:var(--line);margin:0 0 0;}
+
+  /* ── filters ── */
+  .filters{display:flex;gap:22px;padding:16px 20px 6px;}
+  .filter{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:15px;font-weight:500;cursor:pointer;}
+
+  /* ── promo banner (positive) ── */
+  .banner{
+    margin:8px 16px 4px;border:1px solid var(--line);background:#fff;border-radius:14px;
+    padding:14px 16px;display:flex;align-items:center;gap:8px;font-size:14px;color:#555;
+  }
+  .banner b{color:var(--text);}
+  .banner .link{color:var(--teal);font-weight:600;}
+  .banner .x{margin-left:auto;color:var(--muted2);cursor:pointer;}
+
+  /* ── coupon card (ticket) ── */
+  .list{padding:10px 16px 28px;display:flex;flex-direction:column;gap:16px;}
+  .ticket{
+    position:relative;background:var(--card);border:1px solid var(--line);
+    border-radius:16px;display:flex;overflow:hidden;
+    box-shadow:0 6px 18px rgba(30,30,60,.05);
+  }
+  .ticket.used .t-main .amt-row .amt{color:#b9bdc4;}
+  .t-main{flex:1;padding:18px 16px 0;min-width:0;}
+  .amt-row{display:flex;align-items:flex-start;justify-content:space-between;}
+  .amt{font-size:34px;font-weight:800;line-height:1;letter-spacing:-1px;}
+  .amt .unit{font-size:15px;font-weight:700;margin-left:4px;color:var(--text);}
+  .amt .sub-label{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:6px;}
+  .info-i{
+    width:18px;height:18px;border-radius:50%;flex:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;color:#fff;background:#cdd2d8;
+    font-size:12px;font-weight:700;font-style:italic;font-family:Georgia,serif;
+  }
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .tag{
+    border:1px solid #d9d2ff;color:var(--purple);background:#faf9ff;
+    font-size:12px;font-weight:600;padding:4px 9px;border-radius:7px;white-space:nowrap;
+  }
+  .valid{font-size:12px;color:var(--muted);margin:13px 0 0;}
+  .valid.soon{color:#f0883e;}
+
+  /* right purple stub */
+  .t-stub{
+    width:118px;flex:none;background:var(--purple-soft);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:5px;padding:14px 8px;position:relative;
+  }
+  .ticket.used .t-stub{background:#f0f0f3;}
+  .stub-name{font-size:17px;font-weight:800;color:#5b4fd6;}
+  .ticket.used .stub-name{color:#9b9fa7;}
+  .stub-sub{font-size:11px;color:#8c84c9;font-weight:500;text-align:center;line-height:1.3;}
+  .ticket.used .stub-sub{color:#a9adb4;}
+  .stub-btn{
+    margin-top:6px;font-size:13px;font-weight:700;padding:7px 16px;border-radius:16px;
+    background:var(--purple);color:#fff;cursor:pointer;border:none;
+    box-shadow:0 4px 10px rgba(123,108,240,.35);
+  }
+  .stub-btn.disabled{background:#e3e3e8;color:#a9adb4;box-shadow:none;cursor:default;}
+  .stub-btn.ghost{background:#fff;color:var(--purple);border:1px solid #cdc4ff;box-shadow:none;}
+
+  /* ticket notches at the seam */
+  .t-stub::before,.t-stub::after{
+    content:"";position:absolute;left:-9px;width:16px;height:16px;border-radius:50%;
+    background:var(--card);border:1px solid var(--line);
+  }
+  .t-stub::before{top:-9px;}
+  .t-stub::after{bottom:-9px;}
+
+  /* whole left column wraps main */
+  .t-left{flex:1;display:flex;flex-direction:column;padding:0 16px;min-width:0;}
+  .t-main{padding:18px 0;}
+
+  /* ── mask ── */
+  .mask{position:absolute;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.25s;z-index:40;}
+  .mask.show{opacity:1;pointer-events:auto;}
+
+  /* ── filter row (clickable) ── */
+  .filter .fv{color:var(--text);font-weight:600;}
+  .filter.on{color:var(--text);}
+
+  /* ── generic bottom sheet (filters) ── */
+  .fsheet{
+    position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;
+    transform:translateY(100%);transition:.3s cubic-bezier(.3,.8,.3,1);z-index:41;
+    padding:8px 0 24px;max-height:72%;overflow-y:auto;
+  }
+  .fsheet.show{transform:translateY(0);}
+  .fsheet .grab{width:36px;height:4px;border-radius:3px;background:#e2e4e8;margin:8px auto 6px;}
+  .fsheet .fs-title{font-size:17px;font-weight:800;padding:10px 22px 6px;}
+  .fopt{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 22px;font-size:16px;color:var(--text);cursor:pointer;
+  }
+  .fopt.sel{background:#f4f5f7;font-weight:700;}
+  .fopt .ck{color:var(--text);opacity:0;}
+  .fopt.sel .ck{opacity:1;}
+
+  /* ── centered rule dialog ── */
+  .dlg{
+    position:absolute;left:24px;right:24px;top:50%;transform:translateY(-50%) scale(.96);
+    background:#fff;border-radius:18px;z-index:42;padding:26px 22px 22px;
+    opacity:0;pointer-events:none;transition:.22s;max-height:80%;overflow-y:auto;
+  }
+  .dlg.show{opacity:1;pointer-events:auto;transform:translateY(-50%) scale(1);}
+  .dlg h3{margin:0 0 16px;font-size:19px;font-weight:800;text-align:center;}
+  .dlg .para{font-size:14.5px;color:#3a3f47;line-height:1.7;margin:0 0 12px;}
+  .dlg .para em{font-style:normal;color:var(--purple-deep);font-weight:600;}
+  .dlg .dlg-cta{
+    margin-top:8px;width:100%;height:50px;background:#111;color:#fff;border:none;
+    border-radius:13px;font-size:16px;font-weight:700;cursor:pointer;
+  }
+
+  /* ── history page ── */
+  .page{
+    position:absolute;inset:0;background:var(--bg);z-index:50;
+    transform:translateX(100%);transition:.3s cubic-bezier(.3,.8,.3,1);
+    display:flex;flex-direction:column;
+  }
+  .page.show{transform:translateX(0);}
+  .h-nav{
+    display:flex;align-items:center;padding:10px 16px;position:relative;height:52px;flex:none;
+  }
+  .h-nav .h-title{position:absolute;left:0;right:0;text-align:center;font-size:18px;font-weight:700;}
+  .h-nav .icon-btn{position:relative;z-index:2;}
+  .h-tabs{display:flex;gap:26px;padding:8px 20px 0;flex:none;}
+  .h-tab{font-size:17px;color:var(--muted);font-weight:600;padding-bottom:12px;position:relative;cursor:pointer;}
+  .h-tab.active{color:var(--text);font-weight:700;}
+  .h-tab.active::after{content:"";position:absolute;left:0;bottom:6px;height:3px;width:22px;border-radius:3px;background:var(--text);}
+  .h-line{height:1px;background:var(--line);}
+  .h-filter{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px;}
+  .h-filter .hf-type{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:15px;cursor:pointer;}
+  .h-filter .hf-type .fv{color:var(--text);font-weight:600;}
+  .h-filter .hf-funnel{cursor:pointer;}
+  .h-range{font-size:13px;color:var(--muted2);padding:0 20px 4px;}
+  .h-list{flex:1;overflow-y:auto;padding:6px 20px 30px;}
+  .h-list::-webkit-scrollbar{display:none;}
+  .h-empty{text-align:center;color:var(--muted2);font-size:14px;padding:60px 0;}
+  .rec{padding:18px 0;border-bottom:1px solid var(--line);}
+  .rec-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .rec-name{font-size:18px;font-weight:800;}
+  .rec-amt{font-size:18px;font-weight:800;}
+  .rec-amt.plus{color:#15b886;}
+  .rec-amt.minus{color:#e0564f;}
+  .rec-row{display:flex;align-items:center;justify-content:space-between;margin-top:11px;}
+  .rec-row .rk{font-size:14px;color:var(--muted);}
+  .rec-row .rvb{font-size:14px;color:var(--text);font-weight:500;display:flex;align-items:center;gap:5px;}
+  .usdt-ic{width:17px;height:17px;border-radius:50%;background:#26a17b;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+
+  /* ── trade (用券开仓) sheet ── */
+  .tsheet{
+    position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;
+    transform:translateY(100%);transition:.32s cubic-bezier(.3,.8,.3,1);z-index:43;
+    padding:8px 20px 24px;max-height:86%;overflow-y:auto;
+  }
+  .tsheet.show{transform:translateY(0);}
+  .tsheet .grab{width:36px;height:4px;border-radius:3px;background:#e2e4e8;margin:8px auto 4px;}
+  .ts-close{position:absolute;right:16px;top:14px;cursor:pointer;color:var(--muted);}
+  .ts-h{font-size:19px;font-weight:800;margin:6px 0 14px;}
+  .ts-sym{display:flex;align-items:baseline;justify-content:space-between;
+    background:var(--purple-soft2);border-radius:12px;padding:13px 14px;margin-bottom:14px;}
+  .ts-sym-name{font-size:17px;font-weight:800;}
+  .ts-price{font-size:13px;color:var(--purple-deep);font-weight:600;}
+  .ts-row{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid #f3f4f6;}
+  .ts-row .k{font-size:14px;color:var(--gray);}
+  .ts-row .v{font-size:15px;font-weight:700;color:var(--text);}
+  .ts-row .v .mini{font-size:12px;color:var(--purple);font-weight:600;margin-left:6px;}
+  .ts-dir{margin:16px 0 6px;}
+  .ts-dir .lbl{font-size:14px;color:var(--gray);margin-bottom:8px;}
+  .dir-seg{display:flex;gap:10px;}
+  .dir-seg button{
+    flex:1;height:46px;border-radius:11px;border:1.5px solid var(--line);background:#fff;
+    font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;transition:.15s;
+  }
+  .dir-seg button.long.on{border-color:#15b886;color:#15b886;background:#e9f9f2;}
+  .dir-seg button.short.on{border-color:#e0564f;color:#e0564f;background:#fdeeed;}
+  .ts-tip{font-size:12.5px;color:#8a8f98;line-height:1.55;background:#f7f8fa;border-radius:10px;padding:11px 13px;margin:14px 0 4px;}
+  .ts-tip b{color:var(--purple-deep);font-weight:700;}
+  .ts-warn{display:flex;align-items:center;gap:7px;font-size:13px;color:#e0824f;background:#fff6ee;border-radius:10px;padding:10px 13px;margin:12px 0 0;}
+  .ts-cta{
+    margin-top:16px;width:100%;height:52px;border:none;border-radius:13px;
+    font-size:16.5px;font-weight:800;cursor:pointer;color:#fff;background:var(--purple);
+  }
+  .ts-cta.long{background:#15b886;}
+  .ts-cta.short{background:#e0564f;}
+  .ts-cta.ghost{background:#f0f1f4;color:var(--text);}
+  .ts-cta:disabled{background:#dcdee3;color:#fff;cursor:not-allowed;}
+  /* blocked / success states */
+  .ts-state{text-align:center;padding:18px 6px 6px;}
+  .ts-state .ic{font-size:42px;line-height:1;margin-bottom:12px;}
+  .ts-state .st{font-size:18px;font-weight:800;margin-bottom:8px;}
+  .ts-state .sm{font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:6px;padding:0 6px;}
+  .ts-state .sd{font-size:13px;color:#8a8f98;background:#f7f8fa;border-radius:10px;padding:10px 12px;margin:10px 0 0;}
+
+  /* ── 测试控制台 ── */
+  .console{
+    width:330px;background:#fff;border-radius:20px;box-shadow:0 24px 70px rgba(20,20,40,.16);
+    padding:20px 20px 22px;align-self:flex-start;font-size:14px;
+  }
+  .cs-head{font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  .cs-head .pill{font-size:11px;font-weight:700;color:var(--purple-deep);background:var(--purple-soft);padding:2px 9px;border-radius:20px;}
+  .cs-note{font-size:12.5px;color:#9aa0a8;line-height:1.55;margin:8px 0 16px;}
+  .cs-section{font-size:13px;font-weight:800;color:#3a3f47;margin:6px 0 12px;padding-top:14px;border-top:1px solid var(--line);}
+  .cs-group{margin-bottom:15px;}
+  .cs-label{font-size:13px;font-weight:700;color:#3a3f47;margin-bottom:7px;}
+  .seg{display:flex;flex-wrap:wrap;gap:6px;}
+  .seg button{
+    border:1px solid var(--line);background:#fafafe;color:var(--gray);
+    font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:9px;cursor:pointer;transition:.15s;
+  }
+  .seg button.on{background:var(--purple);border-color:var(--purple);color:#fff;box-shadow:0 3px 9px rgba(108,99,255,.32);}
+  .cs-price{display:flex;align-items:center;gap:8px;}
+  .cs-price input{
+    flex:1;border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:14px;
+    color:var(--text);font-weight:600;outline:none;background:#fafafe;
+  }
+  .cs-price input:focus{border-color:var(--purple);}
+  .cs-price .unit{font-size:12px;color:var(--muted);}
+  .cs-result{
+    margin-top:6px;border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;line-height:1.5;
+  }
+  .cs-result.ok{background:#e9f9f2;color:#0f9b6e;}
+  .cs-result.block{background:#fdeeed;color:#d0473f;}
+  .cs-result.warn{background:#fff6ee;color:#d0824f;}
+  .cs-reset{margin-top:12px;width:100%;height:40px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:13px;font-weight:700;color:var(--gray);cursor:pointer;}
+
+  @media (max-width:780px){
+    body{flex-direction:column;align-items:center;}
+    .console{width:390px;max-width:92vw;}
+  }
+
+  /* ── symbol selector (multi-标的) in trade sheet ── */
+  .ts-symsel{margin-bottom:14px;}
+  .ts-symsel .lbl{font-size:14px;color:var(--gray);margin-bottom:8px;}
+  .sym-pills{display:flex;flex-wrap:wrap;gap:8px;}
+  .sym-pills button{
+    border:1.5px solid var(--line);background:#fff;color:var(--gray);
+    font-size:13px;font-weight:700;padding:8px 13px;border-radius:10px;cursor:pointer;transition:.15s;
+  }
+  .sym-pills button.on{border-color:var(--purple);color:var(--purple-deep);background:var(--purple-soft);}
+
+  /* ── 交易/持仓页 ── */
+  .pp-symbar{display:flex;align-items:center;justify-content:space-between;padding:6px 18px 12px;flex:none;}
+  .pp-sym{font-size:21px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  .pp-sym .perp{font-size:12px;font-weight:700;color:#15b886;background:#e9f9f2;padding:2px 8px;border-radius:6px;}
+  .pp-px{text-align:right;}
+  .pp-px .p{font-size:18px;font-weight:800;color:#15b886;}
+  .pp-px .c{font-size:12px;color:#15b886;font-weight:600;}
+  .pp-tabs{display:flex;gap:24px;align-items:center;padding:4px 18px 0;flex:none;}
+  .pp-tabs b{font-size:17px;font-weight:800;}
+  .pp-tabs span{font-size:16px;color:var(--muted);font-weight:600;}
+  .pp-sub{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 4px;flex:none;}
+  .pp-sub .tog{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray);}
+  .pp-sub .tog .sw{width:34px;height:19px;border-radius:12px;background:#d6d8de;position:relative;}
+  .pp-sub .tog .sw::after{content:"";position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:2px;left:2px;}
+  .pp-sub .closeall{font-size:13px;font-weight:700;color:var(--gray);border:1px solid var(--line);border-radius:18px;padding:7px 16px;background:#fff;cursor:pointer;}
+  .pp-list{flex:1;overflow-y:auto;padding:8px 16px 16px;}
+  .pp-list::-webkit-scrollbar{display:none;}
+  .pp-empty{text-align:center;color:var(--muted2);font-size:14px;padding:56px 0;}
+
+  .pos{border-top:1px solid var(--line);padding:16px 2px;}
+  .pos-top{display:flex;align-items:center;justify-content:space-between;}
+  .pos-sym{font-size:19px;font-weight:800;}
+  .pos-meta{display:flex;align-items:center;gap:8px;margin:8px 0 4px;}
+  .pos-meta .sb{font-size:12px;font-weight:800;color:#fff;width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;}
+  .pos-meta .sb.long{background:#15b886;}
+  .pos-meta .sb.short{background:#e0564f;}
+  .pos-meta .mt{font-size:13px;color:var(--gray);background:#f1f2f4;border-radius:5px;padding:2px 8px;font-weight:600;}
+  .pos-pnl{display:flex;justify-content:space-between;align-items:flex-end;margin:14px 0;}
+  .pos-pnl .lab{font-size:12px;color:var(--muted);margin-bottom:3px;}
+  .pos-pnl .big{font-size:26px;font-weight:800;line-height:1;}
+  .pos-pnl .r{text-align:right;}
+  .up{color:#15b886;} .down{color:#e0564f;}
+  .pos-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 8px;margin:6px 0 14px;}
+  .pos-grid .cell .k{font-size:12px;color:var(--muted);margin-bottom:3px;}
+  .pos-grid .cell.r{text-align:right;} .pos-grid .cell.c{text-align:center;}
+  .pos-grid .cell .v{font-size:14px;font-weight:700;color:var(--text);}
+  .pos-tpsl{font-size:12px;color:var(--purple-deep);background:var(--purple-soft);border-radius:8px;padding:7px 11px;margin-bottom:12px;}
+  .pos-acts{display:flex;flex-direction:column;gap:9px;}
+  .pos-acts .row{display:flex;gap:9px;}
+  .pos-acts button{
+    flex:1;height:42px;border-radius:10px;border:1px solid var(--line);background:#fff;
+    font-size:14px;font-weight:700;color:var(--text);cursor:pointer;
+  }
+  .pos-acts button.prim{background:var(--purple);border-color:var(--purple);color:#fff;}
+  .pos-acts button.close{background:#fdeeed;border-color:#f6cfcc;color:#e0564f;}
+
+  /* bottom nav (visual) */
+  .pp-bottomnav{display:flex;justify-content:space-around;align-items:center;padding:8px 0 12px;border-top:1px solid var(--line);background:#fff;flex:none;}
+  .pp-bottomnav .nv{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:#9aa0a8;}
+  .pp-bottomnav .nv.act{color:#15b886;font-weight:700;}
+
+  /* ── operation sheet (加减仓/保证金/平仓/TPSL) ── */
+  .op-mask{position:absolute;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.25s;z-index:54;}
+  .op-mask.show{opacity:1;pointer-events:auto;}
+  .opsheet{
+    position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;
+    transform:translateY(100%);transition:.32s cubic-bezier(.3,.8,.3,1);z-index:55;
+    padding:8px 20px 24px;max-height:88%;overflow-y:auto;
+  }
+  .opsheet.show{transform:translateY(0);}
+  .op-h{font-size:18px;font-weight:800;margin:6px 0 14px;}
+  .op-seg{display:flex;gap:10px;margin-bottom:14px;}
+  .op-seg button{flex:1;height:42px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;}
+  .op-seg button.on{border-color:var(--purple);color:var(--purple-deep);background:var(--purple-soft);}
+  .op-field{margin:12px 0;}
+  .op-field .fl{display:flex;justify-content:space-between;font-size:13px;color:var(--gray);margin-bottom:6px;}
+  .op-field .fl .max{color:var(--purple-deep);font-weight:700;cursor:pointer;}
+  .op-input{display:flex;align-items:center;border:1px solid var(--line);border-radius:11px;padding:0 14px;background:#fafafe;}
+  .op-input input{flex:1;border:none;background:none;outline:none;height:50px;font-size:17px;font-weight:700;color:var(--text);}
+  .op-input .u{font-size:13px;color:var(--muted);}
+  .op-prev{background:#f7f8fa;border-radius:11px;padding:12px 14px;margin:12px 0;}
+  .op-prev .pr{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}
+  .op-prev .pr .k{color:var(--gray);} .op-prev .pr .v{font-weight:700;color:var(--text);}
+  .op-note{font-size:12.5px;color:#d0824f;background:#fff6ee;border-radius:10px;padding:11px 13px;margin:10px 0;line-height:1.5;}
+  .op-cta{margin-top:14px;width:100%;height:50px;border:none;border-radius:13px;font-size:16px;font-weight:800;color:#fff;background:var(--purple);cursor:pointer;}
+  .op-cta.close{background:#e0564f;}
+  .op-cta:disabled{background:#dcdee3;cursor:not-allowed;}
+
+  /* toast */
+  .toast{
+    position:absolute;left:50%;top:46%;
+    transform:translateX(-50%);background:rgba(20,20,30,.9);color:#fff;
+    padding:12px 20px;border-radius:12px;font-size:14px;z-index:60;
+    opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="screen" id="screen">
+
+    <!-- status bar -->
+    <div class="statusbar">
+      <span>15:01</span>
+      <span class="sb-icons">
+        <svg width="18" height="12" viewBox="0 0 18 12"><g fill="#1a1a1a"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1.5" width="3" height="10.5" rx="1" opacity=".35"/><rect x="15" y="0" width="3" height="12" rx="1" opacity=".35"/></g></svg>
+        <svg width="17" height="13" viewBox="0 0 17 13" fill="none"><path d="M8.5 3.2c2 0 3.8.8 5.1 2M8.5 6.4c1.2 0 2.3.5 3.1 1.3M3.4 5.2C4.7 3.9 6.5 3.2 8.5 3.2" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round"/><circle cx="8.5" cy="10" r="1.4" fill="#1a1a1a"/></svg>
+        <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1a1a1a" stroke-opacity=".4"/><rect x="3" y="3" width="16" height="7" rx="1.5" fill="#34c759"/><rect x="23" y="4.5" width="2" height="4" rx="1" fill="#1a1a1a" fill-opacity=".4"/><path d="M14 2v9" stroke="#fff" stroke-width="1"/></svg>
+      </span>
+    </div>
+
+    <!-- nav -->
+    <div class="nav">
+      <div class="icon-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="nav-right">
+        <div class="icon-btn" title="我的卡券">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="#1a1a1a"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2.2a2 2 0 0 0 0 3.6V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2.2a2 2 0 0 0 0-3.6V7Z"/><path d="M12 5v14" stroke="#fff" stroke-width="1.4" stroke-dasharray="2 2"/></svg>
+        </div>
+        <div class="icon-btn" title="盲盒">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="4" stroke="#1a1a1a" stroke-width="1.8"/><path d="M9.2 9.5a2.8 2.8 0 1 1 3.6 2.7c-.6.2-.8.6-.8 1.1v.4" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1" fill="#1a1a1a"/></svg>
+        </div>
+        <div class="icon-btn" title="历史记录" onclick="openHistory()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 5v5h5" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 10a8 8 0 1 1-1 5" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/><path d="M12 8v4l3 2" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- title -->
+    <div class="title">卡券中心</div>
+
+    <!-- tabs -->
+    <div class="tabs">
+      <div class="tab active">卡券列表</div>
+      <div class="tab-add">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="tabs-line"></div>
+
+    <!-- filters -->
+    <div class="filters">
+      <div class="filter" id="flt-type" onclick="openFilter('type')"><span class="fv">全部类型</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 8l3-3.5" stroke="#9aa0a8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="filter" id="flt-status" onclick="openFilter('status')"><span class="fv">全部状态</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 8l3-3.5" stroke="#9aa0a8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- coupon list -->
+    <div class="list">
+
+      <!-- Card 1: available, multi-symbol -->
+      <div class="ticket" data-type="仓位券" data-status="未使用" data-syms="AAPL-USD 永续,TSLA-USD 永续,NVDA-USD 永续" data-face="100" data-lev="5">
+        <div class="t-left">
+          <div class="t-main">
+            <div class="amt-row">
+              <div class="amt">100<span class="unit">USDT</span></div>
+              <div class="info-i" onclick="openRuleFor(this.closest('.ticket'))">i</div>
+            </div>
+            <div class="valid soon">有效期至：2026-06-29 23:59</div>
+          </div>
+        </div>
+        <div class="t-stub">
+          <div class="stub-name">体验券</div>
+          <div class="stub-sub">美股欢迎礼</div>
+          <button class="stub-btn" onclick="openTrade(this.closest('.ticket'))">立即使用</button>
+        </div>
+      </div>
+
+      <!-- Card 2: available, single symbol -->
+      <div class="ticket" data-type="仓位券" data-status="未使用" data-syms="TSLA-USD 永续" data-face="50" data-lev="5">
+        <div class="t-left">
+          <div class="t-main">
+            <div class="amt-row">
+              <div class="amt">50<span class="unit">USDT</span></div>
+              <div class="info-i" onclick="openRuleFor(this.closest('.ticket'))">i</div>
+            </div>
+            <div class="valid">有效期至：2026-07-05 23:59</div>
+          </div>
+        </div>
+        <div class="t-stub">
+          <div class="stub-name">体验券</div>
+          <div class="stub-sub">美股欢迎礼</div>
+          <button class="stub-btn" onclick="openTrade(this.closest('.ticket'))">立即使用</button>
+        </div>
+      </div>
+
+      <!-- Card 3: in use -->
+      <div class="ticket used" data-type="仓位券" data-status="已使用" data-syms="NVDA-USD 永续" data-face="100" data-lev="5" data-posid="101">
+        <div class="t-left">
+          <div class="t-main">
+            <div class="amt-row">
+              <div class="amt">100<span class="unit">USDT</span></div>
+              <div class="info-i" onclick="openRuleFor(this.closest('.ticket'))">i</div>
+            </div>
+            <div class="valid">开仓时间：2026-06-22 14:30</div>
+          </div>
+        </div>
+        <div class="t-stub">
+          <div class="stub-name" style="color:#5b4fd6">体验券</div>
+          <div class="stub-sub">美股欢迎礼</div>
+          <button class="stub-btn ghost" onclick="openPosPage(101)">查看持仓</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- history page -->
+    <div class="page" id="historyPage">
+      <div class="h-nav">
+        <div class="icon-btn" onclick="closeHistory()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="h-title">历史记录</div>
+      </div>
+      <div class="h-tabs">
+        <div class="h-tab active">卡券记录</div>
+      </div>
+      <div class="h-line"></div>
+      <div class="h-filter">
+        <div class="hf-type" id="h-flt-type" onclick="openFilter('htype')"><span class="fv">全部类型</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 8l3-3.5" stroke="#9aa0a8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="hf-funnel" onclick="openFilter('htime')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 5h16l-6 7v6l-4 2v-8L4 5Z" stroke="#9aa0a8" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="h-range" id="h-range">2026-03-25 到 2026-06-22</div>
+      <div class="h-list" id="h-list"></div>
+    </div>
+
+    <!-- rule dialog (text) -->
+    <div class="mask" id="mask" onclick="closeAll()"></div>
+    <div class="dlg" id="ruleDlg">
+      <h3>美股仓位券 · 规则说明</h3>
+      <p class="para">1. <em>平台出资</em>：用券开仓的体验保证金由平台出资，与你的自有资金严格隔离，开仓不扣你一分钱。</p>
+      <p class="para">2. <em>盈利归你</em>：平仓后盈利部分自动进入可用余额，可提现，或转入合约继续交易。</p>
+      <p class="para">3. <em>亏损平台承担</em>：体验仓若亏损由平台承担，最多亏至券面额，触达即自动平仓，绝不影响你的本金。</p>
+      <p class="para">4. <em>限定标的与有效期</em>：本券仅适用于 <em id="ruleSym">AAPL-USD 永续</em>，须在有效期内使用，过期作废。</p>
+      <button class="dlg-cta" onclick="closeAll()">我知道了</button>
+    </div>
+
+    <!-- generic filter sheet -->
+    <div class="fsheet" id="filterSheet">
+      <div class="grab"></div>
+      <div class="fs-title" id="fsTitle">筛选类型</div>
+      <div id="fsOpts"></div>
+    </div>
+
+    <!-- 用券开仓 sheet -->
+    <div class="tsheet" id="tradeSheet">
+      <div class="grab"></div>
+      <div class="ts-close" onclick="closeTrade()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#9aa0a8" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div id="tsBody"></div>
+    </div>
+
+    <!-- 交易/持仓页 -->
+    <div class="page" id="posPage">
+      <div class="h-nav">
+        <div class="icon-btn" onclick="closePosPage()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="h-title">交易</div>
+      </div>
+      <div class="pp-symbar">
+        <div class="pp-sym" id="ppSym">AAPLUSDT <span class="perp">永续</span>
+          <svg width="14" height="14" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 8l3-3.5" stroke="#1a1a1a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="pp-px"><div class="p" id="ppPx">--</div><div class="c">+0.01%</div></div>
+      </div>
+      <div class="pp-tabs"><b id="ppCount">仓位(1)</b><span>当前委托(0)</span></div>
+      <div class="pp-sub">
+        <div class="tog"><span class="sw"></span>隐藏其他合约</div>
+        <button class="closeall" onclick="toast('一键平仓 · 请逐仓确认')">一键平仓</button>
+      </div>
+      <div class="pp-list" id="posList"></div>
+      <div class="pp-bottomnav">
+        <div class="nv"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7M6 10v9h12v-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>首页</div>
+        <div class="nv"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 17V9M10 17V5M15 17v-5M20 17V8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>市场</div>
+        <div class="nv act"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 10l-3 3 3 3M4 13h11M17 14l3-3-3-3M20 11H9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>交易</div>
+        <div class="nv"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v8M9.5 10h3a1.5 1.5 0 0 1 0 3h-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>理财</div>
+        <div class="nv"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M16 12h2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>资产</div>
+      </div>
+    </div>
+
+    <!-- 操作 sheet（加减仓 / 保证金 / 平仓 / 止盈止损） -->
+    <div class="op-mask" id="opMask" onclick="closeOp()"></div>
+    <div class="opsheet" id="opSheet">
+      <div class="grab"></div>
+      <div class="ts-close" onclick="closeOp()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#9aa0a8" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div id="opBody"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+  </div>
+</div>
+
+<!-- 测试控制台 -->
+<div class="console">
+  <div class="cs-head">🎛️ 测试控制台 <span class="pill">用券开仓</span></div>
+  <div class="cs-note">「券状态」直接同步左侧第 1 张券的展示；「下单校验」在点「一键开仓」下单时触发对应拦截弹窗。</div>
+
+  <div class="cs-group">
+    <div class="cs-label">券状态（同步左侧第 1 张券）</div>
+    <div class="seg" data-key="couponStatus">
+      <button class="on">未使用</button><button>已使用</button><button>已过期</button>
+    </div>
+  </div>
+
+  <div class="cs-section">下单校验（点「一键开仓」时拦截）</div>
+
+  <div class="cs-group">
+    <div class="cs-label">该标的当前持仓（用券前置）</div>
+    <div class="seg" data-key="hasPosition">
+      <button class="on" data-v="false">无持仓</button><button data-v="true">已有持仓</button>
+    </div>
+  </div>
+
+  <div class="cs-group">
+    <div class="cs-label">标的是否在适用范围</div>
+    <div class="seg" data-key="symbolMatch">
+      <button class="on" data-v="true">适用</button><button data-v="false">不适用</button>
+    </div>
+  </div>
+
+  <div class="cs-group">
+    <div class="cs-label">行情状态</div>
+    <div class="seg" data-key="market">
+      <button class="on">正常</button><button>中断</button>
+    </div>
+  </div>
+
+  <div class="cs-group">
+    <div class="cs-label">券系统</div>
+    <div class="seg" data-key="couponSystem">
+      <button class="on">正常</button><button>不可用</button>
+    </div>
+  </div>
+
+  <div class="cs-section">持仓 / 行情模拟</div>
+
+  <div class="cs-group">
+    <div class="cs-label">标记价（用于数量折算）</div>
+    <div class="cs-price">
+      <input id="csPrice" type="number" placeholder="按标的默认价" oninput="onPriceInput()">
+      <span class="unit">USD</span>
+    </div>
+  </div>
+
+  <div class="cs-group">
+    <div class="cs-label">持仓盈亏模拟（持仓页 / 平仓结算演示）</div>
+    <div class="seg" data-key="pnlMode">
+      <button class="on">实时</button><button>浮盈</button><button>浮亏</button>
+    </div>
+  </div>
+
+  <div class="cs-result ok" id="csResult">预测：✅ 校验通过，可一键开仓</div>
+  <button class="cs-reset" onclick="resetEnv()">重置为默认状态</button>
+</div>
+
+<script>
+  /* ── toast ── */
+  let tt;
+  function toast(msg){
+    const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1600);
+  }
+  /* ── overlays ── */
+  const mask=document.getElementById('mask');
+  function closeAll(){
+    mask.classList.remove('show');
+    document.getElementById('ruleDlg').classList.remove('show');
+    document.getElementById('filterSheet').classList.remove('show');
+    document.getElementById('tradeSheet').classList.remove('show');   // 点遮罩需一并关闭开仓面板
+  }
+  function openRule(sym){
+    closeOp();closeTrade();                                   // 避免规则说明与调整保证金等浮层叠加
+    document.getElementById('filterSheet').classList.remove('show');
+    document.getElementById('ruleSym').textContent=sym;
+    mask.classList.add('show');
+    document.getElementById('ruleDlg').classList.add('show');
+  }
+  function openRuleFor(card){openRule(card.dataset.syms.split(',').join('、'));}
+
+  /* ── filters ── */
+  const FILTERS={
+    type:{title:'筛选类型',label:'flt-type',opts:[
+      {v:'全部',t:'全部类型'},{v:'仓位券',t:'仓位券'}],apply:applyCoupon},
+    status:{title:'筛选状态',label:'flt-status',opts:[
+      {v:'全部',t:'全部状态'},{v:'未使用',t:'未使用'},{v:'已使用',t:'已使用'},{v:'已过期',t:'已过期'}],apply:applyCoupon},
+    htype:{title:'筛选类型',label:'h-flt-type',opts:[
+      {v:'全部',t:'全部类型'},{v:'体验券',t:'体验券'}],apply:applyHistory},
+    htime:{title:'筛选时间',label:null,range:true,opts:[
+      {v:'近7天',t:'近7天'},{v:'近30天',t:'近30天'},{v:'近90天',t:'近90天'}],apply:applyHistory}
+  };
+  const sel={type:'全部',status:'全部',htype:'全部',htime:'近90天'};
+  const RANGES={'近7天':'2026-06-15 到 2026-06-22','近30天':'2026-05-23 到 2026-06-22','近90天':'2026-03-25 到 2026-06-22'};
+
+  function openFilter(key){
+    const f=FILTERS[key];
+    document.getElementById('fsTitle').textContent=f.title;
+    const box=document.getElementById('fsOpts');box.innerHTML='';
+    f.opts.forEach(o=>{
+      const row=document.createElement('div');
+      row.className='fopt'+(sel[key]===o.v?' sel':'');
+      row.innerHTML='<span>'+o.t+'</span><span class="ck">✓</span>';
+      row.onclick=()=>{ sel[key]=o.v; chooseFilter(key); };
+      box.appendChild(row);
+    });
+    mask.classList.add('show');
+    document.getElementById('filterSheet').classList.add('show');
+  }
+  function chooseFilter(key){
+    const f=FILTERS[key];
+    if(f.label){
+      const o=f.opts.find(x=>x.v===sel[key]);
+      const el=document.querySelector('#'+f.label+' .fv');
+      if(el) el.textContent=o.t;
+      document.getElementById(f.label).classList.toggle('on',sel[key]!=='全部');
+    }
+    if(f.range){document.getElementById('h-range').textContent=RANGES[sel[key]];}
+    f.apply();
+    closeAll();
+  }
+
+  function applyCoupon(){
+    document.querySelectorAll('.list .ticket').forEach(c=>{
+      const okT=sel.type==='全部'||c.dataset.type===sel.type;
+      const okS=sel.status==='全部'||c.dataset.status===sel.status;
+      c.style.display=(okT&&okS)?'':'none';
+    });
+  }
+
+  /* ── history records ── */
+  const RECORDS=[
+    {name:'体验券',amt:-50,dir:'转出',time:'2026-04-08 07:24:20',id:'1422701243314905088',desc:'超时未使用',days:75},
+    {name:'体验券',amt:+50,dir:'转入',time:'2026-04-01 07:23:20',id:'1423016115181277185',desc:'使用',days:82},
+    {name:'体验券',amt:+100,dir:'转入',time:'2026-06-18 09:12:05',id:'1424551208841220096',desc:'任务奖励',days:4},
+    {name:'体验券',amt:-30,dir:'转出',time:'2026-06-10 16:40:11',id:'1424330094117552640',desc:'平仓回收',days:12}
+  ];
+  function applyHistory(){
+    const days={'近7天':7,'近30天':30,'近90天':90}[sel.htime];
+    const list=document.getElementById('h-list');list.innerHTML='';
+    const rows=RECORDS.filter(r=>(sel.htype==='全部'||r.name===sel.htype)&&r.days<=days);
+    if(!rows.length){list.innerHTML='<div class="h-empty">该时间段内暂无记录</div>';return;}
+    rows.forEach(r=>{
+      const sign=r.amt>0?'+':'';
+      const cls=r.amt>0?'plus':'minus';
+      const el=document.createElement('div');el.className='rec';
+      el.innerHTML=
+        '<div class="rec-top"><div class="rec-name">'+r.name+'</div>'+
+        '<div class="rec-amt '+cls+'">'+sign+r.amt+' USDT</div></div>'+
+        '<div class="rec-row"><span class="rk">币种</span><span class="rvb"><span class="usdt-ic">₮</span>USDT</span></div>'+
+        '<div class="rec-row"><span class="rk">记录 ID</span><span class="rvb">'+r.id+'</span></div>'+
+        '<div class="rec-row"><span class="rk">方向</span><span class="rvb">'+r.dir+'</span></div>'+
+        '<div class="rec-row"><span class="rk">时间</span><span class="rvb">'+r.time+'</span></div>'+
+        '<div class="rec-row"><span class="rk">说明</span><span class="rvb">'+r.desc+'</span></div>';
+      list.appendChild(el);
+    });
+  }
+
+  function openHistory(){applyHistory();document.getElementById('historyPage').classList.add('show');}
+  function closeHistory(){document.getElementById('historyPage').classList.remove('show');}
+
+  /* ══════════ 用券开仓流程 + 测试控制台 ══════════ */
+  const PRICES={'AAPL-USD 永续':195.30,'TSLA-USD 永续':248.50,'NVDA-USD 永续':122.40};
+  const DIR_TXT={long:'买入做多',short:'卖出做空'};
+
+  // 测试环境状态（由控制台驱动）
+  const env={couponStatus:'未使用',hasPosition:false,symbolMatch:true,market:'正常',couponSystem:'正常',price:null,pnlMode:'实时'};
+  let tradeCtx=null, tradeDir='long', tsView='form';
+
+  function priceOf(sym){return env.price||PRICES[sym]||100;}
+
+  // 下单校验：在点「一键开仓」时触发（PRD 2.2.2 / 3.2.7）
+  function checkOrder(){
+    if(env.couponSystem==='不可用') return {block:true,ic:'🛠️',title:'活动券暂不可用',msg:'活动券暂不可用，请稍后再试'};
+    if(!env.symbolMatch)            return {block:true,ic:'🚫',title:'标的不支持',msg:'该标的不支持此券'};
+    if(env.hasPosition)             return {block:true,ic:'⚠️',title:'该标的已有持仓',msg:'该标的已有持仓，无法用券开仓（用券前置：该标的需无任何持仓）'};
+    if(env.market==='中断')         return {block:true,ic:'📉',title:'行情更新中',msg:'行情更新中，请稍后操作'};
+    return {block:false};
+  }
+
+  function openTrade(card){
+    const syms=card.dataset.syms.split(',');
+    tradeCtx={syms,sym:syms[0],face:+card.dataset.face,lev:+card.dataset.lev,cardEl:card};
+    tradeDir='long';
+    renderTrade();
+    mask.classList.add('show');
+    document.getElementById('tradeSheet').classList.add('show');
+  }
+  function closeTrade(){mask.classList.remove('show');document.getElementById('tradeSheet').classList.remove('show');}
+  function setSym(s){tradeCtx.sym=s;renderTrade();}
+
+  // 下单拦截弹窗（点「一键开仓」后才出现）
+  function showOrderBlock(chk){
+    tsView='block';
+    document.getElementById('tsBody').innerHTML=
+      '<div class="ts-state"><div class="ic">'+chk.ic+'</div>'+
+      '<div class="st">'+chk.title+'</div>'+
+      '<div class="sm">'+chk.msg+'</div></div>'+
+      '<button class="ts-cta" style="background:var(--purple)" onclick="renderTrade()">返回修改</button>'+
+      '<button class="ts-cta ghost" style="margin-top:10px" onclick="closeTrade()">关闭</button>';
+  }
+
+  function renderTrade(){
+    tsView='form';
+    const c=tradeCtx, body=document.getElementById('tsBody');
+    const price=priceOf(c.sym);
+    const qty=(c.face*c.lev/price);
+    // 始终展示开仓标的选择（单标的也展示，PRD 3.2.5 券选择）
+    const symSel='<div class="ts-symsel"><div class="lbl">'+
+      (c.syms.length>1?'选择开仓标的（本券适用 '+c.syms.length+' 个标的）':'开仓标的（本券限定）')+'</div>'+
+      '<div class="sym-pills">'+c.syms.map(s=>
+        '<button class="'+(s===c.sym?'on':'')+'" onclick="setSym(\''+s+'\')">'+s+'</button>').join('')+
+      '</div></div>';
+    body.innerHTML=
+      '<div class="ts-h">用仓位券开仓</div>'+
+      symSel+
+      '<div class="ts-sym"><div class="ts-sym-name">'+c.sym+'</div>'+
+        '<div class="ts-price">标记价 $'+price.toFixed(2)+'</div></div>'+
+      '<div class="ts-row"><span class="k">保证金</span><span class="v">$'+c.face.toFixed(2)+'<span class="mini">平台出资</span></span></div>'+
+      '<div class="ts-row"><span class="k">杠杆</span><span class="v">'+c.lev+'×<span class="mini">已为你拉满</span></span></div>'+
+      '<div class="ts-row"><span class="k">预计开仓数量</span><span class="v">≈ '+qty.toFixed(2)+' 股</span></div>'+
+      '<div class="ts-dir"><div class="lbl">方向（用券后该标的仅可单向持仓）</div>'+
+        '<div class="dir-seg">'+
+          '<button class="long'+(tradeDir==='long'?' on':'')+'" onclick="setDir(\'long\')">买入做多</button>'+
+          '<button class="short'+(tradeDir==='short'?' on':'')+'" onclick="setDir(\'short\')">卖出做空</button>'+
+        '</div></div>'+
+      '<div class="ts-tip">本仓保证金 <b>$'+c.face.toFixed(2)+' 由平台全额出资</b>，盈利归你、<b>无上限</b>；亏损以券面额为限由平台承担。</div>'+
+      '<button class="ts-cta '+tradeDir+'" onclick="confirmOpen()">一键开仓 · '+DIR_TXT[tradeDir]+'</button>';
+  }
+  function setDir(d){tradeDir=d;renderTrade();}
+
+  function confirmOpen(){
+    const chk=checkOrder();                       // 下单时校验，命中则弹拦截
+    if(chk.block){ showOrderBlock(chk); return; }
+    const c=tradeCtx, price=priceOf(c.sym), qty=(c.face*c.lev/price);
+    const pos={id:nextPosId++,sym:c.sym,side:tradeDir,lev:c.lev,face:c.face,
+      entry:price,qty:qty,platformMargin:c.face,addedMargin:0,tp:null,sl:null,
+      cardEl:c.cardEl,opened:'2026-06-22 15:01'};
+    positions.push(pos);
+    flipCardUsed(c.cardEl,pos.id);
+    tsView='success';
+    document.getElementById('tsBody').innerHTML=
+      '<div class="ts-state"><div class="ic">✅</div>'+
+      '<div class="st">已用仓位券开仓</div>'+
+      '<div class="sm">'+c.sym+' · '+DIR_TXT[tradeDir]+' · '+c.lev+'×</div>'+
+      '<div class="sd">保证金 $'+c.face.toFixed(2)+'（平台出资）　数量 ≈ '+qty.toFixed(2)+' 股<br>已建立真实仓位，券状态 → 已使用，盈利归你无上限</div></div>'+
+      '<button class="ts-cta long" onclick="closeTrade();openPosPage('+pos.id+')">查看持仓</button>'+
+      '<button class="ts-cta ghost" onclick="closeTrade()" style="margin-top:10px">完成</button>';
+    toast('已用仓位券开仓');
+  }
+
+  /* ══════════ 持仓 / 仓位管理（加减仓·加减保证金·平仓·止盈止损） ══════════ */
+  let positions=[], nextPosId=102, opCtx=null, opMarginDir='add';
+  const cardOrig=new Map();
+
+  const shortOf=s=>s.split('-')[0];
+  // 持仓标记价：显式标记价 > 盈亏模拟 > 实时价。盈亏模拟按各仓开仓价做 ±10% 推演
+  function markPx(p){
+    if(env.price) return env.price;
+    if(env.pnlMode==='浮盈') return +(p.entry*(p.side==='long'?1.10:0.90)).toFixed(2);
+    if(env.pnlMode==='浮亏') return +(p.entry*(p.side==='long'?0.90:1.10)).toFixed(2);
+    return PRICES[p.sym]||p.entry;
+  }
+  const posMargin=p=>p.platformMargin+p.addedMargin;
+  const posPnl=p=>(markPx(p)-p.entry)*p.qty*(p.side==='long'?1:-1);
+  function posLiq(p){const m=posMargin(p);const l=p.side==='long'?p.entry-m/p.qty:p.entry+m/p.qty;return Math.max(l,0);}
+
+  function makeNvdaPos(){return {id:101,sym:'NVDA-USD 永续',side:'long',lev:5,face:100,entry:119.41,
+    qty:500/119.41,platformMargin:100,addedMargin:0,tp:null,sl:null,
+    cardEl:document.querySelector('[data-posid="101"]'),opened:'2026-06-22 14:30'};}
+  const getPos=id=>positions.find(p=>p.id===id);
+
+  function flipCardUsed(card,posId){
+    if(!card)return;
+    card.dataset.status='已使用';card.classList.add('used');
+    card.querySelector('.t-stub').innerHTML=
+      '<div class="stub-name" style="color:#5b4fd6">体验券</div><div class="stub-sub">美股欢迎礼</div>'+
+      '<button class="stub-btn ghost" onclick="openPosPage('+posId+')">查看持仓</button>';
+  }
+
+  function openPosPage(id){renderPositions();document.getElementById('posPage').classList.add('show');}
+  function closePosPage(){closeOp();document.getElementById('posPage').classList.remove('show');}
+
+  function renderPositions(){
+    const open=positions.filter(p=>!p.closed);
+    document.getElementById('ppCount').textContent='仓位('+open.length+')';
+    const head=open[0];
+    if(head){
+      document.getElementById('ppSym').innerHTML=shortOf(head.sym)+'USDT <span class="perp">永续</span>'+
+        '<svg width="14" height="14" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 8l3-3.5" stroke="#1a1a1a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      document.getElementById('ppPx').textContent=markPx(head).toFixed(2);
+    }
+    const wrap=document.getElementById('posList');
+    if(!open.length){wrap.innerHTML='<div class="pp-empty">暂无持仓，去卡券中心用券开仓 →</div>';return;}
+    wrap.innerHTML=open.map(p=>{
+      const m=markPx(p),pnl=posPnl(p),mg=posMargin(p),roi=mg?pnl/mg*100:0,liq=posLiq(p);
+      const up=pnl>=0,u=shortOf(p.sym);
+      const tpsl=(p.tp||p.sl)?'<div class="pos-tpsl">已设 '+(p.tp?'止盈 $'+(+p.tp).toFixed(2):'')+(p.tp&&p.sl?' · ':'')+(p.sl?'止损 $'+(+p.sl).toFixed(2):'')+'</div>':'';
+      return '<div class="pos">'+
+        '<div class="pos-top"><span class="pos-sym">'+p.sym+'</span>'+
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 4h6v6M20 4l-8 8M10 6H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5" stroke="#9aa0a8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'+
+        '<div class="pos-meta"><span class="sb '+p.side+'">'+(p.side==='long'?'L':'S')+'</span>'+
+          '<span class="mt">全仓</span><span class="mt">'+p.lev+'x</span></div>'+
+        '<div class="pos-pnl"><div><div class="lab">未实现盈亏(USDT)</div>'+
+          '<div class="big '+(up?'up':'down')+'">'+(up?'+':'')+pnl.toFixed(2)+'</div></div>'+
+          '<div class="r"><div class="lab">收益率</div><div class="big '+(up?'up':'down')+'">'+(up?'+':'')+roi.toFixed(2)+'%</div></div></div>'+
+        '<div class="pos-grid">'+
+          '<div class="cell"><div class="k">数量</div><div class="v">'+p.qty.toFixed(2)+' '+u+'</div></div>'+
+          '<div class="cell c"><div class="k">开仓均价</div><div class="v">'+p.entry.toFixed(2)+'</div></div>'+
+          '<div class="cell r"><div class="k">标记价格</div><div class="v">'+m.toFixed(2)+'</div></div>'+
+          '<div class="cell"><div class="k">持仓保证金</div><div class="v">'+mg.toFixed(2)+'</div></div>'+
+          '<div class="cell c"><div class="k">预估强平价</div><div class="v">'+liq.toFixed(2)+'</div></div>'+
+          '<div class="cell r"><div class="k">维持保证金率</div><div class="v up">0.50%</div></div>'+
+        '</div>'+tpsl+
+        '<div class="pos-acts"><div class="row">'+
+          '<button onclick="openOp('+p.id+',\'tpsl\')">止盈/止损</button>'+
+          '<button onclick="openOp('+p.id+',\'add\')">加仓</button>'+
+          '<button onclick="openOp('+p.id+',\'reduce\')">减仓</button></div>'+
+          '<div class="row"><button onclick="openOp('+p.id+',\'margin\')">调整保证金</button>'+
+          '<button class="close" onclick="openOp('+p.id+',\'close\')">平仓</button></div>'+
+        '</div></div>';
+    }).join('');
+  }
+
+  /* ── 操作 sheet ── */
+  const opMask=document.getElementById('opMask');
+  function openOp(id,type){opCtx={id,type};opMarginDir='add';renderOp();
+    opMask.classList.add('show');document.getElementById('opSheet').classList.add('show');}
+  function closeOp(){opMask.classList.remove('show');document.getElementById('opSheet').classList.remove('show');}
+  function setMarginDir(d){opMarginDir=d;renderOp();}
+
+  function renderOp(){
+    const p=getPos(opCtx.id),t=opCtx.type,m=markPx(p),mg=posMargin(p),u=shortOf(p.sym);
+    const body=document.getElementById('opBody');let h='';
+    if(t==='add'){
+      h='<div class="op-h">加仓 · '+p.sym+'</div>'+
+        '<div class="op-field"><div class="fl"><span>追加保证金（自有资金）</span></div>'+
+        '<div class="op-input"><input id="opAmt" type="number" placeholder="0.00" oninput="opPrev()"><span class="u">USDT</span></div></div>'+
+        '<div class="op-prev" id="opPrevBox"></div>'+
+        '<div class="op-note" style="color:#1d6fb8;background:#eaf4ff">加仓使用你的自有资金；维持单向持仓，不可反向开仓。</div>'+
+        '<button class="op-cta" onclick="doAdd()">确认加仓</button>';
+    } else if(t==='reduce'){
+      const maxRed=p.qty*(1-p.face/mg);
+      if(maxRed<=1e-6){
+        h='<div class="op-h">减仓 · '+p.sym+'</div>'+
+          '<div class="op-note">为保留仓位券价值，保证金不可低于券面额 <b>$'+p.face.toFixed(2)+'</b>。<br>当前保证金恰等于券面额，<b>需先加仓或追加自有保证金</b>后才能减仓。</div>'+
+          '<button class="op-cta" disabled>暂不可减仓</button>';
+      } else {
+        h='<div class="op-h">减仓 · '+p.sym+'</div>'+
+          '<div class="op-field"><div class="fl"><span>减仓数量</span><span class="max" onclick="document.getElementById(\'opAmt\').value=\''+maxRed.toFixed(2)+'\';opPrev()">最多可减 '+maxRed.toFixed(2)+' '+u+'</span></div>'+
+          '<div class="op-input"><input id="opAmt" type="number" placeholder="0.00" oninput="opPrev()"><span class="u">'+u+'</span></div></div>'+
+          '<div class="op-prev" id="opPrevBox"></div>'+
+          '<div class="op-note">减仓后该仓保证金须 ≥ 券面额 $'+p.face.toFixed(2)+'（券价值下限）。</div>'+
+          '<button class="op-cta" onclick="doReduce()">确认减仓</button>';
+      }
+    } else if(t==='margin'){
+      h='<div class="op-h">调整保证金 · '+p.sym+'</div>'+
+        '<div class="op-seg"><button class="'+(opMarginDir==='add'?'on':'')+'" onclick="setMarginDir(\'add\')">加保证金</button>'+
+         '<button class="'+(opMarginDir==='sub'?'on':'')+'" onclick="setMarginDir(\'sub\')">减保证金</button></div>'+
+        '<div class="op-field"><div class="fl"><span>'+(opMarginDir==='add'?'追加金额（自有资金）':'减少金额')+'</span>'+
+          (opMarginDir==='sub'?'<span class="max" onclick="document.getElementById(\'opAmt\').value=\''+p.addedMargin.toFixed(2)+'\';opPrev()">最多可减 '+p.addedMargin.toFixed(2)+'</span>':'')+'</div>'+
+        '<div class="op-input"><input id="opAmt" type="number" placeholder="0.00" oninput="opPrev()"><span class="u">USDT</span></div></div>'+
+        '<div class="op-prev" id="opPrevBox"></div>'+
+        '<div class="op-note">'+(opMarginDir==='sub'?'减保证金后须 ≥ 券面额 $'+p.face.toFixed(2)+'，仅可减你追加的部分（当前 $'+p.addedMargin.toFixed(2)+'）。':'追加保证金可降低强平风险，资金来自你的自有合约账户。')+'</div>'+
+        '<button class="op-cta" onclick="doMargin()">确认</button>';
+    } else if(t==='close'){
+      const pnl=posPnl(p),up=pnl>=0,loss=Math.max(0,-pnl),platCost=Math.min(loss,p.face),userLoss=Math.max(0,loss-p.face);
+      h='<div class="op-h">平仓 · '+p.sym+'</div>'+
+        '<div class="op-prev">'+
+          '<div class="pr"><span class="k">平仓数量</span><span class="v">'+p.qty.toFixed(2)+' '+u+'（全部）</span></div>'+
+          '<div class="pr"><span class="k">标记价</span><span class="v">'+m.toFixed(2)+'</span></div>'+
+          '<div class="pr"><span class="k">预计已实现盈亏</span><span class="v '+(up?'up':'down')+'">'+(up?'+':'')+pnl.toFixed(2)+' USDT</span></div></div>'+
+        '<div class="op-note" style="'+(up?'color:#0f9b6e;background:#e9f9f2':'')+'">'+
+          (up?'盈利 <b>$'+pnl.toFixed(2)+'</b> 将全额直入你的合约账户（无上限）。':
+          '亏损 $'+loss.toFixed(2)+' 中，<b>平台承担 $'+platCost.toFixed(2)+'</b>（券面额内）'+(userLoss>0?'，你的自有部分承担 $'+userLoss.toFixed(2):'')+'。')+
+          '<br>完全平仓后券核销为「已结算」。</div>'+
+        '<button class="op-cta close" onclick="doClose()">确认平仓</button>';
+    } else if(t==='tpsl'){
+      h='<div class="op-h">止盈 / 止损 · '+p.sym+'</div>'+
+        '<div class="op-field"><div class="fl"><span>止盈触发价</span><span style="color:#9aa0a8">开仓价 '+p.entry.toFixed(2)+'</span></div>'+
+        '<div class="op-input"><input id="opTp" type="number" placeholder="可选" value="'+(p.tp||'')+'"><span class="u">USDT</span></div></div>'+
+        '<div class="op-field"><div class="fl"><span>止损触发价</span></div>'+
+        '<div class="op-input"><input id="opSl" type="number" placeholder="可选" value="'+(p.sl||'')+'"><span class="u">USDT</span></div></div>'+
+        '<div class="op-note" style="color:#1d6fb8;background:#eaf4ff">触发后按市价平仓并结算；'+(p.side==='long'?'做多：止盈价 > 开仓价、止损价 < 开仓价。':'做空：止盈价 < 开仓价、止损价 > 开仓价。')+'</div>'+
+        '<button class="op-cta" onclick="doTpsl()">确认设置</button>';
+    }
+    body.innerHTML=h;
+    if(['add','reduce','margin'].includes(t)) opPrev();
+  }
+
+  function opPrev(){
+    const box=document.getElementById('opPrevBox');if(!box)return;
+    const p=getPos(opCtx.id),t=opCtx.type,m=markPx(p),mg=posMargin(p),u=shortOf(p.sym);
+    const inp=document.getElementById('opAmt');const amt=inp?parseFloat(inp.value)||0:0;
+    if(t==='add'){
+      const addQty=amt*p.lev/m;
+      box.innerHTML='<div class="pr"><span class="k">新增数量</span><span class="v">≈ '+addQty.toFixed(2)+' '+u+'</span></div>'+
+        '<div class="pr"><span class="k">加仓后数量</span><span class="v">'+(p.qty+addQty).toFixed(2)+' '+u+'</span></div>'+
+        '<div class="pr"><span class="k">加仓后保证金</span><span class="v">'+(mg+amt).toFixed(2)+' USDT</span></div>';
+    } else if(t==='reduce'){
+      const freed=p.qty>0?(amt/p.qty)*mg:0,newMg=mg-freed;
+      box.innerHTML='<div class="pr"><span class="k">减仓后数量</span><span class="v">'+Math.max(0,p.qty-amt).toFixed(2)+' '+u+'</span></div>'+
+        '<div class="pr"><span class="k">减仓后保证金</span><span class="v">'+newMg.toFixed(2)+' USDT</span></div>'+
+        '<div class="pr"><span class="k">券价值下限</span><span class="v">'+p.face.toFixed(2)+' USDT</span></div>';
+    } else if(t==='margin'){
+      const newMg=opMarginDir==='add'?mg+amt:mg-amt;
+      const np={...p,addedMargin:newMg-p.platformMargin};
+      box.innerHTML='<div class="pr"><span class="k">调整后保证金</span><span class="v">'+newMg.toFixed(2)+' USDT</span></div>'+
+        '<div class="pr"><span class="k">调整后强平价</span><span class="v">'+posLiq(np).toFixed(2)+'</span></div>';
+    }
+  }
+
+  function doAdd(){
+    const p=getPos(opCtx.id),m=markPx(p),amt=parseFloat(document.getElementById('opAmt').value);
+    if(!amt||amt<=0){toast('请输入追加金额');return;}
+    const addQty=amt*p.lev/m;
+    p.entry=(p.entry*p.qty+m*addQty)/(p.qty+addQty);
+    p.qty+=addQty;p.addedMargin+=amt;
+    closeOp();renderPositions();toast('已加仓 · 追加保证金 $'+amt.toFixed(2));
+  }
+  function doReduce(){
+    const p=getPos(opCtx.id),mg=posMargin(p),q=parseFloat(document.getElementById('opAmt').value);
+    const maxRed=p.qty*(1-p.face/mg);
+    if(!q||q<=0){toast('请输入减仓数量');return;}
+    if(q>maxRed+1e-6){toast('超出最多可减 '+maxRed.toFixed(2));return;}
+    const freed=(q/p.qty)*mg;p.qty-=q;p.addedMargin=Math.max(0,(mg-freed)-p.platformMargin);
+    closeOp();renderPositions();toast('已减仓 '+q.toFixed(2)+' '+shortOf(p.sym));
+  }
+  function doMargin(){
+    const p=getPos(opCtx.id),amt=parseFloat(document.getElementById('opAmt').value);
+    if(!amt||amt<=0){toast('请输入金额');return;}
+    if(opMarginDir==='add'){p.addedMargin+=amt;toast('已追加保证金 $'+amt.toFixed(2));}
+    else{if(amt>p.addedMargin+1e-6){toast('最多可减 $'+p.addedMargin.toFixed(2)+'（须保留券面额）');return;}p.addedMargin-=amt;toast('已减少保证金 $'+amt.toFixed(2));}
+    closeOp();renderPositions();
+  }
+  function doClose(){
+    const p=getPos(opCtx.id),pnl=posPnl(p),up=pnl>=0,loss=Math.max(0,-pnl),platCost=Math.min(loss,p.face),userLoss=Math.max(0,loss-p.face);
+    p.closed=true;
+    document.getElementById('opBody').innerHTML=
+      '<div class="ts-state"><div class="ic">'+(up?'🎉':'✅')+'</div>'+
+      '<div class="st">已平仓 · 结算完成</div>'+
+      '<div class="sm">'+p.sym+' · '+DIR_TXT[p.side]+'</div>'+
+      '<div class="sd">'+(up?'本笔盈利 <b style="color:#0f9b6e">+$'+pnl.toFixed(2)+'</b> 已到账合约账户（无上限）':
+        '本笔亏损 $'+loss.toFixed(2)+'，平台承担 $'+platCost.toFixed(2)+(userLoss>0?'，自有部分 $'+userLoss.toFixed(2):''))+'</div></div>'+
+      '<button class="op-cta" onclick="closeOp();renderPositions()">完成</button>';
+    toast(up?'本笔盈利 $'+pnl.toFixed(2)+' 已到账':'已平仓，平台出资部分亏损由平台承担');
+  }
+  function doTpsl(){
+    const p=getPos(opCtx.id),tp=parseFloat(document.getElementById('opTp').value),sl=parseFloat(document.getElementById('opSl').value);
+    p.tp=isNaN(tp)?null:tp;p.sl=isNaN(sl)?null:sl;
+    closeOp();renderPositions();toast('已设置止盈止损');
+  }
+
+  /* ── 控制台 ── */
+  // 券状态同步到左侧第 1 张券
+  function card1(){return document.querySelector('.list .ticket[data-syms*="AAPL"]');}
+  function applyCardStatus(){
+    const card=card1();if(!card)return;
+    const st=env.couponStatus;card.dataset.status=st;
+    const stub=card.querySelector('.t-stub');
+    if(st==='未使用'){
+      card.classList.remove('used');
+      stub.innerHTML='<div class="stub-name">体验券</div><div class="stub-sub">美股欢迎礼</div>'+
+        '<button class="stub-btn" onclick="openTrade(this.closest(\'.ticket\'))">立即使用</button>';
+    } else if(st==='已使用'){
+      card.classList.add('used');
+      stub.innerHTML='<div class="stub-name" style="color:#5b4fd6">体验券</div><div class="stub-sub">美股欢迎礼</div>'+
+        '<button class="stub-btn ghost" onclick="openPosPage(0)">查看持仓</button>';
+    } else { // 已过期
+      card.classList.add('used');
+      stub.innerHTML='<div class="stub-name" style="color:#9b9fa7">体验券</div><div class="stub-sub">美股欢迎礼</div>'+
+        '<button class="stub-btn disabled" disabled>已过期</button>';
+    }
+    applyCoupon();
+  }
+
+  function predict(){
+    const chk=checkOrder(), el=document.getElementById('csResult');
+    el.className='cs-result '+(chk.block?'block':'ok');
+    el.textContent='下单预测：'+(chk.block?('⛔ 一键开仓将被拦截 · '+chk.msg):'✅ 一键开仓将成功建仓');
+    // 开仓面板停留在表单态时随标记价等刷新；拦截/成功态不打扰
+    if(document.getElementById('tradeSheet').classList.contains('show') && tsView==='form') renderTrade();
+    if(document.getElementById('posPage').classList.contains('show')) renderPositions();
+  }
+  document.querySelectorAll('.seg').forEach(seg=>{
+    const key=seg.dataset.key;
+    seg.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{
+      seg.querySelectorAll('button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+      const raw=btn.dataset.v!==undefined?btn.dataset.v:btn.textContent;
+      env[key]=(raw==='true')?true:(raw==='false')?false:raw;
+      if(key==='couponStatus') applyCardStatus();
+      predict();
+    }));
+  });
+  function onPriceInput(){const v=parseFloat(document.getElementById('csPrice').value);env.price=(!isNaN(v)&&v>0)?v:null;predict();}
+  function resetEnv(){
+    Object.assign(env,{couponStatus:'未使用',hasPosition:false,symbolMatch:true,market:'正常',couponSystem:'正常',price:null,pnlMode:'实时'});
+    document.getElementById('csPrice').value='';
+    document.querySelectorAll('.seg').forEach(seg=>{
+      const btns=seg.querySelectorAll('button');btns.forEach(b=>b.classList.remove('on'));btns[0].classList.add('on');
+    });
+    // 还原卡片与持仓
+    cardOrig.forEach((o,c)=>{c.className=o.cls;c.dataset.status=o.status;c.querySelector('.t-stub').innerHTML=o.stub;});
+    positions=[makeNvdaPos()];nextPosId=102;
+    applyCoupon();
+    if(document.getElementById('posPage').classList.contains('show')) renderPositions();
+    predict();
+  }
+
+  // 初始化：捕获卡片原始状态 + 预置 NVDA 持仓
+  document.querySelectorAll('.list .ticket').forEach(c=>{
+    cardOrig.set(c,{cls:c.className,status:c.dataset.status,stub:c.querySelector('.t-stub').innerHTML});
+  });
+  positions=[makeNvdaPos()];
+
+  applyHistory();
+  predict();
+</script>
+</body>
+</html>
