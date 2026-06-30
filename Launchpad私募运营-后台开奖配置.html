@@ -145,6 +145,16 @@
   .sum .cell.hl .v{color:var(--success-deep);}
   .sum .cell.warn{background:var(--warning-soft);border-color:var(--warning-line);}
   .sum .cell.warn .v{color:var(--warning);}
+  /* 自动模式：弱化为「预测」中性态 */
+  .sum.forecast .cell{background:#fbfcfe;border-style:dashed;}
+  .sum.forecast .cell.hl{background:#fbfcfe;border-color:var(--line);}
+  .sum.forecast .cell.hl .v{color:var(--text);}
+  .sum.forecast .cell.warn{background:#fbfcfe;border-color:var(--line);}
+  .sum.forecast .cell.warn .v{color:var(--text);}
+  .sum.forecast .cell .v{color:var(--text);}
+  .fcnote{display:none;align-items:center;gap:8px;font-size:12.5px;color:var(--text-2);background:#f4f6ff;border:1px solid #dde3fb;border-radius:9px;padding:9px 13px;margin:16px 0 0;line-height:1.5;}
+  .fcnote b{color:var(--primary-deep);font-weight:600;}
+  .fcnote.show{display:flex;}
 
   /* ── buttons ── */
   .btn{height:38px;padding:0 20px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--text-2);display:inline-flex;align-items:center;gap:7px;transition:.15s;}
@@ -298,11 +308,12 @@
       </div>
 
       <!-- summary -->
-      <div class="sum">
-        <div class="cell"><div class="k"><span id="kWinners">预计中签人数</span></div><div class="v mono" id="sWinners">0</div></div>
-        <div class="cell"><div class="k">中签总份数</div><div class="v mono" id="sWinShares">0 / 20</div></div>
-        <div class="cell hl"><div class="k">应发代币（XYZ）</div><div class="v mono" id="sTokens">0</div></div>
-        <div class="cell warn"><div class="k">应返还（USDT）</div><div class="v mono" id="sRefund">0</div></div>
+      <div class="fcnote" id="forecastNote"><span>📊</span><span>以下为按<b>自动规则</b>的预测值（未超募 → 全部中签），最终以 <b>2026/7/2 00:00:00</b> 系统执行结果为准。</span></div>
+      <div class="sum" id="sumBar">
+        <div class="cell"><div class="k" id="kWinners">预计中签人数</div><div class="v mono" id="sWinners">0</div></div>
+        <div class="cell"><div class="k" id="kShares">预计中签份数</div><div class="v mono" id="sWinShares">0 / 20</div></div>
+        <div class="cell hl"><div class="k" id="kTokens">预计发放代币（XYZ）</div><div class="v mono" id="sTokens">0</div></div>
+        <div class="cell warn"><div class="k" id="kRefund">预计返还（USDT）</div><div class="v mono" id="sRefund">0</div></div>
       </div>
 
       <!-- 手动模式操作 -->
@@ -484,8 +495,14 @@
     if(v==='auto') cap.innerHTML='<span>📋 申购名单 · 以下为<b style="color:var(--text-2)">&nbsp;自动开奖预览&nbsp;</b>，最终以系统到点执行结果为准</span>';
     else if(v==='manual') cap.innerHTML='<span>📋 申购名单 · <b style="color:var(--warning)">手动配置中签份数</b>（中签份数 ≤ 申购份数）</span>';
     else cap.innerHTML='<span>📋 申购名单 · <b style="color:var(--success-deep)">中签配置已保存</b>，将于开奖时间到点执行</span>';
-    // summary label
-    $('#kWinners').textContent = (v==='auto')?'预计中签人数':'中签人数';
+    // summary：自动=预测态（中性样式+预计标签），手动/已保存=确认态
+    const auto = (v==='auto');
+    $('#forecastNote').classList.toggle('show', auto);
+    $('#sumBar').classList.toggle('forecast', auto);
+    $('#kWinners').textContent = auto?'预计中签人数':'中签人数';
+    $('#kShares').textContent  = auto?'预计中签份数':'中签总份数';
+    $('#kTokens').textContent  = auto?'预计发放代币（XYZ）':'应发代币（XYZ）';
+    $('#kRefund').textContent  = auto?'预计返还（USDT）':'应返还（USDT）';
     // editability
     document.querySelectorAll('.wsh,.rowchk').forEach(el=>el.disabled=!editable);
     $('#chkAll').disabled=!editable;
