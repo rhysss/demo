@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>私募运营 · Launchpad 后台（开奖）</title>
+<style>
+  :root{
+    --primary:#4d6cfa; --primary-deep:#3a55e0; --primary-soft:#eef1ff;
+    --success:#15b886; --success-soft:#e9f9f2; --success-deep:#0f9c72;
+    --danger:#e0564f; --danger-soft:#fdeeed;
+    --warning:#e6900f; --warning-soft:#fff6e8; --warning-line:#f3deb5;
+    --text:#1f2329; --text-2:#4e5969; --muted:#86909c; --placeholder:#c0c4cc;
+    --line:#e9ebf0; --line-2:#f0f2f5; --bg:#f3f5f8; --card:#fff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;font-size:14px;}
+  .sheet{max-width:1560px;margin:0 auto;background:var(--card);min-height:100vh;}
+
+  /* ── header ── */
+  .hd{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:20;}
+  .hd h1{margin:0;font-size:16px;font-weight:600;}
+  .hd .x{width:30px;height:30px;border:none;background:none;cursor:pointer;color:var(--muted);font-size:20px;border-radius:8px;}
+  .hd .x:hover{background:var(--line-2);color:var(--text);}
+  .body{padding:8px 28px 80px;}
+
+  /* ── stepper ── */
+  .stepper{display:flex;align-items:flex-start;padding:30px 10px 22px;}
+  .step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;}
+  .step .bar{position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--line);z-index:0;}
+  .step:last-child .bar{display:none;}
+  .step.done .bar,.step.cur .bar{background:var(--success);}
+  .step .dot{width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid var(--line);color:var(--muted);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;position:relative;z-index:1;}
+  .step.done .dot{background:var(--success);border-color:var(--success);color:#fff;}
+  .step.cur .dot{border-color:var(--text);color:var(--text);font-weight:700;}
+  .step .nm{margin-top:9px;font-size:14px;color:var(--muted);}
+  .step.done .nm{color:var(--success);}
+  .step.cur .nm{color:var(--text);font-weight:600;}
+  .step .tm{margin-top:4px;font-size:12px;color:var(--placeholder);}
+  .step.done .tm{color:var(--success-deep);}
+  .step.cur .tm{color:var(--text-2);}
+
+  /* ── info rows ── */
+  .info{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:9px;font-size:13px;margin-bottom:10px;}
+  .info.blue{background:#f4f6ff;color:var(--text-2);}
+  .info.gray{background:#f6f7f9;color:var(--muted);}
+  .info .i{flex:none;width:16px;height:16px;border-radius:50%;background:var(--muted);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .info.blue .i{background:var(--primary);}
+  .info b{color:var(--text);font-weight:600;}
+  .meta{font-size:13px;color:var(--text-2);margin:4px 2px 18px;}
+  .meta b{color:var(--text);}
+
+  /* ── section ── */
+  .sec{margin:26px 0 0;}
+  .sec-hd{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;margin-bottom:14px;padding-top:18px;border-top:1px solid var(--line-2);}
+  .sec-hd .tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;}
+  .sec-hd .tag.auto{background:var(--success-soft);color:var(--success-deep);}
+  .sec-hd .tag.manual{background:var(--warning-soft);color:var(--warning);}
+
+  /* ── round params (read-only strip) ── */
+  .params{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:16px;background:#fbfcfe;}
+  .params .p{flex:1;min-width:150px;padding:13px 18px;border-right:1px solid var(--line-2);}
+  .params .p:last-child{border-right:none;}
+  .params .p .k{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+  .params .p .k .lock{font-size:10px;color:var(--placeholder);}
+  .params .p .v{margin-top:5px;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .params .p .v small{font-size:11px;font-weight:500;color:var(--muted);margin-left:3px;}
+
+  /* ── mode card (auto default) ── */
+  .modecard{border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+  .modecard.auto{background:linear-gradient(180deg,#f3fbf8,#fff);border-color:#cdeadd;}
+  .modecard .mc-hd{display:flex;align-items:center;gap:11px;}
+  .modecard .mc-ico{width:38px;height:38px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .modecard.auto .mc-ico{background:var(--success-soft);color:var(--success-deep);}
+  .modecard .mc-t{font-size:15px;font-weight:600;}
+  .modecard .mc-t .when{color:var(--success-deep);}
+  .modecard .mc-s{font-size:12.5px;color:var(--text-2);margin-top:3px;line-height:1.5;}
+  .modecard .mc-rule{margin-top:14px;padding:12px 14px;background:#fff;border:1px solid var(--line-2);border-radius:10px;font-size:13px;color:var(--text-2);line-height:1.7;}
+  .modecard .mc-rule .hit{color:var(--success-deep);font-weight:600;}
+  .modecard .mc-foot{display:flex;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap;}
+  .modecard .mc-foot .note{font-size:12px;color:var(--muted);flex:1;min-width:200px;}
+
+  /* manual banner */
+  .mbanner{display:flex;align-items:center;gap:11px;background:var(--warning-soft);border:1px solid var(--warning-line);border-radius:11px;padding:12px 16px;margin-bottom:14px;}
+  .mbanner .mi{font-size:16px;}
+  .mbanner .mt{flex:1;font-size:13px;color:#9a6308;}
+  .mbanner .mt b{color:#7a4f06;}
+  .mbanner .reason{font-size:12px;color:#9a6308;margin-top:2px;}
+
+  /* done banner */
+  .donebanner{display:flex;align-items:center;gap:11px;background:var(--success-soft);border:1px solid #bfead9;border-radius:11px;padding:13px 16px;margin-bottom:14px;}
+  .donebanner .di{font-size:16px;}
+  .donebanner .dt{flex:1;font-size:13.5px;color:var(--success-deep);font-weight:600;}
+  .donebanner .ds{font-size:12px;color:var(--text-2);font-weight:400;margin-top:2px;}
+
+  /* strategy radios */
+  .strat-wrap{margin-bottom:14px;}
+  .strat-lab{font-size:12px;color:var(--muted);font-weight:500;margin-bottom:8px;}
+  .strat{display:flex;flex-wrap:wrap;gap:12px;}
+  .opt{flex:1;min-width:230px;border:1.5px solid var(--line);border-radius:10px;padding:13px 15px;cursor:pointer;transition:.15s;background:#fcfdff;}
+  .opt:hover{border-color:#c5cffb;}
+  .opt.on{border-color:var(--primary);background:var(--primary-soft);}
+  .opt .ot{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;}
+  .opt .rad{width:16px;height:16px;border-radius:50%;border:2px solid var(--placeholder);flex:none;position:relative;}
+  .opt.on .rad{border-color:var(--primary);}
+  .opt.on .rad::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--primary);}
+  .opt .od{margin-top:6px;font-size:12px;color:var(--muted);line-height:1.5;padding-left:24px;}
+
+  /* ── table ── */
+  .tbl-cap{font-size:12px;color:var(--muted);margin:0 2px 8px;display:flex;align-items:center;gap:6px;}
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:1080px;}
+  thead th{background:#f7f8fb;color:var(--muted);font-weight:600;text-align:left;padding:11px 14px;white-space:nowrap;border-bottom:1px solid var(--line);font-size:12px;}
+  tbody td{padding:11px 14px;border-bottom:1px solid var(--line-2);color:var(--text-2);white-space:nowrap;vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#fafbff;}
+  tbody tr.win{background:#f4fbf8;}
+  tbody tr.win:hover{background:#eef9f4;}
+  .mono{font-variant-numeric:tabular-nums;color:var(--text);}
+  .chk{width:18px;height:18px;accent-color:var(--success);cursor:pointer;}
+  .chk:disabled{cursor:not-allowed;opacity:.5;}
+  .wsh{width:84px;height:30px;border:1px solid var(--line);border-radius:7px;padding:0 9px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums;outline:none;background:#fff;}
+  .wsh:focus{border-color:var(--success);}
+  .wsh:disabled{background:#f5f6f8;color:var(--text-2);cursor:default;border-color:var(--line-2);}
+  .wsh.err{border-color:var(--danger);background:var(--danger-soft);}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px;}
+  .badge::before{content:"";width:6px;height:6px;border-radius:50%;}
+  .badge.frozen{color:var(--warning);background:var(--warning-soft);}
+  .badge.frozen::before{background:var(--warning);}
+  .badge.win{color:var(--success);background:var(--success-soft);}
+  .badge.win::before{background:var(--success);}
+  .badge.miss{color:var(--muted);background:#f0f2f5;}
+  .badge.miss::before{background:var(--muted);}
+  .badge.pre{color:var(--primary);background:var(--primary-soft);}
+  .badge.pre::before{background:var(--primary);}
+
+  /* ── summary bar ── */
+  .sum{display:flex;flex-wrap:wrap;gap:14px;margin:16px 0;}
+  .sum .cell{flex:1;min-width:150px;border:1px solid var(--line);border-radius:10px;padding:13px 16px;background:#fcfdff;}
+  .sum .cell .k{font-size:12px;color:var(--muted);}
+  .sum .cell .v{margin-top:5px;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .sum .cell.hl{background:var(--success-soft);border-color:#bfead9;}
+  .sum .cell.hl .v{color:var(--success-deep);}
+  .sum .cell.warn{background:var(--warning-soft);border-color:var(--warning-line);}
+  .sum .cell.warn .v{color:var(--warning);}
+
+  /* ── buttons ── */
+  .btn{height:38px;padding:0 20px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--text-2);display:inline-flex;align-items:center;gap:7px;transition:.15s;}
+  .btn:hover{border-color:#cdd3e0;}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .btn.primary:hover{background:var(--primary-deep);}
+  .btn.success{background:var(--success);border-color:var(--success);color:#fff;}
+  .btn.success:hover{background:var(--success-deep);}
+  .btn.success:disabled{background:#a9ddca;border-color:#a9ddca;cursor:not-allowed;}
+  .btn.warn{background:#fff;border-color:var(--warning-line);color:var(--warning);}
+  .btn.warn:hover{background:var(--warning-soft);}
+  .btn.sm{height:30px;padding:0 13px;font-size:12px;border-radius:7px;}
+  .btn.linky{border:none;background:none;color:var(--text-2);padding:0 6px;text-decoration:underline;text-underline-offset:3px;}
+  .footacts{display:flex;align-items:center;gap:12px;margin-top:6px;}
+  .footacts .vmsg{font-size:13px;color:var(--danger);display:none;}
+  .footacts .vmsg.show{display:block;}
+
+  .hidden{display:none !important;}
+
+  /* ── advanced (collapsible) ── */
+  .adv{margin-top:26px;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .adv-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;background:#fffaf2;}
+  .adv-hd .t{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--warning);font-size:14px;}
+  .adv-hd .car{transition:.2s;color:var(--muted);}
+  .adv.open .adv-hd .car{transform:rotate(180deg);}
+  .adv-bd{display:none;padding:16px 18px;border-top:1px solid var(--line-2);}
+  .adv.open .adv-bd{display:block;}
+  .adv-bd .arow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--line-2);}
+  .adv-bd .arow:last-child{border:none;}
+  .adv-bd .arow .ad{font-size:13px;color:var(--text-2);}
+  .adv-bd .arow .ad b{color:var(--text);}
+
+  /* ── modal ── */
+  .mask{position:fixed;inset:0;background:rgba(20,24,40,.45);opacity:0;pointer-events:none;transition:.2s;z-index:50;}
+  .mask.show{opacity:1;pointer-events:auto;}
+  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-48%) scale(.98);width:520px;max-width:94vw;background:#fff;border-radius:14px;z-index:51;opacity:0;pointer-events:none;transition:.22s;box-shadow:0 30px 80px rgba(20,24,60,.3);overflow:hidden;}
+  .mask.show .modal{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  .modal .mh{padding:20px 22px 0;font-size:16px;font-weight:600;}
+  .modal .mb{padding:14px 22px 4px;}
+  .modal .warnbox{display:flex;gap:10px;background:var(--warning-soft);border:1px solid var(--warning-line);border-radius:10px;padding:12px 14px;font-size:13px;color:#a86a08;line-height:1.55;}
+  .field{margin:14px 0 4px;}
+  .field .fl{font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .field select,.field input{width:100%;height:36px;border:1px solid var(--line);border-radius:8px;padding:0 11px;font-size:13px;outline:none;background:#fbfcfe;}
+  .field select:focus,.field input:focus{border-color:var(--primary);background:#fff;}
+  .conf-list{margin:16px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .conf-list .cl{display:flex;justify-content:space-between;padding:10px 14px;font-size:13px;border-bottom:1px solid var(--line-2);}
+  .conf-list .cl:last-child{border:none;}
+  .conf-list .cl .v{font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;}
+  .conf-list .cl .v.g{color:var(--success-deep);}
+  .ack{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text-2);margin:14px 2px 4px;cursor:pointer;}
+  .modal .mf{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px 20px;}
+
+  .toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%) translateY(20px);background:#1f2329;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:80;display:flex;align-items:center;gap:8px;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="hd">
+    <h1>私募运营 — 测试走查</h1>
+    <button class="x">×</button>
+  </div>
+
+  <div class="body">
+    <!-- stepper -->
+    <div class="stepper" id="stepper">
+      <div class="step done"><div class="bar"></div><div class="dot">✓</div><div class="nm">预热</div><div class="tm">2026/6/30 00:00:00</div></div>
+      <div class="step done"><div class="bar"></div><div class="dot">✓</div><div class="nm">募资</div><div class="tm">2026/6/30 03:00:00</div></div>
+      <div class="step cur"><div class="bar"></div><div class="dot">3</div><div class="nm">开奖</div><div class="tm">2026/7/2 00:00:00</div></div>
+      <div class="step"><div class="bar"></div><div class="dot">4</div><div class="nm">发放</div><div class="tm">2026/7/3 00:00:00</div></div>
+      <div class="step"><div class="dot">5</div><div class="nm">解锁</div><div class="tm">2026/7/4 00:00:00</div></div>
+    </div>
+
+    <div class="info blue"><span class="i">i</span><span>下一步：距「开奖」还有 <b>1 天 13 小时</b>（2026/7/2 00:00:00）</span></div>
+    <div class="meta">私募 IEO <b>#112</b> · 当前阶段 开奖 · 已募 <b>13,000 USDT</b> · 申购 <b>4 笔</b>（待开奖 <b id="pendingCount">4</b> 笔）</div>
+
+    <!-- ════════ 开奖 ════════ -->
+    <div class="sec">
+      <div class="sec-hd">开奖<span class="tag auto" id="modeTag">自动开奖</span></div>
+
+      <!-- 发行参数（只读，立项时已配置） -->
+      <div class="params">
+        <div class="p"><div class="k">募集上限 <span class="lock">🔒</span></div><div class="v">20 <small>份</small></div></div>
+        <div class="p"><div class="k">单份价格 <span class="lock">🔒</span></div><div class="v">1,000 <small>USDT</small></div></div>
+        <div class="p"><div class="k">每份发放代币 <span class="lock">🔒</span></div><div class="v">500 <small>XYZ</small></div></div>
+        <div class="p"><div class="k">已募 / 上限</div><div class="v">13 / 20 <small>份（未超募）</small></div></div>
+      </div>
+
+      <!-- MODE A: 自动（默认） -->
+      <div id="autoPane">
+        <div class="modecard auto">
+          <div class="mc-hd">
+            <div class="mc-ico">⚙️</div>
+            <div>
+              <div class="mc-t">本期采用「自动开奖」，将于 <span class="when">2026/7/2 00:00:00</span> 由系统自动执行</div>
+              <div class="mc-s">无需人工操作。系统到点后按下方规则自动开奖、计算返还，并自动进入「发放」阶段。</div>
+            </div>
+          </div>
+          <div class="mc-rule">
+            自动规则：当前已募 <b>13 份</b> ≤ 募集上限 <b>20 份</b> → <span class="hit">未超募，全部中签（无返还）</span><br>
+            <span style="color:var(--muted)">（若超募，则按募集上限随机抽签，超出部分原路返还）</span>
+          </div>
+          <div class="mc-foot">
+            <button class="btn warn" id="btnToManual">转手动开奖</button>
+            <span class="note">仅在自动任务异常、需运营介入或剔除异常单时使用。切换需记录原因，操作可审计。</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODE B: 手动 -->
+      <div id="manualPane" class="hidden">
+        <div class="mbanner" id="manualBanner">
+          <span class="mi">⚠️</span>
+          <div class="mt">
+            <b>已切换为「手动开奖」</b>，自动开奖已暂停。请核对名单后手动确认开奖。
+          </div>
+          <button class="btn sm linky" id="btnBackAuto">切回自动</button>
+        </div>
+
+        <div class="strat-wrap">
+          <div class="strat-lab">中签策略</div>
+          <div class="strat" id="strat">
+            <label class="opt on" data-mode="manual">
+              <div class="ot"><span class="rad"></span>逐单指定</div>
+              <div class="od">逐单勾选中签并填写中签份数，未中签份额自动计算返还。</div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 已开奖结果横幅 -->
+      <div class="donebanner hidden" id="doneBanner">
+        <span class="di">💾</span>
+        <div class="dt">手动中签配置已保存<div class="ds" id="doneSub"></div></div>
+      </div>
+
+      <!-- 申购名单（自动=预览只读；手动=可编辑；已开奖=结果） -->
+      <div class="tbl-cap" id="tblCap"><span>📋 申购名单 · 以下为<b style="color:var(--text-2)">&nbsp;自动开奖预览&nbsp;</b>，最终以系统到点执行结果为准</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:42px;"><input type="checkbox" class="chk" id="chkAll" checked disabled></th>
+              <th>用户ID</th><th>申购份数</th><th>金额</th>
+              <th>中签份数</th><th>返还（USDT）</th><th>发放代币（XYZ）</th>
+              <th>状态</th><th>申购单号</th><th>时间</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <!-- summary -->
+      <div class="sum">
+        <div class="cell"><div class="k"><span id="kWinners">预计中签人数</span></div><div class="v mono" id="sWinners">0</div></div>
+        <div class="cell"><div class="k">中签总份数</div><div class="v mono" id="sWinShares">0 / 20</div></div>
+        <div class="cell hl"><div class="k">应发代币（XYZ）</div><div class="v mono" id="sTokens">0</div></div>
+        <div class="cell warn"><div class="k">应返还（USDT）</div><div class="v mono" id="sRefund">0</div></div>
+      </div>
+
+      <!-- 手动模式操作 -->
+      <div class="footacts hidden" id="manualActs">
+        <button class="btn success" id="btnDraw">保存配置</button>
+        <button class="btn" id="btnReset">重置为系统预填</button>
+        <button class="btn primary hidden" id="btnReedit">重新编辑</button>
+        <span class="vmsg" id="vmsg"></span>
+      </div>
+    </div>
+
+    <!-- advanced -->
+    <div class="adv" id="adv">
+      <div class="adv-hd" id="advHd">
+        <div class="t">⚠ 高级操作：提前发放 / 提前解锁（通常系统到点自动，仅特殊情况手动）</div>
+        <div class="car">▾</div>
+      </div>
+      <div class="adv-bd">
+        <div class="arow">
+          <div class="ad"><b>提前发放</b> — 跳过等待，立即将中签代币发放至用户现货账户（不可撤销）</div>
+          <button class="btn sm" id="btnEarlyRelease" disabled>需先完成开奖</button>
+        </div>
+        <div class="arow">
+          <div class="ad"><b>提前解锁</b> — 提前结束锁仓，允许用户交易/提现已发放代币（不可撤销）</div>
+          <button class="btn sm" disabled>需先完成发放</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- release section -->
+    <div class="sec">
+      <div class="sec-hd">中签代币发放（Release）</div>
+      <div class="info gray" id="releaseInfo"><span class="i">i</span><span>开奖完成后，此处展示各中签单的代币发放进度。当前未开奖，暂无可发放记录。</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 保存配置 modal -->
+<div class="mask" id="maskDraw">
+  <div class="modal">
+    <div class="mh">保存中签配置？</div>
+    <div class="mb">
+      <div class="warnbox">💡 保存后，系统将于开奖时间 <b>2026/7/2 00:00:00</b> 按此名单到点执行开奖。开奖前可随时「重新编辑」修改。</div>
+      <div class="conf-list">
+        <div class="cl"><span>中签策略</span><span class="v" id="cWay">逐单指定</span></div>
+        <div class="cl"><span>中签人数</span><span class="v" id="cWinners">0</span></div>
+        <div class="cl"><span>中签总份数</span><span class="v" id="cShares">0</span></div>
+        <div class="cl"><span>应发代币</span><span class="v g" id="cTokens">0 XYZ</span></div>
+        <div class="cl"><span>应返还</span><span class="v" id="cRefund">0 USDT</span></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn" id="dCancel">取消</button>
+      <button class="btn success" id="dOk">确认保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── 发行参数（立项时已定，只读）──
+  const CAP = 20, PRICE = 1000, PER_TOKEN = 500;
+  // ── mock 申购名单（与截图一致：用户 1000260，4 笔）──
+  const orders = [
+    { id:'1000260', shares:10, no:'lp-112-1782786896844-771973', t:'2026/6/30 10:35:12' },
+    { id:'1000260', shares:1,  no:'lp-112-1782786888094-207947', t:'2026/6/30 10:34:49' },
+    { id:'1000260', shares:1,  no:'lp-112-1782786880032-960183', t:'2026/6/30 10:34:42' },
+    { id:'1000260', shares:1,  no:'lp-112-1782786856014-435062', t:'2026/6/30 10:34:31' },
+  ];
+  const totalShares = orders.reduce((s,o)=>s+o.shares,0);
+  const oversub = totalShares > CAP;
+
+  let view = 'auto';   // 'auto' | 'manual' | 'done'
+  let strat = 'all';   // manual strategy
+
+  const $ = s => document.querySelector(s);
+  const fmt = n => n.toLocaleString('en-US');
+
+  /* build rows */
+  function renderRows(){
+    const tb = $('#rows'); tb.innerHTML='';
+    orders.forEach((o,i)=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="checkbox" class="chk rowchk" data-i="${i}" disabled></td>
+        <td class="mono">${o.id}</td>
+        <td class="mono">${o.shares}</td>
+        <td class="mono">${fmt(o.shares*PRICE)}</td>
+        <td><input class="wsh" data-i="${i}" type="text" value="0" disabled></td>
+        <td class="mono refund" data-i="${i}">0</td>
+        <td class="mono tok" data-i="${i}">0</td>
+        <td><span class="badge pre st" data-i="${i}">预计中签</span></td>
+        <td class="mono" style="color:var(--muted)">${o.no}</td>
+        <td class="mono" style="color:var(--muted)">${o.t}</td>`;
+      tb.appendChild(tr);
+    });
+    document.querySelectorAll('.rowchk').forEach(c=>c.addEventListener('change',e=>{
+      const i=+e.target.dataset.i, inp=document.querySelector(`.wsh[data-i="${i}"]`);
+      if(strat==='manual'){ inp.value = e.target.checked ? orders[i].shares : 0; }
+      recompute();
+    }));
+    document.querySelectorAll('.wsh').forEach(inp=>inp.addEventListener('input',e=>{
+      const i=+e.target.dataset.i, v=Number(e.target.value)||0;
+      document.querySelector(`.rowchk[data-i="${i}"]`).checked = v>0;
+      recompute();
+    }));
+  }
+
+  /* fill 中签份数 by rule */
+  function fillShares(mode){
+    let remaining = CAP;
+    orders.forEach((o,i)=>{
+      const inp=document.querySelector(`.wsh[data-i="${i}"]`);
+      const chk=document.querySelector(`.rowchk[data-i="${i}"]`);
+      if(mode==='cap'){ const g=Math.max(0,Math.min(o.shares,remaining)); remaining-=g; inp.value=g; chk.checked=g>0; }
+      else { inp.value=o.shares; chk.checked=true; }   // all / manual：默认全额预填，可逐单下调
+    });
+  }
+
+  /* recompute summary + statuses */
+  function recompute(){
+    let winners=new Set(), winShares=0, tokens=0, refund=0, hasErr=false;
+    orders.forEach((o,i)=>{
+      const inp=document.querySelector(`.wsh[data-i="${i}"]`);
+      let w=Number(inp.value)||0;
+      const err = w<0 || w>o.shares;
+      inp.classList.toggle('err',err); if(err) hasErr=true;
+      w=Math.max(0,Math.min(o.shares,w));
+      const miss=o.shares-w;
+      document.querySelector(`.refund[data-i="${i}"]`).textContent=fmt(miss*PRICE);
+      document.querySelector(`.tok[data-i="${i}"]`).textContent=fmt(w*PER_TOKEN);
+      const st=document.querySelector(`.st[data-i="${i}"]`);
+      const tr=inp.closest('tr');
+      if(view==='saved'){ st.className=`badge st ${w>0?'pre':'miss'}`; st.textContent=w>0?'拟中签':'拟返还'; }
+      else if(view==='manual'){ st.className='badge frozen st'; st.textContent='冻结中'; }
+      else { st.className='badge pre st'; st.textContent= w>0?'预计中签':'预计不中'; }
+      tr.classList.toggle('win', w>0);
+      if(w>0){ winners.add(o.id); winShares+=w; tokens+=w*PER_TOKEN; }
+      refund+=miss*PRICE;
+    });
+    $('#sWinners').textContent=winners.size;
+    $('#sWinShares').textContent=`${winShares} / ${CAP}`;
+    $('#sWinShares').parentElement.classList.toggle('warn', winShares>CAP);
+    $('#sTokens').textContent=fmt(tokens);
+    $('#sRefund').textContent=fmt(refund);
+
+    if(view==='manual'){
+      const overCap = winShares>CAP, vmsg=$('#vmsg');
+      if(hasErr){ vmsg.textContent='中签份数不能超过申购份数'; vmsg.className='vmsg show'; }
+      else if(overCap){ vmsg.textContent=`中签总份数 ${winShares} 超过募集上限 ${CAP}`; vmsg.className='vmsg show'; }
+      else if(winShares===0){ vmsg.textContent='请至少配置 1 份中签'; vmsg.className='vmsg show'; }
+      else { vmsg.className='vmsg'; }
+      $('#btnDraw').disabled = hasErr || overCap || winShares===0;
+    }
+    return {winners:winners.size, winShares, tokens, refund};
+  }
+
+  /* switch view */
+  function setView(v){
+    view=v;
+    const editable = (v==='manual');
+    $('#autoPane').classList.toggle('hidden', v!=='auto');
+    $('#manualPane').classList.toggle('hidden', v==='auto');           // manual & saved 都显示策略+名单
+    $('#manualBanner').classList.toggle('hidden', v!=='manual');       // 橙色提示仅手动编辑态
+    $('#doneBanner').classList.toggle('hidden', v!=='saved');          // 绿色已保存横幅
+    $('#manualActs').classList.toggle('hidden', v==='auto');
+    $('#btnDraw').classList.toggle('hidden', v!=='manual');
+    $('#btnReset').classList.toggle('hidden', v!=='manual');
+    $('#btnReedit').classList.toggle('hidden', v!=='saved');
+    $('#strat').closest('.strat-wrap').classList.toggle('hidden', v==='auto');
+    // tag
+    const tag=$('#modeTag');
+    if(v==='auto'){ tag.textContent='自动开奖'; tag.className='tag auto'; }
+    else if(v==='manual'){ tag.textContent='手动开奖'; tag.className='tag manual'; }
+    else { tag.textContent='手动 · 已保存'; tag.className='tag manual'; }
+    // table caption
+    const cap=$('#tblCap');
+    if(v==='auto') cap.innerHTML='<span>📋 申购名单 · 以下为<b style="color:var(--text-2)">&nbsp;自动开奖预览&nbsp;</b>，最终以系统到点执行结果为准</span>';
+    else if(v==='manual') cap.innerHTML='<span>📋 申购名单 · <b style="color:var(--warning)">手动配置中签份数</b>（中签份数 ≤ 申购份数）</span>';
+    else cap.innerHTML='<span>📋 申购名单 · <b style="color:var(--success-deep)">中签配置已保存</b>，将于开奖时间到点执行</span>';
+    // summary label
+    $('#kWinners').textContent = (v==='auto')?'预计中签人数':'中签人数';
+    // editability
+    document.querySelectorAll('.wsh,.rowchk').forEach(el=>el.disabled=!editable);
+    $('#chkAll').disabled=!editable;
+    recompute();
+  }
+
+  /* ── 转手动（直接切换，无需理由）── */
+  $('#btnToManual').addEventListener('click',()=>{
+    strat = 'manual';   // 手动模式仅「逐单指定」
+    setView('manual'); fillShares('manual'); recompute();
+    toast('已切换为手动开奖');
+  });
+
+  /* 切回自动 */
+  $('#btnBackAuto').addEventListener('click',()=>{ strat='all'; setView('auto'); fillShares('all'); recompute(); toast('已恢复自动开奖'); });
+
+  /* strategy switch (manual) */
+  $('#strat').addEventListener('click',e=>{
+    const opt=e.target.closest('.opt'); if(!opt||view!=='manual') return;
+    document.querySelectorAll('.opt').forEach(o=>o.classList.remove('on'));
+    opt.classList.add('on'); strat=opt.dataset.mode; fillShares(strat); recompute();
+  });
+  $('#chkAll').addEventListener('change',e=>{
+    if(view!=='manual') return;
+    document.querySelectorAll('.rowchk').forEach((c,i)=>{ c.checked=e.target.checked; const inp=document.querySelector(`.wsh[data-i="${i}"]`); if(strat==='manual') inp.value=e.target.checked?orders[i].shares:0; });
+    recompute();
+  });
+  $('#btnReset').addEventListener('click',()=>{ fillShares(strat); recompute(); });
+
+  /* 保存配置 modal */
+  $('#btnDraw').addEventListener('click',()=>{
+    const r=recompute();
+    $('#cWay').textContent='逐单指定';
+    $('#cWinners').textContent=`${r.winners} 人`;
+    $('#cShares').textContent=`${r.winShares} 份`;
+    $('#cTokens').textContent=`${fmt(r.tokens)} XYZ`;
+    $('#cRefund').textContent=`${fmt(r.refund)} USDT`;
+    $('#maskDraw').classList.add('show');
+  });
+  $('#dCancel').addEventListener('click',()=>$('#maskDraw').classList.remove('show'));
+  $('#maskDraw').addEventListener('click',e=>{ if(e.target.id==='maskDraw') $('#maskDraw').classList.remove('show'); });
+  $('#dOk').addEventListener('click',()=>{
+    const r=recompute();
+    $('#maskDraw').classList.remove('show');
+    setView('saved');   // 保存配置：锁定名单，等待到点开奖（不推进步骤、不立即发放）
+    $('#doneSub').textContent=`逐单指定 · 拟中签 ${r.winners} 人 / ${r.winShares} 份 · 应发 ${fmt(r.tokens)} XYZ · 返还 ${fmt(r.refund)} USDT · 将于 2026/7/2 00:00:00 到点开奖`;
+    toast('✓ 中签配置已保存');
+  });
+
+  /* 重新编辑（保存后回到可编辑态，保留已填值）*/
+  $('#btnReedit').addEventListener('click',()=>{ setView('manual'); });
+
+  /* advanced collapse */
+  $('#advHd').addEventListener('click',()=>$('#adv').classList.toggle('open'));
+  function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
+
+  /* init: auto preview */
+  renderRows();
+  fillShares(oversub ? 'cap' : 'all');   // auto rule preview
+  setView('auto');
+</script>
+</body>
+</html>
