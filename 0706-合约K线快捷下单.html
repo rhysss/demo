@@ -57,14 +57,6 @@
   #qpPrice{font-size:11px;font-weight:700;color:#fff}
   #qpPct{font-size:9px}
 
-  /* 成交印记均价卡片 */
-  #fillTip{position:absolute;z-index:35;display:none;background:rgba(21,26,33,.97);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:10px;box-shadow:0 4px 16px rgba(0,0,0,.6);pointer-events:none;white-space:nowrap}
-  #fillTip .ft-t{color:var(--sub);margin-bottom:5px;font-size:9px}
-  #fillTip .ft-r{display:flex;align-items:center;gap:5px;margin:3px 0;color:var(--txt)}
-  #fillTip .ft-r i{width:6px;height:6px;border-radius:50%;flex:none}
-  #fillTip .ft-r b{font-weight:700;font-size:11px}
-  #fillTip .ft-r span{color:var(--sub)}
-
   /* 底部做多/做空栏 */
   .bbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:400px;max-width:100vw;background:rgba(11,14,17,.96);backdrop-filter:blur(6px);border-top:1px solid var(--border);padding:8px 12px calc(10px + env(safe-area-inset-bottom));z-index:50}
   .lsbar{display:flex;align-items:center;gap:8px;font-size:10px;margin-bottom:8px}
@@ -270,8 +262,6 @@
       <span class="qp-info"><span class="num" id="qpPrice">--</span><span class="num" id="qpPct">--</span></span>
     </div>
 
-    <!-- 成交印记均价卡片（点击带B/S标记的蜡烛显示） -->
-    <div id="fillTip"></div>
   </div>
 
   <!-- 底部列表 -->
@@ -484,18 +474,24 @@ function render(){
     if(P.sl) drawHLine(P.sl,'#f6465d',fmtP(P.sl),false,[6,3]);
   }
   if(S.show.ord) S.orders.forEach(o=>drawHLine(o.price, o.side>0?'#0ecb81':'#f6465d', fmtP(o.price), false,[1,3]));
-  /* 成交标记 */
-  if(S.show.marks) S.fills.forEach(f=>{
-    if(f.ci<start||f.ci>=start+count)return;
-    const fx=x(f.ci); ctx.font='bold 8px -apple-system';ctx.textBaseline='alphabetic';
-    if(f.side>0){
-      const fy=y(candles[f.ci].l)+14;
-      ctx.fillStyle='#0ecb81';tri(fx,fy,-1);ctx.fillText('B',fx-2.5,fy+16);
-    }else{
-      const fy=y(candles[f.ci].h)-14;
-      ctx.fillStyle='#f6465d';tri(fx,fy,1);ctx.fillText('S',fx-2.5,fy-9);
-    }
-  });
+  /* 成交标记：同根K线同方向多笔成交合并为一个印记（B/S 各至多一个），均价点击印记查看 */
+  if(S.show.marks){
+    const seen=new Set();
+    S.fills.forEach(f=>{
+      if(f.ci<start||f.ci>=start+count)return;
+      const key=f.ci+'_'+f.side;
+      if(seen.has(key))return;
+      seen.add(key);
+      const fx=x(f.ci); ctx.font='bold 8px -apple-system';ctx.textBaseline='alphabetic';
+      if(f.side>0){
+        const fy=y(candles[f.ci].l)+14;
+        ctx.fillStyle='#0ecb81';tri(fx,fy,-1);ctx.fillText('B',fx-2.5,fy+16);
+      }else{
+        const fy=y(candles[f.ci].h)-14;
+        ctx.fillStyle='#f6465d';tri(fx,fy,1);ctx.fillText('S',fx-2.5,fy-9);
+      }
+    });
+  }
   ctx.textBaseline='middle';
   function tri(tx,ty,dir){ctx.beginPath();ctx.moveTo(tx,ty-5*dir);ctx.lineTo(tx-4,ty+3*dir);ctx.lineTo(tx+4,ty+3*dir);ctx.fill();}
   /* 十字光标 */
@@ -506,11 +502,27 @@ function render(){
     ctx.fillStyle='#2a3139';ctx.fillRect(W-PAD_R,cy-8,PAD_R,16);
     ctx.fillStyle='#eaecef';ctx.fillText(fmtP(geo.yInv(cy)),W-PAD_R+6,cy);
     const ci=start+Math.round((cx-cw/2)/cw), k=candles[ci];
-    $('legend').innerHTML=k?`开 <b>${fmtP(k.o)}</b> 高 <b>${fmtP(k.h)}</b> 低 <b>${fmtP(k.l)}</b> 收 <b class="num">${fmtP(k.c)}</b><br>MA(7) <b style="color:#f0b90b">${fmtP(ma(ci,7))}</b>　MA(25) <b style="color:#b385f6">${fmtP(ma(ci,25))}</b>`:'';
+    $('legend').innerHTML=k?`开 <b>${fmtP(k.o)}</b> 高 <b>${fmtP(k.h)}</b> 低 <b>${fmtP(k.l)}</b> 收 <b class="num">${fmtP(k.c)}</b><br>MA(7) <b style="color:#f0b90b">${fmtP(ma(ci,7))}</b>　MA(25) <b style="color:#b385f6">${fmtP(ma(ci,25))}</b>${fillRows(ci)}`:'';
   }else{
     $('legend').innerHTML=`MA(7) <b style="color:#f0b90b">${fmtP(ma(candles.length-1,7))}</b>　MA(25) <b style="color:#b385f6">${fmtP(ma(candles.length-1,25))}</b>`;
   }
   function ma(i,n){let s=0,c2=0;for(let j=Math.max(0,i-n+1);j<=i;j++){s+=candles[j].c;c2++}return s/c2}
+  /* 该根K线的买卖均价行（数量加权，展示在OHLC信息面板内） */
+  function fillRows(ci){
+    if(!S.show.marks)return '';
+    const fs=S.fills.filter(f=>f.ci===ci);
+    if(!fs.length)return '';
+    const agg=side=>{
+      const a=fs.filter(f=>f.side===side);
+      if(!a.length)return null;
+      const qty=a.reduce((s2,f)=>s2+(f.size||0),0);
+      return {qty,avg:qty>0?a.reduce((s2,f)=>s2+f.price*(f.size||0),0)/qty:a[0].price};
+    };
+    const b=agg(1),s=agg(-1);let h='';
+    if(b)h+=`<br><b class="num" style="color:var(--green)">买${fmtQ(b.qty)}@${fmtP(b.avg)} ›</b>`;
+    if(s)h+=`<br><b class="num" style="color:var(--red)">卖${fmtQ(s.qty)}@${fmtP(s.avg)} ›</b>`;
+    return h;
+  }
   function drawHLine(p,col,label,chipBg,dash){
     const py=y(p); if(py<PAD_T-1||py>priceB+1)return;
     ctx.strokeStyle=col;ctx.lineWidth=1;ctx.setLineDash(dash||[5,3]);
@@ -607,7 +619,6 @@ ovl.addEventListener('pointerup',()=>{
 /* =============== 图表手势：拖动平移 / 点按 =============== */
 let pd=null;
 cvs.addEventListener('pointerdown',e=>{
-  $('fillTip').style.display='none';
   pd={x:e.clientX,y:e.clientY,off:view.offset,t:Date.now(),moved:false,long:false};
   /* 长按 400ms 唤起十字光标（快捷下单占用了单击） */
   pd.lp=setTimeout(()=>{
@@ -633,10 +644,13 @@ cvs.addEventListener('pointerup',e=>{
   const rect=cvs.getBoundingClientRect(), cx=e.clientX-rect.left, cy=e.clientY-rect.top;
   if(cx>geo.W-PAD_R)return;
   if(S.crosshair){S.crosshair=null;render();return}
-  /* 点击带 B/S 印记的蜡烛：显示该根买卖均价 */
+  /* 点击带 B/S 印记的蜡烛：十字光标吸附该蜡烛，OHLC面板内显示买卖均价 */
   if(S.show.marks){
     const ci=geo.start+Math.round((cx-cw/2)/cw);
-    if(ci>=0&&ci<candles.length&&showFillTip(ci,cx))return;
+    if(ci>=0&&ci<candles.length&&S.fills.some(f=>f.ci===ci)){
+      S.crosshair={cx:geo.x(ci),cy:geo.y(candles[ci].c)};
+      render();return;
+    }
   }
   if(S.show.quick){
     /* 点击K线图：在点击价位出现 + 号标签；点在已有标签价位附近则收起 */
@@ -647,33 +661,6 @@ cvs.addEventListener('pointerup',e=>{
   S.crosshair={cx,cy};
   render();
 });
-
-/* =============== 成交印记均价卡片 =============== */
-function showFillTip(ci,cx){
-  const fs=S.fills.filter(f=>f.ci===ci);
-  if(!fs.length)return false;
-  const agg=side=>{
-    const a=fs.filter(f=>f.side===side);
-    if(!a.length)return null;
-    const qty=a.reduce((s,f)=>s+(f.size||0),0);
-    const avg=qty>0?a.reduce((s,f)=>s+f.price*(f.size||0),0)/qty:a[0].price;
-    return {avg,qty,n:a.length};
-  };
-  const b=agg(1), s=agg(-1);
-  const d=new Date(candles[ci].t);
-  const tm=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  let h=`<div class="ft-t">${tm} 本根K线成交</div>`;
-  if(b)h+=`<div class="ft-r"><i style="background:var(--green)"></i>买入均价 <b class="num">${fmtP(b.avg)}</b><span class="num">· ${fmtQ(b.qty)} BTC / ${b.n}笔</span></div>`;
-  if(s)h+=`<div class="ft-r"><i style="background:var(--red)"></i>卖出均价 <b class="num">${fmtP(s.avg)}</b><span class="num">· ${fmtQ(s.qty)} BTC / ${s.n}笔</span></div>`;
-  const el=$('fillTip');
-  el.innerHTML=h; el.style.display='block';
-  el.style.left=Math.max(4,Math.min(cx-el.offsetWidth/2,geo.W-PAD_R-el.offsetWidth-4))+'px';
-  let ty=geo.y(candles[ci].h)-30-el.offsetHeight;       /* 优先显示在蜡烛上方 */
-  if(ty<6)ty=Math.min(geo.y(candles[ci].l)+30,geo.priceB-el.offsetHeight-6);
-  el.style.top=ty+'px';
-  clearTimeout(el._t); el._t=setTimeout(()=>el.style.display='none',4000);
-  return true;
-}
 
 /* =============== 快捷下单：+ 号标签拖动 / 点击 =============== */
 const pill=$('quickPill');
