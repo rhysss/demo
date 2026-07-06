@@ -79,9 +79,46 @@
   .cchip.on::before{content:'';position:absolute;top:0;right:0;border-style:solid;border-width:0 26px 26px 0;border-color:transparent #dfe3ea transparent transparent}
   .cchip.on::after{content:'✓';position:absolute;top:0;right:3px;font-size:10px;color:#0b0e11;font-weight:700}
 
-  /* 快捷下单弹窗内步进器 */
-  .inp-line .stp{width:30px;height:30px;border:none;background:var(--panel2);color:var(--sub);border-radius:6px;font-size:15px;cursor:pointer;flex:none;margin:5px 0}
-  .inp-line .lastp{color:var(--yellow);cursor:pointer;margin-left:8px;flex:none}
+  /* 快捷下单弹窗（币安式开/平仓面板） */
+  .qo-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+  .qo-sym{font-size:17px;font-weight:800;display:flex;align-items:center;gap:6px}
+  .qo-px{font-size:13px;font-weight:600;margin-top:3px}
+  .qo-px small{font-weight:500;font-size:11px;margin-left:2px}
+  .qo-chips{display:flex;gap:6px}
+  .mini-chip{font-size:11px;border:1px solid var(--border);border-radius:7px;padding:5px 10px;color:var(--txt);cursor:pointer;background:var(--panel2)}
+  .qo-tabs{display:flex;background:var(--bg);border-radius:9px;padding:3px;margin-bottom:12px}
+  .qo-tabs span{flex:1;text-align:center;font-size:13px;color:var(--sub);padding:8px 0;border-radius:7px;cursor:pointer}
+  .qo-tabs span.on{background:var(--panel2);color:var(--txt);font-weight:700}
+  .qo-row{display:flex;gap:8px;margin-bottom:10px}
+  .qo-inp{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+  .qo-inp.dis{opacity:.55}
+  .qo-lbl{font-size:10px;color:var(--sub)}
+  .qo-val{display:flex;align-items:center;gap:8px}
+  .qo-val input{flex:1;width:0;background:none;border:none;outline:none;color:var(--txt);font-size:16px;font-weight:700;padding:2px 0}
+  .qo-val input::placeholder{color:var(--sub2);font-size:13px;font-weight:500}
+  .qo-unit{font-size:12px;color:var(--txt);font-weight:600;flex:none}
+  .qo-mkt{width:86px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--panel2);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--sub);cursor:pointer}
+  .qo-mkt.on{color:var(--yellow);border-color:var(--yellow)}
+  .qo-slide{position:relative;height:30px;margin:10px 2px 8px}
+  .qo-ticks{position:absolute;left:6px;right:6px;top:14px;height:2px;background:#2a3139;display:flex;justify-content:space-between}
+  .qo-ticks i{width:6px;height:6px;background:#3a424d;transform:rotate(45deg);margin-top:-2px}
+  .qo-range{-webkit-appearance:none;appearance:none;position:absolute;inset:0;width:100%;background:transparent;margin:0}
+  .qo-range::-webkit-slider-runnable-track{height:30px;background:transparent}
+  .qo-range::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:#eaecef;transform:rotate(45deg);border-radius:3px;cursor:pointer;margin-top:8.5px;box-shadow:0 0 0 2px #0b0e11}
+  .qo-grid{font-size:12px;margin-bottom:14px}
+  .qg-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+  .qo-grid span{color:var(--txt);border-bottom:1px dashed #3a424d;padding-bottom:1px}
+  .qo-grid b{font-weight:600}
+  .qg-swap{color:var(--yellow);margin-left:4px;font-weight:700}
+  .qg-two{display:flex;justify-content:space-between;padding:5px 0}
+  .qg-two>div{display:flex;justify-content:space-between;width:47%}
+  .qo-btns{display:flex;gap:10px;margin-bottom:10px}
+  .qo-btns button{flex:1;border:none;border-radius:14px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:15px;cursor:pointer}
+  .qo-btns button:active{opacity:.85}
+  .qo-btns b{font-weight:800}
+  .qo-btns small{font-size:11px;opacity:.9}
+  .qo-long{background:var(--green)} .qo-short{background:var(--red)}
+  .qo-link{text-align:center;font-size:12px;color:var(--sub);cursor:pointer;padding:2px 0 4px}
 
   /* 图上标签（持仓/委托/止盈止损/强平） */
   #overlays{position:absolute;inset:0;pointer-events:none;z-index:10;overflow:hidden}
@@ -630,47 +667,116 @@ pill.addEventListener('pointerup',()=>{
   if(openIt)openQuickOrder(S.quickPrice);
 });
 
-/* + 号弹出的下单弹窗 */
+/* + 号弹出的下单弹窗（币安式开/平仓面板） */
 function openQuickOrder(p){
   p=p??last;
+  const up=last>=prevLast, chg='+2.35%';
   openSheet(`
-    <div class="sh-title">快捷下单<span class="sh-x" onclick="closeSheet()">✕</span></div>
-    <div style="font-size:11px;color:var(--sub);margin-bottom:2px">最新价 <b class="num" style="color:var(--txt)">${fmtP(last)}</b> · ${S.marginMode} ${S.lev}x · 可用 <b class="num" style="color:var(--txt)">${fmtU(S.balance)}</b> USDT</div>
-    <div class="inp-line"><span class="lbl">价格</span><button class="stp" id="qoPm">−</button><input id="qoP" class="num" inputmode="decimal" value="${p.toFixed(1)}" style="text-align:center"><button class="stp" id="qoPp">＋</button><span class="u lastp" id="qoLast">最新价</span></div>
-    <div class="hint-pnl num" id="qoDiff"></div>
-    <div class="inp-line"><span class="lbl">数量</span><button class="stp" id="qoQm">−</button><input id="qoQ" class="num" inputmode="decimal" value="${S.qty.toFixed(2)}" style="text-align:center"><button class="stp" id="qoQp">＋</button><span class="u">BTC</span></div>
-    <div class="hint-pnl num" id="qoEst"></div>
-    <div class="risk-tip">高于最新价买入 / 低于最新价卖出将立即按市价成交，否则以限价单挂出（可在图上拖动改价）。</div>
-    <div style="display:flex;gap:10px;margin-top:14px">
-      <button class="btn-main green" style="margin-top:0" id="qoBuy">买入/做多</button>
-      <button class="btn-main red" style="margin-top:0" id="qoSell">卖出/做空</button>
-    </div>`);
+    <div class="qo-head">
+      <div>
+        <div class="qo-sym">BTCUSDT <span class="hd-tag">永续</span></div>
+        <div class="qo-px num ${up?'side-t-b':'side-t-s'}">${fmtP(last)}<small>${chg}</small></div>
+      </div>
+      <div class="qo-chips">
+        <span class="mini-chip" onclick="closeSheet();openLev()">${S.marginMode}</span>
+        <span class="mini-chip" onclick="closeSheet();openLev()">${S.lev}X</span>
+        <span class="mini-chip" onclick="demoEntry()">单</span>
+      </div>
+    </div>
+    <div class="qo-tabs" id="qoTabs"><span class="on" data-t="open">开仓</span><span data-t="close">平仓</span></div>
+    <div class="qo-row">
+      <div class="qo-inp" id="qoPriceBox" style="flex:1">
+        <span class="qo-lbl">价格</span>
+        <div class="qo-val"><input id="qoP" class="num" inputmode="decimal" value="${p.toFixed(1)}"><span class="qo-unit">USDT</span></div>
+      </div>
+      <div class="qo-mkt" id="qoMkt">市价</div>
+    </div>
+    <div class="qo-inp">
+      <div class="qo-val"><input id="qoQ" class="num" inputmode="decimal" placeholder="数量 (BTC)"><span class="qo-unit">BTC ▾</span></div>
+    </div>
+    <div class="qo-slide">
+      <div class="qo-ticks"><i></i><i></i><i></i><i></i><i></i></div>
+      <input type="range" class="qo-range" id="qoR" min="0" max="100" value="0">
+    </div>
+    <div class="qo-grid num">
+      <div class="qg-row"><span>可用</span><b>${fmtU(S.balance)} USDT<i class="qg-swap">⇄</i></b></div>
+      <div class="qg-two">
+        <div><span>可开</span><b id="qgMaxL">--</b></div>
+        <div><span>可开</span><b id="qgMaxS">--</b></div>
+      </div>
+      <div class="qg-two">
+        <div><span>保证金</span><b id="qgMgL">0 USDT</b></div>
+        <div><span>保证金</span><b id="qgMgS">0 USDT</b></div>
+      </div>
+    </div>
+    <div class="qo-btns">
+      <button class="qo-long" id="qoBuy"><b id="qoBuyT">开多</b><small id="qoBuySub">看涨</small></button>
+      <button class="qo-short" id="qoSell"><b id="qoSellT">开空</b><small id="qoSellSub">看跌</small></button>
+    </div>
+    <div class="qo-link" onclick="demoEntry()">前往合约交易页 ›</div>`);
+  let tab='open', mkt=false;
+  const priceEff=()=>mkt?last:(parseFloat($('qoP').value)||last);
+  const maxOpen=()=>S.balance*S.lev/priceEff();
   const upd=()=>{
-    const price=parseFloat($('qoP').value)||0,q=parseFloat($('qoQ').value)||0;
-    const pct=(price/last-1)*100;
-    $('qoDiff').textContent=`距最新价 ${pct>=0?'+':''}${pct.toFixed(2)}%`;
-    $('qoDiff').style.color=pct>=0?'var(--green)':'var(--red)';
-    $('qoEst').textContent=`价值 ≈ ${fmtU(q*price)} USDT · 所需保证金 ≈ ${fmtU(q*price/S.lev)} USDT`;
+    const q=parseFloat($('qoQ').value)||0;
+    const mo=fmtQ(maxOpen())+' BTC';
+    $('qgMaxL').textContent=mo;$('qgMaxS').textContent=mo;
+    const mg=tab==='open'&&q>0?fmtU(q*priceEff()/S.lev):'0';
+    $('qgMgL').textContent=mg+' USDT';$('qgMgS').textContent=mg+' USDT';
   };
   $('qoP').oninput=upd;$('qoQ').oninput=upd;upd();
-  const step=(id,d,dec)=>{const el=$(id);el.value=Math.max(dec===1?.1:.01,(parseFloat(el.value)||0)+d).toFixed(dec===1?1:2);upd();};
-  $('qoPm').onclick=()=>step('qoP',-10,1);$('qoPp').onclick=()=>step('qoP',10,1);
-  $('qoQm').onclick=()=>step('qoQ',-0.01,2);$('qoQp').onclick=()=>step('qoQ',0.01,2);
-  $('qoLast').onclick=()=>{$('qoP').value=last.toFixed(1);upd();};
+  /* 开仓/平仓 tab */
+  $('qoTabs').onclick=e=>{
+    if(!e.target.dataset.t)return;
+    tab=e.target.dataset.t;
+    [...$('qoTabs').children].forEach(c=>c.classList.toggle('on',c===e.target));
+    const open=tab==='open';
+    $('qoBuyT').textContent=open?'开多':'平空'; $('qoBuySub').textContent=open?'看涨':'买入';
+    $('qoSellT').textContent=open?'开空':'平多'; $('qoSellSub').textContent=open?'看跌':'卖出';
+    if(!open&&S.position)$('qoQ').value=S.position.size.toFixed(2);
+    upd();
+  };
+  /* 市价切换 */
+  $('qoMkt').onclick=()=>{
+    mkt=!mkt;
+    $('qoMkt').classList.toggle('on',mkt);
+    $('qoPriceBox').classList.toggle('dis',mkt);
+    $('qoP').disabled=mkt;
+    upd();
+  };
+  /* 仓位百分比滑杆 */
+  $('qoR').oninput=e=>{
+    const pct=+e.target.value/100;
+    const base=tab==='open'?maxOpen():(S.position?S.position.size:0);
+    $('qoQ').value=(base*pct).toFixed(2);
+    upd();
+  };
   const sub=side=>{
-    const price=parseFloat($('qoP').value),q=parseFloat($('qoQ').value);
-    if(!(price>0&&q>0))return toast('请输入有效价格和数量','err','!');
-    S.qty=q;closeSheet();
-    if((side>0&&price>=last)||(side<0&&price<=last)){
+    const q=parseFloat($('qoQ').value);
+    if(!(q>0))return toast('请输入数量','err','!');
+    if(tab==='close'){
+      /* 平空(side=1,买入) / 平多(side=-1,卖出) */
+      const posSide=-side, P=S.position;
+      if(!P||P.side!==posSide)return toast(`无可平${posSide>0?'多':'空'}头持仓`,'warn','!');
+      const cq=Math.min(q,P.size), px=posSide>0?last-2.5:last+2.5;
+      const pnl=(px-P.entry)*cq*posSide;
+      closeSheet();S.quickPrice=null;
+      fillOrder(side,px,cq,'平仓');
+      toast(`已平${posSide>0?'多':'空'} ${fmtQ(cq)} BTC，盈亏 ${pnl>=0?'+':''}${fmtU(pnl)} USDT`,pnl>=0?'ok':'err',pnl>=0?'✓':'!');
+      render();renderBottom();return;
+    }
+    const price=priceEff();
+    if(!(price>0))return toast('请输入有效价格','err','!');
+    S.qty=q;closeSheet();S.quickPrice=null;
+    if(mkt||(side>0&&price>=last)||(side<0&&price<=last)){
       const px=side>0?last+2.5:last-2.5;
       fillOrder(side,px,q,'市价');
-      toast(`价格优于市价，已按市价成交 ${side>0?'买入':'卖出'} ${fmtQ(q)} @ ${fmtP(px)}`);
+      toast(`${side>0?'开多':'开空'}成交 ${fmtQ(q)} BTC @ ${fmtP(px)}`);
     }else{
       S.orders.push({id:S.oid++,side,price,size:q});
       addHistory({text:`限价${side>0?'买入':'卖出'}委托`,side,price,size:q,type:'委托'});
       toast(`限价${side>0?'买':'卖'}单已提交 @ ${fmtP(price)}`);
     }
-    S.quickPrice=null;   /* 下单后收起 + 号标签，由委托线接管 */
     render();renderBottom();
   };
   $('qoBuy').onclick=()=>sub(1);
