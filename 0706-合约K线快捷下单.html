@@ -427,9 +427,8 @@ function render(){
     chip('卖 '+fmtP(last+2.5),lpy-18,'#f6465d');
     chip('买 '+fmtP(last-2.5),lpy+18,'#0ecb81');
   }
-  /* 快捷下单 + 号标签引导线 */
-  if(S.show.quick){
-    if(S.quickPrice==null)S.quickPrice=Math.round((last+180)/10)*10;
+  /* 快捷下单 + 号标签引导线（点击K线图后才出现） */
+  if(S.show.quick&&S.quickPrice!=null){
     const qy=y(S.quickPrice);
     if(qy>=PAD_T&&qy<=priceB){
       ctx.strokeStyle='rgba(132,142,156,.55)';ctx.setLineDash([4,4]);
@@ -571,22 +570,38 @@ ovl.addEventListener('pointerup',()=>{
 /* =============== 图表手势：拖动平移 / 点按 =============== */
 let pd=null;
 cvs.addEventListener('pointerdown',e=>{
-  pd={x:e.clientX,y:e.clientY,off:view.offset,t:Date.now(),moved:false};
+  pd={x:e.clientX,y:e.clientY,off:view.offset,t:Date.now(),moved:false,long:false};
+  /* 长按 400ms 唤起十字光标（快捷下单占用了单击） */
+  pd.lp=setTimeout(()=>{
+    if(!pd||pd.moved)return;
+    pd.long=true;
+    const rect=cvs.getBoundingClientRect();
+    S.crosshair={cx:pd.x-rect.left,cy:pd.y-rect.top};
+    render();
+  },400);
   cvs.setPointerCapture(e.pointerId);
 });
 cvs.addEventListener('pointermove',e=>{
   if(!pd)return;
   const dx=e.clientX-pd.x;
-  if(Math.abs(dx)>5||Math.abs(e.clientY-pd.y)>5)pd.moved=true;
-  if(pd.moved){S.crosshair=null;view.offset=pd.off+Math.round(dx/cw);render();}
+  if(Math.abs(dx)>5||Math.abs(e.clientY-pd.y)>5){pd.moved=true;clearTimeout(pd.lp);}
+  if(pd.moved&&!pd.long){S.crosshair=null;view.offset=pd.off+Math.round(dx/cw);render();}
 });
 cvs.addEventListener('pointerup',e=>{
   if(!pd)return;
-  const tap=!pd.moved&&Date.now()-pd.t<450; pd=null;
-  if(!tap)return;
+  clearTimeout(pd.lp);
+  const wasLong=pd.long, tap=!pd.moved&&!wasLong&&Date.now()-pd.t<450; pd=null;
+  if(wasLong||!tap)return;
   const rect=cvs.getBoundingClientRect(), cx=e.clientX-rect.left, cy=e.clientY-rect.top;
   if(cx>geo.W-PAD_R)return;
-  S.crosshair=S.crosshair?null:{cx,cy};
+  if(S.crosshair){S.crosshair=null;render();return}
+  if(S.show.quick){
+    /* 点击K线图：在点击价位出现 + 号标签；点在已有标签价位附近则收起 */
+    if(S.quickPrice!=null&&Math.abs(geo.y(S.quickPrice)-cy)<14){S.quickPrice=null;}
+    else S.quickPrice=Math.round(geo.yInv(cy)*10)/10;
+    render();return;
+  }
+  S.crosshair={cx,cy};
   render();
 });
 
@@ -654,8 +669,8 @@ function openQuickOrder(p){
       S.orders.push({id:S.oid++,side,price,size:q});
       addHistory({text:`限价${side>0?'买入':'卖出'}委托`,side,price,size:q,type:'委托'});
       toast(`限价${side>0?'买':'卖'}单已提交 @ ${fmtP(price)}`);
-      S.quickPrice=price;
     }
+    S.quickPrice=null;   /* 下单后收起 + 号标签，由委托线接管 */
     render();renderBottom();
   };
   $('qoBuy').onclick=()=>sub(1);
@@ -781,8 +796,9 @@ function checkTriggers(){
 /* =============== 头部 ⚡ 快捷下单开关 =============== */
 function toggleQuick(){
   S.show.quick=!S.show.quick;
+  if(!S.show.quick)S.quickPrice=null;
   $('btnQuick').classList.toggle('on',S.show.quick);
-  toast(S.show.quick?'快捷下单已开启：拖动 + 号标签定价，点击下单':'快捷下单已关闭','ok','⚡');
+  toast(S.show.quick?'快捷下单已开启：点击K线图任意价位出现 + 号标签':'快捷下单已关闭','ok','⚡');
   render();
 }
 
@@ -958,7 +974,7 @@ function openSettings(){
         const oc=$('sheet').querySelector(`.cchip[data-s="${other}"]`);
         if(oc)oc.classList.remove('on');
       }
-      if(k==='quick')$('btnQuick').classList.toggle('on',on);
+      if(k==='quick'){$('btnQuick').classList.toggle('on',on);if(!on)S.quickPrice=null;}
       render();
     };
   });
