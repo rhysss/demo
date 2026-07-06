@@ -139,8 +139,6 @@
   .tagline.sl .seg{background:rgba(246,70,93,.18);color:var(--red)}
   .tagline.tp,.tagline.sl{cursor:grab}
   .tagline.tp .act,.tagline.sl .act{background:rgba(21,26,33,.9);color:var(--sub)}
-  .tagline.liq .seg{background:rgba(246,166,35,.15);color:var(--orange)}
-  .tagline.be .seg{background:rgba(132,142,156,.18);color:#aab2bd}
   .tagline .drag-dot{font-size:8px;opacity:.6}
 
   /* ---------- 底部列表 ---------- */
@@ -314,8 +312,8 @@ const S={
   confirm2:false,              // 下单二次确认
   quickPrice:null,             // 悬浮 + 号标签所在价格
   show:{
-    ord:true,marks:true,pos:true,be:false,liq:true,dragEdit:true,quick:true,  // 订单显示
-    cd:true,book:true,pct:false,log:false,inv:false                            // 图层显示
+    ord:true,marks:true,pos:true,dragEdit:true,quick:true,  // 订单显示
+    cd:true,book:true                                        // 图层显示
   },
   balance:10000,               // USDT
   position:null,               // {side:1/-1,size,entry,tp,sl}
@@ -396,13 +394,8 @@ function render(){
   let mn=Infinity,mx=-Infinity,mv=0;
   vis.forEach(k=>{mn=Math.min(mn,k.l);mx=Math.max(mx,k.h);mv=Math.max(mv,k.v);});
   const pad=(mx-mn)*.08; mn-=pad; mx+=pad;
-  /* 对数 / 倒垂 视图变换 */
-  const tf=p=>S.show.log?Math.log(p):p;
-  const a=tf(mn), b=tf(mx);
-  const y=p=>{let t=(b-tf(p))/(b-a); if(S.show.inv)t=1-t; return PAD_T+t*(priceB-PAD_T)};
-  const yInv=py=>{let t=(py-PAD_T)/(priceB-PAD_T); if(S.show.inv)t=1-t; const v=b-t*(b-a); return S.show.log?Math.exp(v):v};
-  const pctBase=vis[0]?vis[0].c:last;
-  const lb=p=>S.show.pct?(((p/pctBase-1)*100).toFixed(2)+'%'):fmtP(p);   /* 百分比视图仅影响坐标刻度 */
+  const y=p=>PAD_T+(mx-p)/(mx-mn)*(priceB-PAD_T);
+  const yInv=py=>mx-(py-PAD_T)/(priceB-PAD_T)*(mx-mn);
   const x=i=>(i-start)*cw+cw/2;
   geo={y,x,start,count,mn,mx,W,H,priceB,yInv};
 
@@ -412,7 +405,7 @@ function render(){
   for(let i=0;i<=4;i++){
     const gy=PAD_T+(priceB-PAD_T)*i/4;
     ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W-PAD_R,gy);ctx.stroke();
-    ctx.fillText(lb(yInv(gy)),W-PAD_R+6,gy);
+    ctx.fillText(fmtP(yInv(gy)),W-PAD_R+6,gy);
   }
   /* 时间轴 */
   for(let i=0;i<vis.length;i+=Math.ceil(count/4)){
@@ -476,8 +469,6 @@ function render(){
   const P=S.position;
   if(P&&S.show.pos){
     drawHLine(P.entry, P.side>0?'#0ecb81':'#f6465d', fmtP(P.entry), false, [4,4]);
-    if(S.show.be){const be=P.entry*(1+P.side*0.001);drawHLine(be,'#848e9c',fmtP(be),false,[3,3]);}
-    if(S.show.liq) drawHLine(liqPrice(P), '#f6a623', fmtP(liqPrice(P)), false, [2,3]);
     if(P.tp) drawHLine(P.tp,'#0ecb81',fmtP(P.tp),false,[6,3]);
     if(P.sl) drawHLine(P.sl,'#f6465d',fmtP(P.sl),false,[6,3]);
   }
@@ -545,8 +536,6 @@ function syncTags(){
     const pnl=(last-P.entry)*P.size*P.side, roe=pnl/(P.entry*P.size/S.lev)*100;
     want.push({id:'pos',cls:'pos',price:P.entry,html:
       `<span class="seg"><span class="${P.side>0?'side-l':'side-s'}">${P.side>0?'多':'空'} ${fmtQ(P.size)}</span><span class="num" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}${fmtU(pnl)} (${roe>=0?'+':''}${roe.toFixed(2)}%)</span></span><span class="act" data-act="tpsl">TP/SL</span><span class="act" data-act="rev">反手</span><span class="act close" data-act="close">平</span>`});
-    if(S.show.liq) want.push({id:'liq',cls:'liq',price:liqPrice(P),html:`<span class="seg">强平参考 ${fmtP(liqPrice(P))}</span>`});
-    if(S.show.be){const be=P.entry*(1+P.side*0.001);want.push({id:'be',cls:'be',price:be,html:`<span class="seg">损益两平 ${fmtP(be)}</span>`});}
     if(P.tp) want.push({id:'tp',cls:'tp',price:P.tp,drag:'tp',html:`<span class="seg"><span class="drag-dot">⠿</span>止盈 <span class="num" data-p>${fmtP(P.tp)}</span></span><span class="act" data-act="rmtp">✕</span>`});
     if(P.sl) want.push({id:'sl',cls:'sl',price:P.sl,drag:'sl',html:`<span class="seg"><span class="drag-dot">⠿</span>止损 <span class="num" data-p>${fmtP(P.sl)}</span></span><span class="act" data-act="rmsl">✕</span>`});
   }
@@ -1057,15 +1046,12 @@ function openSettings(){
     <div class="cs-sec">订单显示</div>
     <div class="chip-grid">
       ${chip('ord','当前委托')}${chip('marks','历史委托')}
-      ${chip('pos','仓位')}${chip('be','损益两平价')}
-      ${chip('liq','强平价格')}${chip('dragEdit','K线改单')}
+      ${chip('pos','仓位')}${chip('dragEdit','K线改单')}
       ${chip('quick','快捷下单')}
     </div>
     <div class="cs-sec">图层显示</div>
     <div class="chip-grid">
       ${chip('cd','倒计时')}${chip('book','盘口价格')}
-      ${chip('pct','百分比视图')}${chip('log','对数视图')}
-      ${chip('inv','倒垂视图')}
     </div>
     <div class="frow" style="border:none"><span class="k">下单二次确认<small>开启后做多/做空需确认弹窗</small></span><div class="switch ${S.confirm2?'on':''}" id="swCfm"></div></div>
     <button class="btn-main" onclick="closeSheet()">完成</button>`);
@@ -1073,13 +1059,6 @@ function openSettings(){
     c.onclick=()=>{
       const k=c.dataset.s, on=!S.show[k];
       S.show[k]=on; c.classList.toggle('on',on);
-      /* 百分比与对数视图互斥 */
-      if(on&&(k==='pct'||k==='log')){
-        const other=k==='pct'?'log':'pct';
-        S.show[other]=false;
-        const oc=$('sheet').querySelector(`.cchip[data-s="${other}"]`);
-        if(oc)oc.classList.remove('on');
-      }
       if(k==='quick'){$('btnQuick').classList.toggle('on',on);if(!on)S.quickPrice=null;}
       render();
     };
