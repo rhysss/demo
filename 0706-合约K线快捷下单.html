@@ -48,10 +48,12 @@
   #legend b{color:var(--txt);font-weight:500}
 
   /* 快捷下单：价格轴悬浮 + 号标签 */
-  #quickPill{position:absolute;right:2px;transform:translateY(-50%);z-index:25;display:flex;align-items:center;gap:6px;background:#17181c;border:1px solid #2a3139;border-radius:9px;padding:3px 9px 3px 3px;cursor:grab;box-shadow:0 3px 12px rgba(0,0,0,.55);touch-action:none;user-select:none}
+  #quickPill{position:absolute;right:2px;transform:translateY(-50%);z-index:25;display:flex;align-items:stretch;background:#17181c;border:1px solid #2a3139;border-radius:9px;overflow:hidden;cursor:grab;box-shadow:0 3px 12px rgba(0,0,0,.55);touch-action:none;user-select:none}
   #quickPill:active{cursor:grabbing}
-  #quickPill .qp-plus{width:22px;height:22px;border-radius:50%;background:#2a3139;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex:none}
-  #quickPill .qp-info{display:flex;flex-direction:column;line-height:1.2;text-align:right}
+  #quickPill .qp-plus{width:34px;display:flex;align-items:center;justify-content:center;border-right:1px solid #3a424d;cursor:pointer;flex:none}
+  #quickPill .qp-plus i{width:20px;height:20px;border-radius:50%;background:#fff;color:#17181c;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;font-style:normal;line-height:1}
+  #quickPill .qp-plus:active i{transform:scale(.9)}
+  #quickPill .qp-info{display:flex;flex-direction:column;justify-content:center;line-height:1.25;text-align:right;padding:4px 9px}
   #qpPrice{font-size:11px;font-weight:700;color:#fff}
   #qpPct{font-size:9px}
 
@@ -221,7 +223,7 @@
 
     <!-- 快捷下单：价格轴悬浮 + 号标签（拖动定价，点击弹出下单弹窗） -->
     <div id="quickPill">
-      <span class="qp-plus">＋</span>
+      <span class="qp-plus" id="qpPlus"><i>＋</i></span>
       <span class="qp-info"><span class="num" id="qpPrice">--</span><span class="num" id="qpPct">--</span></span>
     </div>
   </div>
@@ -592,7 +594,7 @@ cvs.addEventListener('pointerup',e=>{
 const pill=$('quickPill');
 let pillDrag=null;
 pill.addEventListener('pointerdown',e=>{
-  pillDrag={y:e.clientY,moved:false};
+  pillDrag={y:e.clientY,moved:false,onPlus:!!e.target.closest('.qp-plus')};
   pill.setPointerCapture(e.pointerId);
   e.stopPropagation();
 });
@@ -608,8 +610,9 @@ pill.addEventListener('pointermove',e=>{
 });
 pill.addEventListener('pointerup',()=>{
   if(!pillDrag)return;
-  const tapped=!pillDrag.moved; pillDrag=null;
-  if(tapped)openQuickOrder(S.quickPrice);
+  const openIt=!pillDrag.moved&&pillDrag.onPlus;   /* 仅点击 + 号才弹出下单弹窗 */
+  pillDrag=null;
+  if(openIt)openQuickOrder(S.quickPrice);
 });
 
 /* + 号弹出的下单弹窗 */
