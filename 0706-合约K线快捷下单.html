@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>合约K线快捷下单 - 交互原型</title>
+<style>
+  :root{
+    --bg:#0b0e11; --panel:#151a21; --panel2:#1c232d; --border:#252c36;
+    --txt:#eaecef; --sub:#848e9c; --sub2:#5e6673;
+    --green:#0ecb81; --red:#f6465d; --yellow:#f0b90b; --orange:#f6a623;
+    --green-bg:rgba(14,203,129,.12); --red-bg:rgba(246,70,93,.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{background:#000;font-family:-apple-system,"PingFang SC","Helvetica Neue",Arial,sans-serif;color:var(--txt);display:flex;justify-content:center;min-height:100vh}
+  .num{font-variant-numeric:tabular-nums}
+  .phone{width:400px;max-width:100vw;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+
+  /* ---------- 头部 ---------- */
+  .hd{padding:10px 12px 8px;border-bottom:1px solid var(--border)}
+  .hd-row1{display:flex;align-items:center;gap:8px}
+  .hd-sym{font-size:17px;font-weight:700}
+  .hd-tag{font-size:10px;color:var(--sub);border:1px solid var(--border);border-radius:3px;padding:1px 4px}
+  .chip{font-size:11px;background:var(--panel2);border-radius:4px;padding:3px 7px;color:var(--yellow);font-weight:600;cursor:pointer}
+  .chip.mode{color:var(--txt)}
+  .hd-right{margin-left:auto;display:flex;gap:6px;align-items:center}
+  .icon-btn{width:28px;height:28px;border-radius:6px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;color:var(--sub)}
+  .icon-btn.on{color:var(--yellow);box-shadow:inset 0 0 0 1px var(--yellow)}
+  .hd-row2{display:flex;align-items:flex-end;gap:10px;margin-top:6px}
+  .hd-price{font-size:22px;font-weight:700}
+  .hd-price.up{color:var(--green)} .hd-price.down{color:var(--red)}
+  .hd-sub{font-size:10px;color:var(--sub);line-height:1.5}
+  .hd-sub b{color:var(--txt);font-weight:500}
+  .flash-up{animation:fu .35s} .flash-down{animation:fd .35s}
+  @keyframes fu{0%{background:var(--green-bg)}100%{background:transparent}}
+  @keyframes fd{0%{background:var(--red-bg)}100%{background:transparent}}
+
+  /* ---------- 周期栏 ---------- */
+  .tf{display:flex;align-items:center;padding:6px 12px;gap:14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--sub)}
+  .tf span{cursor:pointer;padding:2px 0}
+  .tf span.on{color:var(--yellow);font-weight:600;border-bottom:2px solid var(--yellow)}
+  .tf .sp{margin-left:auto;display:flex;gap:12px;color:var(--sub)}
+
+  /* ---------- 图表 ---------- */
+  .chart-wrap{position:relative;height:340px;background:var(--bg);touch-action:none;user-select:none}
+  canvas{display:block;width:100%;height:100%}
+  #legend{position:absolute;top:4px;left:8px;font-size:10px;color:var(--sub);pointer-events:none;line-height:1.6;z-index:5}
+  #legend b{color:var(--txt);font-weight:500}
+
+  /* 快捷下单面板 */
+  #qpanel{position:absolute;top:26px;left:8px;z-index:20;background:rgba(21,26,33,.94);border:1px solid var(--border);border-radius:8px;padding:8px;width:158px;backdrop-filter:blur(4px);box-shadow:0 4px 16px rgba(0,0,0,.5)}
+  #qpanel.hide{display:none}
+  .qp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .qp-title{font-size:11px;font-weight:600;color:var(--yellow)}
+  .qp-mode{display:flex;background:var(--bg);border-radius:4px;overflow:hidden;font-size:10px}
+  .qp-mode span{padding:2px 7px;cursor:pointer;color:var(--sub)}
+  .qp-mode span.on{background:var(--panel2);color:var(--txt);font-weight:600}
+  .qp-qty{display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:2px}
+  .qp-qty button{width:26px;height:28px;background:none;border:none;color:var(--sub);font-size:15px;cursor:pointer}
+  .qp-qty input{flex:1;width:0;background:none;border:none;color:var(--txt);text-align:center;font-size:12px;font-weight:600;outline:none}
+  .qp-est{font-size:9px;color:var(--sub2);text-align:center;margin-bottom:6px}
+  .qp-btns{display:flex;gap:6px}
+  .qp-btn{flex:1;border:none;border-radius:6px;padding:5px 0 4px;cursor:pointer;color:#fff;text-align:center}
+  .qp-btn .t{display:block;font-size:11px;font-weight:700}
+  .qp-btn .p{display:block;font-size:9px;opacity:.85;margin-top:1px}
+  .qp-btn.buy{background:var(--green)} .qp-btn.sell{background:var(--red)}
+  .qp-btn:active{opacity:.8}
+  .qp-hint{margin-top:6px;font-size:9px;color:var(--orange);text-align:center;display:none}
+  .qp-hint.show{display:block}
+
+  /* 限价点选气泡 */
+  #bubble{position:absolute;z-index:30;left:52px;display:none;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 8px;box-shadow:0 4px 16px rgba(0,0,0,.6);transform:translateY(-50%)}
+  #bubble .bp{font-size:11px;font-weight:700;text-align:center;margin-bottom:5px}
+  #bubble .brow{display:flex;gap:5px}
+  #bubble button{border:none;border-radius:5px;font-size:10px;padding:4px 9px;color:#fff;cursor:pointer;font-weight:600}
+  .bb-buy{background:var(--green)} .bb-sell{background:var(--red)} .bb-x{background:var(--panel);color:var(--sub)!important}
+
+  /* 图上标签（持仓/委托/止盈止损/强平） */
+  #overlays{position:absolute;inset:0;pointer-events:none;z-index:10;overflow:hidden}
+  .tagline{position:absolute;left:6px;transform:translateY(-50%);display:flex;align-items:center;gap:0;pointer-events:auto;font-size:10px;border-radius:4px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.4);white-space:nowrap}
+  .tagline .seg{padding:3px 6px;background:var(--panel2);display:flex;align-items:center;gap:4px}
+  .tagline .act{padding:3px 7px;cursor:pointer;font-weight:600;border-left:1px solid rgba(255,255,255,.12)}
+  .tagline.pos .seg{background:#2a3139}
+  .tagline.pos .side-l{color:var(--green);font-weight:700}
+  .tagline.pos .side-s{color:var(--red);font-weight:700}
+  .tagline.pos .act{background:#2a3139;color:var(--txt)}
+  .tagline.pos .act.close{color:var(--yellow)}
+  .tagline.ord{cursor:grab}
+  .tagline.ord .seg{background:rgba(21,26,33,.95)}
+  .tagline.ord.buy .seg{color:var(--green);box-shadow:inset 2px 0 0 var(--green)}
+  .tagline.ord.sell .seg{color:var(--red);box-shadow:inset 2px 0 0 var(--red)}
+  .tagline.ord .act{background:rgba(21,26,33,.95);color:var(--sub)}
+  .tagline.tp .seg{background:rgba(14,203,129,.18);color:var(--green)}
+  .tagline.sl .seg{background:rgba(246,70,93,.18);color:var(--red)}
+  .tagline.tp,.tagline.sl{cursor:grab}
+  .tagline.tp .act,.tagline.sl .act{background:rgba(21,26,33,.9);color:var(--sub)}
+  .tagline.liq .seg{background:rgba(246,166,35,.15);color:var(--orange)}
+  .tagline .drag-dot{font-size:8px;opacity:.6}
+
+  /* ---------- 底部列表 ---------- */
+  .bt{flex:1;display:flex;flex-direction:column;min-height:220px}
+  .bt-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 12px;gap:18px;font-size:13px}
+  .bt-tabs span{padding:9px 0;color:var(--sub);cursor:pointer;position:relative}
+  .bt-tabs span.on{color:var(--txt);font-weight:600}
+  .bt-tabs span.on::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--yellow)}
+  .bt-tabs .cnt{font-size:11px}
+  .bt-tabs .rt{margin-left:auto;font-size:11px;color:var(--sub);display:flex;align-items:center;gap:4px}
+  .bt-body{flex:1;overflow-y:auto;padding:8px 12px 80px}
+  .empty{text-align:center;color:var(--sub2);font-size:12px;padding:36px 0}
+
+  .pos-card{background:var(--panel);border-radius:8px;padding:10px}
+  .pc-r1{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+  .badge{font-size:10px;font-weight:700;border-radius:3px;padding:2px 6px}
+  .badge.l{background:var(--green-bg);color:var(--green)} .badge.s{background:var(--red-bg);color:var(--red)}
+  .pc-sym{font-size:13px;font-weight:600}
+  .pc-lev{font-size:10px;color:var(--sub)}
+  .pc-pnl{margin-left:auto;text-align:right}
+  .pc-pnl .v{font-size:15px;font-weight:700}
+  .pc-pnl .r{font-size:10px}
+  .pos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:10px;margin-bottom:10px}
+  .pos-grid .k{color:var(--sub);margin-bottom:2px}
+  .pos-grid .v{font-size:11px}
+  .pc-btns{display:flex;gap:6px}
+  .pc-btn{flex:1;background:var(--panel2);border:none;border-radius:6px;color:var(--txt);font-size:11px;padding:7px 0;cursor:pointer}
+  .pc-btn:active{opacity:.7}
+  .pc-btn.warn{color:var(--yellow)}
+
+  .ord-row{background:var(--panel);border-radius:8px;padding:9px 10px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .ord-info{flex:1}
+  .ord-r1{font-size:12px;font-weight:600;display:flex;gap:6px;align-items:center}
+  .ord-r2{font-size:10px;color:var(--sub);margin-top:3px;display:flex;gap:10px}
+  .ord-x{background:var(--panel2);border:none;border-radius:5px;color:var(--sub);font-size:11px;padding:5px 10px;cursor:pointer}
+  .side-t-b{color:var(--green)} .side-t-s{color:var(--red)}
+  .cond{font-size:9px;border:1px solid var(--border);color:var(--sub);border-radius:3px;padding:1px 4px}
+
+  .his-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #161b22;font-size:11px}
+  .his-l{flex:1}
+  .his-t1{font-weight:600}
+  .his-t2{color:var(--sub2);font-size:10px;margin-top:2px}
+  .his-r{text-align:right}
+
+  /* ---------- 弹层 ---------- */
+  .mask{position:absolute;inset:0;background:rgba(0,0,0,.65);z-index:90;display:none;align-items:flex-end;justify-content:center}
+  .mask.show{display:flex}
+  .sheet{background:var(--panel);width:100%;border-radius:14px 14px 0 0;padding:16px 16px 24px;animation:up .18s ease-out;max-height:82vh;overflow-y:auto}
+  @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+  .sh-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .sh-x{color:var(--sub);font-size:16px;cursor:pointer;padding:0 4px}
+  .frow{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #1a212a;font-size:13px}
+  .frow .k{color:var(--txt)} .frow .k small{display:block;color:var(--sub2);font-size:10px;margin-top:2px;font-weight:400}
+  .switch{width:40px;height:22px;border-radius:11px;background:#2a3139;position:relative;cursor:pointer;transition:.15s}
+  .switch::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.15s}
+  .switch.on{background:var(--green)} .switch.on::after{left:20px}
+  .seg-sel{display:flex;background:var(--bg);border-radius:6px;overflow:hidden;font-size:11px}
+  .seg-sel span{padding:5px 12px;color:var(--sub);cursor:pointer}
+  .seg-sel span.on{background:var(--panel2);color:var(--txt);font-weight:600}
+  .inp-line{display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0 10px;margin-top:8px}
+  .inp-line input{flex:1;background:none;border:none;color:var(--txt);font-size:14px;padding:11px 0;outline:none;font-weight:600}
+  .inp-line .u{color:var(--sub);font-size:11px}
+  .inp-line .lbl{color:var(--sub);font-size:11px;width:66px}
+  .hint-pnl{font-size:11px;margin:6px 2px 2px;color:var(--sub)}
+  .btn-main{width:100%;border:none;border-radius:8px;padding:13px 0;font-size:14px;font-weight:700;color:#181a20;background:var(--yellow);margin-top:16px;cursor:pointer}
+  .btn-main.green{background:var(--green);color:#fff}
+  .btn-main.red{background:var(--red);color:#fff}
+  .btn-main:active{opacity:.85}
+  .btn-ghost{width:100%;border:1px solid var(--border);border-radius:8px;padding:12px 0;font-size:13px;color:var(--sub);background:none;margin-top:8px;cursor:pointer}
+  .cfm-grid{background:var(--bg);border-radius:8px;padding:4px 12px;margin-top:4px}
+  .lev-val{font-size:26px;font-weight:800;text-align:center;color:var(--yellow);margin:4px 0 10px}
+  input[type=range]{width:100%;accent-color:var(--yellow);margin:6px 0 2px}
+  .lev-marks{display:flex;justify-content:space-between;font-size:9px;color:var(--sub2)}
+  .risk-tip{font-size:10px;color:var(--orange);background:rgba(246,166,35,.08);border-radius:6px;padding:8px 10px;margin-top:12px;line-height:1.5}
+
+  /* toast */
+  #toasts{position:absolute;top:70px;left:0;right:0;z-index:200;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
+  .toast{background:rgba(28,35,45,.96);border:1px solid var(--border);color:var(--txt);font-size:12px;border-radius:8px;padding:8px 14px;box-shadow:0 4px 14px rgba(0,0,0,.5);animation:tin .2s ease-out;display:flex;gap:6px;align-items:center;max-width:86%}
+  .toast .ok{color:var(--green)} .toast .warn{color:var(--orange)} .toast .err{color:var(--red)}
+  @keyframes tin{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- 头部 -->
+  <div class="hd">
+    <div class="hd-row1">
+      <span class="hd-sym">BTCUSDT</span><span class="hd-tag">永续</span>
+      <span class="chip mode" id="chipMargin" onclick="openLev()">全仓</span>
+      <span class="chip" id="chipLev" onclick="openLev()">20x</span>
+      <div class="hd-right">
+        <div class="icon-btn on" id="btnQuick" title="快捷下单" onclick="togglePanel()">⚡</div>
+        <div class="icon-btn" title="下单设置" onclick="openSettings()">⚙</div>
+      </div>
+    </div>
+    <div class="hd-row2">
+      <div class="hd-price num up" id="hdPrice">--</div>
+      <div class="hd-sub num">
+        <div>24h涨跌 <b id="hd24" class="side-t-b">+2.35%</b>　24h量 <b>18.2万 BTC</b></div>
+        <div>标记 <b id="hdMark">--</b>　资金费率 <b class="side-t-b">0.0100%</b> / <b id="hdFund">--:--:--</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 周期 -->
+  <div class="tf" id="tfBar">
+    <span>1m</span><span class="on">5m</span><span>15m</span><span>1H</span><span>4H</span><span>1D</span>
+    <div class="sp"><span>指标</span><span>深度</span></div>
+  </div>
+
+  <!-- 图表 -->
+  <div class="chart-wrap" id="chartWrap">
+    <canvas id="cvs"></canvas>
+    <div id="legend"></div>
+    <div id="overlays"></div>
+
+    <!-- 快捷下单面板 -->
+    <div id="qpanel">
+      <div class="qp-head">
+        <span class="qp-title">⚡ 快捷下单</span>
+        <div class="qp-mode" id="qpMode">
+          <span class="on" data-m="market">市价</span><span data-m="limit">限价</span>
+        </div>
+      </div>
+      <div class="qp-qty">
+        <button onclick="stepQty(-1)">−</button>
+        <input id="qtyInput" class="num" value="0.10" inputmode="decimal">
+        <button onclick="stepQty(1)">＋</button>
+      </div>
+      <div class="qp-est num" id="qtyEst">≈ -- USDT　保证金 ≈ --</div>
+      <div class="qp-btns">
+        <button class="qp-btn buy" onclick="quickOrder(1)"><span class="t">买入/做多</span><span class="p num" id="askP">--</span></button>
+        <button class="qp-btn sell" onclick="quickOrder(-1)"><span class="t">卖出/做空</span><span class="p num" id="bidP">--</span></button>
+      </div>
+      <div class="qp-hint" id="qpHint">点击图表任意价格位置挂单</div>
+    </div>
+
+    <!-- 限价点选气泡 -->
+    <div id="bubble">
+      <div class="bp num" id="bubbleP">--</div>
+      <div class="brow">
+        <button class="bb-buy" onclick="bubbleOrder(1)">买入挂单</button>
+        <button class="bb-sell" onclick="bubbleOrder(-1)">卖出挂单</button>
+        <button class="bb-x" onclick="hideBubble()">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部列表 -->
+  <div class="bt">
+    <div class="bt-tabs" id="btTabs">
+      <span class="on" data-t="pos">持仓 <span class="cnt" id="cntPos">(0)</span></span>
+      <span data-t="ord">当前委托 <span class="cnt" id="cntOrd">(0)</span></span>
+      <span data-t="his">历史成交</span>
+      <span class="rt" onclick="closeAllOrders()">一键撤单</span>
+    </div>
+    <div class="bt-body" id="btBody"></div>
+  </div>
+
+  <!-- 通用弹层 -->
+  <div class="mask" id="mask"><div class="sheet" id="sheet"></div></div>
+  <div id="toasts"></div>
+</div>
+
+<script>
+/* =============== 工具 =============== */
+const $=id=>document.getElementById(id);
+const fmtP=p=>p.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1});
+const fmtU=v=>v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtQ=v=>(+v.toFixed(4)).toString();
+const now=()=>{const d=new Date();return `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${d.toTimeString().slice(0,8)}`};
+function toast(msg,cls='ok',icon='✓'){
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span class="${cls}">${icon}</span><span>${msg}</span>`;
+  $('toasts').appendChild(t);setTimeout(()=>t.remove(),2200);
+}
+
+/* =============== 状态 =============== */
+const S={
+  lev:20, marginMode:'全仓',
+  qty:0.10,
+  orderMode:'market',          // market | limit(点选图表)
+  confirm2:false,              // 下单二次确认
+  panelOpen:true,
+  show:{pos:true,ord:true,liq:true,marks:true},
+  balance:10000,               // USDT
+  position:null,               // {side:1/-1,size,entry,tp,sl}
+  orders:[],                   // {id,side,price,size}
+  fills:[],                    // 图上成交标记 {ci,price,side,label}
+  history:[],
+  tab:'pos',
+  crosshair:null,
+  oid:1,
+};
+
+/* =============== 行情模拟 =============== */
+let candles=[];
+let last=104520;
+(function init(){
+  let p=104000,t=Date.now()-200*300000;
+  for(let i=0;i<200;i++){
+    const o=p, drift=(Math.random()-.48)*180;
+    const c=o+drift, h=Math.max(o,c)+Math.random()*90, l=Math.min(o,c)-Math.random()*90;
+    candles.push({t:t+i*300000,o,h,l,c,v:20+Math.random()*140});
+    p=c;
+  }
+  last=p;
+})();
+let prevLast=last, tickN=0;
+function tick(){
+  tickN++;
+  const k=candles[candles.length-1];
+  prevLast=last;
+  last=Math.max(100, last+(Math.random()-.5)*110+(Math.random()<.04?(Math.random()-.5)*400:0));
+  k.c=last; k.h=Math.max(k.h,last); k.l=Math.min(k.l,last); k.v+=Math.random()*6;
+  if(tickN%10===0){candles.push({t:k.t+300000,o:last,h:last,l:last,c:last,v:2});}
+  checkTriggers();
+  renderHeader(); render(); renderBottom(false);
+}
+setInterval(tick,700);
+
+/* 资金费率倒计时 */
+let fundSec=3600*2+35*60+12;
+setInterval(()=>{fundSec=(fundSec-1+86400)%14400;
+  const h=String(Math.floor(fundSec/3600)).padStart(2,'0'),m=String(Math.floor(fundSec%3600/60)).padStart(2,'0'),s=String(fundSec%60).padStart(2,'0');
+  $('hdFund').textContent=`${h}:${m}:${s}`;
+},1000);
+
+/* =============== 头部渲染 =============== */
+function renderHeader(){
+  const el=$('hdPrice');
+  el.textContent=fmtP(last);
+  el.className='hd-price num '+(last>=prevLast?'up':'down');
+  el.classList.remove('flash-up','flash-down');void el.offsetWidth;
+  el.classList.add(last>=prevLast?'flash-up':'flash-down');
+  $('hdMark').textContent=fmtP(last+3.5);
+  $('askP').textContent=fmtP(last+2.5);
+  $('bidP').textContent=fmtP(last-2.5);
+  $('qtyEst').textContent=`≈ ${fmtU(S.qty*last)} USDT　保证金 ≈ ${fmtU(S.qty*last/S.lev)}`;
+}
+
+/* =============== 图表 =============== */
+const cvs=$('cvs'), ctx=cvs.getContext('2d');
+const PAD_R=62, PAD_T=6, PAD_B=18, VOL_H=46;
+let cw=7, view={offset:0};
+function fit(){
+  const r=cvs.getBoundingClientRect(),d=devicePixelRatio||1;
+  cvs.width=r.width*d; cvs.height=r.height*d; ctx.setTransform(d,0,0,d,0,0);
+  return r;
+}
+let geo={};
+function render(){
+  const r=fit(), W=r.width, H=r.height;
+  const priceB=H-PAD_B-VOL_H-4;
+  const count=Math.floor((W-PAD_R)/cw);
+  view.offset=Math.max(0,Math.min(view.offset,candles.length-count));
+  const start=Math.max(0,candles.length-count-view.offset);
+  const vis=candles.slice(start,start+count);
+  let mn=Infinity,mx=-Infinity,mv=0;
+  vis.forEach(k=>{mn=Math.min(mn,k.l);mx=Math.max(mx,k.h);mv=Math.max(mv,k.v);});
+  const pad=(mx-mn)*.08; mn-=pad; mx+=pad;
+  const y=p=>PAD_T+(mx-p)/(mx-mn)*(priceB-PAD_T);
+  const x=i=>(i-start)*cw+cw/2;
+  geo={y,x,start,count,mn,mx,W,H,priceB,yInv:py=>mx-(py-PAD_T)/(priceB-PAD_T)*(mx-mn)};
+
+  ctx.fillStyle='#0b0e11';ctx.fillRect(0,0,W,H);
+  /* 网格 */
+  ctx.strokeStyle='#161c24';ctx.fillStyle='#5e6673';ctx.font='9px -apple-system';ctx.textBaseline='middle';
+  for(let i=0;i<=4;i++){
+    const gy=PAD_T+(priceB-PAD_T)*i/4;
+    ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W-PAD_R,gy);ctx.stroke();
+    ctx.fillText(fmtP(mx-(mx-mn)*i/4),W-PAD_R+6,gy);
+  }
+  /* 时间轴 */
+  for(let i=0;i<vis.length;i+=Math.ceil(count/4)){
+    const d=new Date(vis[i].t);
+    ctx.fillText(`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`,x(start+i)-12,H-8);
+  }
+  /* 成交量 */
+  vis.forEach((k,i)=>{
+    ctx.fillStyle=k.c>=k.o?'rgba(14,203,129,.35)':'rgba(246,70,93,.35)';
+    const vh=k.v/mv*VOL_H;
+    ctx.fillRect(x(start+i)-cw*.36,H-PAD_B-vh,cw*.72,vh);
+  });
+  /* K线 */
+  vis.forEach((k,i)=>{
+    const up=k.c>=k.o,cx=x(start+i);
+    ctx.strokeStyle=ctx.fillStyle=up?'#0ecb81':'#f6465d';
+    ctx.beginPath();ctx.moveTo(cx,y(k.h));ctx.lineTo(cx,y(k.l));ctx.stroke();
+    const t=y(Math.max(k.o,k.c)),b=y(Math.min(k.o,k.c));
+    ctx.fillRect(cx-cw*.36,t,cw*.72,Math.max(1,b-t));
+  });
+  /* MA7 / MA25 */
+  drawMA(7,'#f0b90b');drawMA(25,'#b385f6');
+  function drawMA(n,col){
+    ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();let started=false;
+    for(let i=Math.max(start,n-1);i<start+vis.length;i++){
+      let s=0;for(let j=i-n+1;j<=i;j++)s+=candles[j].c;
+      const py=y(s/n);if(py<PAD_T-20||py>priceB+20){started=false;continue}
+      started?ctx.lineTo(x(i),py):(ctx.moveTo(x(i),py),started=true);
+    }
+    ctx.stroke();
+  }
+  /* 最新价线 */
+  drawHLine(last, last>=prevLast?'#0ecb81':'#f6465d', fmtP(last), true);
+  /* 持仓/强平/委托/止盈止损线 */
+  const P=S.position;
+  if(P&&S.show.pos){
+    drawHLine(P.entry, P.side>0?'#0ecb81':'#f6465d', fmtP(P.entry), false, [4,4]);
+    if(S.show.liq) drawHLine(liqPrice(P), '#f6a623', fmtP(liqPrice(P)), false, [2,3]);
+    if(P.tp) drawHLine(P.tp,'#0ecb81',fmtP(P.tp),false,[6,3]);
+    if(P.sl) drawHLine(P.sl,'#f6465d',fmtP(P.sl),false,[6,3]);
+  }
+  if(S.show.ord) S.orders.forEach(o=>drawHLine(o.price, o.side>0?'#0ecb81':'#f6465d', fmtP(o.price), false,[1,3]));
+  /* 成交标记 */
+  if(S.show.marks) S.fills.forEach(f=>{
+    if(f.ci<start||f.ci>=start+count)return;
+    const fx=x(f.ci); ctx.font='bold 8px -apple-system';ctx.textBaseline='alphabetic';
+    if(f.side>0){
+      const fy=y(candles[f.ci].l)+14;
+      ctx.fillStyle='#0ecb81';tri(fx,fy,-1);ctx.fillText('B',fx-2.5,fy+16);
+    }else{
+      const fy=y(candles[f.ci].h)-14;
+      ctx.fillStyle='#f6465d';tri(fx,fy,1);ctx.fillText('S',fx-2.5,fy-9);
+    }
+  });
+  ctx.textBaseline='middle';
+  function tri(tx,ty,dir){ctx.beginPath();ctx.moveTo(tx,ty-5*dir);ctx.lineTo(tx-4,ty+3*dir);ctx.lineTo(tx+4,ty+3*dir);ctx.fill();}
+  /* 十字光标 */
+  if(S.crosshair){
+    const {cx,cy}=S.crosshair;
+    ctx.strokeStyle='rgba(132,142,156,.6)';ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(cx,PAD_T);ctx.lineTo(cx,H-PAD_B);ctx.moveTo(0,cy);ctx.lineTo(W-PAD_R,cy);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#2a3139';ctx.fillRect(W-PAD_R,cy-8,PAD_R,16);
+    ctx.fillStyle='#eaecef';ctx.fillText(fmtP(geo.yInv(cy)),W-PAD_R+6,cy);
+    const ci=start+Math.round((cx-cw/2)/cw), k=candles[ci];
+    $('legend').innerHTML=k?`开 <b>${fmtP(k.o)}</b> 高 <b>${fmtP(k.h)}</b> 低 <b>${fmtP(k.l)}</b> 收 <b class="num">${fmtP(k.c)}</b><br>MA(7) <b style="color:#f0b90b">${fmtP(ma(ci,7))}</b>　MA(25) <b style="color:#b385f6">${fmtP(ma(ci,25))}</b>`:'';
+  }else{
+    $('legend').innerHTML=`MA(7) <b style="color:#f0b90b">${fmtP(ma(candles.length-1,7))}</b>　MA(25) <b style="color:#b385f6">${fmtP(ma(candles.length-1,25))}</b>`;
+  }
+  function ma(i,n){let s=0,c2=0;for(let j=Math.max(0,i-n+1);j<=i;j++){s+=candles[j].c;c2++}return s/c2}
+  function drawHLine(p,col,label,chipBg,dash){
+    const py=y(p); if(py<PAD_T-1||py>priceB+1)return;
+    ctx.strokeStyle=col;ctx.lineWidth=1;ctx.setLineDash(dash||[5,3]);
+    ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(W-PAD_R,py);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=chipBg?col:'#0b0e11';
+    ctx.fillRect(W-PAD_R,py-8,PAD_R-2,16);
+    if(!chipBg){ctx.strokeStyle=col;ctx.strokeRect(W-PAD_R+.5,py-7.5,PAD_R-3,15);}
+    ctx.fillStyle=chipBg?'#fff':col;ctx.fillText(label,W-PAD_R+5,py);
+  }
+  syncTags();
+}
+
+/* =============== 图上标签(DOM) =============== */
+const ovl=$('overlays'), tagEls=new Map();
+function syncTags(){
+  const want=[];
+  const P=S.position;
+  if(P&&S.show.pos){
+    const pnl=(last-P.entry)*P.size*P.side, roe=pnl/(P.entry*P.size/S.lev)*100;
+    want.push({id:'pos',cls:'pos',price:P.entry,html:
+      `<span class="seg"><span class="${P.side>0?'side-l':'side-s'}">${P.side>0?'多':'空'} ${fmtQ(P.size)}</span><span class="num" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}${fmtU(pnl)} (${roe>=0?'+':''}${roe.toFixed(2)}%)</span></span><span class="act" data-act="tpsl">TP/SL</span><span class="act" data-act="rev">反手</span><span class="act close" data-act="close">平</span>`});
+    if(S.show.liq) want.push({id:'liq',cls:'liq',price:liqPrice(P),html:`<span class="seg">强平参考 ${fmtP(liqPrice(P))}</span>`});
+    if(P.tp) want.push({id:'tp',cls:'tp',price:P.tp,drag:'tp',html:`<span class="seg"><span class="drag-dot">⠿</span>止盈 <span class="num" data-p>${fmtP(P.tp)}</span></span><span class="act" data-act="rmtp">✕</span>`});
+    if(P.sl) want.push({id:'sl',cls:'sl',price:P.sl,drag:'sl',html:`<span class="seg"><span class="drag-dot">⠿</span>止损 <span class="num" data-p>${fmtP(P.sl)}</span></span><span class="act" data-act="rmsl">✕</span>`});
+  }
+  if(S.show.ord) S.orders.forEach(o=>{
+    want.push({id:'o'+o.id,cls:'ord '+(o.side>0?'buy':'sell'),price:o.price,drag:'o'+o.id,html:
+      `<span class="seg"><span class="drag-dot">⠿</span>限价${o.side>0?'买':'卖'} ${fmtQ(o.size)} @ <span class="num" data-p>${fmtP(o.price)}</span></span><span class="act" data-act="cancel" data-id="${o.id}">✕</span>`});
+  });
+  const ids=new Set(want.map(w=>w.id));
+  [...tagEls.keys()].forEach(k=>{if(!ids.has(k)){tagEls.get(k).remove();tagEls.delete(k)}});
+  want.forEach(w=>{
+    let el=tagEls.get(w.id);
+    if(!el){el=document.createElement('div');el.dataset.tid=w.id;if(w.drag)el.dataset.drag=w.drag;ovl.appendChild(el);tagEls.set(w.id,el);}
+    el.className='tagline '+w.cls;
+    if(dragTag!==w.id) el.innerHTML=w.html;
+    else {const ps=el.querySelector('[data-p]');if(ps)ps.textContent=fmtP(w.price);}
+    const py=geo.y(w.price);
+    el.style.display=(py<PAD_T||py>geo.priceB)?'none':'flex';
+    el.style.top=py+'px';
+  });
+}
+/* 标签按钮（事件委托） */
+ovl.addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]');if(!a)return;
+  const act=a.dataset.act;
+  if(act==='close') confirmClose();
+  else if(act==='rev') reversePos();
+  else if(act==='tpsl') openTPSL();
+  else if(act==='cancel') cancelOrder(+a.dataset.id);
+  else if(act==='rmtp'){S.position.tp=null;toast('已撤销止盈');render();renderBottom();}
+  else if(act==='rmsl'){S.position.sl=null;toast('已撤销止损');render();renderBottom();}
+});
+/* 标签拖拽改价 */
+let dragTag=null;
+ovl.addEventListener('pointerdown',e=>{
+  const el=e.target.closest('[data-drag]');
+  if(!el||e.target.closest('[data-act]'))return;
+  dragTag=el.dataset.tid; el.setPointerCapture(e.pointerId);
+  e.stopPropagation();
+});
+ovl.addEventListener('pointermove',e=>{
+  if(!dragTag)return;
+  const rect=cvs.getBoundingClientRect();
+  const p=Math.round(geo.yInv(e.clientY-rect.top)*10)/10;
+  if(p<=0)return;
+  if(dragTag==='tp')S.position.tp=p;
+  else if(dragTag==='sl')S.position.sl=p;
+  else{const o=S.orders.find(o=>'o'+o.id===dragTag);if(o)o.price=p;}
+  render();
+});
+ovl.addEventListener('pointerup',()=>{
+  if(!dragTag)return;
+  const t=dragTag;dragTag=null;
+  toast(t==='tp'?'止盈价已修改':t==='sl'?'止损价已修改':'委托价已修改，重新排队');
+  render();renderBottom();
+});
+
+/* =============== 图表手势：拖动平移 / 点按 =============== */
+let pd=null;
+cvs.addEventListener('pointerdown',e=>{
+  pd={x:e.clientX,y:e.clientY,off:view.offset,t:Date.now(),moved:false};
+  cvs.setPointerCapture(e.pointerId);
+});
+cvs.addEventListener('pointermove',e=>{
+  if(!pd)return;
+  const dx=e.clientX-pd.x;
+  if(Math.abs(dx)>5||Math.abs(e.clientY-pd.y)>5)pd.moved=true;
+  if(pd.moved){S.crosshair=null;hideBubble();view.offset=pd.off+Math.round(dx/cw);render();}
+});
+cvs.addEventListener('pointerup',e=>{
+  if(!pd)return;
+  const tap=!pd.moved&&Date.now()-pd.t<450; pd=null;
+  if(!tap)return;
+  const rect=cvs.getBoundingClientRect(), cx=e.clientX-rect.left, cy=e.clientY-rect.top;
+  if(cx>geo.W-PAD_R)return;
+  if(S.orderMode==='limit'&&S.panelOpen){showBubble(cy);return}
+  S.crosshair=S.crosshair?null:{cx,cy};
+  render();
+});
+
+/* 限价点选气泡 */
+let bubblePrice=0;
+function showBubble(cy){
+  bubblePrice=Math.round(geo.yInv(cy)*10)/10;
+  $('bubbleP').textContent=fmtP(bubblePrice)+' USDT';
+  $('bubbleP').style.color=bubblePrice>=last?'var(--red)':'var(--green)';
+  const b=$('bubble');b.style.display='block';b.style.top=cy+'px';
+}
+function hideBubble(){$('bubble').style.display='none'}
+function bubbleOrder(side){
+  const q=S.qty;hideBubble();
+  placeOrder({type:'limit',side,price:bubblePrice,size:q});
+}
+
+/* =============== 交易核心 =============== */
+function liqPrice(P){return P.side>0?P.entry*(1-0.9/S.lev):P.entry*(1+0.9/S.lev)}
+function markFill(price,side,label){S.fills.push({ci:candles.length-1,price,side,label})}
+function addHistory(h){S.history.unshift({time:now(),...h})}
+
+function quickOrder(side){
+  const q=S.qty;
+  if(!(q>0))return toast('请输入有效数量','err','!');
+  if(S.orderMode==='limit'){toast('限价模式：请点击图表选择价格','warn','!');return}
+  placeOrder({type:'market',side,size:q});
+}
+function placeOrder(o){
+  const exec=()=>{
+    if(o.type==='market'){
+      const px=o.side>0?last+2.5:last-2.5;
+      fillOrder(o.side,px,o.size,'市价');
+      toast(`${o.side>0?'买入开多':'卖出开空'} ${fmtQ(o.size)} BTC @ ${fmtP(px)}`);
+    }else{
+      S.orders.push({id:S.oid++,side:o.side,price:o.price,size:o.size});
+      addHistory({text:`限价${o.side>0?'买入':'卖出'}委托`,side:o.side,price:o.price,size:o.size,type:'委托'});
+      toast(`限价${o.side>0?'买':'卖'}单已提交 @ ${fmtP(o.price)}`);
+    }
+    render();renderBottom();
+  };
+  if(!S.confirm2){exec();return}
+  const px=o.type==='market'?(o.side>0?last+2.5:last-2.5):o.price;
+  openSheet(`
+    <div class="sh-title">确认下单<span class="sh-x" onclick="closeSheet()">✕</span></div>
+    <div class="cfm-grid">
+      <div class="frow"><span class="k" style="color:var(--sub)">方向</span><b class="${o.side>0?'side-t-b':'side-t-s'}">${o.side>0?'买入 / 做多':'卖出 / 做空'}</b></div>
+      <div class="frow"><span class="k" style="color:var(--sub)">类型</span><b>${o.type==='market'?'市价委托':'限价委托'} · ${S.marginMode} ${S.lev}x</b></div>
+      <div class="frow"><span class="k" style="color:var(--sub)">价格</span><b class="num">${o.type==='market'?'≈ ':''}${fmtP(px)} USDT</b></div>
+      <div class="frow"><span class="k" style="color:var(--sub)">数量</span><b class="num">${fmtQ(o.size)} BTC ≈ ${fmtU(o.size*px)} USDT</b></div>
+      <div class="frow" style="border:none"><span class="k" style="color:var(--sub)">所需保证金</span><b class="num">${fmtU(o.size*px/S.lev)} USDT</b></div>
+    </div>
+    <button class="btn-main ${o.side>0?'green':'red'}" id="cfmOk">确认${o.side>0?'买入':'卖出'}</button>
+    <button class="btn-ghost" onclick="closeSheet()">取消</button>
+    <div style="text-align:center;margin-top:10px"><label style="font-size:11px;color:var(--sub)"><input type="checkbox" id="cfmSkip"> 不再提示（可在设置中恢复）</label></div>`);
+  $('cfmOk').onclick=()=>{if($('cfmSkip').checked){S.confirm2=false;}closeSheet();exec();};
+}
+function fillOrder(side,price,size,label){
+  markFill(price,side,label);
+  addHistory({text:`${label}${side>0?'买入':'卖出'}成交`,side,price,size,type:'成交'});
+  let P=S.position;
+  if(!P){S.position={side,size,entry:price,tp:null,sl:null};}
+  else if(P.side===side){P.entry=(P.entry*P.size+price*size)/(P.size+size);P.size+=size;}
+  else{
+    const closeSz=Math.min(P.size,size);
+    const pnl=(price-P.entry)*closeSz*P.side;
+    S.balance+=pnl;
+    addHistory({text:`平仓已实现盈亏 ${pnl>=0?'+':''}${fmtU(pnl)} USDT`,side:-P.side,price,size:closeSz,type:'平仓'});
+    if(size>P.size){S.position={side,size:size-P.size,entry:price,tp:null,sl:null};}
+    else if(size===P.size){S.position=null;}
+    else{P.size-=size;}
+  }
+}
+function cancelOrder(id){
+  const i=S.orders.findIndex(o=>o.id===id);if(i<0)return;
+  const o=S.orders[i];S.orders.splice(i,1);
+  addHistory({text:'撤销委托',side:o.side,price:o.price,size:o.size,type:'撤单'});
+  toast('委托已撤销');render();renderBottom();
+}
+function closeAllOrders(){
+  if(!S.orders.length)return toast('暂无可撤委托','warn','!');
+  S.orders=[];toast('已撤销全部委托');render();renderBottom();
+}
+function confirmClose(){
+  const P=S.position;if(!P)return;
+  const pnl=(last-P.entry)*P.size*P.side;
+  openSheet(`
+    <div class="sh-title">市价平仓<span class="sh-x" onclick="closeSheet()">✕</span></div>
+    <div class="cfm-grid">
+      <div class="frow"><span class="k" style="color:var(--sub)">持仓</span><b class="${P.side>0?'side-t-b':'side-t-s'}">${P.side>0?'多':'空'} ${fmtQ(P.size)} BTC</b></div>
+      <div class="frow"><span class="k" style="color:var(--sub)">开仓均价</span><b class="num">${fmtP(P.entry)}</b></div>
+      <div class="frow" style="border:none"><span class="k" style="color:var(--sub)">预计盈亏</span><b class="num" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}${fmtU(pnl)} USDT</b></div>
+    </div>
+    <button class="btn-main" id="closeOk">确认全部平仓</button>
+    <button class="btn-ghost" onclick="closeSheet()">取消</button>`);
+  $('closeOk').onclick=()=>{closeSheet();closePosition('市价平仓');};
+}
+function closePosition(label,px){
+  const P=S.position;if(!P)return;
+  const price=px??(P.side>0?last-2.5:last+2.5);
+  const pnl=(price-P.entry)*P.size*P.side;
+  S.balance+=pnl;
+  markFill(price,-P.side,label);
+  addHistory({text:`${label} 盈亏 ${pnl>=0?'+':''}${fmtU(pnl)} USDT`,side:-P.side,price,size:P.size,type:'平仓'});
+  S.position=null;
+  toast(`${label}成功，已实现盈亏 ${pnl>=0?'+':''}${fmtU(pnl)} USDT`,pnl>=0?'ok':'err',pnl>=0?'✓':'!');
+  render();renderBottom();
+}
+function reversePos(){
+  const P=S.position;if(!P)return;
+  const sz=P.size,side=-P.side;
+  closePosition('反手平仓');
+  const px=side>0?last+2.5:last-2.5;
+  fillOrder(side,px,sz,'反手');
+  toast(`一键反手：${side>0?'开多':'开空'} ${fmtQ(sz)} BTC @ ${fmtP(px)}`);
+  render();renderBottom();
+}
+/* 触发检查：限价成交 / 止盈止损 / 强平 */
+function checkTriggers(){
+  for(let i=S.orders.length-1;i>=0;i--){
+    const o=S.orders[i];
+    if((o.side>0&&last<=o.price)||(o.side<0&&last>=o.price)){
+      S.orders.splice(i,1);
+      fillOrder(o.side,o.price,o.size,'限价');
+      toast(`限价单成交：${o.side>0?'买入':'卖出'} ${fmtQ(o.size)} @ ${fmtP(o.price)}`);
+    }
+  }
+  const P=S.position;if(!P)return;
+  if(P.tp&&((P.side>0&&last>=P.tp)||(P.side<0&&last<=P.tp)))return closePosition('止盈触发',P.tp);
+  if(P.sl&&((P.side>0&&last<=P.sl)||(P.side<0&&last>=P.sl)))return closePosition('止损触发',P.sl);
+  const lq=liqPrice(P);
+  if((P.side>0&&last<=lq)||(P.side<0&&last>=lq)){closePosition('强制平仓',lq);toast('仓位已被强制平仓','err','!');}
+}
+
+/* =============== 快捷面板 =============== */
+function togglePanel(){
+  S.panelOpen=!S.panelOpen;
+  $('qpanel').classList.toggle('hide',!S.panelOpen);
+  $('btnQuick').classList.toggle('on',S.panelOpen);
+}
+$('qpMode').addEventListener('click',e=>{
+  if(e.target.dataset.m===undefined)return;
+  S.orderMode=e.target.dataset.m;
+  [...$('qpMode').children].forEach(c=>c.classList.toggle('on',c===e.target));
+  $('qpHint').classList.toggle('show',S.orderMode==='limit');
+  hideBubble();
+});
+function stepQty(d){
+  S.qty=Math.max(0.01,Math.round((S.qty+d*0.01)*100)/100);
+  $('qtyInput').value=S.qty.toFixed(2);renderHeader();
+}
+$('qtyInput').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(v>0)S.qty=v;renderHeader();});
+
+/* =============== 底部 Tabs =============== */
+$('btTabs').addEventListener('click',e=>{
+  const t=e.target.closest('[data-t]');if(!t)return;
+  S.tab=t.dataset.t;
+  [...document.querySelectorAll('#btTabs [data-t]')].forEach(c=>c.classList.toggle('on',c===t));
+  renderBottom(true);
+});
+function renderBottom(force){
+  $('cntPos').textContent=`(${S.position?1:0})`;
+  $('cntOrd').textContent=`(${S.orders.length+(S.position&&(S.position.tp||S.position.sl)?(S.position.tp?1:0)+(S.position.sl?1:0):0)})`;
+  const b=$('btBody');
+  if(S.tab==='pos'){
+    const P=S.position;
+    if(!P){b.innerHTML=`<div class="empty">暂无持仓<br><span style="font-size:10px">可用保证金 ${fmtU(S.balance)} USDT · 通过 ⚡快捷面板一键开仓</span></div>`;return}
+    const pnl=(last-P.entry)*P.size*P.side, margin=P.entry*P.size/S.lev, roe=pnl/margin*100;
+    b.innerHTML=`<div class="pos-card">
+      <div class="pc-r1">
+        <span class="badge ${P.side>0?'l':'s'}">${P.side>0?'做多':'做空'}</span>
+        <span class="pc-sym">BTCUSDT 永续</span><span class="pc-lev">${S.marginMode} ${S.lev}x</span>
+        <div class="pc-pnl"><div class="v num" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}${fmtU(pnl)}</div><div class="r num" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${roe>=0?'+':''}${roe.toFixed(2)}% (ROE)</div></div>
+      </div>
+      <div class="pos-grid num">
+        <div><div class="k">持仓量(BTC)</div><div class="v">${fmtQ(P.size)}</div></div>
+        <div><div class="k">开仓均价</div><div class="v">${fmtP(P.entry)}</div></div>
+        <div><div class="k">标记价格</div><div class="v">${fmtP(last+3.5)}</div></div>
+        <div><div class="k">强平参考价</div><div class="v" style="color:var(--orange)">${fmtP(liqPrice(P))}</div></div>
+        <div><div class="k">保证金</div><div class="v">${fmtU(margin)}</div></div>
+        <div><div class="k">止盈</div><div class="v" style="color:var(--green)">${P.tp?fmtP(P.tp):'--'}</div></div>
+        <div><div class="k">止损</div><div class="v" style="color:var(--red)">${P.sl?fmtP(P.sl):'--'}</div></div>
+        <div><div class="k">可用余额</div><div class="v">${fmtU(S.balance)}</div></div>
+      </div>
+      <div class="pc-btns">
+        <button class="pc-btn" onclick="openTPSL()">止盈/止损</button>
+        <button class="pc-btn" onclick="reversePos()">一键反手</button>
+        <button class="pc-btn warn" onclick="confirmClose()">闪电平仓</button>
+      </div>
+    </div>`;
+  }else if(S.tab==='ord'){
+    let h='';
+    S.orders.forEach(o=>{
+      h+=`<div class="ord-row">
+        <div class="ord-info">
+          <div class="ord-r1"><span class="${o.side>0?'side-t-b':'side-t-s'}">${o.side>0?'买入':'卖出'}</span> BTCUSDT <span class="cond">限价</span></div>
+          <div class="ord-r2 num"><span>价格 ${fmtP(o.price)}</span><span>数量 ${fmtQ(o.size)} BTC</span><span>已成交 0%</span></div>
+        </div>
+        <button class="ord-x" onclick="cancelOrder(${o.id})">撤单</button>
+      </div>`;
+    });
+    const P=S.position;
+    if(P&&P.tp) h+=condRow('止盈','side-t-b',P.tp,P.size,'rmtp');
+    if(P&&P.sl) h+=condRow('止损','side-t-s',P.sl,P.size,'rmsl');
+    b.innerHTML=h||`<div class="empty">暂无当前委托<br><span style="font-size:10px">限价模式下点击图表任意价格即可挂单</span></div>`;
+    function condRow(name,cls,p,sz,act){
+      return `<div class="ord-row">
+        <div class="ord-info">
+          <div class="ord-r1"><span class="${cls}">${name}</span> BTCUSDT <span class="cond">条件单·市价触发</span></div>
+          <div class="ord-r2 num"><span>触发价 ${fmtP(p)}</span><span>数量 ${fmtQ(sz)} BTC</span><span>可在图上拖动改价</span></div>
+        </div>
+        <button class="ord-x" onclick="rmCond('${act}')">撤销</button>
+      </div>`;
+    }
+  }else{
+    if(!S.history.length){b.innerHTML='<div class="empty">暂无历史记录</div>';return}
+    b.innerHTML=S.history.slice(0,50).map(h=>`
+      <div class="his-row">
+        <div class="his-l"><div class="his-t1"><span class="${h.side>0?'side-t-b':'side-t-s'}">${h.side>0?'买':'卖'}</span> ${h.text}</div><div class="his-t2">${h.time} · ${h.type}</div></div>
+        <div class="his-r num"><div>${fmtP(h.price)}</div><div style="color:var(--sub);font-size:10px">${fmtQ(h.size)} BTC</div></div>
+      </div>`).join('');
+  }
+}
+function rmCond(act){
+  if(act==='rmtp')S.position.tp=null;else S.position.sl=null;
+  toast('条件单已撤销');render();renderBottom();
+}
+
+/* =============== 弹层 =============== */
+function openSheet(html){$('sheet').innerHTML=html;$('mask').classList.add('show')}
+function closeSheet(){$('mask').classList.remove('show')}
+$('mask').addEventListener('click',e=>{if(e.target===$('mask'))closeSheet()});
+
+function openTPSL(){
+  const P=S.position;if(!P)return toast('暂无持仓','warn','!');
+  openSheet(`
+    <div class="sh-title">止盈 / 止损<span class="sh-x" onclick="closeSheet()">✕</span></div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:4px">当前持仓：<b class="${P.side>0?'side-t-b':'side-t-s'}">${P.side>0?'多':'空'} ${fmtQ(P.size)} BTC</b> · 开仓均价 <b class="num" style="color:var(--txt)">${fmtP(P.entry)}</b> · 最新价 <b class="num" style="color:var(--txt)">${fmtP(last)}</b></div>
+    <div class="inp-line"><span class="lbl">止盈价</span><input id="tpIn" class="num" inputmode="decimal" placeholder="选填" value="${P.tp||''}"><span class="u">USDT</span></div>
+    <div class="hint-pnl" id="tpHint">预计盈利 --</div>
+    <div class="inp-line"><span class="lbl">止损价</span><input id="slIn" class="num" inputmode="decimal" placeholder="选填" value="${P.sl||''}"><span class="u">USDT</span></div>
+    <div class="hint-pnl" id="slHint">预计亏损 --</div>
+    <div class="risk-tip">触发后按市价全部平仓；设置完成后可直接在 K 线图上拖动止盈/止损线调整价格。</div>
+    <button class="btn-main" id="tpslOk">确认设置</button>`);
+  const calc=()=>{
+    const tp=parseFloat($('tpIn').value),sl=parseFloat($('slIn').value);
+    $('tpHint').textContent=tp>0?`预计盈利 ${fmtU((tp-P.entry)*P.size*P.side)} USDT`:'预计盈利 --';
+    $('slHint').textContent=sl>0?`预计亏损 ${fmtU((sl-P.entry)*P.size*P.side)} USDT`:'预计亏损 --';
+  };
+  $('tpIn').oninput=calc;$('slIn').oninput=calc;calc();
+  $('tpslOk').onclick=()=>{
+    const tp=parseFloat($('tpIn').value),sl=parseFloat($('slIn').value);
+    if(tp>0&&((P.side>0&&tp<=last)||(P.side<0&&tp>=last)))return toast('止盈价方向不正确','err','!');
+    if(sl>0&&((P.side>0&&sl>=last)||(P.side<0&&sl<=last)))return toast('止损价方向不正确','err','!');
+    P.tp=tp>0?tp:null;P.sl=sl>0?sl:null;
+    closeSheet();toast('止盈止损已设置，可在图上拖动调整');render();renderBottom();
+  };
+}
+function openLev(){
+  openSheet(`
+    <div class="sh-title">调整杠杆<span class="sh-x" onclick="closeSheet()">✕</span></div>
+    <div class="frow"><span class="k">保证金模式</span>
+      <div class="seg-sel" id="mmSel"><span class="${S.marginMode==='全仓'?'on':''}">全仓</span><span class="${S.marginMode==='逐仓'?'on':''}">逐仓</span></div>
+    </div>
+    <div class="lev-val" id="levV">${S.lev}x</div>
+    <input type="range" min="1" max="125" value="${S.lev}" id="levR">
+    <div class="lev-marks"><span>1x</span><span>25x</span><span>50x</span><span>75x</span><span>100x</span><span>125x</span></div>
+    <div class="risk-tip">当前杠杆最大可开 <b class="num" id="levMax">--</b> BTC；调整杠杆将同时影响持仓的保证金与强平价格，请注意风险。</div>
+    <button class="btn-main" id="levOk">确认</button>`);
+  const upd=v=>{$('levV').textContent=v+'x';$('levMax').textContent=fmtQ(S.balance*v/last)};
+  upd(S.lev);
+  $('levR').oninput=e=>upd(+e.target.value);
+  $('mmSel').onclick=e=>{if(e.target.tagName!=='SPAN')return;[...$('mmSel').children].forEach(c=>c.classList.toggle('on',c===e.target));};
+  $('levOk').onclick=()=>{
+    S.lev=+$('levR').value;
+    S.marginMode=$('mmSel').querySelector('.on').textContent;
+    $('chipLev').textContent=S.lev+'x';$('chipMargin').textContent=S.marginMode;
+    closeSheet();toast(`已切换为 ${S.marginMode} ${S.lev}x`);renderHeader();render();renderBottom();
+  };
+}
+function openSettings(){
+  openSheet(`
+    <div class="sh-title">快捷下单设置<span class="sh-x" onclick="closeSheet()">✕</span></div>
+    <div class="frow"><span class="k">下单二次确认<small>关闭后点击买卖按钮立即下单</small></span><div class="switch ${S.confirm2?'on':''}" data-s="confirm2"></div></div>
+    <div class="frow"><span class="k">显示持仓线 / 盈亏标签</span><div class="switch ${S.show.pos?'on':''}" data-s="pos"></div></div>
+    <div class="frow"><span class="k">显示委托挂单线<small>支持在图上拖动改价</small></span><div class="switch ${S.show.ord?'on':''}" data-s="ord"></div></div>
+    <div class="frow"><span class="k">显示强平参考价线</span><div class="switch ${S.show.liq?'on':''}" data-s="liq"></div></div>
+    <div class="frow" style="border:none"><span class="k">显示历史成交标记<small>K线上的 B / S 买卖标签</small></span><div class="switch ${S.show.marks?'on':''}" data-s="marks"></div></div>
+    <button class="btn-main" onclick="closeSheet()">完成</button>`);
+  $('sheet').querySelectorAll('.switch').forEach(sw=>{
+    sw.onclick=()=>{
+      sw.classList.toggle('on');const on=sw.classList.contains('on'),k=sw.dataset.s;
+      if(k==='confirm2')S.confirm2=on;else S.show[k]=on;
+      render();
+    };
+  });
+}
+
+/* =============== 启动：预置演示数据 =============== */
+window.addEventListener('resize',()=>render());
+(function demo(){
+  /* 预置一笔多仓 + 一张限价单，便于演示图上标签 */
+  fillOrder(1,last-260,0.20,'市价');
+  S.fills[0].ci=candles.length-8;
+  S.position.tp=Math.round((last+900)/10)*10;
+  S.position.sl=Math.round((last-1400)/10)*10;
+  S.orders.push({id:S.oid++,side:1,price:Math.round((last-800)/10)*10,size:0.10});
+  addHistory({text:'限价买入委托',side:1,price:last-800,size:0.10,type:'委托'});
+  renderHeader();render();renderBottom(true);
+})();
+</script>
+</body>
+</html>
