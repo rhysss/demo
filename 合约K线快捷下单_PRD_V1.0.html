@@ -60,11 +60,12 @@
 <div class="wrap"><div class="doc">
 
 <h1>合约交易 · K线快捷下单 产品需求文档（PRD）</h1>
-<p>版本号：V1.0.0</p>
+<p>版本号：V1.0.1</p>
 <table>
 <thead><tr><th>版本</th><th>时间</th><th>修订人</th><th>备注</th></tr></thead>
 <tbody>
 <tr><td>V1.0.0</td><td>2026/07/06</td><td>Rhys</td><td>创建：K线图快捷下单（＋号价格标签 → 开/平仓面板）、图上持仓线/委托线/止盈止损、K线改单、图表设置、底部做多做空栏</td></tr>
+<tr><td>V1.0.1</td><td>2026/07/06</td><td>Rhys</td><td>①快捷下单开关仅保留图表设置入口（移除头部⚡）；②下单面板移除持仓模式「单」芯片；③数量框支持三种录入单位：数量/成本/价值</td></tr>
 </tbody>
 </table>
 <blockquote><p>📎 交互原型（本 PRD 所有交互均以原型为准）：<a href="https://forclaudecode.vercel.app/0706-合约K线快捷下单.html" target="_blank">0706-合约K线快捷下单.html</a>，交互基准对标币安 App 合约 K 线页图表交易。</p></blockquote>
@@ -108,7 +109,7 @@
 <table>
 <thead><tr><th>名词</th><th>说明</th></tr></thead>
 <tbody>
-<tr><td>快捷下单</td><td>本功能总称：K 线页内通过＋号价格标签唤起下单面板完成开/平仓的能力，由头部 ⚡ 按钮与图表设置项控制开关</td></tr>
+<tr><td>快捷下单</td><td>本功能总称：K 线页内通过＋号价格标签唤起下单面板完成开/平仓的能力，由图表设置面板中的「快捷下单」开关控制（唯一开关入口）</td></tr>
 <tr><td>＋号价格标签（Pin）</td><td>点击 K 线图后出现在点击价位、吸附于价格轴左侧的黑色标签；左段为＋号按钮，右段显示价格与距最新价百分比；可上下拖动改价</td></tr>
 <tr><td>开/平仓面板</td><td>点击＋号后弹出的底部下单面板，含开仓/平仓 Tab、价格、市价切换、数量、仓位百分比滑杆、可用/可开/保证金、下单按钮</td></tr>
 <tr><td>K线改单</td><td>在图上直接拖动委托线 / 止盈线 / 止损线改价的能力（图表设置中的开关项）</td></tr>
@@ -143,7 +144,7 @@
 <h4>2.2.1 主流程：快捷开仓</h4>
 <div class="mermaid">
 flowchart TD
-  A["进入合约K线页"] --> B{"快捷下单开关开启?<br/>(头部⚡/设置)"}
+  A["进入合约K线页"] --> B{"快捷下单开关开启?<br/>(图表设置-快捷下单)"}
   B -- 否 --> B1["单击 = 十字光标<br/>不出现+号标签"]
   B -- 是 --> C["单击K线图任意价位"]
   C --> D["出现+号价格标签<br/>(价格=点击价位, 显示距最新价%)"]
@@ -220,7 +221,7 @@ flowchart LR
 <thead><tr><th>版本</th><th>范围</th></tr></thead>
 <tbody>
 <tr><td><strong>V1.0（本PRD）</strong></td><td>＋号标签快捷下单、开/平仓面板（限价/市价/滑杆）、持仓线与盈亏标签（TP/SL/反手/平）、委托线拖拽改价与撤单、止盈止损设置与触发、B/S成交标记、图表设置（订单显示5项+图层显示2项+二次确认）、底部做多/做空栏与多空比、长按十字光标</td></tr>
-<tr><td>V1.1 候选</td><td>强平价格线、损益两平价线、百分比/对数/倒垂视图（本次评审明确移出）、数量单位切换（币/USDT/张）、双向持仓模式适配、K线缩放</td></tr>
+<tr><td>V1.1 候选</td><td>强平价格线、损益两平价线、百分比/对数/倒垂视图（本次评审明确移出）、双向持仓模式适配、K线缩放</td></tr>
 </tbody>
 </table>
 
@@ -228,7 +229,7 @@ flowchart LR
 <div class="mermaid">
 flowchart TB
   subgraph 合约K线页
-    A["头部: 合约信息/⚡快捷下单开关/⚙设置"]
+    A["头部: 合约信息/⚙图表设置"]
     B["图表区: K线/MA/成交量"]
     C["图层: 最新价线/倒计时/盘口价格"]
     D["订单层: 持仓线/委托线/止盈止损线/B-S标记/+号标签"]
@@ -247,7 +248,7 @@ flowchart TB
 <table>
 <thead><tr><th>#</th><th>模块</th><th>功能点</th><th>优先级</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>快捷下单入口</td><td>头部⚡开关、设置项联动、点击K线唤起＋号标签、拖动定价、点＋弹窗、收起规则</td><td><span class="p0">P0</span></td></tr>
+<tr><td>1</td><td>快捷下单入口</td><td>图表设置开关、点击K线唤起＋号标签、拖动定价、点＋弹窗、收起规则</td><td><span class="p0">P0</span></td></tr>
 <tr><td>2</td><td>开/平仓面板</td><td>开仓/平仓Tab、价格框+市价切换、数量、仓位%滑杆、可用/可开/保证金、开多开空/平空平多、价格穿越规则</td><td><span class="p0">P0</span></td></tr>
 <tr><td>3</td><td>持仓线与盈亏标签</td><td>均价线、实时PnL/ROE标签、TP/SL·反手·平快捷按钮</td><td><span class="p0">P0</span></td></tr>
 <tr><td>4</td><td>委托挂单线</td><td>限价单画线、拖拽改价、✕撤单、触发成交</td><td><span class="p0">P0</span></td></tr>
@@ -269,7 +270,7 @@ flowchart TB
 <table>
 <thead><tr><th>元素</th><th>规则</th></tr></thead>
 <tbody>
-<tr><td>头部 ⚡ 按钮</td><td>快捷下单总开关；开启态高亮描边；与设置面板「快捷下单」双向联动；切换时 Toast 提示</td></tr>
+<tr><td>开关入口</td><td>图表设置面板「快捷下单」勾选项为唯一开关入口（默认开启 <span class="assume">假设</span>）；关闭时收起已唤起的标签且单击不再唤起</td></tr>
 <tr><td>＋号价格标签</td><td>黑色圆角标签，吸附价格轴左侧；左段：白色圆形＋按钮（独立点击区，带竖分隔线与按压反馈）；右段：价格（tick 取整）+ 距最新价百分比（≥0 绿 / &lt;0 红），随行情每 tick 重算</td></tr>
 <tr><td>引导虚线</td><td>标签所在价位横贯图表的灰色虚线，随拖动实时移动</td></tr>
 <tr><td>唤起</td><td>单击图表（价格轴区域除外）在点击价位唤起；已唤起时单击其它价位 → 标签移动至新价位</td></tr>
@@ -294,11 +295,11 @@ flowchart TB
 <table>
 <thead><tr><th>区块</th><th>元素与规则</th></tr></thead>
 <tbody>
-<tr><td>头部</td><td>合约名 + 永续标签 + 实时最新价/涨跌幅（红绿着色）；右侧芯片：保证金模式（全仓/逐仓）、杠杆倍数（点击进入杠杆调整弹层）、持仓模式「单」<span class="tbd">待确认：双向持仓适配排期</span></td></tr>
+<tr><td>头部</td><td>合约名 + 永续标签 + 实时最新价/涨跌幅（红绿着色）；右侧芯片：保证金模式（全仓/逐仓）、杠杆倍数（点击进入杠杆调整弹层）</td></tr>
 <tr><td>开仓/平仓 Tab</td><td>分段控件；切「平仓」：下单按钮变「平空·买入（绿）/平多·卖出（红）」，数量预填当前持仓量，滑杆基数切换为持仓量</td></tr>
 <tr><td>价格框</td><td>内嵌「价格」小标签 + USDT 单位；预填＋号标签价位；可编辑，按 tickSize 校验</td></tr>
 <tr><td>市价按钮</td><td>价格框右侧独立按钮；开启后价格框置灰禁用、按市价成交；再点关闭恢复限价</td></tr>
-<tr><td>数量框</td><td>占位「数量 (BTC)」；单位下拉 <span class="tbd">待确认：V1.0 仅币本位数量，单位切换进 V1.1</span></td></tr>
+<tr><td>数量框</td><td>单位下拉支持三种录入单位：<strong>数量</strong>（BTC）、<strong>成本</strong>（USDT，= 数量 × 价格 ÷ 杠杆）、<strong>价值</strong>（USDT，= 数量 × 价格）；切换单位时按当前价格与杠杆将已填值自动换算回显；占位符与单位标识随切换更新；提交时统一折算为数量（BTC）下单，按 stepSize 校验</td></tr>
 <tr><td>仓位%滑杆</td><td>菱形滑块 + 0/25/50/75/100% 刻度；开仓：数量 = 可开 × 百分比；平仓：数量 = 持仓量 × 百分比</td></tr>
 <tr><td>资金信息</td><td>可用（含划转入口⇄）；双列「可开 / 保证金」（多、空各一列）；随价格/数量实时重算：可开 = 可用 × 杠杆 ÷ 价格；保证金 = 数量 × 价格 ÷ 杠杆</td></tr>
 <tr><td>下单按钮</td><td>开多·看涨（绿）/ 开空·看跌（红）大圆角按钮；提交后 loading 防连点</td></tr>
@@ -375,7 +376,7 @@ flowchart TB
 <tr><td>历史委托</td><td>B/S 成交标记显隐</td><td>开</td></tr>
 <tr><td>仓位</td><td>持仓线 + 盈亏标签显隐（连带止盈止损线）</td><td>开</td></tr>
 <tr><td>K线改单</td><td>图上拖拽改价总开关（委托线/止盈线/止损线）</td><td>开</td></tr>
-<tr><td>快捷下单</td><td>＋号标签流程总开关，与头部⚡联动</td><td>开</td></tr>
+<tr><td>快捷下单</td><td>＋号标签流程总开关（唯一开关入口）</td><td>开</td></tr>
 <tr><td rowspan="2">图层显示</td><td>倒计时</td><td>最新价签下方当根K线剩余时间</td><td>开</td></tr>
 <tr><td>盘口价格</td><td>买一/卖一贴纸</td><td>开</td></tr>
 <tr><td>下单确认</td><td>下单二次确认</td><td>开启后底部做多/做空需确认弹窗（确认弹窗含「不再提示」入口）</td><td>关 <span class="assume">假设</span></td></tr>
@@ -405,11 +406,11 @@ flowchart TB
 <table>
 <thead><tr><th>事件名</th><th>触发时机</th><th>关键属性</th></tr></thead>
 <tbody>
-<tr><td>kline_quick_toggle</td><td>⚡或设置项切换快捷下单</td><td>state(on/off), source(header/setting)</td></tr>
+<tr><td>kline_quick_toggle</td><td>设置项切换快捷下单</td><td>state(on/off)</td></tr>
 <tr><td>kline_pin_show</td><td>＋号标签唤起/移动</td><td>symbol, price_offset_pct</td></tr>
 <tr><td>kline_pin_drag</td><td>拖动标签松手</td><td>symbol, from_pct, to_pct</td></tr>
 <tr><td>kline_pin_plus_click</td><td>点击＋号</td><td>symbol, price_offset_pct</td></tr>
-<tr><td>kline_panel_submit</td><td>面板提交订单</td><td>symbol, tab(open/close), order_type, side, qty_pct(滑杆), is_cross(价格穿越), result(success/fail_reason)</td></tr>
+<tr><td>kline_panel_submit</td><td>面板提交订单</td><td>symbol, tab(open/close), order_type, side, input_unit(qty/cost/value), qty_pct(滑杆), is_cross(价格穿越), result(success/fail_reason)</td></tr>
 <tr><td>kline_order_line_drag</td><td>委托线拖拽改价成功</td><td>symbol, order_id, from_price, to_price</td></tr>
 <tr><td>kline_order_cancel</td><td>图上✕撤单/一键撤单</td><td>symbol, source(chart/list/batch)</td></tr>
 <tr><td>kline_tpsl_set</td><td>止盈止损设置/拖拽/撤销/触发</td><td>symbol, action(set/drag/remove/trigger), tp, sl</td></tr>
@@ -454,7 +455,7 @@ flowchart TB
 <tr><td>2</td><td>点＋弹窗</td><td>仅＋号段点击弹出面板，价格段点击不弹；面板价格预填标签价位</td></tr>
 <tr><td>3</td><td>限价/市价下单</td><td>限价未穿越 → 图上出现委托线；穿越或市价 → 立即成交生成持仓；均有 Toast 回报</td></tr>
 <tr><td>4</td><td>平仓 Tab</td><td>按钮变平空/平多、数量预填持仓量；部分平仓后持仓量正确减少且盈亏入账</td></tr>
-<tr><td>5</td><td>滑杆</td><td>开仓 50% = 可开×50%；平仓 50% = 持仓×50%；数量框同步</td></tr>
+<tr><td>5</td><td>滑杆与单位</td><td>开仓 50% = 可开×50%；平仓 50% = 持仓×50%；数量框按当前单位同步显示；单位在数量/成本/价值间切换时按当前价格与杠杆正确换算回显，任意单位提交均折算为数量下单</td></tr>
 <tr><td>6</td><td>委托线改价/撤单</td><td>K线改单开启可拖拽，松手后新价生效；关闭后不可拖；✕ 撤单后线消失、列表同步</td></tr>
 <tr><td>7</td><td>止盈止损</td><td>方向校验拦截；图上线可拖拽；触达触发市价平仓并记录</td></tr>
 <tr><td>8</td><td>设置面板</td><td>7 个开关逐一切换均即时生效且持久化；仓位关闭连带隐藏 TP/SL 线</td></tr>
@@ -473,13 +474,12 @@ flowchart TB
 </ol>
 <h4>建议确认（影响完整度）</h4>
 <ol start="5">
-<li><span class="tbd">待确认</span> 双向持仓模式的面板适配是否进 V1.0（当前按单向持仓设计）→ 见 3.2.1</li>
 <li><span class="assume">假设</span> 图上✕撤单免确认 → 见 3.4</li>
 <li><span class="tbd">待确认</span> 多空比数据口径；同根K线多笔成交标记聚合规则 → 见 3.8 / 3.6</li>
 <li><span class="tbd">待确认</span> 设置项是否随账号云端同步 → 见 3.7</li>
 </ol>
 <h4>可后续补充</h4>
-<ol start="9">
+<ol start="8">
 <li><span class="tbd">待确认</span> 性能指标基线（拖拽帧率、下单 P99、同屏元素截断策略）→ 见 4.3</li>
 <li><span class="tbd">待确认</span> 业务目标基线与目标值（K线页下单占比等）→ 见 1.1.3</li>
 </ol>

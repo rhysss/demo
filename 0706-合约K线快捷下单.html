@@ -93,7 +93,11 @@
   .qo-val{display:flex;align-items:center;gap:8px}
   .qo-val input{flex:1;width:0;background:none;border:none;outline:none;color:var(--txt);font-size:16px;font-weight:700;padding:2px 0}
   .qo-val input::placeholder{color:var(--sub2);font-size:13px;font-weight:500}
-  .qo-unit{font-size:12px;color:var(--txt);font-weight:600;flex:none}
+  .qo-unit{font-size:12px;color:var(--txt);font-weight:600;flex:none;cursor:pointer}
+  .qo-umenu{position:absolute;right:8px;top:calc(100% + 4px);background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px;z-index:5;display:none;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+  .qo-umenu.show{display:block}
+  .qo-umenu div{font-size:12px;color:var(--sub);padding:7px 14px;border-radius:6px;cursor:pointer;white-space:nowrap}
+  .qo-umenu div.on{color:var(--txt);background:var(--bg);font-weight:600}
   .qo-mkt{width:86px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--panel2);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--sub);cursor:pointer}
   .qo-mkt.on{color:var(--yellow);border-color:var(--yellow)}
   .qo-slide{position:relative;height:30px;margin:10px 2px 8px}
@@ -228,8 +232,7 @@
       <span class="chip mode" id="chipMargin" onclick="openLev()">全仓</span>
       <span class="chip" id="chipLev" onclick="openLev()">20x</span>
       <div class="hd-right">
-        <div class="icon-btn on" id="btnQuick" title="快捷下单" onclick="toggleQuick()">⚡</div>
-        <div class="icon-btn" title="下单设置" onclick="openSettings()">⚙</div>
+        <div class="icon-btn" title="图表设置" onclick="openSettings()">⚙</div>
       </div>
     </div>
     <div class="hd-row2">
@@ -666,7 +669,6 @@ function openQuickOrder(p){
       <div class="qo-chips">
         <span class="mini-chip" onclick="closeSheet();openLev()">${S.marginMode}</span>
         <span class="mini-chip" onclick="closeSheet();openLev()">${S.lev}X</span>
-        <span class="mini-chip" onclick="demoEntry()">单</span>
       </div>
     </div>
     <div class="qo-tabs" id="qoTabs"><span class="on" data-t="open">开仓</span><span data-t="close">平仓</span></div>
@@ -677,8 +679,13 @@ function openQuickOrder(p){
       </div>
       <div class="qo-mkt" id="qoMkt">市价</div>
     </div>
-    <div class="qo-inp">
-      <div class="qo-val"><input id="qoQ" class="num" inputmode="decimal" placeholder="数量 (BTC)"><span class="qo-unit">BTC ▾</span></div>
+    <div class="qo-inp" style="position:relative">
+      <div class="qo-val"><input id="qoQ" class="num" inputmode="decimal" placeholder="数量 (BTC)"><span class="qo-unit" id="qoU">BTC ▾</span></div>
+      <div class="qo-umenu" id="qoUMenu">
+        <div data-u="qty" class="on">数量 (BTC)</div>
+        <div data-u="cost">成本 (USDT)</div>
+        <div data-u="value">价值 (USDT)</div>
+      </div>
     </div>
     <div class="qo-slide">
       <div class="qo-ticks"><i></i><i></i><i></i><i></i><i></i></div>
@@ -700,17 +707,37 @@ function openQuickOrder(p){
       <button class="qo-short" id="qoSell"><b id="qoSellT">开空</b><small id="qoSellSub">看跌</small></button>
     </div>
     <div class="qo-link" onclick="demoEntry()">前往合约交易页 ›</div>`);
-  let tab='open', mkt=false;
+  let tab='open', mkt=false, unit='qty';
+  const UNITS={qty:{ph:'数量 (BTC)',lab:'BTC ▾'},cost:{ph:'成本 (USDT)',lab:'USDT ▾'},value:{ph:'价值 (USDT)',lab:'USDT ▾'}};
   const priceEff=()=>mkt?last:(parseFloat($('qoP').value)||last);
   const maxOpen=()=>S.balance*S.lev/priceEff();
+  /* 三种录入单位换算：数量Q(BTC) / 成本=Q×价÷杠杆 / 价值=Q×价 */
+  const toQ=v=>unit==='qty'?v:unit==='cost'?v*S.lev/priceEff():v/priceEff();
+  const fromQ=q=>unit==='qty'?q:unit==='cost'?q*priceEff()/S.lev:q*priceEff();
+  const fmtIn=v=>unit==='qty'?(+v.toFixed(3)).toString():(+v.toFixed(2)).toString();
   const upd=()=>{
-    const q=parseFloat($('qoQ').value)||0;
+    const Q=toQ(parseFloat($('qoQ').value)||0);
     const mo=fmtQ(maxOpen())+' BTC';
     $('qgMaxL').textContent=mo;$('qgMaxS').textContent=mo;
-    const mg=tab==='open'&&q>0?fmtU(q*priceEff()/S.lev):'0';
+    const mg=tab==='open'&&Q>0?fmtU(Q*priceEff()/S.lev):'0';
     $('qgMgL').textContent=mg+' USDT';$('qgMgS').textContent=mg+' USDT';
   };
   $('qoP').oninput=upd;$('qoQ').oninput=upd;upd();
+  /* 数量单位切换：数量/成本/价值 */
+  $('qoU').onclick=e=>{e.stopPropagation();$('qoUMenu').classList.toggle('show')};
+  $('qoQ').onfocus=()=>$('qoUMenu').classList.remove('show');
+  $('qoUMenu').onclick=e=>{
+    const nu=e.target.dataset.u;
+    $('qoUMenu').classList.remove('show');
+    if(!nu||nu===unit)return;
+    const Q=toQ(parseFloat($('qoQ').value)||0);   /* 先按旧单位折回数量 */
+    unit=nu;
+    [...$('qoUMenu').children].forEach(c=>c.classList.toggle('on',c.dataset.u===unit));
+    $('qoQ').placeholder=UNITS[unit].ph;
+    $('qoU').textContent=UNITS[unit].lab;
+    $('qoQ').value=Q>0?fmtIn(fromQ(Q)):'';
+    upd();
+  };
   /* 开仓/平仓 tab */
   $('qoTabs').onclick=e=>{
     if(!e.target.dataset.t)return;
@@ -719,7 +746,7 @@ function openQuickOrder(p){
     const open=tab==='open';
     $('qoBuyT').textContent=open?'开多':'平空'; $('qoBuySub').textContent=open?'看涨':'买入';
     $('qoSellT').textContent=open?'开空':'平多'; $('qoSellSub').textContent=open?'看跌':'卖出';
-    if(!open&&S.position)$('qoQ').value=S.position.size.toFixed(2);
+    if(!open&&S.position)$('qoQ').value=fmtIn(fromQ(S.position.size));
     upd();
   };
   /* 市价切换 */
@@ -734,11 +761,11 @@ function openQuickOrder(p){
   $('qoR').oninput=e=>{
     const pct=+e.target.value/100;
     const base=tab==='open'?maxOpen():(S.position?S.position.size:0);
-    $('qoQ').value=(base*pct).toFixed(2);
+    $('qoQ').value=fmtIn(fromQ(base*pct));
     upd();
   };
   const sub=side=>{
-    const q=parseFloat($('qoQ').value);
+    const q=toQ(parseFloat($('qoQ').value)||0);   /* 任意单位折算为数量下单 */
     if(!(q>0))return toast('请输入数量','err','!');
     if(tab==='close'){
       /* 平空(side=1,买入) / 平多(side=-1,卖出) */
@@ -885,14 +912,6 @@ function checkTriggers(){
   if((P.side>0&&last<=lq)||(P.side<0&&last>=lq)){closePosition('强制平仓',lq);toast('仓位已被强制平仓','err','!');}
 }
 
-/* =============== 头部 ⚡ 快捷下单开关 =============== */
-function toggleQuick(){
-  S.show.quick=!S.show.quick;
-  if(!S.show.quick)S.quickPrice=null;
-  $('btnQuick').classList.toggle('on',S.show.quick);
-  toast(S.show.quick?'快捷下单已开启：点击K线图任意价位出现 + 号标签':'快捷下单已关闭','ok','⚡');
-  render();
-}
 
 /* =============== 底部 Tabs =============== */
 $('btTabs').addEventListener('click',e=>{
@@ -907,7 +926,7 @@ function renderBottom(force){
   const b=$('btBody');
   if(S.tab==='pos'){
     const P=S.position;
-    if(!P){b.innerHTML=`<div class="empty">暂无持仓<br><span style="font-size:10px">可用保证金 ${fmtU(S.balance)} USDT · 通过 ⚡快捷面板一键开仓</span></div>`;return}
+    if(!P){b.innerHTML=`<div class="empty">暂无持仓<br><span style="font-size:10px">可用保证金 ${fmtU(S.balance)} USDT · 点击K线图任意价位快捷开仓</span></div>`;return}
     const pnl=(last-P.entry)*P.size*P.side, margin=P.entry*P.size/S.lev, roe=pnl/margin*100;
     b.innerHTML=`<div class="pos-card">
       <div class="pc-r1">
@@ -1040,7 +1059,7 @@ function openSettings(){
     c.onclick=()=>{
       const k=c.dataset.s, on=!S.show[k];
       S.show[k]=on; c.classList.toggle('on',on);
-      if(k==='quick'){$('btnQuick').classList.toggle('on',on);if(!on)S.quickPrice=null;}
+      if(k==='quick'&&!on)S.quickPrice=null;
       render();
     };
   });
