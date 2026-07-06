@@ -47,33 +47,39 @@
   #legend{position:absolute;top:4px;left:8px;font-size:10px;color:var(--sub);pointer-events:none;line-height:1.6;z-index:5}
   #legend b{color:var(--txt);font-weight:500}
 
-  /* 快捷下单面板 */
-  #qpanel{position:absolute;top:26px;left:8px;z-index:20;background:rgba(21,26,33,.94);border:1px solid var(--border);border-radius:8px;padding:8px;width:158px;backdrop-filter:blur(4px);box-shadow:0 4px 16px rgba(0,0,0,.5)}
-  #qpanel.hide{display:none}
-  .qp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-  .qp-title{font-size:11px;font-weight:600;color:var(--yellow)}
-  .qp-mode{display:flex;background:var(--bg);border-radius:4px;overflow:hidden;font-size:10px}
-  .qp-mode span{padding:2px 7px;cursor:pointer;color:var(--sub)}
-  .qp-mode span.on{background:var(--panel2);color:var(--txt);font-weight:600}
-  .qp-qty{display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:2px}
-  .qp-qty button{width:26px;height:28px;background:none;border:none;color:var(--sub);font-size:15px;cursor:pointer}
-  .qp-qty input{flex:1;width:0;background:none;border:none;color:var(--txt);text-align:center;font-size:12px;font-weight:600;outline:none}
-  .qp-est{font-size:9px;color:var(--sub2);text-align:center;margin-bottom:6px}
-  .qp-btns{display:flex;gap:6px}
-  .qp-btn{flex:1;border:none;border-radius:6px;padding:5px 0 4px;cursor:pointer;color:#fff;text-align:center}
-  .qp-btn .t{display:block;font-size:11px;font-weight:700}
-  .qp-btn .p{display:block;font-size:9px;opacity:.85;margin-top:1px}
-  .qp-btn.buy{background:var(--green)} .qp-btn.sell{background:var(--red)}
-  .qp-btn:active{opacity:.8}
-  .qp-hint{margin-top:6px;font-size:9px;color:var(--orange);text-align:center;display:none}
-  .qp-hint.show{display:block}
+  /* 快捷下单：价格轴悬浮 + 号标签 */
+  #quickPill{position:absolute;right:2px;transform:translateY(-50%);z-index:25;display:flex;align-items:center;gap:6px;background:#17181c;border:1px solid #2a3139;border-radius:9px;padding:3px 9px 3px 3px;cursor:grab;box-shadow:0 3px 12px rgba(0,0,0,.55);touch-action:none;user-select:none}
+  #quickPill:active{cursor:grabbing}
+  #quickPill .qp-plus{width:22px;height:22px;border-radius:50%;background:#2a3139;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex:none}
+  #quickPill .qp-info{display:flex;flex-direction:column;line-height:1.2;text-align:right}
+  #qpPrice{font-size:11px;font-weight:700;color:#fff}
+  #qpPct{font-size:9px}
 
-  /* 限价点选气泡 */
-  #bubble{position:absolute;z-index:30;left:52px;display:none;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 8px;box-shadow:0 4px 16px rgba(0,0,0,.6);transform:translateY(-50%)}
-  #bubble .bp{font-size:11px;font-weight:700;text-align:center;margin-bottom:5px}
-  #bubble .brow{display:flex;gap:5px}
-  #bubble button{border:none;border-radius:5px;font-size:10px;padding:4px 9px;color:#fff;cursor:pointer;font-weight:600}
-  .bb-buy{background:var(--green)} .bb-sell{background:var(--red)} .bb-x{background:var(--panel);color:var(--sub)!important}
+  /* 底部做多/做空栏 */
+  .bbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:400px;max-width:100vw;background:rgba(11,14,17,.96);backdrop-filter:blur(6px);border-top:1px solid var(--border);padding:8px 12px calc(10px + env(safe-area-inset-bottom));z-index:50}
+  .lsbar{display:flex;align-items:center;gap:8px;font-size:10px;margin-bottom:8px}
+  .ls-l{color:var(--green)} .ls-r{color:var(--red)}
+  .ls-track{flex:1;height:4px;border-radius:2px;background:var(--red);overflow:hidden}
+  .ls-fill{width:67.5%;height:100%;background:var(--green);border-radius:2px 0 0 2px}
+  .bbar-btns{display:flex;gap:10px}
+  .bbar-btns button{flex:1;border:none;border-radius:8px;padding:12px 0;font-size:15px;font-weight:700;color:#fff;cursor:pointer}
+  .bb-long{background:var(--green)} .bb-short{background:var(--red)}
+  .bbar-btns button:active{opacity:.85}
+
+  /* 图表设置面板：快捷入口 + 勾选卡片 */
+  .sc-shortcuts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+  .scut{display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--border);border-radius:10px;padding:11px 0;font-size:12px;cursor:pointer;color:var(--txt)}
+  .scut svg{width:14px;height:14px;stroke:var(--sub);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .cs-sec{font-size:12px;color:var(--sub);margin:2px 0 10px;display:flex;align-items:center;gap:4px}
+  .chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+  .cchip{position:relative;border:1px solid var(--border);border-radius:10px;padding:12px 4px;text-align:center;font-size:13px;cursor:pointer;color:var(--txt);overflow:hidden}
+  .cchip.on{border-color:#dfe3ea}
+  .cchip.on::before{content:'';position:absolute;top:0;right:0;border-style:solid;border-width:0 26px 26px 0;border-color:transparent #dfe3ea transparent transparent}
+  .cchip.on::after{content:'✓';position:absolute;top:0;right:3px;font-size:10px;color:#0b0e11;font-weight:700}
+
+  /* 快捷下单弹窗内步进器 */
+  .inp-line .stp{width:30px;height:30px;border:none;background:var(--panel2);color:var(--sub);border-radius:6px;font-size:15px;cursor:pointer;flex:none;margin:5px 0}
+  .inp-line .lastp{color:var(--yellow);cursor:pointer;margin-left:8px;flex:none}
 
   /* 图上标签（持仓/委托/止盈止损/强平） */
   #overlays{position:absolute;inset:0;pointer-events:none;z-index:10;overflow:hidden}
@@ -95,6 +101,7 @@
   .tagline.tp,.tagline.sl{cursor:grab}
   .tagline.tp .act,.tagline.sl .act{background:rgba(21,26,33,.9);color:var(--sub)}
   .tagline.liq .seg{background:rgba(246,166,35,.15);color:var(--orange)}
+  .tagline.be .seg{background:rgba(132,142,156,.18);color:#aab2bd}
   .tagline .drag-dot{font-size:8px;opacity:.6}
 
   /* ---------- 底部列表 ---------- */
@@ -187,7 +194,7 @@
       <span class="chip mode" id="chipMargin" onclick="openLev()">全仓</span>
       <span class="chip" id="chipLev" onclick="openLev()">20x</span>
       <div class="hd-right">
-        <div class="icon-btn on" id="btnQuick" title="快捷下单" onclick="togglePanel()">⚡</div>
+        <div class="icon-btn on" id="btnQuick" title="快捷下单" onclick="toggleQuick()">⚡</div>
         <div class="icon-btn" title="下单设置" onclick="openSettings()">⚙</div>
       </div>
     </div>
@@ -212,35 +219,10 @@
     <div id="legend"></div>
     <div id="overlays"></div>
 
-    <!-- 快捷下单面板 -->
-    <div id="qpanel">
-      <div class="qp-head">
-        <span class="qp-title">⚡ 快捷下单</span>
-        <div class="qp-mode" id="qpMode">
-          <span class="on" data-m="market">市价</span><span data-m="limit">限价</span>
-        </div>
-      </div>
-      <div class="qp-qty">
-        <button onclick="stepQty(-1)">−</button>
-        <input id="qtyInput" class="num" value="0.10" inputmode="decimal">
-        <button onclick="stepQty(1)">＋</button>
-      </div>
-      <div class="qp-est num" id="qtyEst">≈ -- USDT　保证金 ≈ --</div>
-      <div class="qp-btns">
-        <button class="qp-btn buy" onclick="quickOrder(1)"><span class="t">买入/做多</span><span class="p num" id="askP">--</span></button>
-        <button class="qp-btn sell" onclick="quickOrder(-1)"><span class="t">卖出/做空</span><span class="p num" id="bidP">--</span></button>
-      </div>
-      <div class="qp-hint" id="qpHint">点击图表任意价格位置挂单</div>
-    </div>
-
-    <!-- 限价点选气泡 -->
-    <div id="bubble">
-      <div class="bp num" id="bubbleP">--</div>
-      <div class="brow">
-        <button class="bb-buy" onclick="bubbleOrder(1)">买入挂单</button>
-        <button class="bb-sell" onclick="bubbleOrder(-1)">卖出挂单</button>
-        <button class="bb-x" onclick="hideBubble()">✕</button>
-      </div>
+    <!-- 快捷下单：价格轴悬浮 + 号标签（拖动定价，点击弹出下单弹窗） -->
+    <div id="quickPill">
+      <span class="qp-plus">＋</span>
+      <span class="qp-info"><span class="num" id="qpPrice">--</span><span class="num" id="qpPct">--</span></span>
     </div>
   </div>
 
@@ -253,6 +235,19 @@
       <span class="rt" onclick="closeAllOrders()">一键撤单</span>
     </div>
     <div class="bt-body" id="btBody"></div>
+  </div>
+
+  <!-- 底部做多/做空栏 -->
+  <div class="bbar">
+    <div class="lsbar">
+      <span class="ls-l num" id="lsL">多 67.50%</span>
+      <div class="ls-track"><div class="ls-fill" id="lsFill"></div></div>
+      <span class="ls-r num" id="lsR">32.50% 空</span>
+    </div>
+    <div class="bbar-btns">
+      <button class="bb-long" onclick="quickMarket(1)">做多</button>
+      <button class="bb-short" onclick="quickMarket(-1)">做空</button>
+    </div>
   </div>
 
   <!-- 通用弹层 -->
@@ -277,10 +272,12 @@ function toast(msg,cls='ok',icon='✓'){
 const S={
   lev:20, marginMode:'全仓',
   qty:0.10,
-  orderMode:'market',          // market | limit(点选图表)
   confirm2:false,              // 下单二次确认
-  panelOpen:true,
-  show:{pos:true,ord:true,liq:true,marks:true},
+  quickPrice:null,             // 悬浮 + 号标签所在价格
+  show:{
+    ord:true,marks:true,pos:true,be:false,liq:true,dragEdit:true,quick:true,  // 订单显示
+    cd:true,book:true,pct:false,log:false,inv:false                            // 图层显示
+  },
   balance:10000,               // USDT
   position:null,               // {side:1/-1,size,entry,tp,sl}
   orders:[],                   // {id,side,price,size}
@@ -332,10 +329,13 @@ function renderHeader(){
   el.classList.remove('flash-up','flash-down');void el.offsetWidth;
   el.classList.add(last>=prevLast?'flash-up':'flash-down');
   $('hdMark').textContent=fmtP(last+3.5);
-  $('askP').textContent=fmtP(last+2.5);
-  $('bidP').textContent=fmtP(last-2.5);
-  $('qtyEst').textContent=`≈ ${fmtU(S.qty*last)} USDT　保证金 ≈ ${fmtU(S.qty*last/S.lev)}`;
+  /* 多空比小幅波动 */
+  lsRatio=Math.max(35,Math.min(80,lsRatio+(Math.random()-.5)*1.2));
+  $('lsL').textContent=`多 ${lsRatio.toFixed(2)}%`;
+  $('lsR').textContent=`${(100-lsRatio).toFixed(2)}% 空`;
+  $('lsFill').style.width=lsRatio+'%';
 }
+let lsRatio=67.5;
 
 /* =============== 图表 =============== */
 const cvs=$('cvs'), ctx=cvs.getContext('2d');
@@ -357,9 +357,15 @@ function render(){
   let mn=Infinity,mx=-Infinity,mv=0;
   vis.forEach(k=>{mn=Math.min(mn,k.l);mx=Math.max(mx,k.h);mv=Math.max(mv,k.v);});
   const pad=(mx-mn)*.08; mn-=pad; mx+=pad;
-  const y=p=>PAD_T+(mx-p)/(mx-mn)*(priceB-PAD_T);
+  /* 对数 / 倒垂 视图变换 */
+  const tf=p=>S.show.log?Math.log(p):p;
+  const a=tf(mn), b=tf(mx);
+  const y=p=>{let t=(b-tf(p))/(b-a); if(S.show.inv)t=1-t; return PAD_T+t*(priceB-PAD_T)};
+  const yInv=py=>{let t=(py-PAD_T)/(priceB-PAD_T); if(S.show.inv)t=1-t; const v=b-t*(b-a); return S.show.log?Math.exp(v):v};
+  const pctBase=vis[0]?vis[0].c:last;
+  const lb=p=>S.show.pct?(((p/pctBase-1)*100).toFixed(2)+'%'):fmtP(p);   /* 百分比视图仅影响坐标刻度 */
   const x=i=>(i-start)*cw+cw/2;
-  geo={y,x,start,count,mn,mx,W,H,priceB,yInv:py=>mx-(py-PAD_T)/(priceB-PAD_T)*(mx-mn)};
+  geo={y,x,start,count,mn,mx,W,H,priceB,yInv};
 
   ctx.fillStyle='#0b0e11';ctx.fillRect(0,0,W,H);
   /* 网格 */
@@ -367,7 +373,7 @@ function render(){
   for(let i=0;i<=4;i++){
     const gy=PAD_T+(priceB-PAD_T)*i/4;
     ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W-PAD_R,gy);ctx.stroke();
-    ctx.fillText(fmtP(mx-(mx-mn)*i/4),W-PAD_R+6,gy);
+    ctx.fillText(lb(yInv(gy)),W-PAD_R+6,gy);
   }
   /* 时间轴 */
   for(let i=0;i<vis.length;i+=Math.ceil(count/4)){
@@ -401,10 +407,38 @@ function render(){
   }
   /* 最新价线 */
   drawHLine(last, last>=prevLast?'#0ecb81':'#f6465d', fmtP(last), true);
+  /* 倒计时（当根K线剩余时间，挂在最新价签下方） */
+  const lpy=y(last);
+  if(S.show.cd&&lpy>=PAD_T&&lpy<=priceB-24){
+    const cs=300-Math.floor(Date.now()/1000)%300;
+    ctx.fillStyle='#1c232d';ctx.fillRect(W-PAD_R,lpy+10,PAD_R-2,14);
+    ctx.fillStyle='#848e9c';ctx.fillText(`${String(Math.floor(cs/60)).padStart(2,'0')}:${String(cs%60).padStart(2,'0')}`,W-PAD_R+14,lpy+17);
+  }
+  /* 盘口价格（买一/卖一贴纸，靠在价格轴内侧） */
+  if(S.show.book){
+    const chip=(txt,py,col)=>{
+      if(py<PAD_T||py>priceB)return;
+      ctx.fillStyle=col;const w2=64;
+      ctx.fillRect(W-PAD_R-w2-3,py-7,w2,14);
+      ctx.fillStyle='#fff';ctx.fillText(txt,W-PAD_R-w2+2,py);
+    };
+    chip('卖 '+fmtP(last+2.5),lpy-18,'#f6465d');
+    chip('买 '+fmtP(last-2.5),lpy+18,'#0ecb81');
+  }
+  /* 快捷下单 + 号标签引导线 */
+  if(S.show.quick){
+    if(S.quickPrice==null)S.quickPrice=Math.round((last+180)/10)*10;
+    const qy=y(S.quickPrice);
+    if(qy>=PAD_T&&qy<=priceB){
+      ctx.strokeStyle='rgba(132,142,156,.55)';ctx.setLineDash([4,4]);
+      ctx.beginPath();ctx.moveTo(0,qy);ctx.lineTo(W-PAD_R,qy);ctx.stroke();ctx.setLineDash([]);
+    }
+  }
   /* 持仓/强平/委托/止盈止损线 */
   const P=S.position;
   if(P&&S.show.pos){
     drawHLine(P.entry, P.side>0?'#0ecb81':'#f6465d', fmtP(P.entry), false, [4,4]);
+    if(S.show.be){const be=P.entry*(1+P.side*0.001);drawHLine(be,'#848e9c',fmtP(be),false,[3,3]);}
     if(S.show.liq) drawHLine(liqPrice(P), '#f6a623', fmtP(liqPrice(P)), false, [2,3]);
     if(P.tp) drawHLine(P.tp,'#0ecb81',fmtP(P.tp),false,[6,3]);
     if(P.sl) drawHLine(P.sl,'#f6465d',fmtP(P.sl),false,[6,3]);
@@ -447,6 +481,21 @@ function render(){
     ctx.fillStyle=chipBg?'#fff':col;ctx.fillText(label,W-PAD_R+5,py);
   }
   syncTags();
+  positionPill();
+}
+/* 悬浮 + 号标签定位 */
+function positionPill(){
+  const el=$('quickPill');
+  if(!S.show.quick||S.quickPrice==null){el.style.display='none';return}
+  const py=geo.y(S.quickPrice);
+  if(py<PAD_T+6||py>geo.priceB-6){el.style.display='none';return}
+  el.style.display='flex';
+  el.style.top=py+'px';
+  $('qpPrice').textContent=fmtP(S.quickPrice);
+  const pct=(S.quickPrice/last-1)*100;
+  const pe=$('qpPct');
+  pe.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%';
+  pe.style.color=pct>=0?'var(--green)':'var(--red)';
 }
 
 /* =============== 图上标签(DOM) =============== */
@@ -459,6 +508,7 @@ function syncTags(){
     want.push({id:'pos',cls:'pos',price:P.entry,html:
       `<span class="seg"><span class="${P.side>0?'side-l':'side-s'}">${P.side>0?'多':'空'} ${fmtQ(P.size)}</span><span class="num" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}${fmtU(pnl)} (${roe>=0?'+':''}${roe.toFixed(2)}%)</span></span><span class="act" data-act="tpsl">TP/SL</span><span class="act" data-act="rev">反手</span><span class="act close" data-act="close">平</span>`});
     if(S.show.liq) want.push({id:'liq',cls:'liq',price:liqPrice(P),html:`<span class="seg">强平参考 ${fmtP(liqPrice(P))}</span>`});
+    if(S.show.be){const be=P.entry*(1+P.side*0.001);want.push({id:'be',cls:'be',price:be,html:`<span class="seg">损益两平 ${fmtP(be)}</span>`});}
     if(P.tp) want.push({id:'tp',cls:'tp',price:P.tp,drag:'tp',html:`<span class="seg"><span class="drag-dot">⠿</span>止盈 <span class="num" data-p>${fmtP(P.tp)}</span></span><span class="act" data-act="rmtp">✕</span>`});
     if(P.sl) want.push({id:'sl',cls:'sl',price:P.sl,drag:'sl',html:`<span class="seg"><span class="drag-dot">⠿</span>止损 <span class="num" data-p>${fmtP(P.sl)}</span></span><span class="act" data-act="rmsl">✕</span>`});
   }
@@ -493,6 +543,7 @@ ovl.addEventListener('click',e=>{
 /* 标签拖拽改价 */
 let dragTag=null;
 ovl.addEventListener('pointerdown',e=>{
+  if(!S.show.dragEdit)return;   /* 设置中的「K线改单」开关 */
   const el=e.target.closest('[data-drag]');
   if(!el||e.target.closest('[data-act]'))return;
   dragTag=el.dataset.tid; el.setPointerCapture(e.pointerId);
@@ -525,7 +576,7 @@ cvs.addEventListener('pointermove',e=>{
   if(!pd)return;
   const dx=e.clientX-pd.x;
   if(Math.abs(dx)>5||Math.abs(e.clientY-pd.y)>5)pd.moved=true;
-  if(pd.moved){S.crosshair=null;hideBubble();view.offset=pd.off+Math.round(dx/cw);render();}
+  if(pd.moved){S.crosshair=null;view.offset=pd.off+Math.round(dx/cw);render();}
 });
 cvs.addEventListener('pointerup',e=>{
   if(!pd)return;
@@ -533,23 +584,79 @@ cvs.addEventListener('pointerup',e=>{
   if(!tap)return;
   const rect=cvs.getBoundingClientRect(), cx=e.clientX-rect.left, cy=e.clientY-rect.top;
   if(cx>geo.W-PAD_R)return;
-  if(S.orderMode==='limit'&&S.panelOpen){showBubble(cy);return}
   S.crosshair=S.crosshair?null:{cx,cy};
   render();
 });
 
-/* 限价点选气泡 */
-let bubblePrice=0;
-function showBubble(cy){
-  bubblePrice=Math.round(geo.yInv(cy)*10)/10;
-  $('bubbleP').textContent=fmtP(bubblePrice)+' USDT';
-  $('bubbleP').style.color=bubblePrice>=last?'var(--red)':'var(--green)';
-  const b=$('bubble');b.style.display='block';b.style.top=cy+'px';
-}
-function hideBubble(){$('bubble').style.display='none'}
-function bubbleOrder(side){
-  const q=S.qty;hideBubble();
-  placeOrder({type:'limit',side,price:bubblePrice,size:q});
+/* =============== 快捷下单：+ 号标签拖动 / 点击 =============== */
+const pill=$('quickPill');
+let pillDrag=null;
+pill.addEventListener('pointerdown',e=>{
+  pillDrag={y:e.clientY,moved:false};
+  pill.setPointerCapture(e.pointerId);
+  e.stopPropagation();
+});
+pill.addEventListener('pointermove',e=>{
+  if(!pillDrag)return;
+  if(Math.abs(e.clientY-pillDrag.y)>4)pillDrag.moved=true;
+  if(pillDrag.moved){
+    const rect=cvs.getBoundingClientRect();
+    const p=Math.round(geo.yInv(e.clientY-rect.top)*10)/10;
+    if(p>0)S.quickPrice=p;
+    render();
+  }
+});
+pill.addEventListener('pointerup',()=>{
+  if(!pillDrag)return;
+  const tapped=!pillDrag.moved; pillDrag=null;
+  if(tapped)openQuickOrder(S.quickPrice);
+});
+
+/* + 号弹出的下单弹窗 */
+function openQuickOrder(p){
+  p=p??last;
+  openSheet(`
+    <div class="sh-title">快捷下单<span class="sh-x" onclick="closeSheet()">✕</span></div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:2px">最新价 <b class="num" style="color:var(--txt)">${fmtP(last)}</b> · ${S.marginMode} ${S.lev}x · 可用 <b class="num" style="color:var(--txt)">${fmtU(S.balance)}</b> USDT</div>
+    <div class="inp-line"><span class="lbl">价格</span><button class="stp" id="qoPm">−</button><input id="qoP" class="num" inputmode="decimal" value="${p.toFixed(1)}" style="text-align:center"><button class="stp" id="qoPp">＋</button><span class="u lastp" id="qoLast">最新价</span></div>
+    <div class="hint-pnl num" id="qoDiff"></div>
+    <div class="inp-line"><span class="lbl">数量</span><button class="stp" id="qoQm">−</button><input id="qoQ" class="num" inputmode="decimal" value="${S.qty.toFixed(2)}" style="text-align:center"><button class="stp" id="qoQp">＋</button><span class="u">BTC</span></div>
+    <div class="hint-pnl num" id="qoEst"></div>
+    <div class="risk-tip">高于最新价买入 / 低于最新价卖出将立即按市价成交，否则以限价单挂出（可在图上拖动改价）。</div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn-main green" style="margin-top:0" id="qoBuy">买入/做多</button>
+      <button class="btn-main red" style="margin-top:0" id="qoSell">卖出/做空</button>
+    </div>`);
+  const upd=()=>{
+    const price=parseFloat($('qoP').value)||0,q=parseFloat($('qoQ').value)||0;
+    const pct=(price/last-1)*100;
+    $('qoDiff').textContent=`距最新价 ${pct>=0?'+':''}${pct.toFixed(2)}%`;
+    $('qoDiff').style.color=pct>=0?'var(--green)':'var(--red)';
+    $('qoEst').textContent=`价值 ≈ ${fmtU(q*price)} USDT · 所需保证金 ≈ ${fmtU(q*price/S.lev)} USDT`;
+  };
+  $('qoP').oninput=upd;$('qoQ').oninput=upd;upd();
+  const step=(id,d,dec)=>{const el=$(id);el.value=Math.max(dec===1?.1:.01,(parseFloat(el.value)||0)+d).toFixed(dec===1?1:2);upd();};
+  $('qoPm').onclick=()=>step('qoP',-10,1);$('qoPp').onclick=()=>step('qoP',10,1);
+  $('qoQm').onclick=()=>step('qoQ',-0.01,2);$('qoQp').onclick=()=>step('qoQ',0.01,2);
+  $('qoLast').onclick=()=>{$('qoP').value=last.toFixed(1);upd();};
+  const sub=side=>{
+    const price=parseFloat($('qoP').value),q=parseFloat($('qoQ').value);
+    if(!(price>0&&q>0))return toast('请输入有效价格和数量','err','!');
+    S.qty=q;closeSheet();
+    if((side>0&&price>=last)||(side<0&&price<=last)){
+      const px=side>0?last+2.5:last-2.5;
+      fillOrder(side,px,q,'市价');
+      toast(`价格优于市价，已按市价成交 ${side>0?'买入':'卖出'} ${fmtQ(q)} @ ${fmtP(px)}`);
+    }else{
+      S.orders.push({id:S.oid++,side,price,size:q});
+      addHistory({text:`限价${side>0?'买入':'卖出'}委托`,side,price,size:q,type:'委托'});
+      toast(`限价${side>0?'买':'卖'}单已提交 @ ${fmtP(price)}`);
+      S.quickPrice=price;
+    }
+    render();renderBottom();
+  };
+  $('qoBuy').onclick=()=>sub(1);
+  $('qoSell').onclick=()=>sub(-1);
 }
 
 /* =============== 交易核心 =============== */
@@ -557,11 +664,10 @@ function liqPrice(P){return P.side>0?P.entry*(1-0.9/S.lev):P.entry*(1+0.9/S.lev)
 function markFill(price,side,label){S.fills.push({ci:candles.length-1,price,side,label})}
 function addHistory(h){S.history.unshift({time:now(),...h})}
 
-function quickOrder(side){
-  const q=S.qty;
-  if(!(q>0))return toast('请输入有效数量','err','!');
-  if(S.orderMode==='limit'){toast('限价模式：请点击图表选择价格','warn','!');return}
-  placeOrder({type:'market',side,size:q});
+/* 底部做多/做空（市价，走二次确认设置） */
+function quickMarket(side){
+  if(!(S.qty>0))return toast('请输入有效数量','err','!');
+  placeOrder({type:'market',side,size:S.qty});
 }
 function placeOrder(o){
   const exec=()=>{
@@ -669,24 +775,13 @@ function checkTriggers(){
   if((P.side>0&&last<=lq)||(P.side<0&&last>=lq)){closePosition('强制平仓',lq);toast('仓位已被强制平仓','err','!');}
 }
 
-/* =============== 快捷面板 =============== */
-function togglePanel(){
-  S.panelOpen=!S.panelOpen;
-  $('qpanel').classList.toggle('hide',!S.panelOpen);
-  $('btnQuick').classList.toggle('on',S.panelOpen);
+/* =============== 头部 ⚡ 快捷下单开关 =============== */
+function toggleQuick(){
+  S.show.quick=!S.show.quick;
+  $('btnQuick').classList.toggle('on',S.show.quick);
+  toast(S.show.quick?'快捷下单已开启：拖动 + 号标签定价，点击下单':'快捷下单已关闭','ok','⚡');
+  render();
 }
-$('qpMode').addEventListener('click',e=>{
-  if(e.target.dataset.m===undefined)return;
-  S.orderMode=e.target.dataset.m;
-  [...$('qpMode').children].forEach(c=>c.classList.toggle('on',c===e.target));
-  $('qpHint').classList.toggle('show',S.orderMode==='limit');
-  hideBubble();
-});
-function stepQty(d){
-  S.qty=Math.max(0.01,Math.round((S.qty+d*0.01)*100)/100);
-  $('qtyInput').value=S.qty.toFixed(2);renderHeader();
-}
-$('qtyInput').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(v>0)S.qty=v;renderHeader();});
 
 /* =============== 底部 Tabs =============== */
 $('btTabs').addEventListener('click',e=>{
@@ -816,22 +911,57 @@ function openLev(){
   };
 }
 function openSettings(){
+  const chip=(k,label)=>`<div class="cchip ${S.show[k]?'on':''}" data-s="${k}">${label}</div>`;
+  const ic={
+    guide:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7"/><line x1="12" y1="16.5" x2="12" y2="16.6"/></svg>',
+    ind:'<svg viewBox="0 0 24 24"><path d="M4 17l5-6 4 3 7-8"/><line x1="4" y1="21" x2="20" y2="21"/></svg>',
+    draw:'<svg viewBox="0 0 24 24"><path d="M4 20l4-1L20 7l-3-3L5 16l-1 4z"/></svg>',
+    style:'<svg viewBox="0 0 24 24"><rect x="6" y="8" width="4" height="8"/><line x1="8" y1="4" x2="8" y2="8"/><line x1="8" y1="16" x2="8" y2="20"/><rect x="14" y="6" width="4" height="7"/><line x1="16" y1="3" x2="16" y2="6"/><line x1="16" y1="13" x2="16" y2="18"/></svg>',
+    date:'<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="9" y1="3" x2="9" y2="7"/><line x1="15" y1="3" x2="15" y2="7"/></svg>',
+    more:'<svg viewBox="0 0 24 24"><line x1="4" y1="8" x2="20" y2="8"/><circle cx="9" cy="8" r="2"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="15" cy="16" r="2"/></svg>'
+  };
   openSheet(`
-    <div class="sh-title">快捷下单设置<span class="sh-x" onclick="closeSheet()">✕</span></div>
-    <div class="frow"><span class="k">下单二次确认<small>关闭后点击买卖按钮立即下单</small></span><div class="switch ${S.confirm2?'on':''}" data-s="confirm2"></div></div>
-    <div class="frow"><span class="k">显示持仓线 / 盈亏标签</span><div class="switch ${S.show.pos?'on':''}" data-s="pos"></div></div>
-    <div class="frow"><span class="k">显示委托挂单线<small>支持在图上拖动改价</small></span><div class="switch ${S.show.ord?'on':''}" data-s="ord"></div></div>
-    <div class="frow"><span class="k">显示强平参考价线</span><div class="switch ${S.show.liq?'on':''}" data-s="liq"></div></div>
-    <div class="frow" style="border:none"><span class="k">显示历史成交标记<small>K线上的 B / S 买卖标签</small></span><div class="switch ${S.show.marks?'on':''}" data-s="marks"></div></div>
+    <div class="sc-shortcuts">
+      <div class="scut" onclick="demoEntry()">${ic.guide}新手指导</div>
+      <div class="scut" onclick="demoEntry()">${ic.ind}指标</div>
+      <div class="scut" onclick="demoEntry()">${ic.draw}画线工具</div>
+      <div class="scut" onclick="demoEntry()">${ic.style}样式</div>
+      <div class="scut" onclick="demoEntry()">${ic.date}日期</div>
+      <div class="scut" onclick="demoEntry()">${ic.more}更多</div>
+    </div>
+    <div class="cs-sec">订单显示</div>
+    <div class="chip-grid">
+      ${chip('ord','当前委托')}${chip('marks','历史委托')}
+      ${chip('pos','仓位')}${chip('be','损益两平价')}
+      ${chip('liq','强平价格')}${chip('dragEdit','K线改单')}
+      ${chip('quick','快捷下单')}
+    </div>
+    <div class="cs-sec">图层显示</div>
+    <div class="chip-grid">
+      ${chip('cd','倒计时')}${chip('book','盘口价格')}
+      ${chip('pct','百分比视图')}${chip('log','对数视图')}
+      ${chip('inv','倒垂视图')}
+    </div>
+    <div class="frow" style="border:none"><span class="k">下单二次确认<small>开启后做多/做空需确认弹窗</small></span><div class="switch ${S.confirm2?'on':''}" id="swCfm"></div></div>
     <button class="btn-main" onclick="closeSheet()">完成</button>`);
-  $('sheet').querySelectorAll('.switch').forEach(sw=>{
-    sw.onclick=()=>{
-      sw.classList.toggle('on');const on=sw.classList.contains('on'),k=sw.dataset.s;
-      if(k==='confirm2')S.confirm2=on;else S.show[k]=on;
+  $('sheet').querySelectorAll('.cchip').forEach(c=>{
+    c.onclick=()=>{
+      const k=c.dataset.s, on=!S.show[k];
+      S.show[k]=on; c.classList.toggle('on',on);
+      /* 百分比与对数视图互斥 */
+      if(on&&(k==='pct'||k==='log')){
+        const other=k==='pct'?'log':'pct';
+        S.show[other]=false;
+        const oc=$('sheet').querySelector(`.cchip[data-s="${other}"]`);
+        if(oc)oc.classList.remove('on');
+      }
+      if(k==='quick')$('btnQuick').classList.toggle('on',on);
       render();
     };
   });
+  $('swCfm').onclick=()=>{S.confirm2=!S.confirm2;$('swCfm').classList.toggle('on',S.confirm2);};
 }
+function demoEntry(){toast('演示入口，本原型未实现','warn','!')}
 
 /* =============== 启动：预置演示数据 =============== */
 window.addEventListener('resize',()=>render());
