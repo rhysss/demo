@@ -44,8 +44,14 @@
   /* ---------- 图表 ---------- */
   .chart-wrap{position:relative;height:340px;background:var(--bg);touch-action:none;user-select:none}
   canvas{display:block;width:100%;height:100%}
-  #legend{position:absolute;top:4px;left:8px;font-size:10px;color:var(--sub);pointer-events:none;line-height:1.6;z-index:5}
+  #legend{position:absolute;top:4px;left:8px;font-size:10px;color:var(--sub);pointer-events:none;line-height:1.6;z-index:15}
   #legend b{color:var(--txt);font-weight:500}
+  /* 十字光标K线信息卡 */
+  #legend .xcard{margin-top:4px;background:rgba(28,35,45,.96);border:1px solid var(--border);border-radius:8px;padding:7px 10px;width:152px;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+  #legend .xr{display:flex;justify-content:space-between;gap:12px;line-height:1.75}
+  #legend .xr span{color:var(--sub)}
+  #legend .xr b{font-weight:600}
+  #legend .xr.fillr{border-top:1px dashed var(--border);margin-top:4px;padding-top:4px}
 
   /* 快捷下单：价格轴悬浮 + 号标签 */
   #quickPill{position:absolute;right:2px;transform:translateY(-50%);z-index:25;display:flex;align-items:stretch;background:#17181c;border:1px solid #2a3139;border-radius:9px;overflow:hidden;cursor:grab;box-shadow:0 3px 12px rgba(0,0,0,.55);touch-action:none;user-select:none}
@@ -482,32 +488,57 @@ function render(){
       const key=f.ci+'_'+f.side;
       if(seen.has(key))return;
       seen.add(key);
-      const fx=x(f.ci); ctx.font='bold 8px -apple-system';ctx.textBaseline='alphabetic';
-      if(f.side>0){
-        const fy=y(candles[f.ci].l)+14;
-        ctx.fillStyle='#0ecb81';tri(fx,fy,-1);ctx.fillText('B',fx-2.5,fy+16);
-      }else{
-        const fy=y(candles[f.ci].h)-14;
-        ctx.fillStyle='#f6465d';tri(fx,fy,1);ctx.fillText('S',fx-2.5,fy-9);
-      }
+      const fx=x(f.ci);
+      if(f.side>0)badge(fx,y(candles[f.ci].l)+13,'B','#0ecb81');
+      else badge(fx,y(candles[f.ci].h)-13,'S','#f6465d');
     });
   }
   ctx.textBaseline='middle';
-  function tri(tx,ty,dir){ctx.beginPath();ctx.moveTo(tx,ty-5*dir);ctx.lineTo(tx-4,ty+3*dir);ctx.lineTo(tx+4,ty+3*dir);ctx.fill();}
+  /* 圆角徽标印记（绿B/红S，白字） */
+  function badge(tx,ty,letter,col){
+    const w=13,h=13,r=3.5;
+    ctx.fillStyle=col;
+    ctx.beginPath();
+    ctx.moveTo(tx-w/2+r,ty-h/2);
+    ctx.arcTo(tx+w/2,ty-h/2,tx+w/2,ty+h/2,r);
+    ctx.arcTo(tx+w/2,ty+h/2,tx-w/2,ty+h/2,r);
+    ctx.arcTo(tx-w/2,ty+h/2,tx-w/2,ty-h/2,r);
+    ctx.arcTo(tx-w/2,ty-h/2,tx+w/2,ty-h/2,r);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 8px -apple-system';
+    ctx.textAlign='center';
+    ctx.fillText(letter,tx,ty+.5);
+    ctx.textAlign='start';
+  }
   /* 十字光标 */
   if(S.crosshair){
-    const {cx,cy}=S.crosshair;
+    const {cy}=S.crosshair;
+    /* 锚定蜡烛索引的光标（印记点击）跟随蜡烛移动；像素光标（长按）保持原位 */
+    const cx=S.crosshair.ci!=null?x(S.crosshair.ci):S.crosshair.cx;
     ctx.strokeStyle='rgba(132,142,156,.6)';ctx.setLineDash([3,3]);
     ctx.beginPath();ctx.moveTo(cx,PAD_T);ctx.lineTo(cx,H-PAD_B);ctx.moveTo(0,cy);ctx.lineTo(W-PAD_R,cy);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle='#2a3139';ctx.fillRect(W-PAD_R,cy-8,PAD_R,16);
     ctx.fillStyle='#eaecef';ctx.fillText(fmtP(geo.yInv(cy)),W-PAD_R+6,cy);
-    const ci=start+Math.round((cx-cw/2)/cw), k=candles[ci];
-    $('legend').innerHTML=k?`开 <b>${fmtP(k.o)}</b> 高 <b>${fmtP(k.h)}</b> 低 <b>${fmtP(k.l)}</b> 收 <b class="num">${fmtP(k.c)}</b><br>MA(7) <b style="color:#f0b90b">${fmtP(ma(ci,7))}</b>　MA(25) <b style="color:#b385f6">${fmtP(ma(ci,25))}</b>${fillRows(ci)}`:'';
+    const ci=S.crosshair.ci!=null?S.crosshair.ci:start+Math.round((cx-cw/2)/cw), k=candles[ci];
+    $('legend').innerHTML=k?`MA(7) <b style="color:#f0b90b">${fmtP(ma(ci,7))}</b>　MA(25) <b style="color:#b385f6">${fmtP(ma(ci,25))}</b>${xcard(ci,k)}`:'';
   }else{
     $('legend').innerHTML=`MA(7) <b style="color:#f0b90b">${fmtP(ma(candles.length-1,7))}</b>　MA(25) <b style="color:#b385f6">${fmtP(ma(candles.length-1,25))}</b>`;
   }
   function ma(i,n){let s=0,c2=0;for(let j=Math.max(0,i-n+1);j<=i;j++){s+=candles[j].c;c2++}return s/c2}
-  /* 该根K线的买卖均价行（数量加权，展示在OHLC信息面板内） */
+  /* 十字光标K线信息卡：时间/开/高/低/收/涨跌/涨跌幅/振幅/量/额 + 底部买卖均价 */
+  function xcard(ci,k){
+    const d=new Date(k.t);
+    const tm=`${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')},${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const chg=k.c-k.o, chgP=chg/k.o*100, amp=(k.h-k.l)/k.o*100;
+    const cc=chg>=0?'var(--green)':'var(--red)';
+    const row=(lb,v,col)=>`<div class="xr"><span>${lb}</span><b class="num"${col?` style="color:${col}"`:''}>${v}</b></div>`;
+    return `<div class="xcard">`+
+      row('时间',tm)+row('开',fmtP(k.o))+row('高',fmtP(k.h))+row('低',fmtP(k.l))+row('收',fmtP(k.c))+
+      row('涨跌',(chg>=0?'+':'')+fmtP(chg),cc)+row('涨跌幅',(chgP>=0?'+':'')+chgP.toFixed(2)+'%',cc)+
+      row('振幅',amp.toFixed(2)+'%')+row('量',k.v.toFixed(2))+row('额',(k.v*k.c/10000).toFixed(2)+'万')+
+      fillRows(ci)+`</div>`;
+  }
+  /* 该根K线的买卖均价行（数量加权，展示在信息卡底部） */
   function fillRows(ci){
     if(!S.show.marks)return '';
     const fs=S.fills.filter(f=>f.ci===ci);
@@ -519,8 +550,8 @@ function render(){
       return {qty,avg:qty>0?a.reduce((s2,f)=>s2+f.price*(f.size||0),0)/qty:a[0].price};
     };
     const b=agg(1),s=agg(-1);let h='';
-    if(b)h+=`<br><b class="num" style="color:var(--green)">买${fmtQ(b.qty)}@${fmtP(b.avg)} ›</b>`;
-    if(s)h+=`<br><b class="num" style="color:var(--red)">卖${fmtQ(s.qty)}@${fmtP(s.avg)} ›</b>`;
+    if(b)h+=`<div class="xr fillr"><b class="num" style="color:var(--green)">买${fmtQ(b.qty)}@${fmtP(b.avg)} ›</b></div>`;
+    if(s)h+=`<div class="xr ${b?'':'fillr'}"><b class="num" style="color:var(--red)">卖${fmtQ(s.qty)}@${fmtP(s.avg)} ›</b></div>`;
     return h;
   }
   function drawHLine(p,col,label,chipBg,dash){
@@ -648,7 +679,7 @@ cvs.addEventListener('pointerup',e=>{
   if(S.show.marks){
     const ci=geo.start+Math.round((cx-cw/2)/cw);
     if(ci>=0&&ci<candles.length&&S.fills.some(f=>f.ci===ci)){
-      S.crosshair={cx:geo.x(ci),cy:geo.y(candles[ci].c)};
+      S.crosshair={ci,cy:geo.y(candles[ci].c)};
       render();return;
     }
   }
