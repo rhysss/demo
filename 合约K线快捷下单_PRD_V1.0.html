@@ -60,12 +60,13 @@
 <div class="wrap"><div class="doc">
 
 <h1>合约交易 · K线快捷下单 产品需求文档（PRD）</h1>
-<p>版本号：V1.0.1</p>
+<p>版本号：V1.0.2</p>
 <table>
 <thead><tr><th>版本</th><th>时间</th><th>修订人</th><th>备注</th></tr></thead>
 <tbody>
 <tr><td>V1.0.0</td><td>2026/07/06</td><td>Rhys</td><td>创建：K线图快捷下单（＋号价格标签 → 开/平仓面板）、图上持仓线/委托线/止盈止损、K线改单、图表设置、底部做多做空栏</td></tr>
 <tr><td>V1.0.1</td><td>2026/07/06</td><td>Rhys</td><td>①快捷下单开关仅保留图表设置入口（移除头部⚡）；②下单面板移除持仓模式「单」芯片；③数量框支持三种录入单位：数量/成本/价值</td></tr>
+<tr><td>V1.0.2</td><td>2026/07/06</td><td>Rhys</td><td>新增：点击带 B/S 印记的蜡烛显示该根K线的买入/卖出均价卡片（含数量与笔数）</td></tr>
 </tbody>
 </table>
 <blockquote><p>📎 交互原型（本 PRD 所有交互均以原型为准）：<a href="https://forclaudecode.vercel.app/0706-合约K线快捷下单.html" target="_blank">0706-合约K线快捷下单.html</a>，交互基准对标币安 App 合约 K 线页图表交易。</p></blockquote>
@@ -367,6 +368,13 @@ flowchart TB
 
 <h3>3.6 B/S 成交标记</h3>
 <p>每笔成交（开、平、止盈止损触发、反手）在成交时刻对应 K 线打标：买入 = K线下方绿色向上三角 + <code>B</code>；卖出 = K线上方红色向下三角 + <code>S</code>。由设置项「历史委托」控制显隐。同根 K 线多笔成交时标记堆叠展示 <span class="tbd">待确认：堆叠上限与聚合规则</span>。</p>
+<h4>3.6.1 点击印记查看买卖均价</h4>
+<ul>
+<li>点击带 B/S 印记的蜡烛，在该蜡烛上方弹出成交均价卡片：K线时间 + 买入均价（绿）/ 卖出均价（红），每行附成交数量与笔数；只有对应方向有成交时才显示该行；</li>
+<li>均价 = Σ(成交价 × 成交数量) ÷ Σ成交数量（按该根 K 线内同方向全部成交加权）；</li>
+<li>卡片超出图表上边界时自动改为显示在蜡烛下方；点击其它区域或 4 秒后自动消失；</li>
+<li>优先级：点击命中带印记蜡烛时显示均价卡片，<strong>不触发</strong>＋号标签唤起；「历史委托」关闭时该交互同步失效。</li>
+</ul>
 
 <h3>3.7 图表设置面板</h3>
 <table>
@@ -416,6 +424,7 @@ flowchart TB
 <tr><td>kline_tpsl_set</td><td>止盈止损设置/拖拽/撤销/触发</td><td>symbol, action(set/drag/remove/trigger), tp, sl</td></tr>
 <tr><td>kline_position_action</td><td>图上标签 反手/平</td><td>symbol, action(reverse/close), pnl</td></tr>
 <tr><td>kline_bottom_bar_click</td><td>底部做多/做空</td><td>symbol, side, confirm2(on/off), result</td></tr>
+<tr><td>kline_fill_marker_click</td><td>点击带B/S印记蜡烛弹出均价卡片</td><td>symbol, buy_qty, sell_qty, fill_count</td></tr>
 <tr><td>kline_setting_toggle</td><td>设置面板任一开关</td><td>key, state</td></tr>
 </tbody>
 </table>
@@ -461,6 +470,7 @@ flowchart TB
 <tr><td>8</td><td>设置面板</td><td>7 个开关逐一切换均即时生效且持久化；仓位关闭连带隐藏 TP/SL 线</td></tr>
 <tr><td>9</td><td>二次确认</td><td>开启后底部做多/做空先弹确认；面板下单不受影响</td></tr>
 <tr><td>10</td><td>手势</td><td>横向拖动只平移不唤起标签；长按出十字光标；线标签拖拽不平移K线</td></tr>
+<tr><td>11</td><td>印记均价卡片</td><td>点击带B/S印记蜡烛弹出均价卡片且不唤起＋号标签，均价按数量加权正确；点击无印记蜡烛走＋号标签逻辑；4秒或点击他处消失；「历史委托」关闭后交互失效</td></tr>
 </tbody>
 </table>
 

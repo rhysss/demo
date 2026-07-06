@@ -57,6 +57,14 @@
   #qpPrice{font-size:11px;font-weight:700;color:#fff}
   #qpPct{font-size:9px}
 
+  /* 成交印记均价卡片 */
+  #fillTip{position:absolute;z-index:35;display:none;background:rgba(21,26,33,.97);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:10px;box-shadow:0 4px 16px rgba(0,0,0,.6);pointer-events:none;white-space:nowrap}
+  #fillTip .ft-t{color:var(--sub);margin-bottom:5px;font-size:9px}
+  #fillTip .ft-r{display:flex;align-items:center;gap:5px;margin:3px 0;color:var(--txt)}
+  #fillTip .ft-r i{width:6px;height:6px;border-radius:50%;flex:none}
+  #fillTip .ft-r b{font-weight:700;font-size:11px}
+  #fillTip .ft-r span{color:var(--sub)}
+
   /* 底部做多/做空栏 */
   .bbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:400px;max-width:100vw;background:rgba(11,14,17,.96);backdrop-filter:blur(6px);border-top:1px solid var(--border);padding:8px 12px calc(10px + env(safe-area-inset-bottom));z-index:50}
   .lsbar{display:flex;align-items:center;gap:8px;font-size:10px;margin-bottom:8px}
@@ -261,6 +269,9 @@
       <span class="qp-plus" id="qpPlus"><i>＋</i></span>
       <span class="qp-info"><span class="num" id="qpPrice">--</span><span class="num" id="qpPct">--</span></span>
     </div>
+
+    <!-- 成交印记均价卡片（点击带B/S标记的蜡烛显示） -->
+    <div id="fillTip"></div>
   </div>
 
   <!-- 底部列表 -->
@@ -596,6 +607,7 @@ ovl.addEventListener('pointerup',()=>{
 /* =============== 图表手势：拖动平移 / 点按 =============== */
 let pd=null;
 cvs.addEventListener('pointerdown',e=>{
+  $('fillTip').style.display='none';
   pd={x:e.clientX,y:e.clientY,off:view.offset,t:Date.now(),moved:false,long:false};
   /* 长按 400ms 唤起十字光标（快捷下单占用了单击） */
   pd.lp=setTimeout(()=>{
@@ -621,6 +633,11 @@ cvs.addEventListener('pointerup',e=>{
   const rect=cvs.getBoundingClientRect(), cx=e.clientX-rect.left, cy=e.clientY-rect.top;
   if(cx>geo.W-PAD_R)return;
   if(S.crosshair){S.crosshair=null;render();return}
+  /* 点击带 B/S 印记的蜡烛：显示该根买卖均价 */
+  if(S.show.marks){
+    const ci=geo.start+Math.round((cx-cw/2)/cw);
+    if(ci>=0&&ci<candles.length&&showFillTip(ci,cx))return;
+  }
   if(S.show.quick){
     /* 点击K线图：在点击价位出现 + 号标签；点在已有标签价位附近则收起 */
     if(S.quickPrice!=null&&Math.abs(geo.y(S.quickPrice)-cy)<14){S.quickPrice=null;}
@@ -630,6 +647,33 @@ cvs.addEventListener('pointerup',e=>{
   S.crosshair={cx,cy};
   render();
 });
+
+/* =============== 成交印记均价卡片 =============== */
+function showFillTip(ci,cx){
+  const fs=S.fills.filter(f=>f.ci===ci);
+  if(!fs.length)return false;
+  const agg=side=>{
+    const a=fs.filter(f=>f.side===side);
+    if(!a.length)return null;
+    const qty=a.reduce((s,f)=>s+(f.size||0),0);
+    const avg=qty>0?a.reduce((s,f)=>s+f.price*(f.size||0),0)/qty:a[0].price;
+    return {avg,qty,n:a.length};
+  };
+  const b=agg(1), s=agg(-1);
+  const d=new Date(candles[ci].t);
+  const tm=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  let h=`<div class="ft-t">${tm} 本根K线成交</div>`;
+  if(b)h+=`<div class="ft-r"><i style="background:var(--green)"></i>买入均价 <b class="num">${fmtP(b.avg)}</b><span class="num">· ${fmtQ(b.qty)} BTC / ${b.n}笔</span></div>`;
+  if(s)h+=`<div class="ft-r"><i style="background:var(--red)"></i>卖出均价 <b class="num">${fmtP(s.avg)}</b><span class="num">· ${fmtQ(s.qty)} BTC / ${s.n}笔</span></div>`;
+  const el=$('fillTip');
+  el.innerHTML=h; el.style.display='block';
+  el.style.left=Math.max(4,Math.min(cx-el.offsetWidth/2,geo.W-PAD_R-el.offsetWidth-4))+'px';
+  let ty=geo.y(candles[ci].h)-30-el.offsetHeight;       /* 优先显示在蜡烛上方 */
+  if(ty<6)ty=Math.min(geo.y(candles[ci].l)+30,geo.priceB-el.offsetHeight-6);
+  el.style.top=ty+'px';
+  clearTimeout(el._t); el._t=setTimeout(()=>el.style.display='none',4000);
+  return true;
+}
 
 /* =============== 快捷下单：+ 号标签拖动 / 点击 =============== */
 const pill=$('quickPill');
@@ -798,7 +842,7 @@ function openQuickOrder(p){
 
 /* =============== 交易核心 =============== */
 function liqPrice(P){return P.side>0?P.entry*(1-0.9/S.lev):P.entry*(1+0.9/S.lev)}
-function markFill(price,side,label){S.fills.push({ci:candles.length-1,price,side,label})}
+function markFill(price,side,size,label){S.fills.push({ci:candles.length-1,price,side,size,label})}
 function addHistory(h){S.history.unshift({time:now(),...h})}
 
 /* 底部做多/做空（市价，走二次确认设置） */
@@ -836,7 +880,7 @@ function placeOrder(o){
   $('cfmOk').onclick=()=>{if($('cfmSkip').checked){S.confirm2=false;}closeSheet();exec();};
 }
 function fillOrder(side,price,size,label){
-  markFill(price,side,label);
+  markFill(price,side,size,label);
   addHistory({text:`${label}${side>0?'买入':'卖出'}成交`,side,price,size,type:'成交'});
   let P=S.position;
   if(!P){S.position={side,size,entry:price,tp:null,sl:null};}
@@ -880,7 +924,7 @@ function closePosition(label,px){
   const price=px??(P.side>0?last-2.5:last+2.5);
   const pnl=(price-P.entry)*P.size*P.side;
   S.balance+=pnl;
-  markFill(price,-P.side,label);
+  markFill(price,-P.side,P.size,label);
   addHistory({text:`${label} 盈亏 ${pnl>=0?'+':''}${fmtU(pnl)} USDT`,side:-P.side,price,size:P.size,type:'平仓'});
   S.position=null;
   toast(`${label}成功，已实现盈亏 ${pnl>=0?'+':''}${fmtU(pnl)} USDT`,pnl>=0?'ok':'err',pnl>=0?'✓':'!');
