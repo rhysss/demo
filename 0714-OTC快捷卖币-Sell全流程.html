@@ -249,7 +249,7 @@ h1{font-size:22px;font-weight:700;margin-bottom:6px}
 </div>
 
 <div class="fixnote">
-  <b>注：</b>原型中已应用此前评审的修正 —— ① "Conform" 拼写更正为 <b>Confirm</b>；② 金额口径统一：Actual（实际扣除）= Quantity + Fee，确认弹窗 Order Amount 显示 <b>CNY</b>；③ "Error Network." 更正为 "Network error."；④ 删除收款方式成功后<b>返回列表页</b>，删除确认弹窗展示被删卡片信息；⑤ 金额为 0 / 无效时 Preview 置灰。如需还原原稿请告知。
+  <b>注：</b>原型中已应用此前评审的修正 —— ① "Conform" 拼写更正为 <b>Confirm</b>；② 金额口径统一：Actual（实际扣除）= Quantity + Fee，确认弹窗 Order Amount 显示 <b>CNY</b>；③ "Error Network." 更正为 "Network error."；④ 删除收款方式成功后<b>返回列表页</b>，删除确认弹窗展示被删卡片信息；⑤ 金额为 0 / 无效时 Preview 置灰；⑥ <b>方案A</b>：收款方式添加/修改均不做操作时验证，验证闸门收敛到下单环节（不可豁免），新添加/变更的账户<b>首次使用强制验证</b>（验证弹窗顶部橙色提示），订单创建时快照账户信息。如需还原原稿请告知。
 </div>
 
 <div class="wrap">
@@ -483,6 +483,7 @@ h1{font-size:22px;font-weight:700;margin-bottom:6px}
         <!-- verify sheet -->
         <div class="sheet" id="shVerify">
           <div class="grab"></div>
+          <div class="v-hint" id="vFirstUse" style="display:none;color:var(--orange)">New payment account — verification is required for its first use.</div>
           <div class="v-hint">Send verification code to 12***@gmail.com</div>
           <div class="v-row">
             <span class="lb">Email Verification</span>
@@ -769,6 +770,7 @@ function openVerify(ctx){
   verifyCtx = ctx;
   document.getElementById('vEmail').value = '';
   document.getElementById('vGoogle').value = '';
+  document.getElementById('vFirstUse').style.display = (pm && pm.firstUse) ? 'block' : 'none';
   document.getElementById('dim').classList.add('on');
   document.getElementById('shVerify').classList.add('on');
 }
@@ -790,18 +792,13 @@ function submitVerify(){
   if(e.length < 6 || g.length < 6){ toast('Invalid code. Please re-enter.'); return; }
   if(g === '000000'){ toast('Invalid code. Please re-enter.'); return; }   // demo: 000000 = 错误验证码
   closeSheets();
-  if(verifyCtx === 'sell'){
-    orders.ongoing.unshift(mkOrder('progress', pendingQty));
-    histEmpty = false;
-    toast('Success');
-    document.getElementById('amtInput').value = '';
-    onAmt();
-    setTimeout(function(){ go('pg-history'); switchTab('ongoing'); }, 1200);
-  } else {
-    saveBankData();
-    toast('Payment method has been updated.');
-    setTimeout(function(){ go('pg-pmselect'); }, 1100);
-  }
+  if(pm) pm.firstUse = false;   // 新账户完成首次使用验证
+  orders.ongoing.unshift(mkOrder('progress', pendingQty));
+  histEmpty = false;
+  toast('Success');
+  document.getElementById('amtInput').value = '';
+  onAmt();
+  setTimeout(function(){ go('pg-history'); switchTab('ongoing'); }, 1200);
 }
 function closeSheets(silent){
   clearInterval(cdTimer);
@@ -924,13 +921,11 @@ function submitBank(){
   document.getElementById('fBankBox').classList.toggle('err', !valid);
   document.getElementById('fBankErr').classList.toggle('on', !valid);
   if(!valid){ toast('Invalid bank information. Please try again.'); return; }
-  if(bankMode === 'edit'){
-    openVerify('pm');           // 修改已有信息 → 需要二次验证
-  } else {
-    saveBankData();
-    toast('Success');
-    setTimeout(function(){ go('pg-pmselect'); }, 900);
-  }
+  /* 方案A：添加/修改均不做操作时验证，闸门收敛到下单环节；新/变更账户首次使用强制验证 */
+  saveBankData();
+  pm.firstUse = true;
+  toast(bankMode === 'edit' ? 'Payment method has been updated.' : 'Success');
+  setTimeout(function(){ go('pg-pmselect'); }, 900);
 }
 function saveBankData(){
   pm = {
