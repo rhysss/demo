@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OTC 快捷卖币 Sell 全流程 · 交互原型</title>
+<style>
+/* ============ base ============ */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#a4e514;
+  --green-dim:#7fb30f;
+  --red:#f0424e;
+  --red-bg:rgba(240,66,78,.14);
+  --orange:#f5a623;
+  --gray:#8a8f96;
+  --usdt:#26a17b;
+  --bg-page:#0b0b0b;
+  --bg-card:#161616;
+  --bg-input:#1c1c1e;
+  --border:#2a2a2c;
+  --txt:#f5f5f5;
+  --txt-sub:#9a9fa6;
+  --txt-dim:#6b7076;
+}
+body{background:#1f2124;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;color:#e8e8e8;padding:24px 28px 60px}
+h1{font-size:22px;font-weight:700;margin-bottom:6px}
+.page-sub{color:#9aa0a8;font-size:13px;margin-bottom:22px;line-height:1.7}
+.page-sub b{color:var(--green)}
+
+/* ============ layout ============ */
+.wrap{display:flex;gap:24px;align-items:flex-start}
+.ctrl{width:230px;flex-shrink:0;position:sticky;top:20px}
+.gallery{flex:1;min-width:0}
+
+/* control panel */
+.ctrl-box{background:#26282c;border:1px solid #34373c;border-radius:14px;padding:14px;margin-bottom:14px}
+.ctrl-box h3{font-size:12px;color:#8b929b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.ctrl-btn{display:block;width:100%;text-align:left;background:#31343a;border:1px solid #3d4148;color:#dfe3e8;border-radius:8px;padding:7px 10px;font-size:12.5px;margin-bottom:6px;cursor:pointer;transition:.15s}
+.ctrl-btn:hover{background:#3a3e45;border-color:var(--green)}
+.ctrl-btn:last-child{margin-bottom:0}
+.ctrl-btn.primary{background:var(--green);color:#111;border-color:var(--green);font-weight:600}
+.ctrl-btn.primary:hover{background:#b6f52a}
+.ctrl-row{display:flex;gap:6px}
+.ctrl-row .ctrl-btn{flex:1;text-align:center}
+
+/* ============ phone frame ============ */
+.phone-col{flex-shrink:0}
+.phone{width:375px;height:812px;background:var(--bg-page);border-radius:42px;border:6px solid #2e3136;overflow:hidden;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.screen{position:absolute;inset:0;overflow:hidden}
+.page{position:absolute;inset:0;background:var(--bg-page);display:none;flex-direction:column}
+.page.on{display:flex}
+.statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 28px;flex-shrink:0}
+.statusbar .t{font-size:15px;font-weight:600;color:#fff}
+.statusbar svg{display:block}
+.navbar{height:48px;display:flex;align-items:center;padding:0 16px;flex-shrink:0;position:relative}
+.navbar .nav-title{position:absolute;left:0;right:0;text-align:center;font-size:17px;font-weight:700;color:#fff;pointer-events:none}
+.nav-ic{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;z-index:2}
+.nav-ic:active{background:#222}
+.nav-right{margin-left:auto}
+.body{flex:1;overflow-y:auto;padding:0 16px;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.foot{flex-shrink:0;padding:10px 16px 8px}
+.home-ind{width:135px;height:5px;border-radius:3px;background:#fff;margin:8px auto 6px}
+
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;height:46px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;width:100%;font-family:inherit}
+.btn.green{background:var(--green);color:#101300}
+.btn.green:active{background:#93cf10}
+.btn.dark{background:#2a2a2c;color:#fff}
+.btn.disabled{background:#3a3d1e;color:#7a7d5e;cursor:not-allowed}
+
+/* ============ sell page ============ */
+.seg{display:flex;gap:18px;padding:14px 0 4px}
+.seg span{font-size:22px;font-weight:800;color:var(--txt-dim);cursor:pointer}
+.seg span.on{color:#fff}
+.fld-label{font-size:13px;color:var(--txt-sub);margin:16px 0 8px}
+.amt-box{background:var(--bg-input);border:1px solid transparent;border-radius:10px;height:52px;display:flex;align-items:center;padding:0 12px;gap:10px}
+.amt-box.err{border-color:var(--red)}
+.amt-box input{flex:1;background:none;border:none;outline:none;color:#fff;font-size:17px;font-weight:600;min-width:0;font-family:inherit}
+.amt-box input::placeholder{color:#5b6066}
+.amt-all{color:var(--green);font-size:14px;font-weight:600;cursor:pointer}
+.coin-chip{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:700;color:#fff}
+.fld-err{color:var(--red);font-size:12px;margin-top:7px;display:none}
+.fld-err.on{display:block}
+.kv{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12.5px}
+.kv .k{color:var(--txt-sub)}
+.kv .v{color:#e8e8e8;display:flex;align-items:center;gap:5px}
+.rate-row{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:12.5px;color:#d8d8d8}
+.rate-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.rate-cd{color:var(--txt-dim);font-size:11px;margin-left:2px}
+.pm-add{border:1px dashed #3c4046;border-radius:10px;height:50px;display:flex;align-items:center;justify-content:center;gap:8px;color:#cfd3d8;font-size:14px;cursor:pointer}
+.pm-add:active{background:#141414}
+.pm-cell{background:var(--bg-input);border-radius:10px;height:50px;display:flex;align-items:center;padding:0 12px;gap:8px;font-size:14px;color:#fff;cursor:pointer}
+.pm-cell .grow{flex:1}
+.tips{margin-top:18px}
+.tips h4{font-size:13px;color:#d0d3d8;font-weight:600;margin-bottom:8px}
+.tips p{font-size:11.5px;color:var(--txt-dim);line-height:1.75}
+.fee-line{font-size:12.5px;color:#cfd3d8;padding:6px 0 8px}
+.chev{color:#5b6066}
+
+/* ============ bottom sheets ============ */
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.62);opacity:0;pointer-events:none;transition:.22s;z-index:20}
+.dim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#151517;border-radius:20px 20px 0 0;padding:10px 20px 6px;transform:translateY(105%);transition:.26s cubic-bezier(.3,.9,.4,1);z-index:21}
+.sheet.on{transform:translateY(0)}
+.grab{width:36px;height:4px;border-radius:2px;background:#3a3d42;margin:2px auto 14px}
+.sheet-title{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;margin-bottom:16px}
+.sheet-title .sell-w{color:var(--red)}
+.srow{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:14px}
+.srow .k{color:var(--txt-sub)}
+.srow .v{color:#fff;font-weight:600}
+.sheet-btns{display:flex;gap:12px;margin-top:8px}
+.sheet-btns .btn{flex:1}
+/* verify sheet */
+.v-hint{font-size:13px;color:#d0d3d8;margin-bottom:10px}
+.v-row{display:flex;align-items:center;gap:10px;background:var(--bg-input);border-radius:10px;padding:0 12px;height:50px;margin-bottom:14px}
+.v-row .lb{font-size:13px;color:var(--txt-sub);flex-shrink:0;width:118px}
+.v-row input{flex:1;background:none;border:none;outline:none;color:#fff;font-size:14px;min-width:0;letter-spacing:1px;font-family:inherit}
+.v-row input::placeholder{color:#54585e;letter-spacing:0}
+.v-act{color:var(--green);font-size:13.5px;font-weight:700;cursor:pointer;flex-shrink:0}
+.v-act.off{color:#5b6066;cursor:default}
+
+/* ============ toast ============ */
+.toast-wrap{position:absolute;left:0;right:0;top:46%;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:40;pointer-events:none}
+.toast{background:#2c2c2e;color:#fff;font-size:13.5px;padding:10px 18px;border-radius:9px;box-shadow:0 6px 24px rgba(0,0,0,.45);animation:tpop .2s;max-width:82%;text-align:center}
+@keyframes tpop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+/* ============ dialog (delete) ============ */
+.dialog{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:30}
+.dialog.on{display:flex}
+.dialog .mask{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.dlg-card{position:relative;width:280px;background:#1d1d1f;border-radius:16px;padding:26px 20px 20px;text-align:center}
+.dlg-ic{width:54px;height:54px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.dlg-t{font-size:14.5px;color:#fff;font-weight:600;margin-bottom:4px}
+.dlg-s{font-size:12px;color:var(--txt-sub);margin-bottom:18px}
+.dlg-btns{display:flex;gap:10px}
+.dlg-btns .btn{height:40px;font-size:14px;border-radius:9px}
+
+/* ============ history ============ */
+.htabs{display:flex;gap:22px;padding:4px 0 0;border-bottom:1px solid #202022}
+.htabs span{font-size:15px;font-weight:700;color:var(--txt-dim);padding:8px 0 10px;cursor:pointer;position:relative}
+.htabs span.on{color:#fff}
+.htabs span.on::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:2px;background:var(--green)}
+.filters{display:flex;gap:16px;padding:12px 0 4px;font-size:12.5px;color:var(--txt-sub)}
+.filters .f{display:flex;align-items:center;gap:4px;cursor:pointer}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:150px;gap:14px}
+.empty .txt{font-size:13px;color:var(--txt-dim)}
+.ocard{background:var(--bg-card);border-radius:12px;padding:14px;margin-top:12px;cursor:pointer}
+.ocard:active{background:#1c1c1c}
+.ohead{display:flex;align-items:center;gap:8px}
+.side-tag{background:var(--red-bg);color:var(--red);font-size:12px;font-weight:700;padding:2px 8px;border-radius:5px}
+.ohead .coin{display:flex;align-items:center;gap:6px;font-size:14.5px;font-weight:700;color:#fff}
+.ostat{margin-left:auto;font-size:13px;color:var(--txt-sub);display:flex;align-items:center;gap:3px}
+.otime{font-size:11.5px;color:var(--txt-dim);margin:7px 0 10px}
+.ogrid{display:flex;justify-content:space-between}
+.ocol .r{font-size:12px;margin-bottom:6px;color:var(--txt-sub)}
+.ocol .r b{color:#e6e6e6;font-weight:500;margin-left:4px}
+.ocny{font-size:15px;font-weight:700;color:#fff;text-align:right}
+.oid{display:flex;align-items:center;gap:5px}
+
+/* ============ order detail ============ */
+.d-status{text-align:center;padding:8px 0 2px;font-size:24px;font-weight:800}
+.d-side{text-align:center;font-size:14px;color:#fff;margin:6px 0 16px}
+.d-side .sw{color:var(--red);font-weight:700;margin-right:6px}
+.d-card{background:var(--bg-card);border-radius:12px;padding:6px 14px}
+.d-row{display:flex;justify-content:space-between;padding:11px 0;font-size:13px}
+.d-row .k{color:var(--txt-sub)}
+.d-row .v{color:#fff;font-weight:500;display:flex;align-items:center;gap:6px}
+.st-progress{color:var(--orange)}
+.st-cancel{color:#9a9fa6}
+.st-done{color:var(--green)}
+.st-dispute{color:var(--red)}
+
+/* ============ payment method pages ============ */
+.sec-label{font-size:13px;color:var(--txt-sub);margin:16px 0 10px}
+.pm-card{background:var(--bg-card);border-radius:12px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
+.pm-card .info{flex:1}
+.pm-card .bankline{font-size:12px;color:var(--txt-sub);margin-bottom:8px}
+.pm-card .nm{font-size:14px;color:#fff;font-weight:600;margin-bottom:3px}
+.pm-card .cd{font-size:13px;color:#d5d8dc}
+.pm-addrow{background:var(--bg-card);border-radius:12px;height:52px;display:flex;align-items:center;padding:0 14px;font-size:14.5px;color:#fff;font-weight:600;cursor:pointer;margin-top:10px}
+.pm-addrow:active{background:#1d1d1d}
+.pm-addrow .grow{flex:1}
+/* bank form */
+.f-label{font-size:13px;color:#d0d3d8;margin:16px 0 8px}
+.f-label .req{color:var(--red);margin-right:2px}
+.f-input{background:var(--bg-input);border:1px solid transparent;border-radius:10px;height:48px;display:flex;align-items:center;padding:0 12px}
+.f-input.err{border-color:var(--red)}
+.f-input input{flex:1;background:none;border:none;outline:none;color:#fff;font-size:14px;font-family:inherit}
+.f-input input::placeholder{color:#54585e}
+.f-inline-err{color:var(--red);font-size:12px;margin-top:6px;display:none}
+.f-inline-err.on{display:block}
+
+/* ============ home + tips sheet ============ */
+.home-bg{flex:1;overflow:hidden;padding:0 14px;position:relative}
+.hm-top{display:flex;align-items:center;gap:10px;padding:6px 0}
+.hm-logo{width:30px;height:30px;border-radius:8px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#111}
+.hm-search{flex:1;height:32px;border-radius:16px;background:#1b1b1d;display:flex;align-items:center;padding:0 12px;gap:6px;color:#5b6066;font-size:12.5px}
+.hm-card{background:#141414;border-radius:14px;padding:18px 16px;margin-top:12px}
+.hm-card .w1{font-size:12.5px;color:#b9bdc3;margin-bottom:4px}
+.hm-card .w2{font-size:20px;font-weight:800;color:#e8e8e8;line-height:1.3;margin-bottom:14px}
+.hm-card .w2 em{font-style:normal;color:var(--green)}
+.hm-cta{display:inline-flex;height:36px;padding:0 16px;border-radius:8px;background:var(--green);color:#111;font-size:13.5px;font-weight:700;align-items:center}
+.hm-notice{display:flex;align-items:center;gap:8px;font-size:12px;color:#9aa0a8;padding:12px 2px}
+.hm-icons{display:flex;justify-content:space-between;padding:6px 6px 2px}
+.hm-ic{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:11.5px;color:#c5c9ce;cursor:pointer}
+.hm-ic .bx{width:44px;height:44px;border-radius:12px;background:#1a1a1c;display:flex;align-items:center;justify-content:center}
+.hm-listed{background:linear-gradient(135deg,#182408,#0f1503);border-radius:14px;padding:16px;margin-top:14px;position:relative;overflow:hidden}
+.hm-listed .l1{color:var(--green);font-size:16px;font-weight:800;margin-bottom:5px}
+.hm-listed .l2{font-size:11.5px;color:#9aa39a;margin-bottom:12px}
+.hm-listed .l3{display:inline-flex;height:28px;padding:0 12px;border-radius:6px;border:1px solid var(--green);color:var(--green);font-size:12px;font-weight:600;align-items:center}
+.home-dim{position:absolute;inset:0;background:rgba(0,0,0,.66);z-index:5}
+.tips-sheet{position:absolute;left:0;right:0;bottom:0;background:#131315;border-radius:20px 20px 0 0;padding:8px 18px 4px;z-index:6}
+.tips-sheet h3{font-size:17px;font-weight:800;color:#fff;margin:4px 0 14px}
+.trow{background:#1d1d20;border-radius:12px;height:52px;display:flex;align-items:center;gap:12px;padding:0 14px;margin-bottom:10px}
+.trow .tn{flex:1;font-size:14px;color:#fff;font-weight:600}
+.trow .ta{font-size:13.5px;font-weight:700;color:var(--green);cursor:pointer}
+.trow .ta.pending{color:var(--green);opacity:.85;cursor:default}
+
+/* ============ right gallery ============ */
+.g-sec{margin-bottom:26px}
+.g-sec h2{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.g-sec .g-note{font-size:12px;color:#8b929b;margin-bottom:12px}
+.g-grid{display:flex;flex-wrap:wrap;gap:14px}
+.g-card{background:#26282c;border:1px solid #34373c;border-radius:12px;padding:14px;min-width:240px}
+.g-card h4{font-size:12px;color:#9aa0a8;font-weight:600;margin-bottom:12px}
+.g-toast{background:#0d0d0d;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.g-toast .toast{position:static;animation:none;cursor:pointer;max-width:none}
+.g-toast .toast:hover{outline:1px solid var(--green)}
+.g-btnrow{background:#0d0d0d;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.g-btnrow .pair{display:flex;gap:10px}
+.g-btnrow .pair .btn{height:40px;font-size:13.5px;flex:1;border-radius:9px;cursor:default}
+.g-btnrow .cap{font-size:11px;color:#6b7076}
+.g-amt{background:#0d0d0d;border-radius:10px;padding:14px}
+.g-amt .amt-box{margin-bottom:0}
+.g-amt .cap{font-size:11px;color:#6b7076;margin:8px 0 12px}
+.g-amt .cap:last-child{margin-bottom:0}
+.fixnote{background:#1d2410;border:1px solid #3a4a14;border-radius:12px;padding:12px 14px;font-size:12px;color:#c8d69a;line-height:1.8;margin-bottom:22px}
+.fixnote b{color:var(--green)}
+</style>
+</head>
+<body>
+
+<h1>OTC 快捷卖币（Quick Buy · Sell）全流程交互原型</h1>
+<div class="page-sub">
+  左侧手机可完整走通：<b>卖币下单 → 报价确认（30s倒计时/Refresh）→ 邮箱+谷歌二次验证 → 下单成功 → 历史订单 → 订单详情</b>，以及 <b>收款方式的添加 / 修改（二次验证）/ 删除（确认弹窗）</b> 和 <b>绑定四要素 Tips 弹窗</b>。左侧控制面板可直达任意场景；右侧平铺展示不便通过交互到达的状态。
+</div>
+
+<div class="fixnote">
+  <b>注：</b>原型中已应用此前评审的修正 —— ① "Conform" 拼写更正为 <b>Confirm</b>；② 金额口径统一：Actual（实际扣除）= Quantity + Fee，确认弹窗 Order Amount 显示 <b>CNY</b>；③ "Error Network." 更正为 "Network error."；④ 删除收款方式成功后<b>返回列表页</b>，删除确认弹窗展示被删卡片信息；⑤ 金额为 0 / 无效时 Preview 置灰。如需还原原稿请告知。
+</div>
+
+<div class="wrap">
+
+  <!-- ============ control panel ============ -->
+  <div class="ctrl">
+    <div class="ctrl-box">
+      <h3>全局</h3>
+      <button class="ctrl-btn primary" onclick="resetAll()">重置原型</button>
+    </div>
+    <div class="ctrl-box">
+      <h3>卖币页场景</h3>
+      <button class="ctrl-btn" onclick="scNoPM()">无收款方式</button>
+      <button class="ctrl-btn" onclick="scHasPM()">有收款方式</button>
+      <div class="ctrl-row">
+        <button class="ctrl-btn" onclick="scAmt(1200)">1200 余额不足</button>
+        <button class="ctrl-btn" onclick="scAmt(0.5)">0.5 金额过小</button>
+      </div>
+      <button class="ctrl-btn" onclick="scAmt(500)">500（正常，可 Preview）</button>
+      <button class="ctrl-btn" onclick="scConfirm()">直达确认弹窗</button>
+      <button class="ctrl-btn" onclick="scVerify()">直达二次验证</button>
+    </div>
+    <div class="ctrl-box">
+      <h3>订单</h3>
+      <div class="ctrl-row">
+        <button class="ctrl-btn" onclick="scHistory(false)">历史订单</button>
+        <button class="ctrl-btn" onclick="scHistory(true)">空态</button>
+      </div>
+      <div class="ctrl-row">
+        <button class="ctrl-btn" onclick="scDetail('progress')">进行中</button>
+        <button class="ctrl-btn" onclick="scDetail('dispute')">有争议</button>
+      </div>
+      <div class="ctrl-row">
+        <button class="ctrl-btn" onclick="scDetail('done')">已完成</button>
+        <button class="ctrl-btn" onclick="scDetail('cancel')">已取消</button>
+      </div>
+    </div>
+    <div class="ctrl-box">
+      <h3>收款方式</h3>
+      <button class="ctrl-btn" onclick="scPMList()">收款方式管理</button>
+      <button class="ctrl-btn" onclick="scBankAdd()">添加银行卡表单</button>
+      <button class="ctrl-btn" onclick="scBankEdit()">修改已有信息（编辑态）</button>
+    </div>
+    <div class="ctrl-box">
+      <h3>绑定四要素 Tips</h3>
+      <button class="ctrl-btn" onclick="scTips('none')">都未绑定</button>
+      <button class="ctrl-btn" onclick="scTips('kyc')">KYC 认证中</button>
+      <button class="ctrl-btn" onclick="scTips('part')">绑定部分</button>
+    </div>
+  </div>
+
+  <!-- ============ phone ============ -->
+  <div class="phone-col">
+    <div class="phone">
+      <div class="screen" id="screen">
+
+        <!-- ======== PAGE: sell ======== -->
+        <div class="page on" id="pg-sell">
+          <div class="statusbar"><span class="t">9:41</span><span id="sb1"></span></div>
+          <div class="navbar">
+            <div class="nav-ic" onclick="toast('返回上一页（演示）')" id="ic-back-sell"></div>
+            <div class="nav-title">Quick Buy</div>
+            <div class="nav-ic nav-right" onclick="go('pg-history')" id="ic-hist"></div>
+          </div>
+          <div class="body">
+            <div class="seg"><span onclick="toast('Buy 流程不在本原型范围')">Buy</span><span class="on">Sell</span></div>
+
+            <div class="fld-label">Sell</div>
+            <div class="amt-box" id="amtBox">
+              <input id="amtInput" inputmode="decimal" placeholder="0" oninput="onAmt()">
+              <span class="amt-all" onclick="fillAll()">All</span>
+              <span class="coin-chip"><span id="usdtIc1"></span>USDT</span>
+            </div>
+            <div class="fld-err" id="amtErr"></div>
+            <div class="kv"><span class="k">Available</span><span class="v"><span id="usdtIcS"></span>1,000.03 USDT</span></div>
+            <div class="kv"><span class="k">Limit</span><span class="v">100 ~ 50,000 USDT</span></div>
+
+            <div class="fld-label">Receive</div>
+            <div class="amt-box">
+              <input id="recvInput" placeholder="0" readonly>
+              <span class="coin-chip"><span id="cnyIc1"></span>CNY</span>
+            </div>
+            <div class="rate-row"><span class="rate-dot" id="rateDot"></span>1 USDT ≈ 7.35 CNY<span class="rate-cd" id="rateCd">报价 30s 后刷新</span></div>
+
+            <div class="fld-label">Payment Method</div>
+            <div class="pm-add" id="pmEmpty" onclick="go('pg-pmselect')"><span id="plusIc"></span>Add payment method</div>
+            <div class="pm-cell" id="pmCell" style="display:none" onclick="go('pg-pmselect')">
+              <span>Bank Transfer</span><span class="grow"></span><span id="pmCellNo" style="color:#d5d8dc">12345678876543</span><span class="chev">›</span>
+            </div>
+
+            <div class="tips">
+              <h4>Tips</h4>
+              <p>Your OTC transaction will be processed through our platform partner, ChipPay.<br>
+              ChipPay is a digital currency trading platform that provides merchants with fast and convenient services for buying and selling digital currency.<br>
+              A certain amount of USDT will be charged as a fee for OTC transactions.<br>
+              The final amount received is subject to the actual exchange rate.</p>
+            </div>
+          </div>
+          <div class="foot">
+            <div class="fee-line">Fee: <span id="feeTxt">-</span> per transaction</div>
+            <button class="btn green disabled" id="btnPreview" onclick="openConfirm()">Preview</button>
+          </div>
+        </div>
+
+        <!-- ======== PAGE: order history ======== -->
+        <div class="page" id="pg-history">
+          <div class="statusbar"><span class="t">9:41</span><span id="sb2"></span></div>
+          <div class="navbar">
+            <div class="nav-ic" onclick="go('pg-sell')" id="ic-back-hist"></div>
+            <div class="nav-title">Order History</div>
+          </div>
+          <div style="padding:0 16px">
+            <div class="htabs">
+              <span id="tabOngoing" class="on" onclick="switchTab('ongoing')">Ongoing</span>
+              <span id="tabCompleted" onclick="switchTab('completed')">Completed</span>
+            </div>
+            <div class="filters" id="histFilters">
+              <span class="f">Order Type: All <i class="chev">▾</i></span>
+              <span class="f">State: All <i class="chev">▾</i></span>
+              <span class="f" id="fDate" style="display:none">Date: All <i class="chev">▾</i></span>
+            </div>
+          </div>
+          <div class="body" id="histBody"></div>
+          <div class="foot" style="padding-bottom:0"><div class="home-ind"></div></div>
+        </div>
+
+        <!-- ======== PAGE: order detail ======== -->
+        <div class="page" id="pg-detail">
+          <div class="statusbar"><span class="t">9:41</span><span id="sb3"></span></div>
+          <div class="navbar">
+            <div class="nav-ic" onclick="go('pg-history')" id="ic-back-det"></div>
+            <div class="nav-title">Order Details</div>
+            <div class="nav-ic nav-right" onclick="toast('联系客服（演示）')" id="ic-cs"></div>
+          </div>
+          <div class="body" id="detBody"></div>
+          <div class="foot" id="detFoot"></div>
+        </div>
+
+        <!-- ======== PAGE: payment method select ======== -->
+        <div class="page" id="pg-pmselect">
+          <div class="statusbar"><span class="t">9:41</span><span id="sb4"></span></div>
+          <div class="navbar">
+            <div class="nav-ic" onclick="go('pg-sell')" id="ic-back-pms"></div>
+            <div class="nav-title">Add Payment Method</div>
+            <div class="nav-ic nav-right" onclick="toast('联系客服（演示）')" id="ic-cs2"></div>
+          </div>
+          <div class="body" id="pmsBody"></div>
+          <div class="foot" id="pmsFoot"></div>
+        </div>
+
+        <!-- ======== PAGE: bank form (add / edit) ======== -->
+        <div class="page" id="pg-bank">
+          <div class="statusbar"><span class="t">9:41</span><span id="sb5"></span></div>
+          <div class="navbar">
+            <div class="nav-ic" onclick="go('pg-pmselect')" id="ic-back-bank"></div>
+            <div class="nav-title" id="bankTitle">Add Bank Transfer</div>
+            <div class="nav-ic nav-right" id="ic-trash" style="display:none" onclick="openDelete()"></div>
+          </div>
+          <div class="body">
+            <div class="f-label"><span class="req">*</span>Name</div>
+            <div class="f-input"><input id="fName" placeholder="张三"></div>
+            <div class="f-label"><span class="req">*</span>Phone Number</div>
+            <div class="f-input"><input id="fPhone" inputmode="tel" placeholder="12345678910"></div>
+            <div class="f-label"><span class="req">*</span>Bank Card Number</div>
+            <div class="f-input"><input id="fCard" inputmode="numeric" placeholder="Enter your bank card number"></div>
+            <div class="f-label"><span class="req">*</span>Bank Name</div>
+            <div class="f-input" id="fBankBox"><input id="fBank" placeholder="Enter the name of your bank"></div>
+            <div class="f-inline-err" id="fBankErr">Invalid bank information. Please try again.</div>
+            <div class="f-label">Account Opening Branch</div>
+            <div class="f-input"><input id="fBranch" placeholder="Enter your bank branch information"></div>
+          </div>
+          <div class="foot">
+            <button class="btn green" id="btnBankSubmit" onclick="submitBank()">Confirm</button>
+          </div>
+        </div>
+
+        <!-- ======== PAGE: home + tips sheet ======== -->
+        <div class="page" id="pg-home">
+          <div class="statusbar"><span class="t">9:41</span><span id="sb6"></span></div>
+          <div class="home-bg">
+            <div class="hm-top">
+              <div class="hm-logo">100x</div>
+              <div class="hm-search"><span id="searchIc"></span>Search</div>
+              <span id="hmIc1"></span><span id="hmIc2"></span><span id="hmIc3"></span>
+            </div>
+            <div class="hm-card">
+              <div class="w1">Welcome to 100X</div>
+              <div class="w2">Get up to <em>$100</em> when you sign up</div>
+              <span class="hm-cta">Sign up or Log in</span>
+            </div>
+            <div class="hm-notice"><span id="hornIc"></span>100X to list perpetual for ZRO crypto...<span style="margin-left:auto">···</span></div>
+            <div class="hm-icons">
+              <div class="hm-ic" onclick="toast('Deposit（演示）')"><div class="bx" id="qDep"></div>Deposit</div>
+              <div class="hm-ic" onclick="showTips(tipsState)"><div class="bx" id="qQB"></div>Quick Buy</div>
+              <div class="hm-ic" onclick="toast('Futures（演示）')"><div class="bx" id="qFu"></div>Futures</div>
+              <div class="hm-ic" onclick="toast('Referral（演示）')"><div class="bx" id="qRef"></div>Referral</div>
+            </div>
+            <div class="hm-listed">
+              <div class="l1">Listed on 100X!</div>
+              <div class="l2">8:00 on April 2, 2024 (UTC)</div>
+              <span class="l3">Explore</span>
+            </div>
+            <div class="home-dim" id="homeDim"></div>
+            <div class="tips-sheet" id="tipsSheet">
+              <div class="grab"></div>
+              <h3>Tips</h3>
+              <div id="tipsRows"></div>
+            </div>
+          </div>
+          <div class="foot" style="padding-bottom:0"><div class="home-ind"></div></div>
+        </div>
+
+        <!-- ======== overlays ======== -->
+        <div class="dim" id="dim" onclick="closeSheets()"></div>
+
+        <!-- confirm sheet -->
+        <div class="sheet" id="shConfirm">
+          <div class="grab"></div>
+          <div class="sheet-title"><span class="sell-w">Sell</span><span id="usdtIc2"></span>USDT</div>
+          <div class="srow"><span class="k">Quantity</span><span class="v" id="cQty">-</span></div>
+          <div class="srow"><span class="k">Fee</span><span class="v" id="cFee">8 USDT</span></div>
+          <div class="srow"><span class="k">Order Amount</span><span class="v" id="cAmt">-</span></div>
+          <div class="srow"><span class="k">Actual</span><span class="v" id="cAct">-</span></div>
+          <div class="sheet-btns">
+            <button class="btn dark" onclick="closeSheets()">Cancel</button>
+            <button class="btn green" id="btnConfirm" onclick="confirmMain()">Confirm(30s)</button>
+          </div>
+          <div class="home-ind"></div>
+        </div>
+
+        <!-- verify sheet -->
+        <div class="sheet" id="shVerify">
+          <div class="grab"></div>
+          <div class="v-hint">Send verification code to 12***@gmail.com</div>
+          <div class="v-row">
+            <span class="lb">Email Verification</span>
+            <input id="vEmail" inputmode="numeric" maxlength="6" placeholder="Enter code">
+            <span class="v-act" id="btnGetCode" onclick="getCode()">Get Code</span>
+          </div>
+          <div class="v-hint">Enter Current Google Verification Code</div>
+          <div class="v-row">
+            <span class="lb">Google Verification</span>
+            <input id="vGoogle" inputmode="numeric" maxlength="6" placeholder="Enter code">
+            <span class="v-act" onclick="pasteCode()">Paste</span>
+          </div>
+          <button class="btn green" style="margin-top:6px" onclick="submitVerify()">Confirm</button>
+          <div class="home-ind"></div>
+        </div>
+
+        <!-- delete dialog -->
+        <div class="dialog" id="dlgDelete">
+          <div class="mask" onclick="closeDelete()"></div>
+          <div class="dlg-card">
+            <div class="dlg-ic">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 5v9" stroke="#101300" stroke-width="3" stroke-linecap="round"/><circle cx="12" cy="18.5" r="1.7" fill="#101300"/></svg>
+            </div>
+            <div class="dlg-t">Remove payment method?</div>
+            <div class="dlg-s" id="dlgSub">中国银行 (*6543) · 张三</div>
+            <div class="dlg-btns">
+              <button class="btn dark" onclick="closeDelete()">Cancel</button>
+              <button class="btn green" onclick="doDelete()">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- toast -->
+        <div class="toast-wrap" id="toastWrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ right gallery ============ -->
+  <div class="gallery">
+    <div class="g-sec">
+      <h2>Toast 集合</h2>
+      <div class="g-note">点击任意 toast 可在左侧手机中实时预览</div>
+      <div class="g-card" style="min-width:300px;max-width:380px">
+        <div class="g-toast" id="gToasts"></div>
+      </div>
+    </div>
+
+    <div class="g-sec">
+      <h2>确认弹窗按钮状态</h2>
+      <div class="g-note">状态 1：报价有效期内（30s 倒计时）；状态 2：报价过期 → Refresh 重新询价（可在左侧确认弹窗等待 30s 实际体验）</div>
+      <div class="g-card" style="min-width:300px;max-width:380px">
+        <div class="g-btnrow">
+          <div class="cap">状态 1 · 倒计时</div>
+          <div class="pair"><button class="btn dark">Cancel</button><button class="btn green">Confirm(30s)</button></div>
+          <div class="cap">状态 2 · 报价过期</div>
+          <div class="pair"><button class="btn dark">Cancel</button><button class="btn green">Refresh</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g-sec">
+      <h2>输入框错误态样式</h2>
+      <div class="g-note">左侧手机中输入 1200 / 0.5 可实时触发；此处为静态对照</div>
+      <div class="g-card" style="min-width:300px;max-width:380px">
+        <div class="g-amt">
+          <div class="amt-box err" style="width:100%"><input value="1200" readonly style="background:none;border:none;outline:none;color:#fff;font-size:16px;font-weight:600;flex:1"><span class="amt-all">All</span><span class="coin-chip"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#26a17b"/><text x="10" y="14.2" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">₮</text></svg>USDT</span></div>
+          <div class="cap" style="color:#f0424e">Insufficient balance. Please add funds.</div>
+          <div class="amt-box err" style="width:100%"><input value="0.5" readonly style="background:none;border:none;outline:none;color:#fff;font-size:16px;font-weight:600;flex:1"><span class="amt-all">All</span><span class="coin-chip"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#26a17b"/><text x="10" y="14.2" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">₮</text></svg>USDT</span></div>
+          <div class="cap" style="color:#f0424e">Amount too low. Minimum 100 USDT.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g-sec">
+      <h2>订单状态色板</h2>
+      <div class="g-note">四种订单状态在详情页顶部的呈现（左侧控制面板可直达各状态详情页）</div>
+      <div class="g-grid">
+        <div class="g-card"><h4>进行中</h4><div style="background:#0d0d0d;border-radius:10px;padding:18px;text-align:center"><div class="st-progress" style="font-size:20px;font-weight:800">In progress</div></div></div>
+        <div class="g-card"><h4>已取消</h4><div style="background:#0d0d0d;border-radius:10px;padding:18px;text-align:center"><div class="st-cancel" style="font-size:20px;font-weight:800">Canceled</div></div></div>
+        <div class="g-card"><h4>已完成</h4><div style="background:#0d0d0d;border-radius:10px;padding:18px;text-align:center"><div class="st-done" style="font-size:20px;font-weight:800">Fulfilled</div></div></div>
+        <div class="g-card"><h4>有争议</h4><div style="background:#0d0d0d;border-radius:10px;padding:18px;text-align:center"><div class="st-dispute" style="font-size:20px;font-weight:800">In dispute</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= state ================= */
+var RATE = 7.35, FEE = 8, BAL = 1000.03, MIN = 100, MAX = 50000;
+var pm = null;              // payment method object or null
+var curTab = 'ongoing';
+var histEmpty = false;
+var bankMode = 'add';       // add | edit
+var verifyCtx = 'sell';     // sell | pm
+var tipsState = 'none';
+var cdTimer = null, codeTimer = null;
+var pendingQty = 0;
+
+var seedOrders = function(){ return {
+  ongoing: [
+    mkOrder('dispute', 1000.43),
+    mkOrder('progress', 1000.43)
+  ],
+  completed: [
+    mkOrder('done', 1000.43),
+    mkOrder('cancel', 1000.43)
+  ]
+};};
+var orders = seedOrders();
+
+function mkOrder(st, qty){
+  return { st: st, qty: qty, fee: FEE, actual: qty + FEE, cny: (qty * RATE),
+    id: '348576349234', time: '2025-03-04 14:25:25' };
+}
+var stMap = {
+  progress: {label:'In progress', cls:'st-progress'},
+  cancel:   {label:'Canceled',    cls:'st-cancel'},
+  done:     {label:'Fulfilled',   cls:'st-done'},
+  dispute:  {label:'In dispute',  cls:'st-dispute'}
+};
+function fmt(n, d){ d = (d===undefined)?2:d; return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+
+/* ================= icons ================= */
+function svgIco(name, sz){
+  sz = sz || 22;
+  var s = 'width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
+  var m = {
+    back:  '<svg '+s+'><path d="M15 5l-7 7 7 7"/></svg>',
+    hist:  '<svg '+s+'><rect x="4" y="3.5" width="14" height="17" rx="2.5"/><path d="M8 8h6M8 12h6"/><circle cx="17.5" cy="17.5" r="4.2" fill="#0b0b0b" stroke="#fff"/><path d="M17.5 15.8v1.9l1.3.8"/></svg>',
+    cs:    '<svg '+s+'><path d="M5 12a7 7 0 0 1 14 0"/><rect x="3.5" y="12" width="4" height="6" rx="2"/><rect x="16.5" y="12" width="4" height="6" rx="2"/><path d="M19 18a4 4 0 0 1-4 3.4h-1.5"/></svg>',
+    trash: '<svg '+s+'><path d="M4.5 6.5h15M9.5 6V4.8A1.3 1.3 0 0 1 10.8 3.5h2.4a1.3 1.3 0 0 1 1.3 1.3V6.5"/><path d="M6.5 6.5l.8 12.2a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.8-12.2"/><path d="M10 10.5v6M14 10.5v6"/></svg>',
+    plus:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a4e514" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+    copy:  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a4e514" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>',
+    edit:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a4e514" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z"/></svg>',
+    plusG: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a4e514" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+    search:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6066" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>',
+    horn:  '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa0a8" stroke-width="1.8" stroke-linejoin="round"><path d="M3 10v4h3l6 4V6l-6 4H3z"/><path d="M16 9a4.5 4.5 0 0 1 0 6" stroke-linecap="round"/></svg>'
+  };
+  return m[name] || '';
+}
+function usdt(sz){ sz=sz||20; return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#26a17b"/><text x="10" y="14.2" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">₮</text></svg>'; }
+function usdtSm(){ return '<svg width="14" height="14" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="none" stroke="#a4e514" stroke-width="1.6"/><text x="10" y="13.6" text-anchor="middle" font-size="10" font-weight="800" fill="#a4e514">+</text></svg>'; }
+function cny(sz){ sz=sz||20; return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#f0424e"/><text x="10" y="14.4" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">¥</text></svg>'; }
+function batt(){ return '<svg width="60" height="14" viewBox="0 0 60 14" fill="none"><path d="M2 10.5c1.2-2.8 2.4-4.2 3.6-4.2S8 7.7 8 9v1.5M10.5 10.5V6.8m3 3.7V5.5m3 5V4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M24 4.5c2.8 0 5.3 1 7.3 2.9M26 8.2a7.6 7.6 0 0 1 5.2 2" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="31.2" cy="11.6" r="1.1" fill="#fff"/><rect x="38" y="3" width="18" height="9" rx="2.4" stroke="#fff" stroke-opacity=".5"/><rect x="39.5" y="4.5" width="13" height="6" rx="1.2" fill="#fff"/><path d="M57.5 6v3a1.8 1.8 0 0 0 0-3z" fill="#fff" fill-opacity=".5"/></svg>'; }
+function emptyDoc(){ return '<svg width="76" height="76" viewBox="0 0 76 76" fill="none"><path d="M18 14h28l12 12v34a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4V18a4 4 0 0 1 4-4z" fill="#8fce12"/><path d="M46 14l12 12H50a4 4 0 0 1-4-4v-8z" fill="#c8f55e"/><ellipse cx="40" cy="66" rx="22" ry="3.5" fill="#000" opacity=".35"/></svg>'; }
+function tipIco(name){
+  var s = 'width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"';
+  var m = {
+    id:    '<svg '+s+'><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.5-1.6 1.7-2.4 3-2.4s2.5.8 3 2.4M15 9.5h4M15 13h4"/></svg>',
+    phone: '<svg '+s+'><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
+    mail:  '<svg '+s+'><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg>',
+    ga:    '<svg '+s+'><path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9"/></svg>'
+  };
+  return m[name];
+}
+function qIco(name){
+  var s = 'width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a4e514" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
+  var m = {
+    dep: '<svg '+s+'><rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M12 9v6M9.3 12.3L12 15l2.7-2.7"/></svg>',
+    qb:  '<svg '+s+'><rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M8.5 12h7M13 9l3 3-3 3"/></svg>',
+    fu:  '<svg '+s+'><rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M7.5 14.5l3-3 2.5 2 3.5-4"/></svg>',
+    ref: '<svg '+s+'><circle cx="10" cy="9" r="3"/><path d="M5 19c.8-2.8 2.7-4.2 5-4.2s4.2 1.4 5 4.2M17 8v5M14.5 10.5h5"/></svg>'
+  };
+  return m[name];
+}
+
+/* inject static icons */
+document.getElementById('ic-back-sell').innerHTML = svgIco('back');
+document.getElementById('ic-hist').innerHTML = svgIco('hist');
+document.getElementById('ic-back-hist').innerHTML = svgIco('back');
+document.getElementById('ic-back-det').innerHTML = svgIco('back');
+document.getElementById('ic-cs').innerHTML = svgIco('cs');
+document.getElementById('ic-back-pms').innerHTML = svgIco('back');
+document.getElementById('ic-cs2').innerHTML = svgIco('cs');
+document.getElementById('ic-back-bank').innerHTML = svgIco('back');
+document.getElementById('ic-trash').innerHTML = svgIco('trash');
+document.getElementById('plusIc').innerHTML = svgIco('plusG');
+document.getElementById('usdtIc1').innerHTML = usdt(20);
+document.getElementById('usdtIc2').innerHTML = usdt(20);
+document.getElementById('usdtIcS').innerHTML = usdtSm();
+document.getElementById('cnyIc1').innerHTML = cny(20);
+document.getElementById('searchIc').innerHTML = svgIco('search');
+document.getElementById('hornIc').innerHTML = svgIco('horn');
+document.getElementById('qDep').innerHTML = qIco('dep');
+document.getElementById('qQB').innerHTML = qIco('qb');
+document.getElementById('qFu').innerHTML = qIco('fu');
+document.getElementById('qRef').innerHTML = qIco('ref');
+['sb1','sb2','sb3','sb4','sb5','sb6'].forEach(function(id){ document.getElementById(id).innerHTML = batt(); });
+
+/* ================= router ================= */
+function go(id){
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('on'); });
+  document.getElementById(id).classList.add('on');
+  closeSheets(true);
+  if(id === 'pg-history') renderHist();
+  if(id === 'pg-pmselect') renderPMS();
+}
+
+/* ================= toast ================= */
+var toastT = null;
+function toast(msg, long){
+  var w = document.getElementById('toastWrap');
+  w.innerHTML = '<div class="toast">'+msg+'</div>';
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ w.innerHTML = ''; }, long ? 2600 : 1800);
+}
+
+/* ================= sell page ================= */
+function onAmt(){
+  var el = document.getElementById('amtInput');
+  var v = parseFloat(el.value);
+  var box = document.getElementById('amtBox');
+  var err = document.getElementById('amtErr');
+  var btn = document.getElementById('btnPreview');
+  var ok = false, msg = '';
+  if(el.value === '' || isNaN(v) || v === 0){ msg = ''; }
+  else if(v + FEE > BAL && v <= MAX){ msg = 'Insufficient balance. Please add funds.'; }
+  else if(v < MIN){ msg = 'Amount too low. Minimum ' + MIN + ' USDT.'; }
+  else if(v > MAX){ msg = 'Amount exceeds the maximum limit of ' + fmt(MAX,0) + ' USDT.'; }
+  else ok = true;
+  box.classList.toggle('err', msg !== '');
+  err.textContent = msg;
+  err.classList.toggle('on', msg !== '');
+  document.getElementById('recvInput').value = (isNaN(v) || v<=0) ? '' : fmt(v * RATE);
+  document.getElementById('feeTxt').textContent = (ok || msg) ? (FEE + ' USDT') : '-';
+  var can = ok && !!pm;
+  btn.classList.toggle('disabled', !can);
+  btn.textContent = (!pm && ok) ? 'Add payment method first' : 'Preview';
+}
+function fillAll(){
+  var el = document.getElementById('amtInput');
+  el.value = Math.min(BAL - FEE, MAX).toFixed(2);
+  onAmt();
+}
+/* quote refresh indicator */
+var quoteS = 30;
+setInterval(function(){
+  quoteS--; if(quoteS <= 0) quoteS = 30;
+  var el = document.getElementById('rateCd');
+  if(el) el.textContent = '报价 ' + quoteS + 's 后刷新';
+}, 1000);
+
+/* ================= confirm sheet ================= */
+function openConfirm(){
+  var btn = document.getElementById('btnPreview');
+  if(btn.classList.contains('disabled')){
+    if(!pm) toast('请先添加收款方式');
+    return;
+  }
+  pendingQty = parseFloat(document.getElementById('amtInput').value);
+  document.getElementById('cQty').textContent = fmt(pendingQty) + ' USDT';
+  document.getElementById('cFee').textContent = FEE + ' USDT';
+  document.getElementById('cAmt').textContent = '≈' + fmt(pendingQty * RATE) + ' CNY';
+  document.getElementById('cAct').textContent = fmt(pendingQty + FEE) + ' USDT';
+  document.getElementById('dim').classList.add('on');
+  document.getElementById('shConfirm').classList.add('on');
+  startCountdown();
+}
+function startCountdown(){
+  clearInterval(cdTimer);
+  var s = 30, b = document.getElementById('btnConfirm');
+  b.textContent = 'Confirm(' + s + 's)'; b.dataset.mode = 'confirm';
+  cdTimer = setInterval(function(){
+    s--;
+    if(s <= 0){ clearInterval(cdTimer); b.textContent = 'Refresh'; b.dataset.mode = 'refresh'; return; }
+    b.textContent = 'Confirm(' + s + 's)';
+  }, 1000);
+}
+function confirmMain(){
+  var b = document.getElementById('btnConfirm');
+  if(b.dataset.mode === 'refresh'){
+    toast('已刷新报价：1 USDT ≈ 7.35 CNY');
+    startCountdown();
+    return;
+  }
+  clearInterval(cdTimer);
+  document.getElementById('shConfirm').classList.remove('on');
+  openVerify('sell');
+}
+
+/* ================= verify sheet ================= */
+function openVerify(ctx){
+  verifyCtx = ctx;
+  document.getElementById('vEmail').value = '';
+  document.getElementById('vGoogle').value = '';
+  document.getElementById('dim').classList.add('on');
+  document.getElementById('shVerify').classList.add('on');
+}
+function getCode(){
+  var b = document.getElementById('btnGetCode');
+  if(b.classList.contains('off')) return;
+  toast('验证码已发送至 12***@gmail.com');
+  var s = 59;
+  b.classList.add('off'); b.textContent = s + 's';
+  codeTimer = setInterval(function(){
+    s--;
+    if(s <= 0){ clearInterval(codeTimer); b.classList.remove('off'); b.textContent = 'Get Code'; return; }
+    b.textContent = s + 's';
+  }, 1000);
+}
+function pasteCode(){ document.getElementById('vGoogle').value = '123456'; }
+function submitVerify(){
+  var e = document.getElementById('vEmail').value, g = document.getElementById('vGoogle').value;
+  if(e.length < 6 || g.length < 6){ toast('Invalid code. Please re-enter.'); return; }
+  if(g === '000000'){ toast('Invalid code. Please re-enter.'); return; }   // demo: 000000 = 错误验证码
+  closeSheets();
+  if(verifyCtx === 'sell'){
+    orders.ongoing.unshift(mkOrder('progress', pendingQty));
+    histEmpty = false;
+    toast('Success');
+    document.getElementById('amtInput').value = '';
+    onAmt();
+    setTimeout(function(){ go('pg-history'); switchTab('ongoing'); }, 1200);
+  } else {
+    saveBankData();
+    toast('Payment method has been updated.');
+    setTimeout(function(){ go('pg-pmselect'); }, 1100);
+  }
+}
+function closeSheets(silent){
+  clearInterval(cdTimer);
+  document.getElementById('dim').classList.remove('on');
+  document.getElementById('shConfirm').classList.remove('on');
+  document.getElementById('shVerify').classList.remove('on');
+}
+
+/* ================= history ================= */
+function switchTab(t){
+  curTab = t;
+  document.getElementById('tabOngoing').classList.toggle('on', t==='ongoing');
+  document.getElementById('tabCompleted').classList.toggle('on', t==='completed');
+  document.getElementById('fDate').style.display = (t==='completed') ? 'flex' : 'none';
+  renderHist();
+}
+function renderHist(){
+  var list = histEmpty ? [] : orders[curTab];
+  var el = document.getElementById('histBody');
+  if(!list.length){
+    el.innerHTML = '<div class="empty">' + emptyDoc() + '<div class="txt">No data yet</div></div>';
+    return;
+  }
+  el.innerHTML = list.map(function(o, i){
+    var st = stMap[o.st];
+    return '<div class="ocard" onclick="openDetail(\''+curTab+'\','+i+')">'
+      + '<div class="ohead"><span class="side-tag">Sell</span><span class="coin">'+usdt(18)+'USDT</span>'
+      + '<span class="ostat"><span class="'+st.cls+'">'+st.label+'</span><span class="chev">›</span></span></div>'
+      + '<div class="otime">'+o.time+'</div>'
+      + '<div class="ogrid"><div class="ocol">'
+      + '<div class="r">Price<b>≈'+RATE+' CNY</b></div>'
+      + '<div class="r">Quantity<b>'+fmt(o.qty)+' USDT</b></div>'
+      + '<div class="r">Fee<b>'+o.fee+' USDT</b></div>'
+      + '<div class="r">Actual<b>'+fmt(o.actual)+' USDT</b></div>'
+      + '<div class="r oid">Order ID<b>'+o.id+'</b>'+svgIco('copy')+'</div>'
+      + '</div><div class="ocny" style="'+(o.st==='cancel'?'color:#6b7076;text-decoration:line-through':'')+'">≈'+fmt(o.cny)+' CNY</div></div>'
+      + '</div>';
+  }).join('');
+}
+
+/* ================= detail ================= */
+function openDetail(tab, i){
+  var o = orders[tab][i];
+  renderDetail(o);
+  go('pg-detail');
+}
+function renderDetail(o){
+  var st = stMap[o.st];
+  document.getElementById('detBody').innerHTML =
+    '<div class="d-status '+st.cls+'">'+st.label+'</div>'
+    + '<div class="d-side"><span class="sw">Sell</span>'+fmt(o.qty)+' USDT</div>'
+    + '<div class="d-card">'
+    + drow('Order Amount', '≈'+fmt(o.cny)+' CNY')
+    + drow('Price', '≈'+RATE+' CNY')
+    + drow('Quantity', fmt(o.qty)+' USDT')
+    + drow('Fee', o.fee+' USDT')
+    + drow('Actual', fmt(o.actual)+' USDT')
+    + drow('Payment Method', 'Bank Transfer')
+    + drow('Account Information', '中国银行(*1234)')
+    + drow('Order ID', o.id + ' ' + svgIco('copy'))
+    + drow('Order Time', o.time)
+    + '</div>';
+  var foot = document.getElementById('detFoot');
+  foot.innerHTML = (o.st === 'progress' || o.st === 'dispute')
+    ? '<button class="btn green" onclick="toast(\'联系客服（演示）\')">Contact</button><div class="home-ind"></div>'
+    : '<div class="home-ind"></div>';
+}
+function drow(k, v){ return '<div class="d-row"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>'; }
+
+/* ================= payment methods ================= */
+function renderPMS(){
+  var b = document.getElementById('pmsBody');
+  var h = '';
+  if(pm){
+    h += '<div class="sec-label">Select Payment Methods</div>'
+      + '<div class="pm-card"><div class="info">'
+      + '<div class="bankline">Bank Transfer &nbsp;'+pm.bank+'</div>'
+      + '<div class="nm">'+pm.name+'</div><div class="cd">'+pm.card+'</div>'
+      + '</div><span style="cursor:pointer" onclick="scBankEdit()">'+svgIco('edit')+'</span></div>';
+  }
+  h += '<div class="sec-label">Add Supported Payment Methods</div>'
+    + '<div class="pm-addrow" onclick="scBankAdd()"><span class="grow">Bank Transfer</span>'+svgIco('plus')+'</div>';
+  b.innerHTML = h;
+  document.getElementById('pmsFoot').innerHTML = pm
+    ? '<button class="btn green" onclick="go(\'pg-sell\');toast(\'已选择 Bank Transfer\')">Confirm</button>'
+    : '';
+  syncPMOnSell();
+}
+function syncPMOnSell(){
+  document.getElementById('pmEmpty').style.display = pm ? 'none' : 'flex';
+  document.getElementById('pmCell').style.display = pm ? 'flex' : 'none';
+  if(pm) document.getElementById('pmCellNo').textContent = pm.card;
+  onAmt();
+}
+
+/* bank form */
+var BANKS = ['中国银行','工商银行','建设银行','农业银行','招商银行','交通银行'];
+function openBank(mode){
+  bankMode = mode;
+  document.getElementById('ic-trash').style.display = (mode === 'edit') ? 'flex' : 'none';
+  document.getElementById('btnBankSubmit').textContent = (mode === 'edit') ? 'Save' : 'Confirm';
+  var d = (mode === 'edit' && pm) ? pm : {name:'',phone:'',card:'',bank:'',branch:''};
+  document.getElementById('fName').value = d.name || '';
+  document.getElementById('fPhone').value = d.phone || '';
+  document.getElementById('fCard').value = d.card || '';
+  document.getElementById('fBank').value = d.bank || '';
+  document.getElementById('fBranch').value = d.branch || '';
+  document.getElementById('fBankBox').classList.remove('err');
+  document.getElementById('fBankErr').classList.remove('on');
+  go('pg-bank');
+}
+function submitBank(){
+  var n = document.getElementById('fName').value.trim();
+  var p = document.getElementById('fPhone').value.trim();
+  var c = document.getElementById('fCard').value.trim();
+  var bk = document.getElementById('fBank').value.trim();
+  if(!n || !p || !c || !bk){ toast('请填写所有必填项'); return; }
+  var valid = BANKS.some(function(x){ return bk.indexOf(x) > -1; });
+  document.getElementById('fBankBox').classList.toggle('err', !valid);
+  document.getElementById('fBankErr').classList.toggle('on', !valid);
+  if(!valid){ toast('Invalid bank information. Please try again.'); return; }
+  if(bankMode === 'edit'){
+    openVerify('pm');           // 修改已有信息 → 需要二次验证
+  } else {
+    saveBankData();
+    toast('Success');
+    setTimeout(function(){ go('pg-pmselect'); }, 900);
+  }
+}
+function saveBankData(){
+  pm = {
+    name: document.getElementById('fName').value.trim(),
+    phone: document.getElementById('fPhone').value.trim(),
+    card: document.getElementById('fCard').value.trim(),
+    bank: document.getElementById('fBank').value.trim(),
+    branch: document.getElementById('fBranch').value.trim()
+  };
+  syncPMOnSell();
+}
+
+/* delete */
+function openDelete(){
+  if(pm) document.getElementById('dlgSub').textContent = pm.bank + ' (*' + pm.card.slice(-4) + ') · ' + pm.name;
+  document.getElementById('dlgDelete').classList.add('on');
+}
+function closeDelete(){ document.getElementById('dlgDelete').classList.remove('on'); }
+function doDelete(){
+  closeDelete();
+  pm = null;
+  syncPMOnSell();
+  toast('Removed!');
+  setTimeout(function(){ go('pg-pmselect'); }, 900);   // 删除成功 → 返回列表页
+}
+
+/* ================= tips (4要素) ================= */
+function showTips(state){
+  tipsState = state;
+  var rows = document.getElementById('tipsRows');
+  function row(ic, name, act, pending){
+    return '<div class="trow"><span>'+tipIco(ic)+'</span><span class="tn">'+name+'</span>'
+      + '<span class="ta'+(pending?' pending':'')+'" '+(pending?'':'onclick="toast(\'跳转 '+name+' 绑定流程（演示）\')"')+'>'+act+'</span></div>';
+  }
+  if(state === 'part'){
+    rows.innerHTML = row('ga','Google Authenticator','Bind Now');
+  } else {
+    rows.innerHTML =
+      row('id','ID Verification', state === 'kyc' ? 'Verifying' : 'Verify Now', state === 'kyc')
+      + row('phone','Phone Number','Bind Now')
+      + row('mail','Email','Bind Now')
+      + row('ga','Google Authenticator','Bind Now');
+  }
+  go('pg-home');
+}
+
+/* ================= gallery toasts ================= */
+var TOASTS = ['Success','Transaction blocked due to risk control.','Invalid code. Please re-enter.','Order error.','Transaction limit exceeded.','Password was recently changed.','Network error.','Payment method has been updated.','Removed!','Invalid bank information. Please try again.'];
+document.getElementById('gToasts').innerHTML = TOASTS.map(function(t){
+  return '<div class="toast" onclick="toast(this.textContent, true)">'+t+'</div>';
+}).join('');
+
+/* ================= control panel scenarios ================= */
+function resetAll(){
+  pm = {name:'张三', phone:'12345678910', card:'12345678876543', bank:'中国银行', branch:''};
+  orders = seedOrders(); histEmpty = false;
+  document.getElementById('amtInput').value = '';
+  syncPMOnSell(); onAmt();
+  go('pg-sell');
+  toast('原型已重置');
+}
+function scNoPM(){ pm = null; syncPMOnSell(); go('pg-sell'); }
+function scHasPM(){ pm = {name:'张三', phone:'12345678910', card:'12345678876543', bank:'中国银行', branch:''}; syncPMOnSell(); go('pg-sell'); }
+function scAmt(v){ go('pg-sell'); document.getElementById('amtInput').value = v; onAmt(); }
+function scConfirm(){ scHasPM(); scAmt(500); openConfirm(); }
+function scVerify(){ scHasPM(); scAmt(500); pendingQty = 500; go('pg-sell'); openVerify('sell'); }
+function scHistory(empty){ histEmpty = empty; go('pg-history'); switchTab('ongoing'); }
+function scDetail(st){ renderDetail(mkOrder(st, 1000.43)); go('pg-detail'); }
+function scPMList(){ go('pg-pmselect'); }
+function scBankAdd(){ openBank('add'); }
+function scBankEdit(){
+  if(!pm) pm = {name:'张三', phone:'12345678910', card:'12345678876543', bank:'中国银行', branch:''};
+  openBank('edit');
+}
+function scTips(s){ showTips(s); }
+
+/* ================= init ================= */
+pm = {name:'张三', phone:'12345678910', card:'12345678876543', bank:'中国银行', branch:''};
+syncPMOnSell();
+onAmt();
+</script>
+</body>
+</html>
