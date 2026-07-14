@@ -156,7 +156,12 @@ h1{font-size:22px;font-weight:700;margin-bottom:6px}
 .ogrid{display:flex;justify-content:space-between}
 .ocol .r{font-size:12px;margin-bottom:6px;color:var(--txt-sub)}
 .ocol .r b{color:#e6e6e6;font-weight:500;margin-left:4px}
-.ocny{font-size:15px;font-weight:700;color:#fff;text-align:right}
+.orecv{text-align:right;flex-shrink:0}
+.orecv .lb{font-size:11px;color:var(--txt-dim);margin-bottom:5px}
+.orecv .num{font-size:16.5px;font-weight:700;color:#fff;letter-spacing:.2px;font-variant-numeric:tabular-nums}
+.orecv .num small{font-size:11.5px;font-weight:600;color:var(--txt-sub);margin-left:3px}
+.orecv.cancel .num{color:#6b7076;text-decoration:line-through}
+.orecv.cancel .num small{color:#6b7076}
 .oid{display:flex;align-items:center;gap:5px}
 
 /* ============ order detail ============ */
@@ -836,7 +841,7 @@ function renderHist(){
       + '<div class="r">Fee<b>'+o.fee+' USDT</b></div>'
       + '<div class="r">Actual<b>'+fmt(o.actual)+' USDT</b></div>'
       + '<div class="r oid">Order ID<b>'+o.id+'</b>'+svgIco('copy')+'</div>'
-      + '</div><div class="ocny" style="'+(o.st==='cancel'?'color:#6b7076;text-decoration:line-through':'')+'">≈'+fmt(o.cny)+' CNY</div></div>'
+      + '</div><div class="orecv'+(o.st==='cancel'?' cancel':'')+'"><div class="lb">Receive</div><div class="num">≈'+fmt(o.cny)+'<small>CNY</small></div></div></div>'
       + '</div>';
   }).join('');
 }
