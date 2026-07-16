@@ -327,9 +327,9 @@ tr:hover td{background:#f9fafc}
             <div class="form-label"><span class="req">*</span>活动时间</div>
             <div class="form-ctrl">
               <div class="date-range">
-                <input class="input" value="2026-06-30 10:00" style="width:200px">
+                <input class="input" id="fTimeStart" value="2026-06-30 10:00" style="width:200px">
                 <span style="color:#8f959e">→</span>
-                <input class="input" value="2026-07-07 22:00" style="width:200px">
+                <input class="input" id="fTimeEnd" value="2026-07-07 22:00" style="width:200px">
               </div>
               <div class="hint">时间默认取整分，避免出现 17:29:22 这类秒级时间<span class="opt-note">时间取整</span></div>
             </div>
@@ -386,8 +386,8 @@ tr:hover td{background:#f9fafc}
           <div class="form-row">
             <div class="form-label"><span class="req">*</span>活动页主标题</div>
             <div class="form-ctrl" style="display:flex;gap:14px">
-              <div class="input-suffix" style="flex:1"><input class="input" value="新用户邀请嘉年华" maxlength="20"><span class="counter">8/20</span></div>
-              <div class="input-suffix" style="flex:1"><input class="input" placeholder="活动页副标题" value="完成任务赢 USDT 与 AX 积分" maxlength="40"><span class="counter">16/40</span></div>
+              <div class="input-suffix" style="flex:1"><input class="input" id="fTitleMain" value="新用户邀请嘉年华" maxlength="20"><span class="counter">8/20</span></div>
+              <div class="input-suffix" style="flex:1"><input class="input" id="fTitleSub" placeholder="活动页副标题" value="完成任务赢 USDT 与 AX 积分" maxlength="40"><span class="counter">16/40</span></div>
             </div>
           </div>
           <div class="hint" style="margin:-6px 0 16px 110px">标题超长将在C端截断，输入框已按C端展示上限限字<span class="opt-note">限字防截断</span></div>
@@ -630,9 +630,9 @@ tr:hover td{background:#f9fafc}
     <div class="foot-btns">
       <button class="btn btn-default" onclick="closeDrawer()">取 消</button>
       <button class="btn btn-default">存草稿</button>
-      <button class="btn btn-ghost-blue" onclick="openPreview()">
+      <button class="btn btn-ghost-blue" onclick="previewC()">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-        预览C端效果<span class="opt-note">上线前可见即所得</span>
+        预览C端效果<span class="opt-note">配置实时映射到C端</span>
       </button>
       <button class="btn btn-primary" onclick="validateForm()">提交审批</button>
     </div>
@@ -647,39 +647,6 @@ tr:hover td{background:#f9fafc}
     <div class="m-btns">
       <button class="btn btn-default" onclick="closeConfirm()">取 消</button>
       <button class="btn btn-primary" style="background:#e5484d" onclick="doConfirm()">确认下线</button>
-    </div>
-  </div>
-</div>
-
-<!-- ========== 预览弹窗（C端模拟） ========== -->
-<div class="modal-mask" id="previewMask">
-  <div class="modal preview-modal">
-    <div class="preview-head">
-      <b>C端效果预览</b>
-      <div class="preview-langs">
-        <span class="pv-lang on">简体中文</span><span class="pv-lang">English</span>
-        <button class="drawer-close" onclick="document.getElementById('previewMask').classList.remove('open')" style="margin-left:8px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-      </div>
-    </div>
-    <div class="preview-body">
-      <div class="pv-hero">
-        <div class="pv-cover"><svg viewBox="0 0 24 24" fill="none" stroke="#7c8fff" stroke-width="1.2"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M7.5 8a2.5 2.5 0 112.5-2.5C10 7 12 8 12 8s2-1 2-2.5A2.5 2.5 0 1116.5 8"/></svg></div>
-        <div class="pv-hero-info">
-          <h1>新用户邀请嘉年华</h1>
-          <p>完成任务赢 USDT 与 AX 积分</p>
-          <div class="pv-cta"><button class="pv-btn-primary">立即报名</button><button class="pv-btn-ghost">分享</button></div>
-        </div>
-      </div>
-      <div class="pv-task">
-        <div class="pv-reward"><b>10</b><span>USDT</span></div>
-        <div class="pv-task-mid"><div class="t">交易即可获奖</div><div class="pv-bar"><i style="width:0"></i></div></div>
-        <button class="pv-go">去交易</button>
-      </div>
-      <div class="pv-task" style="margin-bottom:32px">
-        <div class="pv-reward"><b>10</b><span>AX Points</span></div>
-        <div class="pv-task-mid"><div class="t">关注 X 即可获奖</div><div class="pv-bar"><i style="width:0"></i></div></div>
-        <button class="pv-go">去关注</button>
-      </div>
     </div>
   </div>
 </div>
@@ -710,7 +677,7 @@ document.getElementById('tbody').innerHTML=rows.map((r,i)=>{
   const ended=r.st==='ended';
   if(r.pub){
     ops+= ended? disBtn('下线','已结束的活动无需下线') : opBtn('下线','danger',`openConfirm('${r.name}')`);
-    ops+=opBtn('查看');
+    ops+=opBtn('查看','',"window.open('0716-活动落地页-C端优化.html','_blank')");
     ops+=disBtn('编辑','已上线活动需先下线才能编辑');
     ops+=opBtn('复制','', `toast('已复制整个活动（含 ${r.langs.length} 个语言版本）为新草稿')`);
     ops+=opBtn('数据','', `toast('跳转活动数据看板：参与 ${r.join} 人')`);
@@ -828,8 +795,55 @@ function openConfirm(name,isDel){
 function closeConfirm(){document.getElementById('confirmMask').classList.remove('open')}
 function doConfirm(){closeConfirm();toast(confirmDel?'已删除':'已下线，C端不再展示')}
 
-/* ===== 预览 & Toast ===== */
-function openPreview(){document.getElementById('previewMask').classList.add('open')}
+/* ===== 配置收集 → C端预览映射 ===== */
+function collectConfig(){
+  const cfg={v:1,savedAt:new Date().toISOString()};
+  cfg.name=document.getElementById('fName').value;
+  cfg.titleMain=document.getElementById('fTitleMain').value;
+  cfg.titleSub=document.getElementById('fTitleSub').value;
+  cfg.timeStart=document.getElementById('fTimeStart').value;
+  cfg.timeEnd=document.getElementById('fTimeEnd').value;
+  /* 阶梯任务 */
+  const beh=document.querySelectorAll('#ladderCard .input-suffix .input');
+  cfg.ladder={
+    title:document.querySelector('#ladderCard .task-title').firstChild.textContent.trim(),
+    behavior:{trade:beh[0]?beh[0].value:'',deposit:beh[1]?beh[1].value:''},
+    calib:(function(){const r=document.querySelector('input[name=calib]:checked');return r&&r.parentElement.textContent.includes('累计')?'sum':'step'})(),
+    steps:ladders.map(l=>({n:l.n,p:l.p,t:l.t}))
+  };
+  /* 常规任务：从任务卡DOM解析条件组与奖励 */
+  cfg.tasks=[];
+  document.querySelectorAll('.task-card').forEach(card=>{
+    if(card.id==='ladderCard')return;
+    const body=card.querySelector('.task-body');
+    const title=card.querySelector('.task-title').firstChild.textContent.trim();
+    let rel='single';
+    const checked=body.querySelector('.radios input:checked');
+    if(checked){const t=checked.parentElement.textContent;if(t.includes('全部'))rel='all';else if(t.includes('任一'))rel='any'}
+    const joinTxt=Array.from(body.querySelectorAll('.cond-join')).map(e=>e.textContent).join('');
+    if(joinTxt.includes('或'))rel='any';else if(joinTxt.includes('且')||joinTxt.includes('和'))rel='all';
+    const groups=[];
+    body.querySelectorAll('.cond-group').forEach(g=>{
+      const sel=g.querySelector('select');
+      const sfx=g.querySelector('.input-suffix .sfx');
+      const inp=g.querySelector('.input-suffix .input');
+      if(sel&&/X|Discord|Telegram/.test(sel.value)){groups.push({kind:'social',label:sel.value})}
+      else if(sfx){groups.push({kind:sfx.textContent.includes('入金')?'deposit':'trade',amount:Number(inp&&inp.value)||0})}
+    });
+    let reward={unit:'USDT',value:10};
+    const rBox=Array.from(body.querySelectorAll('.input-suffix')).find(s=>{
+      const x=s.querySelector('.sfx');return x&&/AX point|USDT/.test(x.textContent)&&!s.closest('.cond-group');
+    });
+    if(rBox){reward={unit:rBox.querySelector('.sfx').textContent.includes('AX')?'AX':'USDT',value:Number(rBox.querySelector('.input').value)||0}}
+    cfg.tasks.push({title,rel,groups,reward});
+  });
+  return cfg;
+}
+function previewC(){
+  try{localStorage.setItem('activity_preview_config',JSON.stringify(collectConfig()))}catch(e){}
+  toast('已生成预览配置，正在打开C端页面…');
+  window.open('0716-活动落地页-C端优化.html?preview=1','_blank');
+}
 let toastTimer;
 function toast(msg){
   const t=document.getElementById('toast');
