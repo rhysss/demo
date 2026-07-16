@@ -146,6 +146,13 @@ tr:hover td{background:#f9fafc}
 .rich-body{border:1px solid #dee0e3;border-radius:0 0 6px 6px;min-height:80px;padding:10px;background:#fff;color:#1f2329;line-height:1.7}
 .add-block{width:100%;height:38px;background:#eef1fe;color:#4265f4;border-radius:6px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px}
 .add-block:hover{background:#dfe5fd}
+/* 新增任务类型菜单 */
+.task-menu-wrap{position:relative}
+.task-menu{display:none;position:absolute;left:50%;transform:translateX(-50%);bottom:calc(100% + 8px);background:#fff;border:1px solid #e8eaed;border-radius:8px;box-shadow:0 8px 24px rgba(31,35,41,.14);padding:6px;z-index:20;min-width:200px}
+.task-menu.open{display:block}
+.task-menu-item{padding:9px 12px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;gap:8px;align-items:center}
+.task-menu-item:hover{background:#f2f3f5}
+.task-menu-item .desc{font-size:11px;color:#8f959e;margin-left:auto}
 /* 任务卡 */
 .task-card{border:1px solid #e8eaed;border-radius:8px;margin-bottom:14px;background:#fff;overflow:hidden}
 .task-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fafbfc;border-bottom:1px solid #f0f1f3;cursor:pointer}
@@ -412,21 +419,23 @@ tr:hover td{background:#f9fafc}
 
         <div class="panel">
           <h3>图文模块<span style="font-weight:400;font-size:12px;color:#8f959e">支持排序与删除</span><span class="opt-note">模块可排序</span></h3>
+          <div id="txtModules">
           <div class="txt-module">
             <div class="tm-head">
               <span class="tt">模块 1 · 标题 + 文本</span>
               <div class="tm-tools">
-                <button class="op" title="上移"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
-                <button class="op" title="下移"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
-                <button class="op danger" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+                <button class="op" title="上移" onclick="moveMod(this,-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+                <button class="op" title="下移" onclick="moveMod(this,1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+                <button class="op danger" title="删除" onclick="removeMod(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
               </div>
             </div>
             <input class="input" value="活动规则" style="margin-bottom:10px">
             <div class="rich-bar"><span>12pt ▾</span><span><b>B</b></span><span><i>I</i></span><span><u>U</u></span><span>A ▾</span><span>≡ ▾</span><span>⋯</span></div>
-            <div class="rich-body">1. 活动期间邀请的新用户需完成注册并通过 KYC；<br>2. 奖励将于任务完成后 24 小时内发放至资金账户；<br>3. 平台保留对作弊行为取消资格的权利。</div>
+            <div class="rich-body" contenteditable="true">1. 活动期间邀请的新用户需完成注册并通过 KYC；<br>2. 奖励将于任务完成后 24 小时内发放至资金账户；<br>3. 平台保留对作弊行为取消资格的权利。</div>
             <div class="hint warn">富文本在C端为深色背景，请避免使用深色字体（系统会自动校验对比度）<span class="opt-note">暗色兜底</span></div>
           </div>
-          <button class="add-block">＋ 添加图文模块</button>
+          </div>
+          <button class="add-block" onclick="addTextModule()">＋ 添加图文模块</button>
         </div>
       </div>
 
@@ -441,9 +450,9 @@ tr:hover td{background:#f9fafc}
               <span class="drag-h" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
               <span class="task-type-tag tt-ladder">阶梯</span>
               <span class="task-title">邀请新用户，即可获取代币和积分
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="event.stopPropagation()"><path d="M17 3a2.8 2.8 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="event.stopPropagation();renameTask(this)"><path d="M17 3a2.8 2.8 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
               </span>
-              <button class="op danger" onclick="event.stopPropagation()">删除</button>
+              <button class="op danger" onclick="event.stopPropagation();removeTask(this)">删除</button>
               <span class="caret"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
             </div>
             <div class="task-body">
@@ -497,9 +506,9 @@ tr:hover td{background:#f9fafc}
               <span class="drag-h" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
               <span class="task-type-tag tt-normal">常规</span>
               <span class="task-title">关注 X 即可获奖
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="event.stopPropagation()"><path d="M17 3a2.8 2.8 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="event.stopPropagation();renameTask(this)"><path d="M17 3a2.8 2.8 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
               </span>
-              <button class="op danger" onclick="event.stopPropagation()">删除</button>
+              <button class="op danger" onclick="event.stopPropagation();removeTask(this)">删除</button>
               <span class="caret"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
             </div>
             <div class="task-body">
@@ -547,23 +556,29 @@ tr:hover td{background:#f9fafc}
               <span class="drag-h" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
               <span class="task-type-tag tt-normal">常规</span>
               <span class="task-title">完成 2 选 1 即可获得 <span style="font-weight:400;font-size:12px;color:#8f959e">· 任一满足：入金 50,000 或 交易 10,000 → 10 USDT</span></span>
-              <button class="op danger" onclick="event.stopPropagation()">删除</button>
+              <button class="op danger" onclick="event.stopPropagation();removeTask(this)">删除</button>
               <span class="caret"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
             </div>
             <div class="task-body">
               <div class="cond-group">
-                <div class="cg-head"><b>条件组 1</b><button class="op danger">删除</button></div>
+                <div class="cg-head"><b>条件组 1</b><button class="op danger" onclick="removeGroup(this)">删除</button></div>
                 <div class="input-suffix" style="max-width:400px"><input class="input" value="50000"><span class="sfx">入金 · USDT</span></div>
               </div>
               <div class="cond-join">或（任一满足）</div>
               <div class="cond-group">
-                <div class="cg-head"><b>条件组 2</b><button class="op danger">删除</button></div>
+                <div class="cg-head"><b>条件组 2</b><button class="op danger" onclick="removeGroup(this)">删除</button></div>
                 <div class="input-suffix" style="max-width:400px"><input class="input" value="10000"><span class="sfx">交易 · USDT</span></div>
               </div>
             </div>
           </div>
 
-          <button class="add-block">＋ 新增任务（常规 / 阶梯）</button>
+          <div class="task-menu-wrap" id="taskMenuWrap">
+            <button class="add-block" onclick="toggleTaskMenu(event)">＋ 新增任务（常规 / 阶梯）</button>
+            <div class="task-menu" id="taskMenu">
+              <div class="task-menu-item" onclick="addNormalTask()">常规任务<span class="desc">条件组 + 奖励</span></div>
+              <div class="task-menu-item" onclick="addLadderTask()">阶梯任务<span class="desc">邀请阶梯，仅限一个</span></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -794,6 +809,143 @@ function openConfirm(name,isDel){
 }
 function closeConfirm(){document.getElementById('confirmMask').classList.remove('open')}
 function doConfirm(){closeConfirm();toast(confirmDel?'已删除':'已下线，C端不再展示')}
+
+/* ===== 任务：新增 / 删除 / 重命名 ===== */
+const GRIP='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>';
+const CARET='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+const PENCIL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="event.stopPropagation();renameTask(this)"><path d="M17 3a2.8 2.8 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
+let taskSeq=0;
+const ladderTpl=document.getElementById('ladderCard').outerHTML;
+function toggleTaskMenu(e){
+  e.stopPropagation();
+  document.getElementById('taskMenu').classList.toggle('open');
+}
+document.addEventListener('click',()=>document.getElementById('taskMenu').classList.remove('open'));
+function addNormalTask(){
+  const n=++taskSeq;
+  const div=document.createElement('div');div.className='task-card';
+  div.innerHTML=`<div class="task-head" onclick="toggleTask(this)">
+    <span class="drag-h" onclick="event.stopPropagation()">${GRIP}</span>
+    <span class="task-type-tag tt-normal">常规</span>
+    <span class="task-title">新任务 ${n} ${PENCIL}</span>
+    <button class="op danger" onclick="event.stopPropagation();removeTask(this)">删除</button>
+    <span class="caret">${CARET}</span>
+  </div>
+  <div class="task-body">
+    <div class="form-row">
+      <div class="form-label"><span class="req">*</span>条件</div>
+      <div class="form-ctrl"><div class="radios">
+        <label class="rd"><input type="radio" name="ntc${n}">全部满足</label>
+        <label class="rd"><input type="radio" name="ntc${n}">任一满足</label>
+        <label class="rd"><input type="radio" name="ntc${n}" checked>单一条件</label>
+      </div></div>
+    </div>
+    <div class="cond-group">
+      <div class="cg-head"><b>条件组 1</b></div>
+      <div class="form-row">
+        <div class="form-label"><span class="req">*</span>任务类型</div>
+        <div class="form-ctrl"><select class="input" style="max-width:300px" onchange="condTypeChange(this)">
+          <option>交易</option><option>入金</option><option>X（关注账号）</option><option>Discord（加入服务器）</option><option>Telegram（加入群组）</option>
+        </select></div>
+      </div>
+      <div class="form-row cg-amount">
+        <div class="form-label"><span class="req">*</span>数量要求</div>
+        <div class="form-ctrl"><div class="input-suffix" style="max-width:300px"><input class="input" value="1000"><span class="sfx">交易 · USDT</span></div></div>
+      </div>
+      <div class="form-row cg-link" style="display:none">
+        <div class="form-label"><span class="req">*</span>目标链接</div>
+        <div class="form-ctrl"><input class="input" placeholder="https://" style="max-width:460px"></div>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:14px">
+      <div class="form-label"><span class="req">*</span>活动奖励</div>
+      <div class="form-ctrl">
+        <div class="checks">
+          <label class="chk"><input type="checkbox" checked>积分</label>
+          <label class="chk"><input type="checkbox">代币</label>
+        </div>
+        <div class="input-suffix" style="max-width:300px;margin-top:10px"><input class="input" value="10"><span class="sfx">AX point</span></div>
+      </div>
+    </div>
+  </div>`;
+  const wrap=document.getElementById('taskMenuWrap');
+  wrap.parentNode.insertBefore(div,wrap);
+  div.scrollIntoView({behavior:'smooth',block:'center'});
+  toast('已新增常规任务，点击标题旁铅笔可重命名');
+}
+function addLadderTask(){
+  if(document.getElementById('ladderCard')){toast('阶梯任务仅支持配置一个，列表中已存在');return}
+  const wrap=document.getElementById('taskMenuWrap');
+  wrap.insertAdjacentHTML('beforebegin',ladderTpl);
+  renderLadder();
+  document.getElementById('ladderCard').scrollIntoView({behavior:'smooth',block:'center'});
+  toast('已恢复阶梯任务');
+}
+function condTypeChange(sel){
+  const g=sel.closest('.cond-group');
+  const social=/X|Discord|Telegram/.test(sel.value);
+  const amt=g.querySelector('.cg-amount'),lnk=g.querySelector('.cg-link');
+  if(amt)amt.style.display=social?'none':'';
+  if(lnk)lnk.style.display=social?'':'none';
+  if(!social&&amt)amt.querySelector('.sfx').textContent=(sel.value==='入金'?'入金':'交易')+' · USDT';
+}
+function removeTask(el){
+  const card=el.closest('.task-card');
+  const name=card.querySelector('.task-title').firstChild.textContent.trim();
+  card.remove();
+  toast('已删除任务「'+name+'」');
+}
+function renameTask(svg){
+  const t=svg.closest('.task-title');
+  const old=t.firstChild.textContent.trim();
+  const nv=prompt('修改任务标题（C端同步展示）',old);
+  if(nv&&nv.trim()){t.firstChild.textContent=nv.trim()+' ';toast('任务已重命名')}
+}
+function removeGroup(btn){
+  const g=btn.closest('.cond-group');
+  const join=g.previousElementSibling&&g.previousElementSibling.classList.contains('cond-join')?g.previousElementSibling:(g.nextElementSibling&&g.nextElementSibling.classList.contains('cond-join')?g.nextElementSibling:null);
+  if(join)join.remove();
+  g.remove();
+  toast('条件组已删除');
+}
+
+/* ===== 图文模块：新增 / 排序 / 删除 ===== */
+function addTextModule(){
+  const wrap=document.getElementById('txtModules');
+  const div=document.createElement('div');div.className='txt-module';
+  div.innerHTML=`<div class="tm-head">
+      <span class="tt">模块</span>
+      <div class="tm-tools">
+        <button class="op" title="上移" onclick="moveMod(this,-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+        <button class="op" title="下移" onclick="moveMod(this,1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+        <button class="op danger" title="删除" onclick="removeMod(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+      </div>
+    </div>
+    <input class="input" placeholder="请输入标题" style="margin-bottom:10px">
+    <div class="rich-bar"><span>12pt ▾</span><span><b>B</b></span><span><i>I</i></span><span><u>U</u></span><span>A ▾</span><span>≡ ▾</span><span>⋯</span></div>
+    <div class="rich-body" contenteditable="true" style="color:#8f959e">在此输入文本内容…</div>`;
+  wrap.appendChild(div);
+  renumberMods();
+  div.scrollIntoView({behavior:'smooth',block:'center'});
+  div.querySelector('input').focus();
+  toast('已添加图文模块');
+}
+function moveMod(btn,dir){
+  const m=btn.closest('.txt-module');
+  const sib=dir<0?m.previousElementSibling:m.nextElementSibling;
+  if(!sib||!sib.classList.contains('txt-module')){toast(dir<0?'已经是第一个模块':'已经是最后一个模块');return}
+  dir<0?m.parentNode.insertBefore(m,sib):m.parentNode.insertBefore(sib,m);
+  renumberMods();
+}
+function removeMod(btn){
+  if(document.querySelectorAll('#txtModules .txt-module').length<=1){toast('至少保留一个图文模块');return}
+  btn.closest('.txt-module').remove();
+  renumberMods();
+  toast('模块已删除');
+}
+function renumberMods(){
+  document.querySelectorAll('#txtModules .txt-module .tm-head .tt').forEach((e,i)=>e.textContent='模块 '+(i+1)+' · 标题 + 文本');
+}
 
 /* ===== 配置收集 → C端预览映射 ===== */
 function collectConfig(){
