@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>活动落地页 · C端优化版</title>
+<!-- v1.1 时间轴标签边界修正 -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:#0a0a0d;color:#e8e9ec;font-size:14px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:14px;color:inherit}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+
+/* ===== 原型视图切换（仅原型用） ===== */
+.proto-switch{position:fixed;top:16px;right:16px;z-index:500;display:flex;gap:2px;background:#1b1c22;border:1px solid #2b2d36;border-radius:20px;padding:3px}
+.proto-switch button{font-size:12px;padding:6px 16px;border-radius:16px;color:#9aa0ae}
+.proto-switch button.on{background:#4265f4;color:#fff}
+
+/* ===== 优化点标注 ===== */
+.opt-note{display:inline-flex;align-items:center;background:rgba(255,183,50,.12);border:1px solid rgba(255,183,50,.35);color:#ffb732;font-size:11px;padding:1px 8px;border-radius:9px;vertical-align:3px;margin-left:8px;font-weight:400}
+.opt-note::before{content:'优化 · ';opacity:.75}
+
+/* ===================== 详情页 ===================== */
+/* Hero */
+.hero{position:relative;padding:64px 0 40px;background:radial-gradient(ellipse 70% 90% at 75% 0%,rgba(66,101,244,.22),transparent 60%),#0a0a0d}
+.hero-inner{display:flex;align-items:center;gap:56px}
+.hero-cover{width:340px;height:340px;border-radius:20px;flex-shrink:0;background:linear-gradient(140deg,#1d2a6e 0%,#101430 55%,#0c0e20 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.hero-cover::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(124,143,255,.25),transparent 55%)}
+.hero-cover svg{width:130px;height:130px;position:relative;z-index:1}
+.hero-info{flex:1}
+.hero-info h1{font-size:40px;font-weight:700;line-height:1.25;margin-bottom:12px}
+.hero-info .sub{color:#9aa0ae;font-size:15px;margin-bottom:14px}
+.hero-tags{display:flex;gap:8px;margin-bottom:26px}
+.h-tag{font-size:12px;padding:3px 10px;border-radius:12px;background:rgba(66,101,244,.15);color:#7c8fff;border:1px solid rgba(66,101,244,.3)}
+.hero-cta{display:flex;gap:14px;align-items:center}
+.btn-join{height:48px;padding:0 44px;border-radius:24px;background:linear-gradient(90deg,#4265f4,#6a5bff);font-size:16px;font-weight:600;color:#fff;box-shadow:0 6px 24px rgba(66,101,244,.4);transition:.2s}
+.btn-join:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(66,101,244,.55)}
+.btn-join.joined{background:#1b1c22;color:#3ddc84;box-shadow:none;border:1px solid #2b2d36;cursor:default}
+.btn-share{height:48px;padding:0 26px;border-radius:24px;border:1px solid #34363e;color:#e8e9ec;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03)}
+.btn-share:hover{border-color:#565a66}
+.join-count{color:#7c828e;font-size:13px;margin-left:4px}
+.join-count b{color:#e8e9ec}
+
+/* 时间轴 */
+.timeline{padding:34px 0 10px}
+.tl-track{position:relative;height:4px;background:#22242c;border-radius:2px;margin:44px 10px 0}
+.tl-fill{position:absolute;left:0;top:0;bottom:0;width:38%;background:linear-gradient(90deg,#4265f4,#6a5bff);border-radius:2px}
+.tl-node{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:#3a3d47;border:3px solid #0a0a0d}
+.tl-node.passed{background:#4265f4}
+.tl-label{position:absolute;bottom:16px;transform:translateX(-50%);text-align:center;white-space:nowrap}
+.tl-label.first{transform:none;text-align:left}
+.tl-label.last{transform:translateX(-100%);text-align:right}
+.tl-label .t{font-size:13px;font-weight:600;margin-bottom:3px}
+.tl-label .d{font-size:12px;color:#7c828e}
+.tl-now{position:absolute;top:-34px;transform:translateX(-50%);background:#4265f4;color:#fff;font-size:11px;padding:3px 10px;border-radius:10px;white-space:nowrap}
+.tl-now::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#4265f4}
+.tz-hint{color:#565a66;font-size:12px;text-align:right;margin-top:14px}
+
+/* 任务区 */
+.section{padding:36px 0 6px}
+.section-head{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
+.section-head h2{font-size:24px;font-weight:700}
+.section-head .cap{color:#7c828e;font-size:13px}
+.task{background:#15161b;border:1px solid #22242c;border-radius:16px;padding:22px 26px;margin-bottom:14px}
+.task-main{display:flex;align-items:center;gap:22px}
+.reward{min-width:76px;text-align:center;flex-shrink:0}
+.reward b{display:block;font-size:26px;font-weight:700;color:#7c8fff}
+.reward span{font-size:11px;color:#7c828e;letter-spacing:.4px}
+.task-mid{flex:1;min-width:0}
+.task-title-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.task-title-row .tt{font-size:16px;font-weight:600}
+.rel-chip{font-size:11px;padding:2px 9px;border-radius:10px;font-weight:500}
+.rel-and{background:rgba(61,220,132,.12);color:#3ddc84;border:1px solid rgba(61,220,132,.3)}
+.rel-or{background:rgba(255,183,50,.12);color:#ffb732;border:1px solid rgba(255,183,50,.3)}
+.progress-row{display:flex;align-items:center;gap:12px}
+.pbar{flex:1;height:6px;background:#22242c;border-radius:3px;overflow:hidden}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,#4265f4,#6a5bff);border-radius:3px;transition:width .4s}
+.pnum{font-size:12px;color:#9aa0ae;white-space:nowrap}
+.pnum b{color:#e8e9ec}
+.ppct{font-size:12px;color:#7c8fff;font-weight:600;min-width:34px;text-align:right}
+/* 状态按钮体系 */
+.t-btn{height:38px;padding:0 24px;border-radius:19px;font-size:13px;font-weight:500;flex-shrink:0;transition:.2s}
+.t-go{background:#23242b;color:#c8ccd4;border:1px solid #2f313a}
+.t-go:hover{border-color:#4265f4;color:#7c8fff}
+.t-claim{background:linear-gradient(90deg,#4265f4,#6a5bff);color:#fff;box-shadow:0 4px 16px rgba(66,101,244,.35);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 4px 16px rgba(66,101,244,.35)}50%{box-shadow:0 4px 24px rgba(66,101,244,.6)}}
+.t-done{background:none;border:1px solid #2b2d36;color:#3ddc84;display:inline-flex;align-items:center;gap:6px;cursor:default}
+.status-chip{font-size:11px;padding:2px 9px;border-radius:10px}
+.sc-doing{background:rgba(66,101,244,.14);color:#7c8fff}
+.sc-claim{background:rgba(255,183,50,.15);color:#ffb732}
+.sc-done{background:rgba(61,220,132,.12);color:#3ddc84}
+/* 子条件 */
+.subconds{margin-top:18px;border-top:1px dashed #26282f;padding-top:16px;display:flex;flex-direction:column;gap:14px}
+.subcond{display:flex;align-items:center;gap:14px}
+.sc-check{width:22px;height:22px;border-radius:50%;border:2px solid #33364a;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.sc-check.ok{border-color:#3ddc84;background:rgba(61,220,132,.12)}
+.sc-check.ok::after{content:'✓';color:#3ddc84;font-size:12px;font-weight:700}
+.subcond .desc{font-size:14px;min-width:150px}
+.subcond .pbar{max-width:none}
+.subcond .t-btn{height:32px;padding:0 18px;font-size:12px}
+
+/* 邀请阶梯 */
+.ladder-card{background:#15161b;border:1px solid #22242c;border-radius:16px;padding:26px;margin-bottom:14px}
+.ladder-head{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.gift-ic{width:46px;height:46px;border-radius:12px;background:rgba(66,101,244,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.gift-ic svg{width:24px;height:24px;color:#7c8fff}
+.ladder-head .tt{font-size:16px;font-weight:600}
+.ladder-head .cap{font-size:12px;color:#7c828e;margin-top:3px}
+.calib-toggle{margin-left:auto;display:flex;background:#1e1f26;border-radius:14px;padding:2px}
+.calib-toggle button{font-size:11px;padding:4px 12px;border-radius:12px;color:#9aa0ae}
+.calib-toggle button.on{background:#33364a;color:#fff}
+.ladder-scroll{overflow-x:auto;padding:18px 4px 6px;scrollbar-width:thin}
+.ladder-steps{display:flex;min-width:760px;position:relative}
+.l-line{position:absolute;top:63.5px;left:40px;right:40px;height:3px;background:#22242c;border-radius:2px}
+.l-line i{display:block;height:100%;width:18%;background:linear-gradient(90deg,#4265f4,#6a5bff);border-radius:2px}
+.l-step{flex:1;min-width:94px;text-align:center;position:relative}
+.l-reward{height:44px;display:flex;flex-direction:column;justify-content:flex-end;margin-bottom:14px;font-size:12px;line-height:1.5;white-space:nowrap}
+.l-reward .u{color:#7c8fff;font-weight:600}
+.l-reward .p{color:#9aa0ae}
+.l-dot{width:14px;height:14px;border-radius:50%;background:#2a2c35;border:3px solid #0f1014;margin:0 auto 10px;position:relative;z-index:1}
+.l-step.hit .l-dot{background:#4265f4}
+.l-step.next .l-dot{background:#0f1014;border-color:#4265f4;box-shadow:0 0 0 3px rgba(66,101,244,.25)}
+.l-num{font-size:13px;color:#9aa0ae}
+.l-num b{color:#e8e9ec}
+.l-step.next .l-num{color:#7c8fff;font-weight:600}
+.ladder-foot{margin-top:18px;background:#1b1c22;border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px}
+.ladder-foot .txt{flex:1;font-size:14px}
+.ladder-foot .txt b{color:#7c8fff}
+.ladder-foot .txt .got{color:#7c828e;font-size:12px;margin-top:4px}
+.btn-invite{height:40px;padding:0 30px;border-radius:20px;background:linear-gradient(90deg,#4265f4,#6a5bff);color:#fff;font-weight:600;box-shadow:0 4px 16px rgba(66,101,244,.35)}
+
+/* 富文本区 */
+.rules{background:#101116;border:1px solid #1d1f26;border-radius:16px;padding:28px 30px;margin:10px 0 40px;line-height:1.9;color:#b6bac2}
+.rules h3{color:#fff;font-size:18px;margin-bottom:12px}
+
+/* ===================== 列表页 ===================== */
+.list-hero{padding:70px 0 30px;background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(66,101,244,.18),transparent 65%)}
+.list-hero h1{font-size:36px;font-weight:700;text-align:center}
+.list-hero p{text-align:center;color:#9aa0ae;margin-top:10px}
+.list-tabs{display:flex;gap:30px;border-bottom:1px solid #1d1f26;margin:34px 0 26px}
+.l-tab{padding:12px 2px;color:#9aa0ae;cursor:pointer;position:relative;font-size:15px}
+.l-tab .n{font-size:12px;color:#565a66;margin-left:4px}
+.l-tab.on{color:#fff;font-weight:600}
+.l-tab.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:3px;background:#4265f4;border-radius:2px}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.a-card{background:#15161b;border:1px solid #22242c;border-radius:16px;overflow:hidden;cursor:pointer;transition:.2s;position:relative}
+.a-card:hover{transform:translateY(-3px);border-color:#33364a}
+.a-cover{height:150px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.a-cover svg{width:56px;height:56px;opacity:.8}
+.cv-1{background:linear-gradient(140deg,#1d2a6e,#101430)}
+.cv-2{background:linear-gradient(140deg,#233a2c,#0e1512)}
+.cv-3{background:linear-gradient(140deg,#3a2350,#151020)}
+.reward-badge{position:absolute;top:12px;left:12px;background:rgba(10,10,13,.65);backdrop-filter:blur(6px);border:1px solid rgba(124,143,255,.35);color:#9db0ff;font-size:12px;font-weight:600;padding:4px 12px;border-radius:12px}
+.a-body{padding:16px 18px 18px}
+.a-body .t{font-size:16px;font-weight:600;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.a-body .s{font-size:12px;color:#7c828e;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.a-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#565a66}
+.a-meta .joiners{color:#9aa0ae}
+.ended-mask{position:absolute;inset:0;background:rgba(10,10,13,.55);backdrop-filter:grayscale(.7);z-index:2}
+.ended-badge{position:absolute;top:12px;right:12px;z-index:3;background:#2a2c35;color:#9aa0ae;font-size:12px;padding:4px 12px;border-radius:12px}
+.live-badge{position:absolute;top:12px;right:12px;background:rgba(61,220,132,.15);border:1px solid rgba(61,220,132,.4);color:#3ddc84;font-size:12px;padding:4px 12px;border-radius:12px;display:flex;align-items:center;gap:5px}
+.live-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#3ddc84;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.3}}
+.dark-pager{display:flex;justify-content:center;gap:8px;margin:36px 0 60px}
+.dark-pager button{min-width:34px;height:34px;border-radius:8px;border:1px solid #2b2d36;color:#9aa0ae;background:#15161b}
+.dark-pager button.on{background:#4265f4;border-color:#4265f4;color:#fff}
+
+/* Toast */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-8px);background:#22242c;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;z-index:600;opacity:0;pointer-events:none;transition:.25s;display:flex;gap:8px;align-items:center;border:1px solid #33364a}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast svg{width:15px;height:15px;color:#3ddc84}
+.footer{color:#3a3d47;font-size:12px;text-align:center;padding:30px 0 40px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#2b2d36;border-radius:4px}
+@media(max-width:900px){.hero-inner{flex-direction:column;gap:28px}.card-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- 原型视图切换 -->
+<div class="proto-switch">
+  <button class="on" onclick="switchView('detail',this)">活动详情页</button>
+  <button onclick="switchView('list',this)">活动列表页</button>
+</div>
+
+<!-- ===================== 视图一：活动详情页 ===================== -->
+<div id="view-detail">
+  <!-- Hero：封面图占位兜底 + 主CTA强化 -->
+  <div class="hero">
+    <div class="wrap hero-inner">
+      <div class="hero-cover">
+        <!-- 未配置封面时的兜底插画（渐变+品牌图形），不再留白 -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8fa0ff" stroke-width="1.1"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 13h18M7.5 8a2.5 2.5 0 112.5-2.5C10 7 12 8 12 8s2-1 2-2.5A2.5 2.5 0 1116.5 8"/></svg>
+      </div>
+      <div class="hero-info">
+        <h1>新用户邀请嘉年华<span class="opt-note">封面兜底，首屏不再留白</span></h1>
+        <div class="sub">完成任务赢 USDT 与 AX 积分</div>
+        <div class="hero-tags"><span class="h-tag">进行中</span><span class="h-tag">奖池 50,000 USDT</span></div>
+        <div class="hero-cta">
+          <button class="btn-join" id="joinBtn" onclick="join()">立即报名<span style="margin-left:2px"></span></button>
+          <button class="btn-share" onclick="toast('活动链接已复制，去分享给好友吧')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M16 6l-4-4-4 4M12 2v13"/></svg>分享
+          </button>
+          <span class="join-count"><b>12,384</b> 人已参与<span class="opt-note">主CTA强化 + 参与人数</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 时间轴：合并重复节点 + 当前进度指示 + 时区 -->
+  <div class="wrap timeline">
+    <div class="tl-track">
+      <div class="tl-fill" id="tlFill"></div>
+      <div class="tl-now" style="left:38%">当前进度 · 第 3 天 / 共 7 天<span></span></div>
+      <div class="tl-node passed" style="left:0%"></div>
+      <div class="tl-label first" style="left:0%"><div class="t">报名 · 活动开始<span class="opt-note">同时刻节点合并</span></div><div class="d">2026-06-30 10:46</div></div>
+      <div class="tl-node" style="left:100%"></div>
+      <div class="tl-label last" style="left:100%"><div class="t">活动结束</div><div class="d">2026-07-07 10:46</div></div>
+    </div>
+    <div class="tz-hint">时间以 UTC+8 展示 · 你的本地时区 UTC+7：06-30 09:46 开始<span class="opt-note">本地时区换算</span></div>
+  </div>
+
+  <!-- 任务列表：状态体系（去完成/进行中/待领取/已领取） -->
+  <div class="wrap section">
+    <div class="section-head"><h2>任务</h2><span class="cap">完成任务即可获得奖励，奖励实时发放<span class="opt-note">任务状态体系</span></span></div>
+
+    <!-- 待领取 -->
+    <div class="task">
+      <div class="task-main">
+        <div class="reward"><b>10</b><span>USDT</span></div>
+        <div class="task-mid">
+          <div class="task-title-row"><span class="tt">交易即可获奖</span><span class="status-chip sc-claim">待领取</span></div>
+          <div class="progress-row"><div class="pbar"><i style="width:100%"></i></div><span class="pnum"><b>1,000</b> / 1,000 USDT</span><span class="ppct">100%</span></div>
+        </div>
+        <button class="t-btn t-claim" onclick="claim(this)">领取奖励</button>
+      </div>
+    </div>
+
+    <!-- 进行中 -->
+    <div class="task">
+      <div class="task-main">
+        <div class="reward"><b>5</b><span>USDT</span></div>
+        <div class="task-mid">
+          <div class="task-title-row"><span class="tt">入金即可获奖</span><span class="status-chip sc-doing">进行中</span></div>
+          <div class="progress-row"><div class="pbar"><i style="width:36%"></i></div><span class="pnum"><b>1,800</b> / 5,000 USDT</span><span class="ppct">36%</span></div>
+        </div>
+        <button class="t-btn t-go" onclick="toast('跳转充值页')">去充值</button>
+      </div>
+    </div>
+
+    <!-- 已领取 -->
+    <div class="task">
+      <div class="task-main">
+        <div class="reward"><b>10</b><span>AX POINTS</span></div>
+        <div class="task-mid">
+          <div class="task-title-row"><span class="tt">关注 X 即可获奖</span><span class="status-chip sc-done">已领取</span></div>
+          <div class="progress-row"><div class="pbar"><i style="width:100%;background:#2f5c44"></i></div><span class="pnum">已完成 · 06-30 12:08 发放</span></div>
+        </div>
+        <button class="t-btn t-done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>已领取</button>
+      </div>
+    </div>
+
+    <!-- 或条件：关系前置到标题行 -->
+    <div class="task">
+      <div class="task-main">
+        <div class="reward"><b>10</b><span>USDT</span></div>
+        <div class="task-mid">
+          <div class="task-title-row"><span class="tt">完成 2 选 1 即可获得</span><span class="rel-chip rel-or">或 · 满足一个即可</span><span class="opt-note">条件关系提到标题旁</span></div>
+        </div>
+        <button class="t-btn t-go" style="visibility:hidden"></button>
+      </div>
+      <div class="subconds">
+        <div class="subcond">
+          <div class="sc-check"></div>
+          <span class="desc">充值 50,000 USDT</span>
+          <div class="pbar"><i style="width:4%"></i></div>
+          <span class="pnum">2,000 / 50,000</span>
+          <button class="t-btn t-go" onclick="toast('跳转充值页')">去充值</button>
+        </div>
+        <div class="subcond">
+          <div class="sc-check"></div>
+          <span class="desc">交易 10,000 USDT</span>
+          <div class="pbar"><i style="width:10%"></i></div>
+          <span class="pnum">1,000 / 10,000</span>
+          <button class="t-btn t-go" onclick="toast('跳转交易页')">去交易</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 且条件 -->
+    <div class="task">
+      <div class="task-main">
+        <div class="reward"><b>10</b><span>USDT</span></div>
+        <div class="task-mid">
+          <div class="task-title-row"><span class="tt">完成全部即可获奖</span><span class="rel-chip rel-and">和 · 需全部满足</span></div>
+        </div>
+        <button class="t-btn t-go" style="visibility:hidden"></button>
+      </div>
+      <div class="subconds">
+        <div class="subcond">
+          <div class="sc-check ok"></div>
+          <span class="desc">交易 1,000 USDT</span>
+          <div class="pbar"><i style="width:100%"></i></div>
+          <span class="pnum">1,000 / 1,000</span>
+          <button class="t-btn t-done" style="height:32px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>已完成</button>
+        </div>
+        <div class="subcond">
+          <div class="sc-check"></div>
+          <span class="desc">充值 1,000 USDT</span>
+          <div class="pbar"><i style="width:62%"></i></div>
+          <span class="pnum">620 / 1,000</span>
+          <button class="t-btn t-go" onclick="toast('跳转充值页')">去充值</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 邀请阶梯：口径修正 + 累计/档位切换 + 已达档高亮 -->
+    <div class="ladder-card">
+      <div class="ladder-head">
+        <div class="gift-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 13h18M7.5 8a2.5 2.5 0 112.5-2.5C10 7 12 8 12 8s2-1 2-2.5A2.5 2.5 0 1116.5 8"/></svg></div>
+        <div>
+          <div class="tt">邀请新用户，即可获取代币和积分</div>
+          <div class="cap">已邀请 <b style="color:#7c8fff">4</b> 人 · 已获得 5 USDT + 10 积分</div>
+        </div>
+        <div class="calib-toggle"><button class="on" onclick="calib(this,'step')">档位奖励</button><button onclick="calib(this,'sum')">累计奖励</button><span class="opt-note" style="align-self:center;margin:0 6px 0 8px">口径明确可切换</span></div>
+      </div>
+      <div class="ladder-scroll">
+        <div class="ladder-steps" id="ladderSteps">
+          <div class="l-line"><i></i></div>
+        </div>
+      </div>
+      <div class="ladder-foot">
+        <div class="txt">
+          再邀请 <b>1</b> 人解锁下一档：<b>10 USDT + 15 积分</b><span class="opt-note">进度文案人话化</span>
+          <div class="got">邀请进度 4 / 5 · 邀请的好友完成「交易100 + 入金100 USDT」才计为有效邀请</div>
+        </div>
+        <button class="btn-invite" onclick="toast('邀请链接已复制')">立即邀请</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 富文本规则区 -->
+  <div class="wrap">
+    <div class="rules">
+      <h3>活动规则</h3>
+      1. 活动期间邀请的新用户需完成注册并通过 KYC Lv.1；<br>
+      2. 任务奖励在条件达成后实时发放至资金账户，邀请阶梯奖励按档位发放；<br>
+      3. 同一设备、同一身份信息注册的多个账号仅首个账号计为有效邀请；<br>
+      4. 平台保留对作弊行为取消资格并追回奖励的权利。
+    </div>
+  </div>
+  <div class="footer">© 2026 AX Exchange · 活动最终解释权归平台所有</div>
+</div>
+
+<!-- ===================== 视图二：活动列表页 ===================== -->
+<div id="view-list" style="display:none">
+  <div class="list-hero">
+    <h1>活动中心</h1>
+    <p>参与活动，赢取 USDT 与 AX 积分奖励</p>
+  </div>
+  <div class="wrap">
+    <div class="list-tabs">
+      <div class="l-tab on">进行中<span class="n">3</span></div>
+      <div class="l-tab">未开始<span class="n">1</span></div>
+      <div class="l-tab">已结束<span class="n">12</span></div>
+    </div>
+    <div class="card-grid">
+      <!-- 进行中卡片：奖励亮点 + 参与人数 + LIVE 标 -->
+      <div class="a-card" onclick="switchView('detail',document.querySelector('.proto-switch button'))">
+        <div class="a-cover cv-1">
+          <span class="reward-badge">瓜分 50,000 USDT<span class="opt-note" style="vertical-align:1px">奖励亮点前置</span></span>
+          <span class="live-badge">进行中</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#8fa0ff" stroke-width="1.2"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 13h18M7.5 8a2.5 2.5 0 112.5-2.5C10 7 12 8 12 8s2-1 2-2.5A2.5 2.5 0 1116.5 8"/></svg>
+        </div>
+        <div class="a-body">
+          <div class="t">新用户邀请嘉年华</div>
+          <div class="s">完成任务赢 USDT 与 AX 积分</div>
+          <div class="a-meta"><span>06/30 – 07/07</span><span class="joiners">12,384 人参与</span></div>
+        </div>
+      </div>
+      <div class="a-card">
+        <div class="a-cover cv-2">
+          <span class="reward-badge">最高返 40 USDT</span>
+          <span class="live-badge">进行中</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#7fd6a2" stroke-width="1.2"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+        </div>
+        <div class="a-body">
+          <div class="t">交易冲刺赛</div>
+          <div class="s">交易量达标即返现，多做多得</div>
+          <div class="a-meta"><span>07/01 – 07/20</span><span class="joiners">8,201 人参与</span></div>
+        </div>
+      </div>
+      <div class="a-card">
+        <div class="a-cover cv-3">
+          <span class="reward-badge">2,000 AX 积分</span>
+          <span class="live-badge">进行中</span>
+          <!-- 图片加载失败兜底：渐变+品牌图形，不再出现白色裂图框 -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c2a0ff" stroke-width="1.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        </div>
+        <div class="a-body">
+          <div class="t">社区任务周<span class="opt-note" style="vertical-align:2px">裂图兜底占位</span></div>
+          <div class="s">关注社媒、加入社区领积分</div>
+          <div class="a-meta"><span>07/10 – 07/17</span><span class="joiners">3,077 人参与</span></div>
+        </div>
+      </div>
+      <!-- 已结束卡片：蒙层置灰 + 角标 -->
+      <div class="a-card">
+        <div class="ended-mask"></div>
+        <span class="ended-badge">已结束<span class="opt-note" style="vertical-align:1px">已结束态区分</span></span>
+        <div class="a-cover cv-1"><svg viewBox="0 0 24 24" fill="none" stroke="#8fa0ff" stroke-width="1.2"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 13h18"/></svg></div>
+        <div class="a-body">
+          <div class="t">外面的测试</div>
+          <div class="s">外面的测试外面的测试</div>
+          <div class="a-meta"><span>07/04 – 07/11</span><span class="joiners">3,402 人参与</span></div>
+        </div>
+      </div>
+      <div class="a-card">
+        <div class="ended-mask"></div>
+        <span class="ended-badge">已结束</span>
+        <div class="a-cover cv-2"><svg viewBox="0 0 24 24" fill="none" stroke="#7fd6a2" stroke-width="1.2"><path d="M3 17l6-6 4 4 8-8"/></svg></div>
+        <div class="a-body">
+          <div class="t" title="主标题主标题主标题主标题">主标题主标题主标…</div>
+          <div class="s">副标题副标题副标题副标题副标题</div>
+          <div class="a-meta"><span>05/18 – 05/31</span><span class="joiners">5,933 人参与</span></div>
+        </div>
+      </div>
+      <div class="a-card">
+        <div class="ended-mask"></div>
+        <span class="ended-badge">已结束</span>
+        <div class="a-cover cv-3"><svg viewBox="0 0 24 24" fill="none" stroke="#c2a0ff" stroke-width="1.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <div class="a-body">
+          <div class="t">Antarctic Altcoin Sprint</div>
+          <div class="s">Trade altcoins, share the pool</div>
+          <div class="a-meta"><span>05/18 – 05/31</span><span class="joiners">742 人参与</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="dark-pager">
+      <button>‹</button><button class="on">1</button><button>2</button><button>3</button><button>›</button>
+      <span class="opt-note" style="align-self:center">分页深色适配</span>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span id="toastText"></span></div>
+
+<script>
+/* ===== 视图切换 ===== */
+function switchView(v,btn){
+  document.getElementById('view-detail').style.display=v==='detail'?'':'none';
+  document.getElementById('view-list').style.display=v==='list'?'':'none';
+  document.querySelectorAll('.proto-switch button').forEach(b=>b.classList.remove('on'));
+  (btn||document.querySelectorAll('.proto-switch button')[v==='detail'?0:1]).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+/* ===== 报名 ===== */
+function join(){
+  const b=document.getElementById('joinBtn');
+  if(b.classList.contains('joined'))return;
+  b.classList.add('joined');b.innerHTML='✓ 已报名，去做任务';
+  toast('报名成功！完成任务即可领取奖励');
+}
+
+/* ===== 领取奖励 ===== */
+function claim(btn){
+  const task=btn.closest('.task');
+  btn.outerHTML='<button class="t-btn t-done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>已领取</button>';
+  const chip=task.querySelector('.status-chip');chip.className='status-chip sc-done';chip.textContent='已领取';
+  toast('10 USDT 已发放至资金账户');
+}
+
+/* ===== 邀请阶梯渲染：档位/累计口径切换 ===== */
+const ladder=[
+ {n:3,u:5,p:10},{n:5,u:10,p:15},{n:10,u:15,p:20},{n:15,u:20,p:25},{n:30,u:30,p:100},{n:40,u:40,p:40},{n:50,u:40,p:40},{n:60,u:40,p:40}
+];
+const invited=4;
+let mode='step';
+function renderLadder(){
+  const box=document.getElementById('ladderSteps');
+  box.querySelectorAll('.l-step').forEach(e=>e.remove());
+  let sumU=0,sumP=0;
+  ladder.forEach((l,i)=>{
+    sumU+=l.u;sumP+=l.p;
+    const u=mode==='step'?l.u:sumU, p=mode==='step'?l.p:sumP;
+    const hit=invited>=l.n;
+    const next=!hit&&(i===0||invited>=ladder[i-1].n||true)&&ladder.findIndex(x=>invited<x.n)===i;
+    const d=document.createElement('div');
+    d.className='l-step'+(hit?' hit':'')+(next?' next':'');
+    d.innerHTML=`<div class="l-reward"><div class="u">${u} USDT</div><div class="p">${p} 积分</div></div><div class="l-dot"></div><div class="l-num">邀 <b>${l.n}</b> 人</div>`;
+    box.appendChild(d);
+  });
+  // 进度线：按已邀人数占下一档比例
+  const nextIdx=ladder.findIndex(x=>invited<x.n);
+  const pct=nextIdx<=0?0:((nextIdx-0.5+ (invited-(ladder[nextIdx-1]?.n||0))/((ladder[nextIdx].n-(ladder[nextIdx-1]?.n||0))||1))/ladder.length)*100;
+  box.querySelector('.l-line i').style.width=Math.max(6,pct)+'%';
+}
+function calib(btn,m){
+  mode=m;btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderLadder();
+}
+renderLadder();
+
+/* ===== Toast ===== */
+let tt;
+function toast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastText').textContent=msg;
+  t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>

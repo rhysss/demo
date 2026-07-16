@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>活动落地页管理 · 中台优化版</title>
+<style>
+/* ========== Base ========== */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:#f5f6f8;color:#1f2329;font-size:13px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:13px}
+input,select,textarea{font-family:inherit;font-size:13px;outline:none}
+.page{max-width:1560px;margin:0 auto;padding:20px 24px 60px}
+.page-title{font-size:16px;font-weight:600;margin-bottom:18px}
+
+/* ========== Filter bar ========== */
+.filter-card{background:#fff;border-radius:8px;padding:18px 20px 6px;margin-bottom:14px}
+.filter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 20px;margin-bottom:12px}
+.f-item label{display:block;font-size:12px;color:#646a73;margin-bottom:6px}
+.f-item .ctrl{display:flex;align-items:center;height:34px;border:1px solid #dee0e3;border-radius:6px;padding:0 10px;background:#fff;color:#1f2329;width:100%}
+.f-item input.ctrl::placeholder{color:#bbbfc4}
+.f-item select.ctrl{appearance:none;background:#fff url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a0a4aa' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center}
+.filter-actions{display:flex;justify-content:flex-end;gap:10px;padding-bottom:12px}
+.btn{height:34px;padding:0 18px;border-radius:6px;font-size:13px;display:inline-flex;align-items:center;gap:6px;justify-content:center;transition:.15s}
+.btn-default{background:#fff;border:1px solid #dee0e3;color:#1f2329}
+.btn-default:hover{border-color:#4265f4;color:#4265f4}
+.btn-primary{background:#4265f4;color:#fff}
+.btn-primary:hover{background:#3355e0}
+.btn-ghost-blue{background:#eef1fe;color:#4265f4}
+.btn-ghost-blue:hover{background:#dfe5fd}
+
+/* ========== Table ========== */
+.table-card{background:#fff;border-radius:8px;padding:16px 20px;overflow-x:auto}
+.table-card table{min-width:1360px}
+.table-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.toolbar-tip{font-size:12px;color:#8f959e;display:flex;align-items:center;gap:5px}
+table{width:100%;border-collapse:collapse}
+th{background:#f7f8fa;text-align:left;font-weight:500;color:#646a73;font-size:12px;padding:10px 12px;white-space:nowrap}
+td{padding:12px;border-bottom:1px solid #f0f1f3;vertical-align:middle;color:#1f2329}
+tr:hover td{background:#f9fafc}
+.act-name{font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act-id{color:#8f959e;font-size:12px;margin-top:2px}
+.lang-tags{display:flex;gap:4px;flex-wrap:wrap}
+.lang-tag{font-size:11px;padding:1px 7px;border-radius:4px;background:#f2f3f5;color:#646a73;border:1px solid #e8eaed}
+.time-cell{font-size:12px;color:#646a73;line-height:1.6;white-space:nowrap}
+/* 双状态徽标 */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:10px;white-space:nowrap}
+.badge .dot{width:6px;height:6px;border-radius:50%}
+.st-running{background:#e8f7ef;color:#0d9d58}.st-running .dot{background:#0d9d58}
+.st-ended{background:#f2f3f5;color:#8f959e}.st-ended .dot{background:#bbbfc4}
+.st-pending{background:#fff5e6;color:#d98a00}.st-pending .dot{background:#f5a623}
+.pub-on{background:#eef1fe;color:#4265f4}.pub-on .dot{background:#4265f4}
+.pub-off{background:#f2f3f5;color:#8f959e}.pub-off .dot{background:#bbbfc4}
+.num-cell{font-weight:600}
+.meta-cell{font-size:12px;color:#8f959e;line-height:1.6;white-space:nowrap}
+/* 操作 */
+.ops{display:flex;align-items:center;gap:2px;white-space:nowrap}
+.op{color:#4265f4;padding:3px 7px;border-radius:4px;font-size:12px;display:inline-flex;align-items:center;gap:3px}
+.op:hover{background:#eef1fe}
+.op.danger{color:#e5484d}.op.danger:hover{background:#fdeeee}
+.op.disabled{color:#c3c7cc;cursor:not-allowed;position:relative}
+.op.disabled:hover{background:none}
+.op.disabled:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1f2329;color:#fff;font-size:11px;padding:5px 9px;border-radius:5px;white-space:nowrap;z-index:30}
+.op svg{width:13px;height:13px}
+.pager{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:16px;color:#646a73;font-size:12px}
+.pg{min-width:28px;height:28px;border:1px solid #dee0e3;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;background:#fff}
+.pg.on{background:#4265f4;border-color:#4265f4;color:#fff}
+
+/* ========== 优化点标注 ========== */
+.opt-note{display:inline-flex;align-items:center;gap:4px;background:#fff8e6;border:1px solid #ffe1a0;color:#b07a00;font-size:11px;padding:1px 7px;border-radius:9px;vertical-align:2px;margin-left:6px}
+.opt-note::before{content:'优化';font-weight:600}
+
+/* ========== Drawer(编辑全页) ========== */
+.drawer-mask{position:fixed;inset:0;background:rgba(15,18,25,.45);z-index:100;display:none}
+.drawer-mask.open{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:1080px;max-width:96vw;background:#f5f6f8;z-index:101;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer-head{background:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eceef1}
+.drawer-head h2{font-size:16px}
+.drawer-close{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#646a73}
+.drawer-close:hover{background:#f2f3f5}
+.drawer-body{flex:1;display:flex;overflow:hidden}
+/* 左侧步骤导航 */
+.step-nav{width:190px;background:#fff;border-right:1px solid #eceef1;padding:18px 0;flex-shrink:0}
+.step-item{display:flex;align-items:center;gap:10px;padding:11px 20px;cursor:pointer;color:#646a73;position:relative}
+.step-item .no{width:22px;height:22px;border-radius:50%;background:#f2f3f5;color:#8f959e;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-item.on{color:#4265f4;background:#eef1fe;font-weight:500}
+.step-item.on .no{background:#4265f4;color:#fff}
+.step-item .warn-dot{position:absolute;right:16px;width:7px;height:7px;border-radius:50%;background:#e5484d;display:none}
+.step-item.has-warn .warn-dot{display:block}
+.drawer-main{flex:1;overflow-y:auto;padding:20px 24px 90px}
+.panel{background:#fff;border-radius:8px;padding:20px 22px;margin-bottom:14px}
+.panel h3{font-size:14px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.panel h3::before{content:'';width:3px;height:14px;background:#4265f4;border-radius:2px}
+.form-row{display:flex;margin-bottom:16px;align-items:flex-start}
+.form-row:last-child{margin-bottom:0}
+.form-label{width:110px;flex-shrink:0;padding-top:7px;color:#4c5158;font-size:13px}
+.form-label .req{color:#e5484d;margin-right:2px}
+.form-ctrl{flex:1;min-width:0}
+.hint{font-size:12px;color:#8f959e;margin-top:6px;line-height:1.6}
+.hint.warn{color:#d98a00}
+.hint.error{color:#e5484d}
+.input,.select,textarea.input{width:100%;height:34px;border:1px solid #dee0e3;border-radius:6px;padding:0 10px;background:#fff}
+.input:focus{border-color:#4265f4}
+.input.err{border-color:#e5484d;background:#fffafa}
+.input-suffix{position:relative}
+.input-suffix .input{padding-right:70px}
+.input-suffix .sfx{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#8f959e;font-size:12px}
+.counter{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#bbbfc4}
+.counter.over{color:#e5484d}
+.checks{display:flex;gap:22px;flex-wrap:wrap;padding-top:6px}
+.chk{display:flex;align-items:center;gap:6px;cursor:pointer;color:#1f2329}
+.chk input{accent-color:#4265f4;width:15px;height:15px}
+.chk.dis{color:#a8adb3;cursor:not-allowed}
+.radios{display:flex;gap:20px;padding-top:6px}
+.rd{display:flex;align-items:center;gap:6px;cursor:pointer}
+.rd input{accent-color:#4265f4;width:15px;height:15px}
+.date-range{display:flex;align-items:center;gap:8px}
+.date-range .input{width:200px}
+/* 语言tab */
+.lang-tabs{display:flex;align-items:center;gap:2px;border-bottom:1px solid #eceef1;margin-bottom:18px}
+.lang-tab{padding:9px 16px;color:#646a73;cursor:pointer;position:relative;font-size:13px;border-bottom:2px solid transparent}
+.lang-tab.on{color:#4265f4;font-weight:500;border-bottom-color:#4265f4}
+.lang-tab .miss{position:absolute;top:6px;right:5px;width:7px;height:7px;border-radius:50%;background:#e5484d}
+.lang-tab .done{position:absolute;top:7px;right:4px;color:#0d9d58;font-size:10px}
+.lang-tabs .spacer{flex:1}
+.copy-zh{font-size:12px;color:#4265f4;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:5px}
+.copy-zh:hover{background:#eef1fe}
+/* 封面图 */
+.cover-grid{display:flex;gap:18px}
+.cover-slot{width:210px}
+.cover-box{height:110px;border:1px dashed #d3d7dc;border-radius:8px;background:#fafbfc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8f959e;cursor:pointer}
+.cover-box:hover{border-color:#4265f4;color:#4265f4}
+.cover-box svg{width:22px;height:22px}
+.cover-slot .cap{font-size:12px;color:#646a73;margin-top:6px}
+.cover-slot .cap b{color:#1f2329;font-weight:500}
+/* 文本模块 */
+.txt-module{border:1px solid #eceef1;border-radius:8px;padding:14px 16px;margin-bottom:12px;background:#fbfcfd}
+.txt-module .tm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tm-head .tt{font-size:13px;font-weight:500}
+.tm-tools{display:flex;gap:2px}
+.tm-tools .op{color:#646a73}
+.rich-bar{display:flex;gap:10px;align-items:center;border:1px solid #dee0e3;border-bottom:none;border-radius:6px 6px 0 0;padding:6px 10px;background:#fff;color:#646a73;font-size:12px}
+.rich-bar span{padding:2px 5px;border-radius:3px;cursor:pointer}
+.rich-bar span:hover{background:#f2f3f5}
+.rich-body{border:1px solid #dee0e3;border-radius:0 0 6px 6px;min-height:80px;padding:10px;background:#fff;color:#1f2329;line-height:1.7}
+.add-block{width:100%;height:38px;background:#eef1fe;color:#4265f4;border-radius:6px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px}
+.add-block:hover{background:#dfe5fd}
+/* 任务卡 */
+.task-card{border:1px solid #e8eaed;border-radius:8px;margin-bottom:14px;background:#fff;overflow:hidden}
+.task-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fafbfc;border-bottom:1px solid #f0f1f3;cursor:pointer}
+.drag-h{color:#c3c7cc;cursor:grab;display:flex}
+.drag-h svg{width:14px;height:14px}
+.task-type-tag{font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500}
+.tt-ladder{background:#fff3e0;color:#e08300}
+.tt-normal{background:#e8efff;color:#4265f4}
+.task-title{font-weight:500;flex:1;display:flex;align-items:center;gap:6px}
+.task-title svg{width:13px;height:13px;color:#8f959e;cursor:pointer}
+.task-head .op{color:#646a73}
+.task-body{padding:16px}
+.task-card.collapsed .task-body{display:none}
+.caret{transition:transform .15s;color:#8f959e;display:flex}
+.task-card.collapsed .caret{transform:rotate(-90deg)}
+/* 条件组 */
+.cond-group{border:1px solid #eef0f3;background:#fafbfc;border-radius:8px;padding:14px 16px;margin-bottom:4px}
+.cond-group .cg-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.cg-head b{font-size:13px}
+.cond-join{text-align:center;color:#8f959e;font-size:12px;padding:8px 0;display:flex;align-items:center;gap:10px}
+.cond-join::before,.cond-join::after{content:'';flex:1;height:1px;background:#eceef1}
+/* 阶梯表格 */
+.ladder-table{width:100%;border:1px solid #eceef1;border-radius:8px;overflow:hidden;border-collapse:separate;border-spacing:0}
+.ladder-table th{background:#f7f8fa;padding:9px 12px;font-size:12px}
+.ladder-table td{padding:8px 10px;border-bottom:1px solid #f0f1f3}
+.ladder-table tr:last-child td{border-bottom:none}
+.ladder-table .input{height:30px}
+.ladder-err td{background:#fffafa}
+.err-msg{font-size:11px;color:#e5484d;margin-top:4px;display:flex;align-items:center;gap:4px}
+.warn-msg{font-size:11px;color:#d98a00;margin-top:4px}
+/* 校验汇总 */
+.validate-bar{position:sticky;top:0;z-index:5;background:#fdeeee;border:1px solid #f5c6c8;color:#c5383d;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:12px;display:none;line-height:1.8}
+.validate-bar.show{display:block}
+.validate-bar a{color:#c5383d;font-weight:600;text-decoration:underline;cursor:pointer}
+/* 底部操作条 */
+.drawer-foot{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eceef1;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;z-index:6}
+.foot-left{font-size:12px;color:#8f959e}
+.foot-btns{display:flex;gap:10px}
+/* 弹窗 */
+.modal-mask{position:fixed;inset:0;background:rgba(15,18,25,.45);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-mask.open{display:flex}
+.modal{background:#fff;border-radius:10px;width:420px;padding:24px}
+.modal h4{font-size:15px;margin-bottom:10px;display:flex;gap:8px;align-items:center}
+.modal p{color:#646a73;line-height:1.7;margin-bottom:20px}
+.modal .m-btns{display:flex;justify-content:flex-end;gap:10px}
+.icon-warn{width:20px;height:20px;color:#f5a623;flex-shrink:0}
+/* 预览弹窗 */
+.preview-modal{width:920px;max-height:86vh;display:flex;flex-direction:column;padding:0;overflow:hidden}
+.preview-head{padding:14px 20px;border-bottom:1px solid #eceef1;display:flex;justify-content:space-between;align-items:center}
+.preview-head b{font-size:14px}
+.preview-langs{display:flex;gap:6px}
+.pv-lang{font-size:12px;padding:3px 10px;border-radius:12px;background:#f2f3f5;color:#646a73;cursor:pointer}
+.pv-lang.on{background:#4265f4;color:#fff}
+.preview-body{flex:1;overflow-y:auto;background:#0b0b0e;padding:0}
+/* 预览内的C端mock（简化） */
+.pv-hero{display:flex;gap:30px;padding:40px 44px 24px;align-items:center}
+.pv-cover{width:200px;height:200px;border-radius:14px;background:linear-gradient(135deg,#25317a,#0e1230);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.pv-cover svg{width:70px;height:70px;opacity:.7}
+.pv-hero-info h1{color:#fff;font-size:26px;margin-bottom:8px}
+.pv-hero-info p{color:#9aa0ae;font-size:13px;margin-bottom:16px}
+.pv-cta{display:flex;gap:10px}
+.pv-btn-primary{background:linear-gradient(90deg,#4265f4,#5b7bff);color:#fff;border-radius:20px;height:38px;padding:0 26px;font-weight:600}
+.pv-btn-ghost{border:1px solid #34363e;color:#e8e9ec;border-radius:20px;height:38px;padding:0 20px;background:none}
+.pv-task{margin:0 44px 12px;background:#16171c;border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:16px}
+.pv-reward{text-align:center;min-width:56px}
+.pv-reward b{color:#5b7bff;font-size:20px;display:block}
+.pv-reward span{color:#7c828e;font-size:10px}
+.pv-task-mid{flex:1}
+.pv-task-mid .t{color:#fff;font-weight:600;font-size:14px;margin-bottom:6px}
+.pv-bar{height:4px;background:#26272e;border-radius:2px;overflow:hidden;margin-top:6px}
+.pv-bar i{display:block;height:100%;width:0%;background:#4265f4}
+.pv-go{background:#23242b;color:#c8ccd4;border-radius:16px;height:32px;padding:0 18px;font-size:12px}
+/* Toast */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-8px);background:#1f2329;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:400;opacity:0;pointer-events:none;transition:.25s;display:flex;gap:8px;align-items:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast svg{width:15px;height:15px;color:#3ddc84}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#d3d7dc;border-radius:4px}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="page-title">活动落地页管理</div>
+
+  <!-- 筛选区：新增 活动状态/上架状态/语言/用户群体 筛选 -->
+  <div class="filter-card">
+    <div class="filter-grid">
+      <div class="f-item"><label>活动 ID</label><input class="ctrl" placeholder="请输入"></div>
+      <div class="f-item"><label>活动名称</label><input class="ctrl" placeholder="请输入"></div>
+      <div class="f-item"><label>起止时间</label><input class="ctrl" placeholder="开始日期 → 结束日期"></div>
+      <div class="f-item"><label>活动状态<span class="opt-note">与上架状态拆分</span></label>
+        <select class="ctrl"><option>全部</option><option>未开始</option><option>进行中</option><option>已结束</option></select></div>
+      <div class="f-item"><label>上架状态</label>
+        <select class="ctrl"><option>全部</option><option>已上线</option><option>未上线</option></select></div>
+      <div class="f-item"><label>语言</label>
+        <select class="ctrl"><option>全部</option><option>简体中文</option><option>繁体中文</option><option>英语</option><option>越南语</option><option>俄语</option></select></div>
+      <div class="f-item"><label>用户群体</label>
+        <select class="ctrl"><option>全部</option><option>散户</option><option>合伙人及其团队</option><option>指定合伙人及其团队</option><option>人群包</option></select></div>
+      <div class="f-item"><label>创建人</label><input class="ctrl" placeholder="请输入"></div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn btn-default">重 置</button>
+      <button class="btn btn-primary">查 询</button>
+    </div>
+  </div>
+
+  <!-- 列表 -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <button class="btn btn-primary" onclick="openDrawer('create')">＋ 新增活动页</button>
+      <div class="toolbar-tip">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#8f959e" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+        一个活动一行，多语言收敛为标签；已上线活动需先下线才能编辑/删除
+      </div>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="width:36px">序号</th>
+        <th>活动名称 / ID</th>
+        <th>语言<span class="opt-note">多语言合并为一行</span></th>
+        <th>起止时间</th>
+        <th>用户群体</th>
+        <th>活动状态</th>
+        <th>上架状态</th>
+        <th>参与人数<span class="opt-note">数据回流</span></th>
+        <th>创建人 / 更新时间</th>
+        <th>操作</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="pager">
+      共 14 条
+      <button class="pg">‹</button><button class="pg on">1</button><button class="pg">2</button><button class="pg">3</button><button class="pg">›</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 编辑抽屉（全页分步表单） ========== -->
+<div class="drawer-mask" id="drawerMask" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h2 id="drawerTitle">编辑活动落地页<span class="opt-note">弹窗改为分步全页表单</span></h2>
+    <button class="drawer-close" onclick="closeDrawer()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <!-- 左侧步骤导航 -->
+    <div class="step-nav">
+      <div class="step-item on" data-step="1" onclick="goStep(1)"><span class="no">1</span>基本信息<i class="warn-dot"></i></div>
+      <div class="step-item" data-step="2" onclick="goStep(2)"><span class="no">2</span>落地页内容<i class="warn-dot"></i></div>
+      <div class="step-item" data-step="3" onclick="goStep(3)"><span class="no">3</span>任务配置<i class="warn-dot"></i></div>
+      <div class="step-item" data-step="4" onclick="goStep(4)"><span class="no">4</span>预算与风控<i class="warn-dot"></i></div>
+    </div>
+
+    <div class="drawer-main" id="drawerMain">
+      <!-- 校验汇总条 -->
+      <div class="validate-bar" id="validateBar"></div>
+
+      <!-- ===== Step 1 基本信息 ===== -->
+      <div class="step-panel" data-panel="1">
+        <div class="panel">
+          <h3>基本信息</h3>
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>用户群体</div>
+            <div class="form-ctrl">
+              <div class="checks">
+                <label class="chk"><input type="checkbox" checked>散户</label>
+                <label class="chk"><input type="checkbox" checked>合伙人及其团队</label>
+                <label class="chk"><input type="checkbox">指定合伙人及其团队</label>
+                <label class="chk"><input type="checkbox" id="crowdPkg" onchange="document.getElementById('crowdUpload').style.display=this.checked?'block':'none'">人群包</label>
+              </div>
+              <div id="crowdUpload" style="display:none;margin-top:10px">
+                <button class="btn btn-ghost-blue" style="height:30px">上传 UID 名单（.csv）</button>
+                <span class="hint" style="display:inline;margin-left:8px">单列 UID，最多 10 万行</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>活动时间</div>
+            <div class="form-ctrl">
+              <div class="date-range">
+                <input class="input" value="2026-06-30 10:00" style="width:200px">
+                <span style="color:#8f959e">→</span>
+                <input class="input" value="2026-07-07 22:00" style="width:200px">
+              </div>
+              <div class="hint">时间默认取整分，避免出现 17:29:22 这类秒级时间<span class="opt-note">时间取整</span></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">报名时间</div>
+            <div class="form-ctrl">
+              <label class="chk" style="margin-bottom:8px"><input type="checkbox" checked>与活动开始时间一致（C端时间轴自动合并为一个节点）</label>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>选择语言</div>
+            <div class="form-ctrl">
+              <div class="checks">
+                <label class="chk"><input type="checkbox" checked>简体中文</label>
+                <label class="chk"><input type="checkbox">繁体中文</label>
+                <label class="chk dis"><input type="checkbox" checked disabled>英语</label>
+                <label class="chk"><input type="checkbox">越南语</label>
+                <label class="chk"><input type="checkbox">俄语</label>
+              </div>
+              <div class="hint">英语为全站兜底语言，默认必选；<b style="color:#d98a00">取消某语言时该语言已填内容将被保留但不再展示</b><span class="opt-note">强制项加说明</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Step 2 落地页内容 ===== -->
+      <div class="step-panel" data-panel="2" style="display:none">
+        <div class="panel">
+          <h3>落地页配置</h3>
+          <div class="lang-tabs">
+            <div class="lang-tab on" onclick="switchLang(this)">简体中文<i class="done">✓</i></div>
+            <div class="lang-tab" onclick="switchLang(this)">英语<i class="miss" title="有必填项未填"></i></div>
+            <div class="spacer"></div>
+            <button class="copy-zh" onclick="toast('已从「简体中文」复制全部内容到当前语言')">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+              从简体中文复制<span class="opt-note" style="margin-left:4px">多语言提效</span>
+            </button>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>活动名称</div>
+            <div class="form-ctrl">
+              <div class="input-suffix"><input class="input" id="fName" value="新用户邀请嘉年华" maxlength="30" oninput="cnt(this,'cName',30)"><span class="counter" id="cName">8/30</span></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>列表主标题</div>
+            <div class="form-ctrl" style="display:flex;gap:14px">
+              <div class="input-suffix" style="flex:1"><input class="input" value="邀请好友 瓜分 10,000 USDT" maxlength="20" oninput="cnt(this,'cT1',20)"><span class="counter" id="cT1">15/20</span></div>
+              <div class="input-suffix" style="flex:1"><input class="input" placeholder="列表副标题" value="多邀多得，上不封顶" maxlength="30" oninput="cnt(this,'cT2',30)"><span class="counter" id="cT2">9/30</span></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>活动页主标题</div>
+            <div class="form-ctrl" style="display:flex;gap:14px">
+              <div class="input-suffix" style="flex:1"><input class="input" value="新用户邀请嘉年华" maxlength="20"><span class="counter">8/20</span></div>
+              <div class="input-suffix" style="flex:1"><input class="input" placeholder="活动页副标题" value="完成任务赢 USDT 与 AX 积分" maxlength="40"><span class="counter">16/40</span></div>
+            </div>
+          </div>
+          <div class="hint" style="margin:-6px 0 16px 110px">标题超长将在C端截断，输入框已按C端展示上限限字<span class="opt-note">限字防截断</span></div>
+
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>封面素材</div>
+            <div class="form-ctrl">
+              <div class="cover-grid">
+                <div class="cover-slot">
+                  <div class="cover-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>上传列表封面</div>
+                  <div class="cap"><b>列表封面</b> · 377×377px · ≤2MB</div>
+                </div>
+                <div class="cover-slot" style="width:300px">
+                  <div class="cover-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>上传详情页横幅</div>
+                  <div class="cap"><b>详情页横幅</b> · 1200×600px · 未传时详情页复用列表封面<span class="opt-note">拆分素材位</span></div>
+                </div>
+              </div>
+              <label class="chk" style="margin-top:10px"><input type="checkbox" checked>所有语言共用同一套素材（取消后可按语言分别上传）</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>图文模块<span style="font-weight:400;font-size:12px;color:#8f959e">支持排序与删除</span><span class="opt-note">模块可排序</span></h3>
+          <div class="txt-module">
+            <div class="tm-head">
+              <span class="tt">模块 1 · 标题 + 文本</span>
+              <div class="tm-tools">
+                <button class="op" title="上移"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+                <button class="op" title="下移"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+                <button class="op danger" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+              </div>
+            </div>
+            <input class="input" value="活动规则" style="margin-bottom:10px">
+            <div class="rich-bar"><span>12pt ▾</span><span><b>B</b></span><span><i>I</i></span><span><u>U</u></span><span>A ▾</span><span>≡ ▾</span><span>⋯</span></div>
+            <div class="rich-body">1. 活动期间邀请的新用户需完成注册并通过 KYC；<br>2. 奖励将于任务完成后 24 小时内发放至资金账户；<br>3. 平台保留对作弊行为取消资格的权利。</div>
+            <div class="hint warn">富文本在C端为深色背景，请避免使用深色字体（系统会自动校验对比度）<span class="opt-note">暗色兜底</span></div>
+          </div>
+          <button class="add-block">＋ 添加图文模块</button>
+        </div>
+      </div>
+
+      <!-- ===== Step 3 任务配置 ===== -->
+      <div class="step-panel" data-panel="3" style="display:none">
+        <div class="panel">
+          <h3>任务列表<span style="font-weight:400;font-size:12px;color:#8f959e">拖动左侧手柄可调整C端展示顺序</span><span class="opt-note">任务可排序</span></h3>
+
+          <!-- 阶梯任务 -->
+          <div class="task-card" id="ladderCard">
+            <div class="task-head" onclick="toggleTask(this)">
+              <span class="drag-h" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+              <span class="task-type-tag tt-ladder">阶梯</span>
+              <span class="task-title">邀请新用户，即可获取代币和积分
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="event.stopPropagation()"><path d="M17 3a2.8 2.8 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+              </span>
+              <button class="op danger" onclick="event.stopPropagation()">删除</button>
+              <span class="caret"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </div>
+            <div class="task-body">
+              <div class="form-row">
+                <div class="form-label"><span class="req">*</span>有效邀请判定</div>
+                <div class="form-ctrl">
+                  <div class="radios">
+                    <label class="rd"><input type="radio" name="invRel" checked>被邀请人需全部满足</label>
+                    <label class="rd"><input type="radio" name="invRel">满足任一即可</label>
+                  </div>
+                  <div class="hint">明确交易/入金/注册多条件的逻辑关系，与常规任务保持一致<span class="opt-note">补齐条件关系</span></div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">被邀请人行为</div>
+                <div class="form-ctrl">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;max-width:640px">
+                    <div class="input-suffix"><input class="input" value="100" placeholder="交易数量"><span class="sfx">交易 · USDT</span></div>
+                    <div class="input-suffix"><input class="input" value="100" placeholder="入金数量"><span class="sfx">入金 · USDT</span></div>
+                    <div class="input-suffix" style="grid-column:1/3"><input class="input" placeholder="注册时间范围（留空 = 不限注册时间）"><span class="sfx">注册</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-label"><span class="req">*</span>阶梯设置</div>
+                <div class="form-ctrl">
+                  <table class="ladder-table" id="ladderTable">
+                    <thead><tr><th style="width:60px">档位</th><th>邀请数量（人）</th><th>积分奖励（AX point）</th><th>代币奖励（USDT）</th><th style="width:56px">操作</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                  <div class="hint">阶梯以表格集中编辑；<b>邀请数量须严格递增，奖励低于上一档会实时标红</b>；最多 8 档（超过后C端滑轨无法完整展示）<span class="opt-note">表格化+校验+限档</span></div>
+                  <button class="add-block" style="margin-top:10px;height:34px" onclick="addLadder()">＋ 新增阶梯</button>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">C端奖励口径</div>
+                <div class="form-ctrl">
+                  <div class="radios">
+                    <label class="rd"><input type="radio" name="calib" checked>展示「档位奖励」（当档可得）</label>
+                    <label class="rd"><input type="radio" name="calib">展示「累计奖励」（自动求和）</label>
+                  </div>
+                  <div class="hint">统一配置端与C端的奖励口径，避免"总奖励"歧义<span class="opt-note">口径修正</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 常规任务：社媒 -->
+          <div class="task-card">
+            <div class="task-head" onclick="toggleTask(this)">
+              <span class="drag-h" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+              <span class="task-type-tag tt-normal">常规</span>
+              <span class="task-title">关注 X 即可获奖
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="event.stopPropagation()"><path d="M17 3a2.8 2.8 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+              </span>
+              <button class="op danger" onclick="event.stopPropagation()">删除</button>
+              <span class="caret"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </div>
+            <div class="task-body">
+              <div class="form-row">
+                <div class="form-label"><span class="req">*</span>条件</div>
+                <div class="form-ctrl">
+                  <div class="radios">
+                    <label class="rd"><input type="radio" name="c2">全部满足</label>
+                    <label class="rd"><input type="radio" name="c2">任一满足</label>
+                    <label class="rd"><input type="radio" name="c2" checked>单一条件</label>
+                  </div>
+                </div>
+              </div>
+              <div class="cond-group">
+                <div class="cg-head"><b>条件组 1</b></div>
+                <div class="form-row">
+                  <div class="form-label"><span class="req">*</span>任务类型</div>
+                  <div class="form-ctrl"><select class="input" style="max-width:300px"><option>X（关注账号）</option><option>Discord（加入服务器）</option><option>Telegram（加入群组）</option><option>交易</option><option>入金</option></select></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-label"><span class="req">*</span>目标链接</div>
+                  <div class="form-ctrl">
+                    <input class="input" value="https://x.com/AX_Exchange" style="max-width:460px">
+                    <div class="hint">社媒类任务必填跳转目标，C端"去关注"按钮据此跳转<span class="opt-note">补齐链接配置</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row" style="margin-top:14px">
+                <div class="form-label"><span class="req">*</span>活动奖励</div>
+                <div class="form-ctrl">
+                  <div class="checks">
+                    <label class="chk"><input type="checkbox" checked>积分</label>
+                    <label class="chk"><input type="checkbox">代币</label>
+                  </div>
+                  <div class="hint">奖励支持积分+代币同时发放，与阶梯任务能力对齐<span class="opt-note">奖励可叠加</span></div>
+                  <div class="input-suffix" style="max-width:300px;margin-top:10px"><input class="input" value="10"><span class="sfx">AX point</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 常规任务：2选1 -->
+          <div class="task-card collapsed">
+            <div class="task-head" onclick="toggleTask(this)">
+              <span class="drag-h" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+              <span class="task-type-tag tt-normal">常规</span>
+              <span class="task-title">完成 2 选 1 即可获得 <span style="font-weight:400;font-size:12px;color:#8f959e">· 任一满足：入金 50,000 或 交易 10,000 → 10 USDT</span></span>
+              <button class="op danger" onclick="event.stopPropagation()">删除</button>
+              <span class="caret"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </div>
+            <div class="task-body">
+              <div class="cond-group">
+                <div class="cg-head"><b>条件组 1</b><button class="op danger">删除</button></div>
+                <div class="input-suffix" style="max-width:400px"><input class="input" value="50000"><span class="sfx">入金 · USDT</span></div>
+              </div>
+              <div class="cond-join">或（任一满足）</div>
+              <div class="cond-group">
+                <div class="cg-head"><b>条件组 2</b><button class="op danger">删除</button></div>
+                <div class="input-suffix" style="max-width:400px"><input class="input" value="10000"><span class="sfx">交易 · USDT</span></div>
+              </div>
+            </div>
+          </div>
+
+          <button class="add-block">＋ 新增任务（常规 / 阶梯）</button>
+        </div>
+      </div>
+
+      <!-- ===== Step 4 预算与风控 ===== -->
+      <div class="step-panel" data-panel="4" style="display:none">
+        <div class="panel">
+          <h3>奖池预算<span class="opt-note">新增，堵资损</span></h3>
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>代币总预算</div>
+            <div class="form-ctrl" style="display:flex;gap:14px;align-items:flex-start">
+              <div class="input-suffix" style="width:240px"><input class="input" value="50000"><span class="sfx">USDT</span></div>
+              <div class="input-suffix" style="width:240px"><input class="input" value="1000000" ><span class="sfx">AX point（积分总预算）</span></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>预算耗尽处理</div>
+            <div class="form-ctrl">
+              <div class="radios">
+                <label class="rd"><input type="radio" name="budget" checked>自动停止发放并下线相关任务</label>
+                <label class="rd"><input type="radio" name="budget">仅告警，人工处理</label>
+              </div>
+              <div class="hint">预算消耗达 80% 时向创建人与审批人推送告警</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>每人限领</div>
+            <div class="form-ctrl" style="display:flex;gap:14px">
+              <div class="input-suffix" style="width:240px"><input class="input" value="1"><span class="sfx">次 / 每任务</span></div>
+              <select class="input" style="width:240px"><option>发放时机：条件达成后实时发放</option><option>发放时机：人工审核后发放</option><option>发放时机：活动结束后统一发放</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>风控规则<span class="opt-note">新增，防刷量</span></h3>
+          <div class="form-row">
+            <div class="form-label">邀请防刷</div>
+            <div class="form-ctrl">
+              <div class="checks" style="flex-direction:column;gap:10px;align-items:flex-start">
+                <label class="chk"><input type="checkbox" checked>同设备指纹注册的多账号只计 1 个有效邀请</label>
+                <label class="chk"><input type="checkbox" checked>同 IP 段 24h 内注册超过 5 个账号触发人工审核</label>
+                <label class="chk"><input type="checkbox" checked>被邀请人需完成 KYC Lv.1 及以上</label>
+                <label class="chk"><input type="checkbox">命中风控名单的用户冻结奖励发放</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>上线审批<span class="opt-note">新增，双人复核</span></h3>
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span>审批人</div>
+            <div class="form-ctrl">
+              <select class="input" style="max-width:300px"><option>Lufei（运营负责人）</option><option>Roody（风控）</option></select>
+              <div class="hint">涉及 USDT 真实资产的活动需二人复核：配置人提交 → 审批人通过后方可上线，配置人 ≠ 审批人</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部操作条 -->
+  <div class="drawer-foot">
+    <div class="foot-left">已自动保存草稿 · 3 分钟前　|　修改进行中的活动：<b style="color:#d98a00">已达成档位按旧规则结算，新规则对后续行为生效</b><span class="opt-note">生效规则透明</span></div>
+    <div class="foot-btns">
+      <button class="btn btn-default" onclick="closeDrawer()">取 消</button>
+      <button class="btn btn-default">存草稿</button>
+      <button class="btn btn-ghost-blue" onclick="openPreview()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        预览C端效果<span class="opt-note">上线前可见即所得</span>
+      </button>
+      <button class="btn btn-primary" onclick="validateForm()">提交审批</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 二次确认弹窗 ========== -->
+<div class="modal-mask" id="confirmMask">
+  <div class="modal">
+    <h4><svg class="icon-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span id="confirmTitle">确认下线该活动？</span></h4>
+    <p id="confirmDesc">下线后C端立即不可见，进行中用户的任务进度将被保留。再次上线可恢复展示。</p>
+    <div class="m-btns">
+      <button class="btn btn-default" onclick="closeConfirm()">取 消</button>
+      <button class="btn btn-primary" style="background:#e5484d" onclick="doConfirm()">确认下线</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 预览弹窗（C端模拟） ========== -->
+<div class="modal-mask" id="previewMask">
+  <div class="modal preview-modal">
+    <div class="preview-head">
+      <b>C端效果预览</b>
+      <div class="preview-langs">
+        <span class="pv-lang on">简体中文</span><span class="pv-lang">English</span>
+        <button class="drawer-close" onclick="document.getElementById('previewMask').classList.remove('open')" style="margin-left:8px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+    </div>
+    <div class="preview-body">
+      <div class="pv-hero">
+        <div class="pv-cover"><svg viewBox="0 0 24 24" fill="none" stroke="#7c8fff" stroke-width="1.2"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M7.5 8a2.5 2.5 0 112.5-2.5C10 7 12 8 12 8s2-1 2-2.5A2.5 2.5 0 1116.5 8"/></svg></div>
+        <div class="pv-hero-info">
+          <h1>新用户邀请嘉年华</h1>
+          <p>完成任务赢 USDT 与 AX 积分</p>
+          <div class="pv-cta"><button class="pv-btn-primary">立即报名</button><button class="pv-btn-ghost">分享</button></div>
+        </div>
+      </div>
+      <div class="pv-task">
+        <div class="pv-reward"><b>10</b><span>USDT</span></div>
+        <div class="pv-task-mid"><div class="t">交易即可获奖</div><div class="pv-bar"><i style="width:0"></i></div></div>
+        <button class="pv-go">去交易</button>
+      </div>
+      <div class="pv-task" style="margin-bottom:32px">
+        <div class="pv-reward"><b>10</b><span>AX Points</span></div>
+        <div class="pv-task-mid"><div class="t">关注 X 即可获奖</div><div class="pv-bar"><i style="width:0"></i></div></div>
+        <button class="pv-go">去关注</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span id="toastText"></span></div>
+
+<script>
+/* ===== 列表数据（源自截图，多语言合并为一行） ===== */
+const rows=[
+ {name:'测试新图',id:'269409257382744064',langs:['简中','英语'],time:'2026-07-07 17:29 ~ 2027-07-30 17:29',crowd:'散户/合伙人及其团队',st:'running',pub:true,join:'1,284',by:'Rhys',up:'07-07 17:31'},
+ {name:'新活动看版',id:'266982444429742080',langs:['简中','英语'],time:'2026-07-07 17:29 ~ 2027-07-30 17:29',crowd:'散户/合伙人及其团队',st:'running',pub:true,join:'956',by:'Rhys',up:'07-07 17:29'},
+ {name:'0703测试',id:'265468481166643200',langs:['简中','英语'],time:'2026-07-04 13:09 ~ 2026-07-11 13:09',crowd:'散户/合伙人及其团队',st:'ended',pub:true,join:'3,402',by:'Lufei',up:'07-04 13:10'},
+ {name:'Lufei测试 活动名称--请…',id:'264091554283524096',langs:['简中','英语'],time:'2026-06-29 18:01 ~ 2027-06-30 18:01',crowd:'散户/合伙人及其团队',st:'running',pub:true,join:'2,105',by:'Lufei',up:'06-29 18:03'},
+ {name:'rhys 测试',id:'263982056722141184',langs:['简中','英语'],time:'2026-06-30 10:46 ~ 2026-07-07 10:46',crowd:'散户/合伙人及其团队',st:'ended',pub:true,join:'188',by:'Rhys',up:'06-30 10:47'},
+ {name:'新版本活动',id:'262911655782912000',langs:['简中','英语'],time:'2026-06-26 11:54 ~ 2027-06-27 11:54',crowd:'散户/合伙人及其团队',st:'running',pub:false,join:'—',by:'Rhys',up:'06-26 11:56'},
+ {name:'阶梯活动测试',id:'262638134632648704',langs:['简中','英语'],time:'2026-06-26 17:48 ~ 2026-07-12 17:48',crowd:'散户/合伙人及其团队',st:'ended',pub:false,join:'—',by:'Roody',up:'06-26 17:50'},
+ {name:'roody接收',id:'256795246027870208',langs:['简中','英语'],time:'2026-06-09 14:49 ~ 2026-06-28 14:49',crowd:'散户/合伙人及其团队',st:'ended',pub:false,join:'—',by:'Roody',up:'06-09 14:52'},
+ {name:'Antarctic Altcoin Sprint',id:'248853120598151168',langs:['简中','英语'],time:'2026-05-18 16:43 ~ 2026-05-31 16:43',crowd:'散户/合伙人及其团队',st:'ended',pub:true,join:'5,933',by:'Lufei',up:'05-18 16:45'},
+ {name:'Taker 费率: ≥0.04% M…',id:'248850935273492480',langs:['简中'],time:'2026-05-18 16:43 ~ 2026-05-31 16:43',crowd:'人群包',st:'ended',pub:true,join:'742',by:'Lufei',up:'05-18 16:44'},
+ {name:'即将上线的新活动',id:'270112233445566778',langs:['简中','英语','越南语'],time:'2026-07-20 10:00 ~ 2026-08-20 22:00',crowd:'散户',st:'pending',pub:false,join:'—',by:'Rhys',up:'07-15 19:22'}
+];
+const stMap={running:['进行中','st-running'],ended:['已结束','st-ended'],pending:['未开始','st-pending']};
+function opBtn(txt,cls,click,icon){return `<button class="op ${cls||''}" ${click?`onclick="${click}"`:''}>${icon||''}${txt}</button>`}
+function disBtn(txt,tip){return `<button class="op disabled" data-tip="${tip}">${txt}</button>`}
+document.getElementById('tbody').innerHTML=rows.map((r,i)=>{
+  const [stTxt,stCls]=stMap[r.st];
+  let ops='';
+  const ended=r.st==='ended';
+  if(r.pub){
+    ops+= ended? disBtn('下线','已结束的活动无需下线') : opBtn('下线','danger',`openConfirm('${r.name}')`);
+    ops+=opBtn('查看');
+    ops+=disBtn('编辑','已上线活动需先下线才能编辑');
+    ops+=opBtn('复制','', `toast('已复制整个活动（含 ${r.langs.length} 个语言版本）为新草稿')`);
+    ops+=opBtn('数据','', `toast('跳转活动数据看板：参与 ${r.join} 人')`);
+    ops+=disBtn('删除','已上线活动不可删除，请先下线');
+  }else{
+    ops+= ended? disBtn('上线','活动已结束，不可上线') : opBtn('上线','',`toast('已提交上线审批，等待审批人复核')`);
+    ops+=opBtn('编辑','',"openDrawer('edit')");
+    ops+=opBtn('复制','',`toast('已复制整个活动（含 ${r.langs.length} 个语言版本）为新草稿')`);
+    ops+= r.join!=='—' ? opBtn('数据') : '';
+    ops+=opBtn('删除','danger',`openConfirm('${r.name}',true)`);
+  }
+  return `<tr>
+    <td>${i+1}</td>
+    <td><div class="act-name" title="${r.name}">${r.name}</div><div class="act-id">${r.id}</div></td>
+    <td><div class="lang-tags">${r.langs.map(l=>`<span class="lang-tag">${l}</span>`).join('')}</div></td>
+    <td class="time-cell">${r.time.replace(' ~ ','<br>~ ')}</td>
+    <td style="font-size:12px;color:#646a73">${r.crowd}</td>
+    <td><span class="badge ${stCls}"><i class="dot"></i>${stTxt}</span></td>
+    <td><span class="badge ${r.pub?'pub-on':'pub-off'}"><i class="dot"></i>${r.pub?'已上线':'未上线'}</span></td>
+    <td class="num-cell">${r.join}</td>
+    <td class="meta-cell">${r.by}<br>${r.up}</td>
+    <td><div class="ops">${ops}</div></td>
+  </tr>`;
+}).join('');
+
+/* ===== Drawer ===== */
+function openDrawer(mode){
+  document.getElementById('drawerTitle').firstChild.textContent = mode==='create'?'新增活动落地页':'编辑活动落地页';
+  document.getElementById('drawerMask').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawerMask').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+}
+function goStep(n){
+  document.querySelectorAll('.step-item').forEach(s=>s.classList.toggle('on',s.dataset.step==n));
+  document.querySelectorAll('.step-panel').forEach(p=>p.style.display=p.dataset.panel==n?'':'none');
+  document.getElementById('drawerMain').scrollTop=0;
+}
+function switchLang(el){
+  el.parentElement.querySelectorAll('.lang-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+}
+function toggleTask(head){head.parentElement.classList.toggle('collapsed')}
+function cnt(input,id,max){
+  const c=document.getElementById(id);c.textContent=input.value.length+'/'+max;
+  c.classList.toggle('over',input.value.length>=max);
+}
+
+/* ===== 阶梯表格 + 实时校验 ===== */
+let ladders=[
+ {n:3,p:10,t:5},{n:5,p:15,t:10},{n:10,p:20,t:15},{n:15,p:25,t:20},{n:30,p:100,t:30},{n:40,p:40,t:40}
+];
+function renderLadder(){
+  const tb=document.querySelector('#ladderTable tbody');
+  tb.innerHTML=ladders.map((l,i)=>{
+    const prev=ladders[i-1];
+    const numErr=prev&&l.n<=prev.n;
+    const pDown=prev&&l.p<prev.p, tDown=prev&&l.t<prev.t;
+    return `<tr class="${numErr?'ladder-err':''}">
+      <td style="color:#646a73">阶梯${i+1}</td>
+      <td><input class="input ${numErr?'err':''}" value="${l.n}" oninput="upd(${i},'n',this.value)">${numErr?'<div class="err-msg">须大于上一档（'+prev.n+'人）</div>':''}</td>
+      <td><input class="input ${pDown?'err':''}" value="${l.p}" oninput="upd(${i},'p',this.value)">${pDown?'<div class="err-msg">低于上一档（'+prev.p+'），存在奖励倒挂</div>':''}</td>
+      <td><input class="input ${tDown?'err':''}" value="${l.t}" oninput="upd(${i},'t',this.value)">${tDown?'<div class="err-msg">低于上一档（'+prev.t+'），存在奖励倒挂</div>':''}</td>
+      <td><button class="op danger" onclick="ladders.splice(${i},1);renderLadder()">删除</button></td>
+    </tr>`;
+  }).join('');
+}
+function upd(i,k,v){ladders[i][k]=Number(v)||0;renderLadder();
+  const inp=document.querySelectorAll(`#ladderTable tbody tr`)[i]?.querySelector(`td:nth-child(${ {n:2,p:3,t:4}[k] }) .input`);
+  if(inp){inp.focus();const val=inp.value;inp.setSelectionRange(val.length,val.length)}
+}
+function addLadder(){
+  if(ladders.length>=8){toast('最多 8 档：超过后C端滑轨无法完整展示');return}
+  const last=ladders[ladders.length-1]||{n:0,p:0,t:0};
+  ladders.push({n:last.n+10,p:last.p,t:last.t});renderLadder();
+}
+renderLadder();
+
+/* ===== 提交校验汇总 ===== */
+function validateForm(){
+  const errs=[];
+  ladders.forEach((l,i)=>{
+    const prev=ladders[i-1];if(!prev)return;
+    if(l.n<=prev.n)errs.push(`任务配置 · 阶梯${i+1}：邀请数量未递增`);
+    if(l.p<prev.p)errs.push(`任务配置 · 阶梯${i+1}：积分奖励倒挂（${prev.p} → ${l.p}）`);
+    if(l.t<prev.t)errs.push(`任务配置 · 阶梯${i+1}：代币奖励倒挂（${prev.t} → ${l.t}）`);
+  });
+  errs.push('落地页内容 · 英语：活动名称、列表主标题 未填写');
+  const bar=document.getElementById('validateBar');
+  if(errs.length){
+    bar.innerHTML='<b>提交失败，共 '+errs.length+' 项待处理：</b><br>'+errs.map(e=>'· '+e).join('<br>');
+    bar.classList.add('show');
+    document.querySelectorAll('.step-item')[2].classList.add('has-warn');
+    document.querySelectorAll('.step-item')[1].classList.add('has-warn');
+    document.getElementById('drawerMain').scrollTop=0;
+  }else{
+    bar.classList.remove('show');
+    toast('已提交审批，审批通过后自动上线');
+  }
+}
+
+/* ===== 确认弹窗 ===== */
+let confirmDel=false;
+function openConfirm(name,isDel){
+  confirmDel=!!isDel;
+  document.getElementById('confirmTitle').textContent=isDel?`确认删除「${name}」？`:`确认下线「${name}」？`;
+  document.getElementById('confirmDesc').innerHTML=isDel
+    ?'删除后配置不可恢复。该活动为<b>未上线</b>状态，删除不影响C端。如需保留配置请改用「存草稿」。'
+    :'下线后C端立即不可见，进行中用户的任务进度将被保留，再次上线可恢复展示。';
+  document.querySelector('#confirmMask .btn-primary').textContent=isDel?'确认删除':'确认下线';
+  document.getElementById('confirmMask').classList.add('open');
+}
+function closeConfirm(){document.getElementById('confirmMask').classList.remove('open')}
+function doConfirm(){closeConfirm();toast(confirmDel?'已删除':'已下线，C端不再展示')}
+
+/* ===== 预览 & Toast ===== */
+function openPreview(){document.getElementById('previewMask').classList.add('open')}
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastText').textContent=msg;
+  t.classList.add('show');clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>
