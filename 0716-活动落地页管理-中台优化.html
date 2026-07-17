@@ -316,6 +316,13 @@ tr:hover td{background:#f9fafc}
         <div class="panel">
           <h3>基本信息</h3>
           <div class="form-row">
+            <div class="form-label"><span class="req">*</span>活动名称</div>
+            <div class="form-ctrl">
+              <div class="input-suffix" style="max-width:460px"><input class="input" id="fName" value="新用户邀请嘉年华" maxlength="30" oninput="cnt(this,'cName',30)"><span class="counter" id="cName">8/30</span></div>
+              <div class="hint">仅对内展示：用于中台列表检索与识别，全活动唯一，不区分语言，C端用户不可见<span class="opt-note">对内字段上移，全活动只填一次</span></div>
+            </div>
+          </div>
+          <div class="form-row">
             <div class="form-label"><span class="req">*</span>用户群体</div>
             <div class="form-ctrl">
               <div class="checks">
@@ -366,7 +373,7 @@ tr:hover td{background:#f9fafc}
       <!-- ===== Step 2 落地页内容 ===== -->
       <div class="step-panel" data-panel="2" style="display:none">
         <div class="panel">
-          <h3>落地页配置</h3>
+          <h3>落地页配置<span style="font-weight:400;font-size:12px;color:#d98a00">以下内容将展示给C端用户，请按语言分别填写</span><span class="opt-note">对内/对外字段拆分</span></h3>
           <div class="lang-tabs">
             <div class="lang-tab on" onclick="switchLang(this)">简体中文<i class="done">✓</i></div>
             <div class="lang-tab" onclick="switchLang(this)">英语<i class="miss" title="有必填项未填"></i></div>
@@ -377,12 +384,6 @@ tr:hover td{background:#f9fafc}
             </button>
           </div>
 
-          <div class="form-row">
-            <div class="form-label"><span class="req">*</span>活动名称</div>
-            <div class="form-ctrl">
-              <div class="input-suffix"><input class="input" id="fName" value="新用户邀请嘉年华" maxlength="30" oninput="cnt(this,'cName',30)"><span class="counter" id="cName">8/30</span></div>
-            </div>
-          </div>
           <div class="form-row">
             <div class="form-label"><span class="req">*</span>列表主标题</div>
             <div class="form-ctrl" style="display:flex;gap:14px">
@@ -782,7 +783,7 @@ function validateForm(){
     if(l.p<prev.p)errs.push(`任务配置 · 阶梯${i+1}：积分奖励倒挂（${prev.p} → ${l.p}）`);
     if(l.t<prev.t)errs.push(`任务配置 · 阶梯${i+1}：代币奖励倒挂（${prev.t} → ${l.t}）`);
   });
-  errs.push('落地页内容 · 英语：活动名称、列表主标题 未填写');
+  errs.push('落地页内容 · 英语：列表主标题、活动页主标题 未填写');
   const bar=document.getElementById('validateBar');
   if(errs.length){
     bar.innerHTML='<b>提交失败，共 '+errs.length+' 项待处理：</b><br>'+errs.map(e=>'· '+e).join('<br>');
