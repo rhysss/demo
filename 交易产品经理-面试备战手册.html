@@ -1,0 +1,891 @@
+<title>交易产品经理 · 面试备战手册</title>
+<style>
+  :root {
+    --bg: #F1F4F2;
+    --surface: #FFFFFF;
+    --surface-2: #F7F9F8;
+    --ink: #182420;
+    --ink-soft: #47534E;
+    --muted: #7C867F;
+    --line: #E0E5E1;
+    --line-strong: #CDD4CF;
+    --accent: #17796A;
+    --accent-ink: #0E5B4F;
+    --accent-soft: #E2EFEB;
+    --up: #1E8E5A;
+    --down: #C4453C;
+    --shadow: 0 1px 2px rgba(20,40,34,.04), 0 6px 20px rgba(20,40,34,.05);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F1613;
+      --surface: #161E1A;
+      --surface-2: #1B241F;
+      --ink: #E9EEEB;
+      --ink-soft: #B0BAB4;
+      --muted: #7E8A84;
+      --line: #26302B;
+      --line-strong: #34403A;
+      --accent: #4CB6A0;
+      --accent-ink: #6FccB8;
+      --accent-soft: rgba(76,182,160,.13);
+      --up: #46B87E;
+      --down: #D8695F;
+      --shadow: 0 1px 2px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.28);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1613; --surface: #161E1A; --surface-2: #1B241F;
+    --ink: #E9EEEB; --ink-soft: #B0BAB4; --muted: #7E8A84;
+    --line: #26302B; --line-strong: #34403A;
+    --accent: #4CB6A0; --accent-ink: #6FccB8; --accent-soft: rgba(76,182,160,.13);
+    --up: #46B87E; --down: #D8695F;
+    --shadow: 0 1px 2px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.28);
+  }
+  :root[data-theme="light"] {
+    --bg: #F1F4F2; --surface: #FFFFFF; --surface-2: #F7F9F8;
+    --ink: #182420; --ink-soft: #47534E; --muted: #7C867F;
+    --line: #E0E5E1; --line-strong: #CDD4CF;
+    --accent: #17796A; --accent-ink: #0E5B4F; --accent-soft: #E2EFEB;
+    --up: #1E8E5A; --down: #C4453C;
+    --shadow: 0 1px 2px rgba(20,40,34,.04), 0 6px 20px rgba(20,40,34,.05);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .page {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "tnum" 0;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 96px; }
+
+  /* ---- Header ---- */
+  header.masthead {
+    padding: 52px 0 30px;
+    border-bottom: 1px solid var(--line);
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin: 0 0 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .kicker::before {
+    content: ""; width: 26px; height: 1px; background: var(--accent); display: inline-block;
+  }
+  h1.title {
+    font-size: clamp(28px, 6.5vw, 40px);
+    line-height: 1.12;
+    margin: 0 0 12px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+  .sub {
+    color: var(--ink-soft);
+    font-size: 16px;
+    margin: 0;
+    max-width: 52ch;
+  }
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .04em;
+    color: var(--ink-soft);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  /* ---- Sticky nav ---- */
+  nav.toc {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    margin: 0 -20px 0;
+    padding: 10px 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav.toc::-webkit-scrollbar { display: none; }
+  .toc-inner { display: flex; gap: 6px; max-width: 760px; margin: 0 auto; width: max-content; }
+  nav.toc a {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    white-space: nowrap;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background .15s, color .15s;
+  }
+  nav.toc a:hover, nav.toc a:focus-visible { background: var(--accent-soft); color: var(--accent-ink); outline: none; }
+
+  /* ---- Sections ---- */
+  section { padding-top: 44px; scroll-margin-top: 60px; }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+  .sec-num {
+    font-family: var(--mono); font-size: 13px; color: var(--accent);
+    font-weight: 600; flex: none; padding-top: 3px;
+  }
+  h2 {
+    font-size: clamp(21px, 4.5vw, 26px);
+    margin: 0; font-weight: 680; letter-spacing: -.005em; line-height: 1.25;
+    text-wrap: balance;
+  }
+  .sec-note { color: var(--muted); font-size: 14px; margin: 4px 0 0; }
+
+  /* ---- Match table ---- */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 460px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600; background: var(--surface-2);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.hit { color: var(--accent-ink); font-weight: 600; white-space: nowrap; }
+  .dot { color: var(--up); }
+
+  /* ---- Script block (读稿/提词器) ---- */
+  .script {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 24px 24px;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  .script + .script { margin-top: 18px; }
+  .script-label {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--accent-ink); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .badge {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .05em;
+    padding: 3px 8px; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 600;
+  }
+  .badge:not(.alt), .star-tag .ltr { color: #fff; }
+  @media (prefers-color-scheme: dark) { .badge:not(.alt), .star-tag .ltr { color: #06120F; } }
+  :root[data-theme="dark"] .badge:not(.alt), :root[data-theme="dark"] .star-tag .ltr { color: #06120F; }
+  :root[data-theme="light"] .badge:not(.alt), :root[data-theme="light"] .star-tag .ltr { color: #fff; }
+  .badge.alt { background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--line-strong); }
+  .script p {
+    font-size: 16.5px; line-height: 1.9; margin: 0 0 13px; color: var(--ink);
+  }
+  .script p:last-child { margin-bottom: 0; }
+  .script strong {
+    font-weight: 600; color: var(--ink);
+    background: var(--accent-soft);
+    padding: 1px 4px; border-radius: 4px;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  .usehint {
+    font-size: 13px; color: var(--muted); margin: 0 0 14px; font-style: italic;
+  }
+
+  /* ---- Q&A ---- */
+  .qa { display: flex; flex-direction: column; gap: 16px; }
+  .qa-item { border-left: 2px solid var(--line-strong); padding-left: 18px; }
+  .qa-item .q {
+    font-weight: 640; font-size: 16px; margin: 0 0 8px; color: var(--ink); line-height: 1.5;
+  }
+  .qa-item .q::before {
+    content: "Q"; font-family: var(--mono); color: var(--accent); font-size: 13px; font-weight: 700;
+    margin-right: 8px; letter-spacing: .04em;
+  }
+  .qa-item .a { font-size: 15.5px; line-height: 1.78; color: var(--ink-soft); margin: 0; }
+  .qa-item .a strong { color: var(--ink); font-weight: 600; }
+  .term {
+    display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+    color: var(--accent-ink); background: var(--accent-soft); padding: 2px 8px; border-radius: 6px;
+    margin: 0 0 10px;
+  }
+  .qa-item .a-list { list-style: none; padding: 0; margin: 9px 0 0; display: flex; flex-direction: column; gap: 8px; }
+  .qa-item .a-list li { position: relative; padding-left: 18px; font-size: 15px; line-height: 1.62; color: var(--ink-soft); }
+  .qa-item .a-list li::before { content: "·"; position: absolute; left: 5px; top: -1px; color: var(--accent); font-weight: 700; font-size: 18px; }
+  .qa-item .a-list li .k { color: var(--accent-ink); font-weight: 600; }
+  .qa-item .a-take { font-size: 15px; line-height: 1.6; margin: 10px 0 0; color: var(--ink); font-weight: 600; }
+  .qa-item .a-take::before { content: "▸ "; color: var(--accent); }
+
+  /* ---- list / reverse Q ---- */
+  ul.clean { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  ul.clean li {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; font-size: 15.5px; line-height: 1.6; box-shadow: var(--shadow);
+    position: relative; padding-left: 42px;
+  }
+  ul.clean li::before {
+    content: "?"; position: absolute; left: 16px; top: 13px;
+    font-family: var(--mono); color: var(--accent); font-weight: 700; font-size: 15px;
+  }
+
+  /* checklist */
+  ul.check { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  ul.check li { display: flex; gap: 12px; font-size: 15.5px; line-height: 1.55; align-items: flex-start; }
+  ul.check li::before {
+    content: "✓"; color: var(--accent); font-weight: 700; flex: none; margin-top: 1px;
+    font-family: var(--mono);
+  }
+  ul.check strong { font-weight: 640; }
+
+  .rail {
+    background: var(--surface-2); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0; padding: 18px 20px; margin-top: 16px;
+  }
+  .rail h3 { margin: 0 0 12px; font-size: 15px; font-family: var(--mono); letter-spacing: .04em; color: var(--accent-ink); text-transform: uppercase; }
+
+  footer.foot {
+    margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line);
+    color: var(--muted); font-size: 13px; font-family: var(--mono); letter-spacing: .03em;
+  }
+  .em-up { color: var(--up); font-weight: 600; }
+  .em-down { color: var(--down); font-weight: 600; }
+
+  /* ---- STAR 结构版 ---- */
+  .star { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 24px 22px; box-shadow: var(--shadow); }
+  .star + .star { margin-top: 18px; }
+  .star-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .star-head h3 { margin: 0; font-size: 18px; font-weight: 680; letter-spacing: -.005em; }
+  .star-part { padding: 15px 0; border-top: 1px dashed var(--line-strong); }
+  .star-part:first-of-type { border-top: none; }
+  .star-tag { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); font-weight: 600; margin-bottom: 10px; }
+  .star-tag .ltr { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--accent); font-weight: 700; font-size: 12px; letter-spacing: 0; }
+  .star-tag .sym { color: var(--accent); font-size: 15px; }
+  .star-part > p { font-size: 15px; line-height: 1.72; color: var(--ink-soft); margin: 0 0 10px; }
+  .star-part > p:last-child { margin-bottom: 0; }
+  .star-part strong { color: var(--ink); font-weight: 600; }
+  .star-part p.star-sub { margin: 12px 0 6px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .star-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 9px; }
+  .star-list li { position: relative; padding-left: 16px; font-size: 15px; line-height: 1.66; color: var(--ink-soft); }
+  .star-list li::before { content: "–"; position: absolute; left: 0; color: var(--accent); }
+  .star-list li strong { color: var(--ink); font-weight: 600; }
+  .star-part.callout { background: var(--surface-2); border-radius: 10px; padding: 14px 16px; margin-top: 8px; border-top: none; }
+  .star-part.probe { background: var(--surface-2); border-radius: 10px; padding: 16px 18px; margin-top: 10px; border-top: none; }
+  .probe-qa { display: flex; flex-direction: column; gap: 14px; }
+  .probe-item .pq { font-weight: 600; color: var(--ink); font-size: 14.5px; margin: 0 0 5px; line-height: 1.5; }
+  .probe-item .pq::before { content: "Q"; font-family: var(--mono); color: var(--accent); font-size: 12px; font-weight: 700; margin-right: 7px; }
+  .probe-item .pa { font-size: 14px; line-height: 1.68; color: var(--ink-soft); margin: 0; }
+  .probe-item .pa::before { content: "A"; font-family: var(--mono); color: var(--muted); font-size: 12px; font-weight: 700; margin-right: 7px; }
+  .probe-item .pa strong { color: var(--ink); font-weight: 600; }
+
+  /* ---- 合约底层逻辑速查 ---- */
+  .concept-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 24px 22px; box-shadow: var(--shadow); }
+  .concept-h { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); font-weight: 600; margin: 22px 0 4px; }
+  .concept-h:first-child { margin-top: 2px; }
+  .concept { padding: 11px 0; border-top: 1px dashed var(--line-strong); }
+  .concept-h + .concept { border-top: none; }
+  .c-term { display: block; font-weight: 640; color: var(--ink); font-size: 14.5px; margin-bottom: 3px; }
+  .c-def { font-size: 14px; line-height: 1.64; color: var(--ink-soft); margin: 0; }
+  .c-def strong { color: var(--ink); font-weight: 600; }
+
+  @media (max-width: 520px) {
+    .script { padding: 18px 18px 20px; }
+    .script p { font-size: 16px; }
+    .wrap { padding: 0 16px 72px; }
+    nav.toc { margin: 0 -16px; padding: 10px 16px; }
+  }
+</style>
+
+<div class="page">
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">面试备战手册 · REMOTE</p>
+    <h1 class="title">交易产品经理 · 应答脚本</h1>
+    <p class="sub">下单 / 持仓 / 平仓 / 资金划转 / 数据展示 —— 交易体验方向岗位定制。朗读稿里 <strong style="background:var(--accent-soft);padding:1px 5px;border-radius:4px;color:var(--ink)">高亮词</strong> 是重读位,慢一点、在"我发现""我的判断是"处停顿。</p>
+    <div class="meta-row">
+      <span class="tag">3 年 · 交易所产品</span>
+      <span class="tag">保证金 / 强平 / 资金费率 / 风控</span>
+      <span class="tag">不编数据</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="目录">
+    <div class="toc-inner">
+      <a href="#match">匹配</a>
+      <a href="#intro">自我介绍</a>
+      <a href="#basics">合约底层</a>
+      <a href="#stories">故事·朗读</a>
+      <a href="#star">STAR 版</a>
+      <a href="#mech">机制问答</a>
+      <a href="#probe">追问预案</a>
+      <a href="#jd2">JD专项·工具PM</a>
+      <a href="#reverse">反问</a>
+      <a href="#final">临门提醒</a>
+    </div>
+  </nav>
+
+  <!-- 1 匹配 -->
+  <section id="match">
+    <div class="sec-head"><span class="sec-num">01</span><div><h2>岗位匹配速览</h2><p class="sec-note">这份 JD 是最贴你简历的一个 —— 机制题是主战场。</p></div></div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>JD 要求</th><th>你的对应</th><th>匹配</th></tr></thead>
+        <tbody>
+          <tr><td>优化下单 / 持仓 / 平仓 / 资金划转 / 数据展示</td><td>合约下单流程、持仓优化、OTC 资金流转</td><td class="hit"><span class="dot">●</span> 正中靶心</td></tr>
+          <tr><td>熟悉保证金 / 强平 / 资金费率 / 风控</td><td>系统认知,做过口径统一与风险提示</td><td class="hit"><span class="dot">●</span> 强</td></tr>
+          <tr><td>需求分析 / 产品设计 / 跨部门协作</td><td>PRD、原型、协同风控研发测试</td><td class="hit"><span class="dot">●</span> 强</td></tr>
+          <tr><td>交易体验 + 数据指标 + 用户增长敏感</td><td>交易体验 + 早期增长背景</td><td class="hit"><span class="dot">●</span> 强</td></tr>
+          <tr><td>2 年+ / 远程</td><td>3 年 / 可远程自驱</td><td class="hit"><span class="dot">●</span> ✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 2 自我介绍 -->
+  <section id="intro">
+    <div class="sec-head"><span class="sec-num">02</span><div><h2>自我介绍</h2></div></div>
+    <div class="script">
+      <p class="script-label">开场 · 约 1 分半 <span class="badge">照念</span></p>
+      <p>面试官好,我叫 Law,3 年产品经验,一直在交易所。</p>
+      <p>我这几年做得比较<strong>广</strong> —— OTC 资金流转、活动配置化、用户增长这些我都实打实落地过,其中 OTC 卖币是我从 0 主导的。这种广度让我<strong>理解一个交易所是怎么运转的</strong>,也让我的强项很明确:<strong>涉及资金和交易的 0-1 落地、把复杂流程做成用户能懂的产品、跨团队把事推动上线</strong>。</p>
+      <p>合约这块,我<strong>参与过交易体验的优化</strong> —— 下单、持仓、资金费率、强平提示这些,所以我对合约的核心机制有<strong>系统的认知</strong>,知道它们在产品上怎么呈现、用户会在哪看不懂。<strong>但我也坦白,底层的机制设计我还在深入,不敢说精通。</strong></p>
+      <p>而这恰恰是我来这个岗位的原因:<strong>交易、尤其是合约,是我想聚焦深耕的方向。</strong> 它是交易所最核心、最考验深度的地方;我有资金类业务的底子和产品落地能力可以迁移;这段时间我也一直在系统补合约的机制 —— 标记价、资金费率、强平、ADL 这些。<strong>我很清楚自己要往哪走,也愿意为这个方向沉下去。</strong></p>
+      <p>所以我找的,就是一个能让我在交易 / 合约上从"系统认知"做到"真正精通"的机会。</p>
+    </div>
+    <div class="script">
+      <p class="script-label">30 秒精简版 <span class="badge alt">时间紧 / 群面</span></p>
+      <p>我叫 Law,3 年交易所产品经验,做得比较广 —— OTC、活动、增长都落地过,OTC 是我主导的 0-1。合约我参与过体验优化,对核心机制有系统认知,但底层设计还在深入。<strong>交易、尤其合约,是我想聚焦深耕的方向</strong>:它最核心,我有资金业务的底子和产品能力可迁移,也一直在补机制。我很清楚要往哪走,愿意沉下去。</p>
+    </div>
+    <div class="script">
+      <p class="script-label">◎ 这版会被这样追问 <span class="badge alt">备好</span></p>
+      <div class="probe-qa">
+        <div class="probe-item"><p class="pq">你合约经验不深,凭什么招你做合约?</p><p class="pa">一是<strong>可迁移</strong> —— OTC 这种涉及资金、状态、风控的 0-1 我主导过,交易产品的底层逻辑相通;二是<strong>方向明确、学得快</strong> —— 我不是海投,认准了深耕合约、已在系统补机制。招一个有底子、有决心、能快速沉下去的人,可能比招一个哪都想去的老手更划算。</p></div>
+        <div class="probe-item"><p class="pq">那你现在对合约到底掌握到什么程度?</p><p class="pa">诚实分层:<strong>概念和产品呈现层我有系统认知</strong>(标记价、资金费率、强平、ADL 我能讲清逻辑和产品该怎么做);<strong>底层机制设计和风控细节还在补</strong>,没到能独立拍板。我不夸大,但补得快。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 合约底层逻辑速查 -->
+  <section id="basics">
+    <div class="sec-head"><span class="sec-num">03</span><div><h2>合约底层逻辑 · 提炼</h2><p class="sec-note">从整个准备过程里提炼的合约核心逻辑,<strong>⭐ 是高频必懂</strong>。这节是<strong>知识</strong>,第 06 节机制问答是<strong>怎么答</strong>,配套看。</p></div></div>
+    <div class="concept-card">
+
+      <p class="concept-h">A · 杠杆与保证金</p>
+      <div class="concept"><span class="c-term">⭐ 杠杆的本质</span><p class="c-def">杠杆 = 名义价值 ÷ 保证金(20x = 5% 保证金)。<strong>放大的是本金的回报率和风险率,不是盈亏绝对值</strong> —— 绝对盈亏只由"仓位大小 × 价格变动"决定;仓位放大 20x,盈亏不会被"除以 20",而是整个仓位的盈亏都落到你那点本金上。</p></div>
+      <div class="concept"><span class="c-term">维持保证金率(MMR)</span><p class="c-def">维持仓位所需的最低保证金比例,<strong>数值很小(0.4%~0.7%)</strong>,且分档 —— 仓位越大要求越高。</p></div>
+      <div class="concept"><span class="c-term">⭐ 保证金率(健康度)vs MMR(最易混)</span><p class="c-def">保证金率 = 账户权益 ÷ 维持保证金,<strong>通常 &gt;100%、越高越安全、跌到 100% 强平</strong>。判断法:<strong>任何 &gt;100% 的数(120%、212%)绝不是 MMR,而是健康度</strong>;MMR 永远是那个很小的费率。</p></div>
+      <div class="concept"><span class="c-term">全仓 vs 逐仓</span><p class="c-def">逐仓:每仓保证金独立、最多亏该仓本金;全仓:共享账户权益、强平价更晚,但爆仓可能亏更多。产品上最该讲清<strong>切换后强平价和最大亏损怎么变</strong>。</p></div>
+
+      <p class="concept-h">B · 价格与盈亏</p>
+      <div class="concept"><span class="c-term">⭐ 标记价 vs 最新成交价</span><p class="c-def"><strong>成交 / 委托用最新价;算未实现盈亏和触发强平用标记价</strong>(= 指数价[多所现货加权] + 合理基差)。标记价更平滑公允,<strong>防插针</strong>。用户困惑"没到我看的价怎么爆了"就源于此。</p></div>
+      <div class="concept"><span class="c-term">未实现盈亏</span><p class="c-def">=(现价 − 开仓价)× 数量 × 方向(U 本位线性)。</p></div>
+
+      <p class="concept-h">C · 资金费率</p>
+      <div class="concept"><span class="c-term">⭐ 本质:锚定价格,不是手续费</span><p class="c-def">把永续价格锚定到现货指数价;<strong>多空之间互付,平台不收</strong>。溢价 → 正费率 → 多付空 → 压溢价回落。(订单簿型 CEX 平台其实没有方向敞口 —— 多空撮合永远相等,所以资金费率不是"平台对冲手段"。)</p></div>
+      <div class="concept"><span class="c-term">构成 · 结算 · "被偷袭"</span><p class="c-def">≈ 溢价指数 + clamp(利率 − 溢价, ±上限);每 8h 结算,<strong>只在结算时刻持仓才付 / 收,提前平不付</strong>。用户结算前几分钟开仓被扣一笔、以为乱收费 → 所以要显眼展示<strong>结算倒计时</strong>。</p></div>
+
+      <p class="concept-h">D · 强平链路(最核心,最常被深挖)</p>
+      <div class="concept"><span class="c-term">⭐ 触发</span><p class="c-def">保证金率跌到维持线(按<strong>标记价</strong>)。</p></div>
+      <div class="concept"><span class="c-term">⭐ 强平价 vs 破产价</span><p class="c-def">强平价在破产价<strong>之前</strong>,中间那段是缓冲(强平费 + 滑点余量);破产价 = 本金正好亏光的价。</p></div>
+      <div class="concept"><span class="c-term">⭐ 接管"没收"的是缓冲,不是本金</span><p class="c-def">被强平时,本金大头是被<strong>价格下跌的浮亏真实亏掉</strong>的;引擎接管时"没收"的,只是触发那一刻剩下的那一小笔缓冲(≈维持保证金)。<strong>有完好本金就不会被强平</strong> —— 强平只在权益逼近维持保证金时发生。</p></div>
+      <div class="concept"><span class="c-term">引擎接管:挂限价单,不砸盘</span><p class="c-def">以破产价接管,<strong>挂限价单到撮合慢慢平</strong>,不市价砸穿订单簿 —— 防<strong>连环爆(cascade)</strong>。</p></div>
+      <div class="concept"><span class="c-term">⭐ 部分减仓(依托分档表)</span><p class="c-def">大仓位不一次全平,而是<strong>踩着风险限额分档表逐档减仓</strong> —— 把仓位降到低一档、降低维持保证金要求,把账户救回安全区;不够再减一档,循环到安全或平光。</p></div>
+      <div class="concept"><span class="c-term">穿仓 → 保险基金 → ADL</span><p class="c-def">亏损超本金(穿仓)由<strong>保险基金</strong>补;保险基金被击穿 → <strong>ADL 自动减仓</strong>。</p></div>
+      <div class="concept"><span class="c-term">⭐ ADL 自动减仓</span><p class="c-def">极端行情兜底,强制减掉<strong>盈利方 + 高杠杆</strong>的对手仓填窟窿。排名 ≈ 盈利程度 × 杠杆(/保证金率),有<strong>排队亮灯</strong>。产品上靠透明度换信任(指示灯 + 事后说明)。</p></div>
+
+      <p class="concept-h">E · 风险限额</p>
+      <div class="concept"><span class="c-term">分档(也是部分减仓的依据)</span><p class="c-def">仓位名义价值越大 → 要求 MMR 越高、最大杠杆越低。防巨鲸超高杠杆开超大仓、一爆击穿保险基金;体验上加大仓位时杠杆会被限,要提前提示。</p></div>
+
+      <p class="concept-h">F · 对冲(进阶,能拉开差距)</p>
+      <div class="concept"><span class="c-term">用户层对冲</span><p class="c-def">用合约反向抵消现货风险,追求 <strong>delta 中性</strong>;成本是资金费率 + 基差风险 + <strong>对冲腿自己也可能被强平</strong>。</p></div>
+      <div class="concept"><span class="c-term">⭐ 双向持仓 / 净敞口</span><p class="c-def">同一合约可同时持多和空;<strong>净敞口 = 多头 − 空头</strong>(多 0.8 + 空 1 = 净空 0.2,盈亏按 0.2 算;但两条腿各占保证金、各有强平价)。</p></div>
+      <div class="concept"><span class="c-term">⭐ 对冲怎么赚钱</span><p class="c-def">纯对冲不赚方向钱,赚<strong>非方向性收益</strong> —— 最典型是<strong>资金费率套利</strong>(现货多 + 永续空,净敞口为零,吃正资金费),还有期现基差、跨期、跨所套利。风险在资金费率反转 + 某条腿被强平。</p></div>
+
+      <p class="concept-h">G · 周边但重要</p>
+      <div class="concept"><span class="c-term">订单簿:数量 vs 总数量</span><p class="c-def">数量 = 单档挂单量;<strong>总数量 = 从盘口累加的累计深度</strong> —— 用来估吃单深度 / <strong>滑点</strong>。</p></div>
+      <div class="concept"><span class="c-term">⭐ 幂等</span><p class="c-def">发奖 / 放币 / 赔付这类动钱操作必须做幂等 —— <strong>同一操作调多次只生效一次</strong>,防网络重试、回调重复导致重复发 / 重复放的资损。</p></div>
+      <div class="concept"><span class="c-term">CFD 对照</span><p class="c-def">做市商对赌型衍生品,<strong>对手方是 broker</strong>(B-book 下你亏它赚,有利益冲突);持仓成本是隔夜利息(付 broker),和永续"资金费率(用户互付、锚定价格)"形似神不同;受监管强(美国禁散户)。</p></div>
+      <div class="concept"><span class="c-term">术语</span><p class="c-def">"水下" = 浮亏;"几个点"口语里通常 = 百分之几。</p></div>
+
+      <p class="concept-h">H · 高频"为什么"(面试爱问)</p>
+      <div class="concept"><span class="c-term">为什么用标记价?</span><p class="c-def">防最新成交价被小资金插针操纵,导致一批用户被不公平强平。</p></div>
+      <div class="concept"><span class="c-term">穿仓谁承担?</span><p class="c-def">保险基金 → 不够 → ADL。用户理想情况最多亏光本金,不倒欠。</p></div>
+      <div class="concept"><span class="c-term">强平提示怎么不打扰?</span><p class="c-def">分层:持仓区常态色 → 接近维持保证金才主动 push → 强平前通知带追加保证金 / 减仓 / 平仓入口;阈值用历史数据校准。</p></div>
+
+    </div>
+  </section>
+
+  <!-- 4 故事 -->
+  <section id="stories">
+    <div class="sec-head"><span class="sec-num">04</span><div><h2>三个核心项目故事 · 口语朗读版</h2><p class="sec-note">面试现场自然表达用这版;结构化作答 / 书面用下一节 STAR 版 —— 同一段经历、两种讲法,可对照看。</p></div></div>
+
+    <div class="script">
+      <p class="script-label">OTC 卖币 <span class="badge">王牌 · 主导</span> <span class="badge alt">资金流转 0-1</span></p>
+      <p>我讲一个我从 0 主导的项目,OTC 卖币,就是让用户把手里的加密货币换成法币。</p>
+      <p>这个项目我做之前以为难点在流程,真正做进去才发现,最难的是 —— <strong>钱到账这一环,平台其实不完全可控</strong>,因为法币打款是走第三方的。</p>
+      <p>用户最常反馈两个问题:一个是到账金额跟他预期对不上,一个是没按时到账。</p>
+      <p>我研究下来发现,<strong>金额对不上,其实大部分不是真亏了钱,是认知差</strong>。我们用的汇率是每天更新一次的、而且会比实时汇率略低一点,这个价差是平台正常的汇率风控。但用户会拿实时汇率去对,就觉得自己少拿了。所以我意识到,这本质是个<strong>预期管理的问题</strong>,不是赔付问题 —— 真正该做的,是在用户下单的时候就把成交汇率、预计到账金额讲清楚,让他一开始预期就对齐。</p>
+      <p>那确实是真损失的部分怎么办?这里当时有过争论,有人担心平台兜底会带来很大损失。<strong>我的判断不是不兜、也不是全兜,而是定一套有边界的兜底规则</strong>:差值在 0.1% 以内的,平台规则化赔付;超过阈值、或者异常的个案,才走人工复核。这样既让用户敢用,又把平台的损失敞口框在规则里。</p>
+      <p>状态设计上,我给用户做了确认收款和申诉两个出口。这里我特别注意一个边缘情况 —— <strong>我没有把超时设计成"过了时间就自动一笔勾销"</strong>,因为万一用户真没收到、又恰好没及时操作呢?所以确认和申诉的入口是一直保留、可追溯的。我的原则就是:涉及钱的事,绝不能让用户"过了时间就永远没法主张"。</p>
+      <p>结果上线后卖币的数据是不错的,不过具体数字是运营在跟。</p>
+      <p>这个项目给我最大的认知是:<strong>涉及用户资金、又有第三方的链路,兜底不是一句态度,是一道规则题 —— 可控范围内坚决兜底让用户信任,范围外用规则挡住平台损失。</strong></p>
+    </div>
+
+    <div class="script">
+      <p class="script-label">合约体验优化 <span class="badge">主力 · 参与</span> <span class="badge alt">下单 / 持仓 / 数据展示</span></p>
+      <p>合约这块,我参与做了下单、持仓、资金费率、强平提示几个方向的体验优化。</p>
+      <p>先说清楚,我们是<strong>快速跟随型平台</strong>,这些能力头部平台基本都有、我们缺或者做得糙。所以我做的不是发明什么,而是 —— <strong>对标币安、OKX,把我们缺的、体验差的一块块识别出来,判断优先级,再迭代补齐</strong>。比如下单原来只能按价值和数量,我补了按金额开仓的单位;字段太多用户看不懂,我用 hover 补说明、兼顾小白和专业用户;持仓区做信息分层,把强平价、保证金率这些风险字段顶出来。</p>
+      <p>但我觉得这里面<strong>最见功夫的不是"补什么",而是"落地做对"</strong>。这些东西抄进来不难,可很多细节抄错了就是事故 —— 比如强平价的精度和口径,风控算的和前端展示的对不上,用户就会觉得被提前强平、来投诉。所以我花了不少精力协同风控、研发把这些字段口径统一。</p>
+      <p>这个项目让我明白:<strong>做跟随型产品,产品经理的价值不在发明,而在 —— 选对该补什么、把落地细节做对、别抄错口径出事故,再持续迭代。</strong></p>
+    </div>
+
+    <div class="script">
+      <p class="script-label">活动页配置化 <span class="badge">加分 · 全负责</span> <span class="badge alt">0-1 / 判断力</span></p>
+      <p>活动页配置化是我全部负责的一个项目。</p>
+      <p>背景是,我们早期搞活动有两种老办法都走不通。一种是跳转到第三方平台承接,但<strong>用户会有不信任感,而且数据存在第三方怕丢</strong>;另一种是让前端把页面写死,活动一常规化,每次定制开发就<strong>给技术带来巨大工作量</strong>。所以我推动把活动页做成可配置的,让运营自己就能搭。</p>
+      <p>这个项目最考验判断的,是<strong>哪些东西做成可配、哪些坚决不放开</strong>。比如<strong>发奖我就没有开放配置</strong> —— 因为我们这阶段做不了自动发奖、风控也不健全,只能人工核实再发,我把它定义成过渡方案。原则是:不能为了灵活,把后台做得运营都不敢用、或者一配错就出资损。</p>
+      <p>最头疼的是任务模块怎么配进去。早期活动页就是展示规则加报名按钮。但上线后我发现一个问题 —— <strong>用户感知特别弱,不知道自己完成了多少、离奖励还差多远</strong>,参与感很差。所以第二期我才把任务进度这些感知做进去。</p>
+      <p>任务配置真正复杂的地方,是多个任务组合起来还要考虑多语言。我的做法是<strong>每个文案按语言维度存,没配的 fallback 到英文兜底</strong>,组件做自适应,避免不同语言长度导致串版。</p>
+      <p>防配错这块我坦白讲,当时是"可编辑入口加运营自查",<strong>但这道防线其实不够</strong> —— 人配错了自己再看往往也发现不了。如果再做一版,我会加<strong>发布前双人审核 + 关键字段二次确认</strong>,把防线从"事后能改"提前到"事前拦住"。</p>
+      <p>结果上线后数据不错,活动参与人数稳定,交易量也 ok。</p>
+      <p>这个项目让我明白:<strong>复杂产品不可能一蹴而就,先用最小版本跑通核心价值,再一步步加复杂度。</strong> 配置化的水平不在"能配多少",而在敢不敢划那条线 —— 80% 让运营自助,20% 留给人工和研发兜底。</p>
+    </div>
+  </section>
+
+  <!-- STAR 详版 -->
+  <section id="star">
+    <div class="sec-head"><span class="sec-num">05</span><div><h2>三个项目 · STAR 结构版</h2><p class="sec-note">和上一节同样三个项目,换成 情境 / 任务 / 行动 / 结果 的结构 —— 适合结构化作答、书面简历、被要求"结构化讲一下"时。对着朗读版看,是同一段经历的两种表达。</p></div></div>
+
+    <div class="star">
+      <div class="star-head"><h3>OTC 卖币</h3><span class="badge">王牌 · 主导</span><span class="badge alt">0-1 · 接入 ChipPay</span></div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">S</span>情境</span>
+        <p>交易所此前<strong>没有 OTC 业务</strong>,缺少把数字资产换回法币的出金通道。我们从 0 接入,<strong>特意从最简单的"卖币"切入</strong>;实现上<strong>不自建支付承兑,而是接入第三方托管平台 ChipPay</strong>(由它匹配承兑商、托管、放币)。我开始前就预判到最大风险:<strong>钱走第三方,"到没到、到得对不对"平台并不完全可控</strong> —— 整个设计都围绕"在不可控的第三方环节之上,兜住用户信任和资金安全"。</p>
+      </div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">T</span>任务</span>
+        <p>主导卖币能力接入落地,在保障资金安全、订单可追踪的前提下跑通核心链路,并在上线后基于真实反馈持续打磨出金体验。</p>
+      </div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">A</span>行动</span>
+        <p class="star-sub">一期 · 搭建</p>
+        <ul class="star-list">
+          <li><strong>MVP 切入:</strong>先把"卖币"这一条链路跑通、打磨扎实,再往上扩展,不一次性铺满。</li>
+          <li><strong>接入 ChipPay、做状态映射:</strong>托管 / 匹配 / 放币由 ChipPay 负责;我做交易所侧下单流程(选支付宝 / 微信 / 银联收款、展示报价汇率与预计到账、确认收款),并<strong>对接接口和状态回调,把 ChipPay 的状态准确映射到我们的订单状态和用户提示</strong>。</li>
+          <li><strong>围绕预判风险做资金兜底:</strong>只有确认收款才放币;<strong>超时不做"自动一笔勾销"</strong>,确认 / 申诉入口长期保留可追溯;异常分支当主角设计。</li>
+        </ul>
+        <p class="star-sub">二期 · 上线后迭代</p>
+        <ul class="star-list">
+          <li><strong>金额对不上:</strong>查根因发现大多不是真损失,是<strong>汇率认知差</strong>(ChipPay 报价汇率略低于实时,用户拿实时汇率对)。判断为<strong>预期管理问题</strong> —— 下单时就讲清成交汇率和预计到账;真损失才走<strong>有边界兜底(0.1% 内规则化赔付)</strong>。</li>
+          <li><strong>没按时到账:</strong>定位到是 ChipPay 承兑商匹配 / 打款排队。第三方速度不可控,但用<strong>状态透明化</strong>(展示"正在打款、预计到账"、超时主动触达)控住用户体感。</li>
+        </ul>
+      </div>
+      <div class="star-part callout">
+        <span class="star-tag"><span class="sym">⇄</span>关键取舍</span>
+        <ul class="star-list">
+          <li>接入 vs 自建 —— 借 ChipPay 快速跑起来,精力放在能掌控、也最影响信任的地方。</li>
+          <li>预期管理 vs 事后赔付 —— 从源头讲清汇率,减少申诉。</li>
+          <li>兜底的边界 —— 0.1% 这条线同时兜住用户信任和平台损失。</li>
+        </ul>
+      </div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">R</span>结果</span>
+        <ul class="star-list">
+          <li>卖币能力从 0 安全上线,打通资产到法币出金闭环,<strong>上线后无资损事故</strong>。</li>
+          <li>预期管理 + 状态透明,从源头减少两类高频困惑(具体数据由运营跟踪)。</li>
+          <li>沉淀出对接第三方承兑通道的状态映射、异常处理、申诉兜底能力,为扩展其他 OTC 能力立稳地基。</li>
+        </ul>
+      </div>
+      <div class="star-part callout">
+        <span class="star-tag"><span class="sym">✦</span>洞察</span>
+        <p>接入型资金产品,价值不在"自己造了多少",而在<strong>"第三方不可控的那一环,你怎么用体验、透明度和兜底规则让用户依然信任平台"</strong>;0→1 要先把最小核心链路跑扎实、上线,再靠真实反馈迭代。</p>
+      </div>
+      <div class="star-part probe">
+        <span class="star-tag"><span class="sym">◎</span>可能被追问</span>
+        <div class="probe-qa">
+          <div class="probe-item"><p class="pq">为什么选 ChipPay?怎么评估第三方通道?</p><p class="pa">自建支付承兑太重太慢,接成熟通道能快速跑起来。评估看:<strong>承兑流动性与到账时效、汇率是否有竞争力、覆盖的收款方式、托管担保是否可靠、接口和状态回调是否完善、合规资质</strong>。</p></div>
+          <div class="probe-item"><p class="pq">ChipPay 单点依赖,延迟甚至跑路怎么办?</p><p class="pa">短期靠<strong>状态透明 + 兜底 + 申诉</strong>兜住单笔;长期架构上把"承兑通道"抽象成<strong>可插拔的一层</strong>,预留接多通道、做分流和降级,不把身家绑在一家上。</p></div>
+          <div class="probe-item"><p class="pq">状态回调丢了或和你们记录不一致?</p><p class="pa">不只依赖回调 —— 做<strong>主动轮询兜底 + 定时对账</strong>,不一致的进异常队列人工核查;放币、赔付这些动钱的动作做<strong>幂等</strong>,防重复处理。</p></div>
+          <div class="probe-item"><p class="pq">兜底赔付的钱从哪出?会不会被恶意薅?</p><p class="pa">走平台风险预算,所以必须有 0.1% 的边界。防恶意:申诉要<strong>凭证支撑 + 人工复核 + 异常模式监控</strong>,和我设计其他异常防重复是一套思路。</p></div>
+          <div class="probe-item"><p class="pq">为什么先做卖币,不先做买币?</p><p class="pa">卖币链路相对单向清晰,便于先把托管、放币、申诉、对账这套核心机制验证扎实,<strong>先把地基打牢再扩展</strong>,而不是一上来铺满。</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="star">
+      <div class="star-head"><h3>合约交易体验优化</h3><span class="badge">主力 · 参与</span><span class="badge alt">下单 / 持仓 / 数据展示</span></div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">S</span>情境</span>
+        <p>合约机制复杂(杠杆、保证金、资金费率、强平……),<strong>用户理解门槛极高</strong>。我们作为<strong>快速跟随型平台</strong>,很多头部平台早有的体验能力,我们要么缺、要么做得糙,导致用户看不懂、决策效率低、客诉多。</p>
+      </div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">T</span>任务</span>
+        <p>参与合约体验优化,<strong>系统对标头部平台,把我们缺的、体验差的关键能力迭代补齐并优化落地</strong>,降低用户对交易参数、资金成本和仓位风险的理解成本。</p>
+      </div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">A</span>行动</span>
+        <ul class="star-list">
+          <li><strong>竞品对标,识别体验差距(价值起点):</strong>持续跟踪币安 / OKX / Bybit 的下单、持仓、资金费率、风控提示,梳理出"人家有、我们没有 / 做得差"的清单;对标不照抄,先搞懂每处为什么这么设计。</li>
+          <li><strong>判断优先级:</strong>差距一大堆、资源有限,按"用户痛点强度 + 影响面"排序,先补理解成本最高、最易引发误操作和客诉的。</li>
+          <li><strong>下单区迭代:</strong>补齐<strong>按金额开仓的单位</strong>(行业普遍有、我们只有价值 / 数量,用户要手动换算);梳理参数展示顺序,补触发价 / 委托价 / 成交价说明。</li>
+          <li><strong>持仓区信息分层:</strong>字段太多平铺抓不住重点,迭代成分层展示,突出强平价、保证金率、资金费率预计收付 —— 用户最该一眼看到"离爆仓多远、要付多少成本"。</li>
+          <li><strong>资金费率展示:</strong>针对"以为是手续费、不知结算时间"的误解,补上当前费率、结算倒计时、正负费率多空收付、预计成本。</li>
+          <li><strong>强平提示分层 + 自救出口:</strong>常态风险状态 → 保证金不足预警 → 强平前通知,每级把追加保证金 / 减仓 / 平仓入口放旁边。</li>
+          <li><strong>hover 字段说明 + 落地把细节做对(最见功夫):</strong>用 hover 补说明兼顾两类用户;更关键的是协同风控 / 研发<strong>统一强平价精度、标记价、资金费率结算、保证金率阈值等口径 —— 抄错一个,页面强平价和实际触发价对不上,就是事故</strong>。补进来不难,做对才难。</li>
+        </ul>
+      </div>
+      <div class="star-part callout">
+        <span class="star-tag"><span class="sym">⇄</span>关键取舍</span>
+        <ul class="star-list">
+          <li><strong>补什么 / 不补什么:</strong>资源有限,按痛点和影响面排优先级,不是看见竞品有就抄。</li>
+          <li><strong>照搬 vs 做对:</strong>范式对齐行业降学习成本,但结合自己的用户、风控、字段口径把落地做对 —— 尤其口径,抄错就是事故。</li>
+        </ul>
+      </div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">R</span>结果</span>
+        <ul class="star-list">
+          <li>迭代补齐并优化了下单、持仓、资金费率、强平提示等核心场景,<strong>降低理解成本、缩小了和头部平台的体验差距</strong>(具体数据由数据团队跟踪)。</li>
+          <li>推动关键字段展示与计算口径规范化,减少后续需求的口径沟通成本。</li>
+        </ul>
+      </div>
+      <div class="star-part callout">
+        <span class="star-tag"><span class="sym">✦</span>洞察</span>
+        <p>做<strong>跟随型产品</strong>,PM 的价值不在发明,而在:<strong>选对该补什么(差距识别 + 优先级)、把落地细节做对(结合自己的用户和风控,别抄错口径出事故)、并持续迭代</strong>。会判断"抄什么、怎么落地",本身就是产品能力。</p>
+      </div>
+      <div class="star-part probe">
+        <span class="star-tag"><span class="sym">◎</span>可能被追问</span>
+        <div class="probe-qa">
+          <div class="probe-item"><p class="pq">交易所是移动端为主,hover 在手机上不存在,怎么办?</p><p class="pa">hover 是桌面端形态,移动端我用<strong>点击信息图标 / tap 展开</strong>,逻辑一样。核心不是"hover"这个控件,而是<strong>"信息按需展开、默认不打扰"这个原则</strong>,它在两端有不同落地形态。</p></div>
+          <div class="probe-item"><p class="pq">既然全是别人也有的,你的价值到底在哪?</p><p class="pa">价值不在发明,在<strong>差距识别 + 优先级判断 + 落地质量</strong>:决定补什么、先补什么,以及把口径这种细节做对 —— 抄错强平价口径就是事故,做对才是真本事。</p></div>
+          <div class="probe-item"><p class="pq">新增开仓单位,有人真用吗?怎么验证是真需求?</p><p class="pa">具体使用数据是运营在跟,我没拿到。但需求来源不是拍脑袋 —— 来自<strong>客服反馈里"想按金额开仓要自己换算"这个真实痛点</strong>,且是行业普遍做法。有数据我会看使用占比验证。</p></div>
+          <div class="probe-item"><p class="pq">口径统一,举个你和风控真吵过的例子?</p><p class="pa">强平价的精度和口径:风控用完整精度,前端原样展示读不了、自己取整又会和实际触发价对不上引发投诉。最后定"<strong>展示精度跟随合约、标注预估价以实际为准、取整偏保守</strong>"。</p></div>
+          <div class="probe-item"><p class="pq">持仓字段那么多,凭什么决定哪个突出?</p><p class="pa">按"用户决策和风险感知优先级":<strong>强平价、保证金率、盈亏最该一眼看到</strong>,其余弱化。</p></div>
+          <div class="probe-item"><p class="pq">强平提示做太多,会不会打扰、用户麻木?</p><p class="pa">会,所以分层 —— 只有接近维持保证金才主动触达,阈值和风控用<strong>历史强平数据校准</strong>,避免正常波动就报警。</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="star">
+      <div class="star-head"><h3>活动页配置化搭建</h3><span class="badge">加分 · 全负责</span><span class="badge alt">0-1 · 判断力</span></div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">S</span>情境</span>
+        <p>平台活动频次持续攀升,早期两种承接方式都撑不住:<strong>跳转第三方</strong>带来用户不信任 + 数据丢失风险;<strong>前端写死页面</strong>在活动常规化后给技术带来大量重复开发,拖慢上线节奏。</p>
+      </div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">T</span>任务</span>
+        <p>全权负责,把活动页从"定制开发"转型为"配置化搭建",建设统一、可复用、可控的搭建能力,让运营自助快速上线不同类型活动。</p>
+      </div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">A</span>行动</span>
+        <ul class="star-list">
+          <li><strong>抽象通用组件:</strong>Banner、活动规则、任务、奖励、排行榜、进度条、弹窗等,形成可复用组件体系。</li>
+          <li><strong>划清可配边界(核心判断):</strong>高频通用低风险的开放可配;一次性玩法留给研发;<strong>发奖不开放</strong> —— 平台还做不了自动发奖、风控不健全,走人工核实,定义为过渡方案。原则:绝不为灵活把后台做成运营不敢用、一配错就资损的"半成品开发工具"。</li>
+          <li><strong>分期迭代:</strong>一期先做展示 + 报名;<strong>上线后发现用户感知弱(不知道自己完成了多少)</strong>,二期才补上任务进度感知。</li>
+          <li><strong>解决多语言:</strong>文案按语言维度存储,缺失 fallback 英文,组件自适应防串版。</li>
+          <li>建搭建流程与权限:创建 / 配置 / 预览 / 发布 / 下线全流程 + 审核机制。</li>
+        </ul>
+      </div>
+      <div class="star-part callout">
+        <span class="star-tag"><span class="sym">⇄</span>取舍与诚实复盘</span>
+        <ul class="star-list">
+          <li>灵活 vs 可控 —— 克制地划"80% 自助、20% 兜底"的线。</li>
+          <li><strong>防配错(坦白):</strong>当时其实<strong>没做发布前审核、预览也是发布后的</strong>,靠运营自查发现问题再改,这道防线不够;唯一的防护是标准化组件挡住了"丑",但挡不住"错 / 不合规"。更稳的应是<strong>发布前预览 + 审核、高风险字段双人过</strong>,把防线从"事后能改"前移到"事前拦住"。</li>
+        </ul>
+      </div>
+      <div class="star-part">
+        <span class="star-tag"><span class="ltr">R</span>结果</span>
+        <ul class="star-list">
+          <li>建立配置化搭建能力,支持多类型活动快速落地。</li>
+          <li><strong>常规活动运营基本可自助、显著降低对研发定制的依赖、上线效率提升</strong>(这才是该看的成功指标,比"参与人数"更能说明价值)。</li>
+          <li>沉淀活动组件与配置规范,减少重复沟通和开发。</li>
+        </ul>
+      </div>
+      <div class="star-part callout">
+        <span class="star-tag"><span class="sym">✦</span>洞察</span>
+        <p>复杂产品不可能一蹴而就,<strong>先用最小版本跑通核心价值再加复杂度</strong>;配置化的水平不在"能配多少",而在敢不敢划那条线 —— 克制,有时候比灵活更难。</p>
+      </div>
+      <div class="star-part probe">
+        <span class="star-tag"><span class="sym">◎</span>可能被追问</span>
+        <div class="probe-qa">
+          <div class="probe-item"><p class="pq">发奖走人工,活动量一大不就成瓶颈了?</p><p class="pa">会,所以我明确把它定义成<strong>过渡方案</strong> —— 现阶段活动量人工能覆盖,是权衡后的选择;等自动发奖能力和风控成熟,这个口子规划要逐步打开。</p></div>
+          <div class="probe-item"><p class="pq">多语言文案谁翻译?质量谁保证?</p><p class="pa">我在产品上保证的是<strong>结构支持多语言(按语言维度存)、缺配 fallback 英文、不串版</strong>;翻译本身由内容侧提供、靠内容流程把关 —— 不该由配置系统兜,这是我划的职责边界。</p></div>
+          <div class="probe-item"><p class="pq">运营配出一个很丑、信息错误、甚至不合规的活动页怎么办?</p><p class="pa">坦白讲这块防线不够 —— <strong>当时没做发布前审核、预览也是发布后的</strong>,靠运营自查发现再改。唯一防护是标准化组件挡住了"丑",挡不住"错 / 不合规"。这是我复盘最想补的:<strong>发布前预览 + 审核、高风险字段双人过</strong>。</p></div>
+          <div class="probe-item"><p class="pq">现有组件配不出运营要的新玩法怎么办?</p><p class="pa">先判断这玩法的<strong>频率和复用性</strong>:高频可能复用的纳入组件;一次性特殊玩法走研发定制。我做过一次 —— 把复杂玩法<strong>拆开</strong>,高频部分配置化、特定动态逻辑单独给研发,两边都满足。</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 机制问答 -->
+  <section id="mech">
+    <div class="sec-head"><span class="sec-num">06</span><div><h2>交易机制问答</h2><p class="sec-note">这份 JD 的重头戏,必背。答出"机制 + 产品该怎么呈现"两层,别只背定义。</p></div></div>
+    <div class="qa">
+
+      <div class="qa-item">
+        <span class="term">强平 · 触发与执行</span>
+        <p class="q">讲讲强平是怎么触发和执行的?</p>
+        <p class="a">当仓位保证金率跌到维持保证金率就触发。关键是<strong>用标记价格算、不是最新成交价</strong>,防止插针把价格瞬间打穿、误伤一批用户。触发后强平引擎接管仓位,<strong>通常挂限价单到撮合系统慢慢平,而不是市价砸盘</strong> —— 避免大单击穿订单簿引发连环爆。平得好的盈余进保险基金,穿仓了保险基金补,再不够就 ADL 自动减仓。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">全仓 vs 逐仓</span>
+        <p class="q">全仓和逐仓的区别?产品上最该讲清楚什么?</p>
+        <p class="a">逐仓每个仓保证金独立,最多亏这个仓的本金;全仓共享账户余额,更扛波动但爆仓可能亏更多。产品上最该讲的<strong>不是定义,是后果</strong> —— 用户切换模式时,直接告诉他<strong>强平价和最大亏损发生了什么变化</strong>,让他基于后果选择,而不是记名词。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">资金费率</span>
+        <p class="q">资金费率是什么?它的作用?</p>
+        <p class="a">很多用户以为是平台收的手续费,其实是<strong>多空之间互付,平台不收这笔钱</strong>。它的本质作用是<strong>把永续价格锚定到现货指数价</strong> —— 永续溢价时费率为正、多头付空头,惩罚做多、把价格拉回现货。我做过资金费率展示优化,重点是把收付方向、结算倒计时、预计成本讲清楚。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">标记价格</span>
+        <p class="q">标记价格为什么要存在?</p>
+        <p class="a">如果直接用最新成交价算强平和盈亏,深度差的合约很容易被小资金插针打穿、触发一批不公平的强平。所以用标记价 —— <strong>基于指数价加合理基差算出来的、更平滑公允的价格</strong> —— 算盈亏和触发强平,成交才用最新价。产品上要标注清楚哪个价用于成交、哪个用于强平,不然用户会困惑"还没到强平价怎么就爆了"。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">ADL 自动减仓</span>
+        <p class="q">ADL 是什么?怎么降低用户负面感受?</p>
+        <p class="a">强平的最后防线 —— 极端行情下保险基金被击穿时,系统<strong>强制减掉盈利方、高杠杆的仓位</strong>来平掉穿仓窟窿。用户最不满"我在赚钱凭什么动我",所以产品上要<strong>透明化</strong>:持仓区放 ADL 排队指示灯让他提前看到风险、事前教育、事后清楚说明。本质是用透明度换信任。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">风险限额</span>
+        <p class="q">风险限额是干嘛的?怎么影响体验?</p>
+        <p class="a">仓位越大平台承担的强平风险越高,所以<strong>分档要求更高的维持保证金、更低的最大杠杆</strong>。它会让用户加大仓位时突然发现杠杆变小或加不上仓。产品上要在<strong>接近档位边界时提前提示</strong>"继续加仓需要降低杠杆",让限制可解释、可预期。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">强平前提示</span>
+        <p class="q">强平前你会怎么做风险提示?</p>
+        <p class="a"><strong>分层,而且每一级都带自救出口。</strong> 持仓区常态展示保证金率、颜色分档;接近维持保证金时主动 push 预警;强平前最后通知,并把<strong>追加保证金、减仓、平仓的入口直接放在提示旁边</strong>。目的不是免责声明,是真在被强平前给用户自救机会。阈值要和风控用历史数据校准,避免正常波动就疯狂报警。</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 5 追问预案 -->
+  <section id="probe">
+    <div class="sec-head"><span class="sec-num">07</span><div><h2>追问预案</h2><p class="sec-note">顺着故事最可能被追的地方,提前背好。</p></div></div>
+    <div class="qa">
+      <div class="qa-item">
+        <p class="q">你项目大多没有硬数据,怎么证明价值?</p>
+        <p class="a">有些最终数据是运营和数据团队在跟,我没拿到精确数字,这我<strong>不会编</strong>。但我能讲可观察的变化 —— 某类客诉明显少了、活动不用研发定制了;更重要的是我能讲清过程里的判断和取舍,这些是我亲手做的。<strong>判断力比背一个 KPI 数字更能说明一个产品经理的水平。</strong></p>
+      </div>
+      <div class="qa-item">
+        <p class="q">方向都是领导定的,你的价值在哪?</p>
+        <p class="a">方向是团队定的,但<strong>怎么落地是我推的</strong>。同一个方向可以做得很糙也可以很稳,区别就在有没有人去拆真问题、定原则、把异常想透、和风控研发对齐口径。像 OTC 的兜底规则、配置化里发奖不开放,这些落地判断都是我自己拍的。</p>
+      </div>
+      <div class="qa-item">
+        <p class="q">讲一个失败的项目。</p>
+        <p class="a">DigiFinex 活动页改版。熊市想靠改版拉活跃,我花大精力打磨交互,结果远低于预期。复盘发现两个我的错:<strong>把体验当成主要矛盾,但真正天花板是行情</strong>;精力全在交互上,但用户其实嫌奖励不够。之后我养成习惯 —— <strong>做事前先问"这事的瓶颈到底是体验、激励还是大盘"</strong>,别用埋头优化掩盖方向错判。</p>
+      </div>
+      <div class="qa-item">
+        <p class="q">OTC 的"可控范围"到底怎么定?</p>
+        <p class="a">规则化,不靠感觉。差值在 <strong>0.1% 以内系统判定可赔付、走快速流程</strong>;只有超阈值或异常个案才人工复核。0.1% 这条线是结合历史汇率波动和第三方误差定的,不是拍脑袋。</p>
+      </div>
+      <div class="qa-item">
+        <p class="q">活动配置化,参与人数稳定跟你做配置化有什么关系?怎么证明项目成功?</p>
+        <p class="a">您问得对,参与人数不是衡量这个项目的好指标,那更多是运营和行情决定的。这个项目该看的是初衷有没有达成 —— <strong>运营能不能自助搭活动、不再占研发排期</strong>。从这个角度它是成功的:常规活动基本不用研发定制,上线效率明显提升。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 JD 专项:交易/工具产品经理 -->
+  <section id="jd2">
+    <div class="sec-head"><span class="sec-num">08</span><div><h2>JD 专项 · 交易/工具产品经理</h2><p class="sec-note">针对"衍生品设计 + 上线后运营迭代 / 行业调研 / 数据分析 / 5年经验+证券优先"这份 JD 的专项包:匹配诊断 → 定制自我介绍 → 扩充版问答 → 专属反问。机制题仍以第 03、06 节为准。</p></div></div>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>JD 信号</th><th>你的应对</th><th>判断</th></tr></thead>
+        <tbody>
+          <tr><td>衍生品设计 + 上线后运营迭代一把抓</td><td>合约迭代(强平价口径/风险限额展示)+ 配置化支撑运营 —— 你最贴的一条</td><td class="hit"><span class="dot">●</span> 主打牌</td></tr>
+          <tr><td>统筹开发进度、协调运营研发</td><td>OTC 从 0 到 1 全程拉通,日常工作方式</td><td class="hit"><span class="dot">●</span> 强</td></tr>
+          <tr><td>行业调研产出解决方案</td><td>数值精度竞品调研、合约机制竞品调研 —— 被低估的一张牌</td><td class="hit"><span class="dot">●</span> 强</td></tr>
+          <tr><td>根据运营数据调整产品</td><td>"可观察变化 + 老实标注的估算"口径,反手夸他家数据基建全</td><td class="hit"><span class="dot">●</span> 可守</td></tr>
+          <tr><td>5 年经验(你约 3 年)</td><td>不辩年限,证"独立决策密度":0-1 主导 + 资损敏感链路迭代</td><td class="hit"><span class="dot">●</span> 短板·有话术</td></tr>
+          <tr><td>股票/证券优先 + 英语良好</td><td>"保证金/强平与两融/期货同源可迁移,差的是监管惯例在补";英语照实答</td><td class="hit"><span class="dot">●</span> 短板·有话术</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="script">
+      <p class="script-label">这个 JD 的自我介绍 · 约 60 秒 <span class="badge">照念</span></p>
+      <p>面试官好,我叫 Law,3 年加密交易所产品经验,主要做交易核心链路。我的经历分三块:一是<strong>合约产品的迭代优化</strong> —— 比如强平价展示口径的统一、风险限额分档的透明化。这类工作原创性不高,但口径抄错就是资损事故,我的价值在识别差距、排优先级、把细节落对。</p>
+      <p>二是<strong>从 0 到 1 主导 OTC 卖币业务</strong> —— 从对接第三方承兑平台、设计订单状态机到异常兜底规则,全程我一个人拉通研发和运营落地。三是<strong>把运营需求沉淀成产品能力</strong> —— 活动配置化后台,让运营从每次找研发排期变成自助配置。</p>
+      <p>我对合约底层机制有<strong>系统认知</strong>,底层细节还在持续深入,这也是我想长期深耕的方向。这个岗位<strong>"设计 + 上线后运营迭代"一体</strong>的定位,和我一直的工作方式是一致的。</p>
+    </div>
+
+    <div class="qa" style="margin-top:22px;">
+
+      <div class="qa-item">
+        <span class="term">A · 衍生品设计与迭代 ★</span>
+        <p class="q">你做过哪些衍生品相关的产品工作?最有代表性的是什么?</p>
+        <p class="a">我讲最有代表性的 —— <strong>强平价展示口径的统一</strong>。背景是用户投诉"App 显示的强平价还没到,仓位就被强平了"。排查下来不是引擎算错,是<strong>口径不一致</strong>:触发用标记价格,有的端展示参考价却用最新成交价,行情剧烈时两个价差出一截,用户按页面显示扛单、实际提前被强平。</p>
+        <ul class="a-list">
+          <li><span class="k">全链路对齐:</span>把触发口径、展示口径、推送提醒口径梳理一遍,拉着研发逐端对齐到标记价格。</li>
+          <li><span class="k">投诉转教育:</span>强平价旁加口径说明 —— "为什么用标记价格:最新成交价可能被瞬间插针,用标记价是保护你不被误伤"。</li>
+          <li><span class="k">机制沉淀:</span>把口径类问题建清单,后续排期默认最高优先级。</li>
+        </ul>
+        <p class="a-take">合约产品 80% 的迭代都是这种正确性问题 —— 不产生新收入,但做错一个就是资损和信任事故。判断一个人懂不懂合约产品,看他敬不敬畏这类细节。</p>
+        <div class="probe-qa" style="margin-top:12px;">
+          <div class="probe-item"><p class="pq">◎ 追问:标记价格怎么算的?</p><p class="pa">一般取多家主流交易所现货价格的加权指数,加上基差的移动平均,目的是平滑、难被单一市场操纵。具体加权规则各家有差异,这块底层细节我还在深入。</p></div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">A · 季度规划 ★</span>
+        <p class="q">如果让你规划下一个季度的衍生品迭代,你怎么定方向?</p>
+        <p class="a">先说句实话:在上家,大方向是业务负责人定的,但<strong>方向下面的问题清单和优先级是我拆的</strong>。我的输入源有三个:</p>
+        <ul class="a-list">
+          <li><span class="k">客诉/工单聚类:</span>最真实的痛点来源 —— 强平相关客诉持续排第一,说明强平透明度和预警有欠账。</li>
+          <li><span class="k">竞品差距清单:</span>持续维护一张表,头部所有、我们没有的能力,按"影不影响交易决策"排序 —— 风险限额分档展示排前,纯视觉优化排后。</li>
+          <li><span class="k">运营侧能力需求:</span>下季度要打什么活动、缺什么能力,提前收进来,不然全是插队需求。</li>
+        </ul>
+        <p class="a-take">排序原则固定:资金安全和口径正确 &gt; 主链路转化卡点 &gt; 体验优化;再留约 20% 余量给行情驱动的临时需求 —— 排满了整个季度计划都会崩。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">A · 永续 vs 交割</span>
+        <p class="q">永续合约和交割合约的产品差异?</p>
+        <p class="a">核心差异一个:<strong>永续没有到期日</strong>,所以需要资金费率让价格锚定现货 —— 多空互付,价格高于现货时多头付空头压价回落;这里很多人搞错:<strong>这笔钱平台不收</strong>,是用户间的转移支付。交割有到期日靠交割收敛,无资金费率但有基差。</p>
+        <p class="a">落到产品上:永续要做<strong>资金费率的展示、历史、下期预测</strong>(费率直接影响持仓成本,重仓用户极敏感);交割要做<strong>到期提醒、移仓/展期引导</strong>,用户忘了到期被动交割就是大量客诉。用户结构上永续是绝对主流,资源投放按这个比例来。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">A · 新品类 0-1</span>
+        <p class="q">如果我们要上一个新的衍生品品类(比如期权),你怎么从 0 开始?</p>
+        <p class="a">先坦白:期权我没做过。但我完整做过一个业务的从 0 到 1 —— OTC 卖币,讲讲那套方法怎么迁移:</p>
+        <ul class="a-list">
+          <li><span class="k">先答"做不做"再答"怎么做":</span>看头部所的期权形态、交易量占比、用户结构,关键是判断存量用户和期权用户画像的重合度 —— 短线高杠杆散户为主的话,简化版涨跌期权可能比标准期权更对路。这个判断错了,后面做得再好都没用。</li>
+          <li><span class="k">砍出最小闭环:</span>当年 OTC 先只做卖币 —— 链路最短、风险最小。期权同理:先上买方单腿(买 Call/Put,最大亏损=权利金、教育成本最低),卖方收保证金、有无限亏损风险,和组合策略全部后置。</li>
+          <li><span class="k">风险展示做成一等公民:</span>衍生品新品最大的坑不是功能缺失,是用户不理解自己承担什么风险 —— 下单页最大亏损、盈亏平衡点、到期时间必须比"预期收益"更醒目。</li>
+          <li><span class="k">上线前过异常清单:</span>标的剧烈波动的定价、流动性不足的处理、到期结算边缘情况。</li>
+        </ul>
+        <p class="a-take">主流程谁都画得出来,产品经理的价值在异常态 —— 这是 OTC 教我的。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">B · 行业调研 ★</span>
+        <p class="q">你做过什么行业调研?怎么落地成产品的?</p>
+        <p class="a">讲数值精度的竞品调研。起因是同一币对在不同页面小数位不一致 —— K线一个精度、下单框一个、订单记录又一个,用户会怀疑"数据是不是有问题"。我的调研分三层:</p>
+        <ul class="a-list">
+          <li><span class="k">拉规则表:</span>头部几家所的价格/数量/金额精度,分别在什么页面用什么位数。</li>
+          <li><span class="k">搞懂"为什么":</span>这才是调研的价值 —— 价格精度背后是最小变动价位(tick size),和币的价格量级、市场深度有关;数量精度背后是最小下单单位,关系到小额用户能不能交易。</li>
+          <li><span class="k">产出规范并落成配置:</span>每个场景什么口径、四舍五入还是截断(资产页往上进位一分钱,累计就是资损);做成研发直接照抄的配置表而不是文档,上新币对不需要再人为判断。</li>
+        </ul>
+        <p class="a-take">抄表格是执行,搞懂"为什么"才是调研 —— 只抄结论,别人的规则换个市场环境就不适用了。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">B · 数据决策 ★(戳软肋)</span>
+        <p class="q">举一个你根据数据调整产品的例子。</p>
+        <p class="a">先老实说明前提:上家的数据基建有限,没有完整埋点和 BI,所以我形成了一套方法 —— <strong>"可观察变化 + 老实标注的估算"</strong>。举活动配置化的例子:</p>
+        <ul class="a-list">
+          <li><span class="k">可直接观察:</span>运营从依赖研发排期(以天计)变成当天自助搭活动;研发在活动上的介入次数趋近于零 —— 不需要埋点,看工作流就能确认。</li>
+          <li><span class="k">老实标注的估算:</span>交易侧带动给估算并明确口径 —— 参与人数多少、按历史转化比例估带来多少,同时说清"这是估算,置信度中等"。</li>
+        </ul>
+        <p class="a-take">宁可给标注清楚的估算,不给看起来精确的假数字 —— 决策错了可以调,数据造假污染决策依据,后面全错。也正因此,JD 里"根据运营数据调整产品"对我反而是吸引力:意味着贵司数据基建完整,我的分析习惯终于有完整弹药。</p>
+        <div class="probe-qa" style="margin-top:12px;">
+          <div class="probe-item"><p class="pq">◎ 追问:那你到底用数据做过决策吗?</p><p class="pa">做过,只是颗粒度粗。客诉工单的分类统计就是数据 —— 强平类客诉长期占比最高,直接决定我把口径统一排最前。数据不一定是埋点漏斗,能支撑决策的事实都是数据。</p></div>
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">B · SQL / 数据能力 ⚠️面前填实</span>
+        <p class="q">你会 SQL 吗?数据能力到什么程度?</p>
+        <p class="a">(按真实水平答,模板:)SQL 能独立完成日常取数 —— 查活动数据、拉转化漏斗、分群对比,多表关联没问题;窗口函数会用但不算熟练。Excel 透视和 ROI 测算是日常工具。Python 数据分析不会,在补。</p>
+        <p class="a-take">产品经理的数据能力核心不在工具,在两个判断:一是知道该看什么 —— 合约活动绝不能看名义成交量(会被对敲刷爆),要看净手续费;二是知道数据什么时候在骗你 —— 参与量暴涨但交易没动,就是虚假繁荣。工具补得快,这两个判断我已经有。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">C · 年限短板 ★</span>
+        <p class="q">我们希望 5 年经验,你才 3 年,怎么看?</p>
+        <p class="a">我不跟年限辩,说说这 3 年的密度。衡量经验的关键是<strong>独立决策的次数</strong>,不是坐在岗位上的时间。我有两段"决策密度"高的经历:</p>
+        <ul class="a-list">
+          <li><span class="k">OTC 从 0 到 1:</span>调研、选型对接第三方承兑、订单状态机、"钱对不上怎么赔"的兜底规则 —— 每个决策都是我拍的,没有前人方案可抄。</li>
+          <li><span class="k">合约链路迭代:</span>资损敏感环境,强平价口径改错一个字段就是事故 —— 逼我形成对正确性和边缘场景的敬畏,这个有人做 5 年纯功能迭代也未必建立。</li>
+        </ul>
+        <p class="a-take">也承认差距:老手见过的周期和事故更多。我的弥补方式是把每次决策当成压缩经验的机会 —— 包括决策错的时候,比如配置化一期没做发布审核,这个坑我现在讲得出完整改进方案,就因为踩过。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">C · 证券背景</span>
+        <p class="q">没有股票/证券背景,怎么补?</p>
+        <p class="a">分两层。<strong>机制层同源可迁移</strong>:合约保证金对应两融/期货保证金,强平对应券商强制平仓,杠杆、全仓逐仓在两融里都有影子;资金费率虽是加密原生,但它解决的"衍生品锚定现货"问题,传统市场靠交割和套利解决 —— 底层金融逻辑是一套,切换成本在术语和惯例。</p>
+        <p class="a"><strong>真正差的是监管和业务惯例</strong>:T+1、涨跌停、投资者适当性管理,这些是加密没有的约束,产品设计必须绕着走。我在系统补,方式是看券商 App 的产品设计倒推背后的监管要求。</p>
+      </div>
+
+      <div class="qa-item">
+        <span class="term">C · 英语 ⚠️面前填实</span>
+        <p class="q">英语怎么样?(JD 明确要求)</p>
+        <p class="a">(按真实水平答,模板:)读写没问题 —— 英文行业报告、竞品文档、海外社区用户反馈日常在读,和海外团队文字协作无障碍。口语能日常沟通,复杂方案讨论目前中文更高效,在刻意练。如果岗位需要英文主持会议,我需要过渡期,但读写侧可以立刻顶上。</p>
+      </div>
+
+    </div>
+
+    <div class="script" style="margin-top:22px;">
+      <p class="script-label">这个 JD 专属反问 · 挑 2 个 <span class="badge alt">显读得细</span></p>
+      <p>① JD 里写"产品上线后的运营和迭代" —— 这个岗位和运营团队的边界怎么分?产品要背运营指标吗?<em style="color:var(--ink-soft);font-style:normal;font-size:14px">(探岗位真实定位)</em></p>
+      <p>② 衍生品线现在处于什么阶段 —— 已有永续在迭代,还是要从 0 上新品类?<em style="color:var(--ink-soft);font-style:normal;font-size:14px">(决定你入职做哪半边,也暗示两边都能干)</em></p>
+      <p>③ Title 里的"工具"指什么 —— 交易工具(跟单/网格/策略)还是内部工具?<em style="color:var(--ink-soft);font-style:normal;font-size:14px">(JD 标题有"工具"但职责没展开,问了显得读得细)</em></p>
+    </div>
+
+    <div class="rail" style="margin-top:22px;">
+      <h3>这场面试的一句话策略</h3>
+      <ul class="check" style="gap:8px;">
+        <li><span>JD 独特点是<strong>"设计 + 上线后运营迭代"一体</strong> —— 多数 PM 只讲设计,你反着来:每讲一个项目都带上"上线后我怎么迭代的"(配置化二期补审核、OTC 上线后的异常兜底),正好卡住 JD 第 1、4 条,也是你对 5 年老手的差异化。</span></li>
+        <li><span>面试前把 <strong>代表作(强平价口径)、季度规划、数据软肋、年限软肋、强平链路</strong> 五题练到脱稿 —— 这个 JD 下最可能的组合。</span></li>
+        <li><span>三处 ⚠️(SQL、英语、美股仓位券要不要提)面试前<strong>自己填实</strong>,答虚了会被实操验证戳穿。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 9 反问 -->
+  <section id="reverse">
+    <div class="sec-head"><span class="sec-num">09</span><div><h2>反问(挑 2–3 个)</h2><p class="sec-note">交易岗角度。别问薪资/加班/官网能查到的。</p></div></div>
+    <ul class="clean">
+      <li>咱们交易产品现在更偏"补齐基础体验、对标头部",还是在做差异化的机制创新?</li>
+      <li>交易 PM 和风控团队怎么协作?产品在风控规则定义上能介入到什么程度?</li>
+      <li>如果我加入,前三个月你最希望我先啃下哪块?</li>
+      <li>团队用什么指标衡量交易 PM 做得好不好 —— 是交易指标,还是更综合?</li>
+      <li>远程为主的话,团队现在的协作和评审是怎么跑的?</li>
+    </ul>
+  </section>
+
+  <!-- 10 临门提醒 -->
+  <section id="final">
+    <div class="sec-head"><span class="sec-num">10</span><div><h2>临门提醒</h2></div></div>
+    <ul class="check">
+      <li><span><strong>机制题是命门</strong> —— 第 03、06 节过熟,答出"机制 + 产品呈现"两层;答到边界诚实收(还在深入),别装老手。</span></li>
+      <li><span><strong>"参与" vs "主导" 分清</strong> —— 合约是参与(讲你具体做的:资金费率展示、hover、开仓单位),OTC 是主导(大胆讲判断)。</span></li>
+      <li><span><strong>不编数据</strong> —— 用可观察变化 + 判断过程兜底。</span></li>
+      <li><span><strong>远程岗</strong> —— 主动提一句你自驱、能异步协作、交付靠谱,远程团队最看重这个。</span></li>
+    </ul>
+
+    <div class="rail">
+      <h3>贯穿全程的纪律红线</h3>
+      <ul class="check" style="gap:8px;">
+        <li><span>被质疑<strong>别防御</strong> —— 不说"不可能发生";改成"这种边缘情况我考虑过,用 XX 兜底"。</span></li>
+        <li><span><strong>自曝一次纠错最加分</strong> —— "当时没做到 X,如果再做我会 Y"。</span></li>
+        <li><span>每个故事埋一个<strong>只有干过才知道的坑</strong> + 收一句<strong>独特洞察</strong>,这是说服力来源。</span></li>
+        <li><span>"抄竞品" 讲成 <span class="em-up">对齐行业、快速跟随</span>,价值落在"选对补什么 + 把落地口径做对(抄错就是事故)"。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="foot">
+    交易产品经理面试备战 · 慢一点念,像在回忆,不像背稿。
+  </footer>
+
+</div>
+</div>
