@@ -1,0 +1,267 @@
+<meta charset="utf-8">
+<title>首页金刚位配置 · 中台原型</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f5f6f8;--panel:#fff;--line:#eaecef;--text:#1f2329;--sub:#8a919e;
+    --green:#00c087;--green-d:#00a877;--green-weak:#e6f8f1;--radius:10px;
+  }
+  body{font:14px/1.5 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text)}
+  .top{height:54px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+  .top .t{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}
+  .top .mark{width:26px;height:26px;border-radius:7px;background:var(--green);display:grid;place-items:center;color:#fff;font-size:14px}
+  .top .r{display:flex;align-items:center;gap:12px;color:var(--sub);font-size:13px}
+  .wrap{display:flex;gap:20px;padding:20px 24px;align-items:flex-start}
+
+  /* left config */
+  .left{flex:1;min-width:0}
+  .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .head h1{font-size:18px}
+  .head .sub{color:var(--sub);font-size:13px;margin-bottom:16px}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--text);padding:8px 15px;border-radius:8px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+  .btn:hover{border-color:#ccd0d6}
+  .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+  .btn.primary:hover{background:var(--green-d)}
+  .btn.sm{padding:5px 11px;font-size:12.5px}
+  .btn.ghost{border:none;background:transparent;color:var(--green);padding:4px 6px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+  .bar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .bar .l{font-weight:600;font-size:14px}
+  .bar .hint{color:var(--sub);font-size:12px;font-weight:400;margin-left:8px}
+
+  .item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .item:last-child{border-bottom:none}
+  .item:hover{background:#fafbfc}
+  .sort{display:flex;flex-direction:column;align-items:center;gap:2px;width:32px}
+  .sort .pos{font-size:13px;font-weight:600;color:#333}
+  .sort .ar{width:22px;height:18px;border:1px solid var(--line);border-radius:5px;display:grid;place-items:center;font-size:10px;color:#8a919e;cursor:pointer;background:#fff}
+  .sort .ar:hover{border-color:var(--green);color:var(--green)}
+  .sort .ar.dis{opacity:.35;cursor:not-allowed;pointer-events:none}
+  .icons{display:flex;gap:10px;flex-shrink:0}
+  .ic-slot{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .icon-up{width:48px;height:48px;border-radius:13px;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 50%/12px 12px;display:grid;place-items:center;border:1px solid var(--line);position:relative;flex-shrink:0;cursor:pointer;font-size:22px}
+  .icon-up.dark{background:#161c26;color:#fff}
+  .icon-up.dark.empty{background:#161c26}
+  .icon-up .ph{color:#c4c8cf;font-size:22px}
+  .icon-up.dark .ph{color:#5a6472}
+  .icon-up .cam{position:absolute;right:-4px;bottom:-4px;width:18px;height:18px;background:var(--green);border-radius:50%;display:grid;place-items:center;color:#fff;font-size:9px;border:2px solid #fff}
+  .ic-tag{font-size:10px;color:var(--sub)}
+  .ic-tag.miss{color:#f5483b}
+  .fields{flex:1;display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
+  .f label{display:block;font-size:11px;color:var(--sub);margin-bottom:3px}
+  .f input,.f select{width:100%;border:1px solid var(--line);border-radius:7px;padding:6px 9px;font-size:13px}
+  .f input:focus,.f select:focus{outline:none;border-color:var(--green)}
+  .ops{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .toggle{position:relative;width:38px;height:22px}
+  .toggle input{display:none}
+  .toggle span{position:absolute;inset:0;background:#d5d8dd;border-radius:20px;transition:.2s;cursor:pointer}
+  .toggle span::after{content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.2s}
+  .toggle input:checked+span{background:var(--green)}
+  .toggle input:checked+span::after{left:18px}
+  .del{color:#f5483b;font-size:12px;cursor:pointer}
+  .adv{padding:10px 16px;color:var(--sub);font-size:12px;background:#fafbfc;border-top:1px dashed var(--line)}
+  .add-row{padding:14px 16px}
+  .add-row .btn{width:100%;justify-content:center;border-style:dashed;color:var(--green)}
+  .off{opacity:.45}
+
+  /* right preview */
+  .right{width:320px;flex-shrink:0;position:sticky;top:20px}
+  .pv-head{font-size:13px;color:var(--sub);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+  .mode-sw{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .mode-sw a{padding:4px 9px;font-size:12px;cursor:pointer;color:var(--sub);background:#fff}
+  .mode-sw a.on{background:var(--green);color:#fff}
+  .lang-sw{display:flex;align-items:center}
+  .lang-sw #langBtns{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .lang-sw a{padding:5px 11px;font-size:12.5px;cursor:pointer;color:var(--sub);background:#fff;border-right:1px solid var(--line)}
+  .lang-sw a:last-child{border-right:none}
+  .lang-sw a.on{background:var(--green);color:#fff}
+  .name-miss{border-color:#ffc9c4 !important;background:#fff7f6}
+  .name-hint{font-size:10px;color:#f5483b;margin-top:2px;display:none}
+  .name-hint.show{display:block}
+  /* 暗色模式手机 */
+  .screen.dark{background:#0e1116}
+  .screen.dark .st{color:#e5e8ec}
+  .screen.dark .ph-search .box{background:#1c2430;color:#6b7480}
+  .screen.dark .ph-search .ic{color:#e5e8ec}
+  .screen.dark .ph-asset .lbl{color:#8a919e}
+  .screen.dark .ph-asset .big{color:#f4f6f7}
+  .screen.dark .kk.hl{background:#161c26}
+  .screen.dark .kk-ic{background:#1c2735;color:#7fe0c0}
+  .screen.dark .kk-nm{color:#c9cdd4}
+  .screen.dark .ph-cards .c{background:#161c26}
+  .phone{width:320px;background:#000;border-radius:34px;padding:8px;box-shadow:0 12px 40px rgba(0,0,0,.18)}
+  .screen{background:#f4f6f7;border-radius:27px;overflow:hidden}
+  .st{height:30px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:11px;color:#111;font-weight:600}
+  .ph-pad{padding:6px 14px 16px}
+  .ph-search{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .ph-search .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#00c087,#7fe0c0)}
+  .ph-search .box{flex:1;height:34px;background:#eef0f1;border-radius:18px;display:flex;align-items:center;padding:0 12px;color:#9aa0aa;font-size:12px;gap:6px}
+  .ph-search .ic{color:#333;font-size:15px}
+  .ph-asset .lbl{font-size:11px;color:#8a919e}
+  .ph-asset .big{font-size:24px;font-weight:700;margin:2px 0}
+  .ph-recharge{height:40px;background:var(--green);color:#fff;border-radius:10px;display:grid;place-items:center;font-weight:600;font-size:14px;margin:12px 0 14px}
+  /* 金刚区 —— 横向滑动 */
+  .kk{display:flex;gap:2px;padding:8px 4px;border:2px solid transparent;border-radius:12px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+  .kk::-webkit-scrollbar{height:0}
+  .kk.hl{border-color:#f5483b;background:#fff}
+  .kk-item{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;flex:0 0 auto;width:62px;scroll-snap-align:start}
+  .kk-dots{display:flex;justify-content:center;gap:5px;margin-top:6px}
+  .kk-dots i{width:5px;height:5px;border-radius:50%;background:#d5d8dd;display:block}
+  .kk-dots i.on{background:var(--green);width:14px;border-radius:3px}
+  .kk-ic{width:44px;height:44px;border-radius:14px;background:var(--green-weak);display:grid;place-items:center;font-size:22px;color:var(--green)}
+  .kk-nm{font-size:11px;color:#333}
+  .ph-cards{margin-top:14px;display:flex;gap:8px}
+  .ph-cards .c{flex:1;height:70px;background:#fff;border-radius:10px}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1d2129;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+  .toast.on{opacity:1;bottom:40px}
+  .warn{color:#f5483b;font-size:12px;margin-left:8px;display:none}
+</style>
+
+<div class="top">
+  <div class="t"><span class="mark">🏠</span> 首页运营中台</div>
+  <div class="r"><span>运营 · 张漫</span></div>
+</div>
+
+<div class="wrap">
+  <!-- LEFT -->
+  <div class="left">
+    <div class="head">
+      <div>
+        <h1>首页金刚位配置</h1>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn sm" onclick="toast('已存草稿')">存草稿</button>
+        <button class="btn primary" onclick="toast('✅ 已发布，App 下次拉取即生效')">发布</button>
+      </div>
+    </div>
+    <div class="sub">配置首页金刚区入口的图标、文案、跳转与排序，拖拽 ⣿ 调整顺序，改动无需发版 <span class="warn" id="warn">⚠ 至少保留 1 个显示中的入口</span></div>
+
+    <div class="card">
+      <div class="bar"><div class="l">金刚位入口<span class="hint">横向滑动 · 首屏约 4.5 个 · 当前 <b id="cnt">4</b> 个显示中</span></div>
+        <div class="lang-sw"><span style="color:var(--sub);font-size:12px;margin-right:6px">编辑语言</span><span id="langBtns"></span></div></div>
+
+      <div id="list">
+        <!-- item template rendered by JS -->
+      </div>
+
+      <div class="add-row"><button class="btn" onclick="addItem()">＋ 添加金刚位入口</button></div>
+      <div class="adv">💡 数量不设硬上限，App 端横向滑动展示；建议 ≤10 个以保证可发现性，超出会提示精简。每条可设「生效时间」定时上下线。</div>
+    </div>
+  </div>
+
+  <!-- RIGHT preview -->
+  <div class="right">
+    <div class="pv-head"><span>实时预览 · <b id="pvLang" style="color:#333">简体中文</b></span>
+      <span class="mode-sw"><a id="mL" class="on" onclick="setDark(false)">☀️ 亮色</a><a id="mD" onclick="setDark(true)">🌙 暗色</a></span>
+    </div>
+    <div class="phone"><div class="screen" id="screen">
+      <div class="st"><span>19:46</span><span>🔋 65%</span></div>
+      <div class="ph-pad">
+        <div class="ph-search"><div class="av"></div><div class="box"><span class="ic">🔍</span>搜索</div><span>🎁</span><span>🎧</span></div>
+        <div class="ph-asset"><div class="lbl">总资产估值 (USDT) 👁</div><div class="big">451.12</div><div style="font-size:11px;color:#f5483b">昨日盈亏 -$0.82</div></div>
+        <div class="ph-recharge">充值</div>
+        <div class="kk hl" id="kk"><!-- rendered by JS --></div>
+        <div class="kk-dots" id="dots"></div>
+        <div class="ph-cards"><div class="c"></div><div class="c"></div></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // 名称按语言分填(names)；图标亮/暗成对；暗色缺回落亮色，名称缺回落默认语言
+  let data=[
+    {icon:'🧑‍🤝‍🧑',iconDark:'🧑‍🤝‍🧑',names:{'zh-CN':'推荐','en':'Explore','zh-TW':'推薦'},url:'app://recommend',on:true},
+    {icon:'💰',iconDark:'💰',names:{'zh-CN':'理财','en':'Earn','zh-TW':'理財'},url:'app://finance',on:true},
+    {icon:'📈',iconDark:'📈',names:{'zh-CN':'AI美股通','en':'AI US Stocks','zh-TW':''},url:'h5://us-stocks',on:true},
+    {icon:'🚀',iconDark:'',names:{'zh-CN':'Launchpad','en':'Launchpad','zh-TW':'Launchpad'},url:'app://launchpad',on:true},
+    {icon:'🎁',iconDark:'🎁',names:{'zh-CN':'活动','en':'Events','zh-TW':'活動'},url:'app://activity',on:true},
+    {icon:'🏆',iconDark:'🏆',names:{'zh-CN':'任务中心','en':'Tasks','zh-TW':'任務中心'},url:'app://task',on:true},
+  ];
+  const langs=[{k:'zh-CN',t:'简体中文'},{k:'en',t:'English'},{k:'zh-TW',t:'繁體中文'}];
+  const DEF_LANG='zh-CN';
+  let curLang='zh-CN';
+  let pvDark=false;
+  const icons=['🧑‍🤝‍🧑','💰','📈','🚀','🎁','🏆','🔥','💎','📊','🎯','⚡','🪙'];
+
+  function langLabel(){ return (langs.find(l=>l.k===curLang)||{}).t; }
+  function render(){
+    // language buttons
+    document.getElementById('langBtns').innerHTML=langs.map(l=>{
+      const miss=data.some(d=>d.on && !d.names[l.k]); // 有显示中的入口在该语言缺名称
+      return `<a class="${l.k===curLang?'on':''}" onclick="setLang('${l.k}')">${l.t}${miss?' ●':''}</a>`;
+    }).join('');
+    // list
+    const list=document.getElementById('list');
+    list.innerHTML=data.map((d,i)=>`
+      <div class="item ${d.on?'':'off'}">
+        <div class="sort">
+          <div class="ar ${i===0?'dis':''}" onclick="move(${i},-1)" title="上移">▲</div>
+          <div class="pos">${i+1}</div>
+          <div class="ar ${i===data.length-1?'dis':''}" onclick="move(${i},1)" title="下移">▼</div>
+        </div>
+        <div class="icons">
+          <div class="ic-slot">
+            <div class="icon-up light" onclick="cycleIcon(${i},'icon')" title="上传亮色图标">${d.icon||'<span class=ph>+</span>'}<span class="cam">📷</span></div>
+            <span class="ic-tag">亮色</span>
+          </div>
+          <div class="ic-slot">
+            <div class="icon-up dark ${d.iconDark?'':'empty'}" onclick="cycleIcon(${i},'iconDark')" title="上传暗色图标">${d.iconDark||'<span class=ph>+</span>'}<span class="cam">📷</span></div>
+            <span class="ic-tag ${d.iconDark?'':'miss'}">${d.iconDark?'暗色':'暗色·缺'}</span>
+          </div>
+        </div>
+        <div class="fields">
+          <div class="f"><label>名称（${langLabel()}）</label>
+            <input value="${d.names[curLang]||''}" oninput="updName(${i},this.value)" maxlength="12"
+              placeholder="${curLang!==DEF_LANG?'缺省用: '+(d.names[DEF_LANG]||''):'请输入'}"
+              class="${curLang!==DEF_LANG && !d.names[curLang]?'name-miss':''}">
+            <div class="name-hint ${curLang!==DEF_LANG && !d.names[curLang]?'show':''}">未配置，将回落默认语言"${d.names[DEF_LANG]||''}"</div>
+          </div>
+          <div class="f"><label>跳转链接</label><input value="${d.url}" oninput="upd(${i},'url',this.value)"></div>
+        </div>
+        <div class="ops">
+          <label class="toggle"><input type="checkbox" ${d.on?'checked':''} onchange="upd(${i},'on',this.checked)"><span></span></label>
+          <span class="del" onclick="del(${i})">删除</span>
+        </div>
+      </div>`).join('');
+
+    // phone 金刚区
+    const kk=document.getElementById('kk');
+    const shown=data.filter(d=>d.on);
+    kk.innerHTML=shown.map(d=>{
+      const ic = pvDark ? (d.iconDark||d.icon) : d.icon;
+      const nm = d.names[curLang] || d.names[DEF_LANG] || '';
+      return `<div class="kk-item"><div class="kk-ic">${ic}</div><div class="kk-nm">${nm}</div></div>`;
+    }).join('') || '<div style="flex:1;text-align:center;color:#c4c8cf;padding:14px;font-size:12px">无显示中的入口</div>';
+
+    // 滑动指示点：>4.5 个时出现，提示可横滑
+    const dots=document.getElementById('dots');
+    if(shown.length>4){
+      const pages=Math.ceil(shown.length/4);
+      dots.innerHTML=Array.from({length:pages},(_,p)=>`<i class="${p===0?'on':''}"></i>`).join('');
+    } else { dots.innerHTML=''; }
+
+    document.getElementById('cnt').textContent=shown.length;
+    document.getElementById('warn').style.display = shown.length===0 ? 'inline' : 'none';
+    document.getElementById('pvLang').textContent=langLabel();
+  }
+  function upd(i,k,v){ if(k==='on' && v===false && data.filter(d=>d.on).length<=1){ toast('至少保留 1 个显示中的入口'); render(); return;} data[i][k]=v; render(); }
+  function updName(i,v){ data[i].names[curLang]=v; render(); }
+  function setLang(k){ curLang=k; render(); }
+  function cycleIcon(i,field){ const cur=icons.indexOf(data[i][field]); data[i][field]=icons[(cur+1)%icons.length]; render(); toast((field==='iconDark'?'暗色':'亮色')+'图标已更换（演示，正式版为上传图片）'); }
+  function del(i){ if(data.length<=1){toast('至少保留 1 个入口');return;} data.splice(i,1); render(); }
+  function move(i,dir){ const j=i+dir; if(j<0||j>=data.length) return; [data[i],data[j]]=[data[j],data[i]]; render(); }
+  function addItem(){ data.push({icon:'🎁',iconDark:'🎁',names:{'zh-CN':'新入口','en':'','zh-TW':''},url:'app://',on:true}); if(data.length>10) toast('建议 ≤10 个，过多会影响可发现性'); render(); }
+
+  function setDark(v){ pvDark=v;
+    document.getElementById('screen').classList.toggle('dark',v);
+    document.getElementById('mL').classList.toggle('on',!v);
+    document.getElementById('mD').classList.toggle('on',v);
+    render();
+  }
+  let tt; function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2000);}
+  render();
+</script>
