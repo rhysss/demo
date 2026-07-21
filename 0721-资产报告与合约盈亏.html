@@ -189,6 +189,11 @@ section{padding:0 16px;}
 .sheet .item.dis{color:var(--muted2);}
 .sheet .item .ck{color:var(--text);}
 
+/* chart point callouts */
+.pt-callout{position:absolute;background:#fff;border:1px solid var(--border);box-shadow:0 2px 8px rgba(20,30,50,.1);border-radius:8px;padding:4px 8px;font-size:10px;line-height:1.35;white-space:nowrap;z-index:2;pointer-events:none;}
+.pt-callout .cd{color:var(--muted2);font-size:9px;}
+.pt-callout .cv{font-weight:700;font-size:11px;color:var(--text);}
+
 /* date-range picker */
 .datesheet-title{font-size:17px;font-weight:700;text-align:center;margin:2px 0 14px;}
 .date-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);}
@@ -263,8 +268,8 @@ section{padding:0 16px;}
       <div class="view on" id="ov-view-line">
         <div id="ov-linechart"></div>
         <div class="timesel">
-          <span onclick="pick(this)">1天</span><span class="on" onclick="pick(this)">7天</span>
-          <span onclick="pick(this)">30天</span><span onclick="pick(this)">180天</span><span onclick="pick(this)">360天</span>
+          <span onclick="setOvRange(this,1)">1天</span><span class="on" onclick="setOvRange(this,7)">7天</span>
+          <span onclick="setOvRange(this,30)">30天</span><span onclick="setOvRange(this,180)">180天</span><span onclick="setOvRange(this,360)">360天</span>
         </div>
       </div>
       <div class="view" id="ov-view-pie">
@@ -406,8 +411,8 @@ section{padding:0 16px;}
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><circle cx="6" cy="12" r="2"/><circle cx="17" cy="6" r="2"/><circle cx="17" cy="18" r="2"/><path d="M8 11l7-4M8 13l7 4"/></svg>
   </div>
   <div class="range" style="padding:0 16px;">
-    <span class="on" onclick="pick(this)">7天</span><span onclick="pick(this)">30天</span>
-    <span onclick="pick(this)">90天</span><span onclick="openDatePicker(this)">自定义</span>
+    <span class="on" onclick="setReportRange(this,7)">7天</span><span onclick="setReportRange(this,30)">30天</span>
+    <span onclick="setReportRange(this,90)">90天</span><span onclick="openDatePicker(this)">自定义</span>
   </div>
   <div class="scroll">
     <!-- 资产分析 -->
@@ -494,8 +499,8 @@ section{padding:0 16px;}
       </div>
     </section>
     <div class="range" style="padding:0 16px;margin-top:16px;">
-      <span onclick="pick(this)">7日</span><span class="on" onclick="pick(this)">近1个月</span>
-      <span onclick="pick(this)">近3个月</span><span onclick="pick(this)">近1年</span><span onclick="openDatePicker(this)">自定义</span>
+      <span onclick="setPnlRange(this,7)">7日</span><span class="on" onclick="setPnlRange(this,30)">近1个月</span>
+      <span onclick="setPnlRange(this,90)">近3个月</span><span onclick="setPnlRange(this,365)">近1年</span><span onclick="openDatePicker(this)">自定义</span>
     </div>
     <section>
       <div class="kv"><span class="k">总盈利</span><span class="v">1.49 USD</span></div>
@@ -642,17 +647,20 @@ function closeDate(){
 function setPreset(btn,days){
   document.querySelectorAll('.date-presets button').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  const end=new Date('2026-07-21T00:00:00');
+  const end=new Date(TODAY+'T00:00:00');
   const start=new Date(end); start.setDate(start.getDate()-(days-1));
-  const fmt=d=>d.toISOString().slice(0,10);
-  document.getElementById('date-start').value=fmt(start);
-  document.getElementById('date-end').value=fmt(end);
+  document.getElementById('date-start').value=iso(start);
+  document.getElementById('date-end').value=iso(end);
 }
 function confirmDate(){
   const s=document.getElementById('date-start').value, e=document.getElementById('date-end').value;
   if(!s||!e){ toast('请选择开始和结束日期'); return; }
   if(s>e){ toast('开始日期不能晚于结束日期'); return; }
-  if(customTarget) customTarget.textContent=s.slice(5)+' ~ '+e.slice(5);
+  if(customTarget){
+    customTarget.textContent=s.slice(5)+' ~ '+e.slice(5);
+    if(customTarget.closest('#screen-report')) drawReportCharts(s,e);
+    else if(customTarget.closest('#screen-pnl')) drawPnlCharts(s,e);
+  }
   closeDate();
   toast('已选择 '+s+' ~ '+e);
 }
@@ -674,18 +682,28 @@ function smoothPath(vals,w,h,pad){
   for(let i=1;i<n;i++){const xc=(X(i-1)+X(i))/2;d+=' C '+xc+' '+Y(vals[i-1])+', '+xc+' '+Y(vals[i])+', '+X(i)+' '+Y(vals[i]);}
   return {d,X,Y};
 }
-function areaLine(el,vals,color,fill){
+function areaLine(el,vals,color,fill,opts){
   const w=340,h=150,pad=14;
   const {d,X,Y}=smoothPath(vals,w,h,pad);
   const area=d+' L '+X(vals.length-1)+' '+(h-pad)+' L '+X(0)+' '+(h-pad)+' Z';
-  const gid='g'+Math.floor(X(0)*1000+vals[0]*13+color.length);
-  el.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" width="100%"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity="0.18"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
+  const gid='g'+Math.floor(X(0)*1000+vals[0]*13+color.length+vals.length*7);
+  const svg='<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="display:block"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity="0.18"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
     +(fill?'<path d="'+area+'" fill="url(#'+gid+')"/>':'')
     +'<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round"/>'
     +'<circle cx="'+X(vals.length-1)+'" cy="'+Y(vals[vals.length-1])+'" r="4" fill="'+color+'"/>'
     +'<circle cx="'+X(0)+'" cy="'+Y(vals[0])+'" r="3.5" fill="'+color+'"/></svg>';
+  let bubbles='',axis='';
+  if(opts&&opts.dates){
+    const last=vals.length-1;
+    // start label pinned bottom-left, latest(落点) value pinned top-right — matches app
+    bubbles='<div class="pt-callout" style="left:0;bottom:2px;"><div class="cd">'+opts.dates[0]+'</div><div class="cv">'+opts.fmt(vals[0])+'</div></div>'
+      +'<div class="pt-callout" style="right:0;top:0;"><div class="cd">'+opts.dates[last]+'</div><div class="cv">'+opts.fmt(vals[last])+'</div></div>';
+    const mid=Math.floor(last/2);
+    axis='<div class="axis"><span>'+opts.dates[0]+'</span><span>'+opts.dates[mid]+'</span><span>'+opts.dates[last]+'</span></div>';
+  }
+  el.innerHTML='<div style="position:relative;">'+svg+bubbles+'</div>'+axis;
 }
-function multiLine(el,series){
+function multiLine(el,series,opts){
   const w=340,h=170,pad=14;
   const all=[].concat(...series.map(s=>s.vals));
   const min=Math.min(...all),max=Math.max(...all),range=(max-min)||1;
@@ -701,7 +719,12 @@ function multiLine(el,series){
     s+='<path d="'+d+'" fill="none" stroke="'+se.color+'" stroke-width="2" stroke-linecap="round"/>';
   });
   s+='</svg>';
-  el.innerHTML=s;
+  let axis='';
+  if(opts&&opts.dates){
+    const dd=opts.dates,mid=Math.floor((dd.length-1)/2);
+    axis='<div class="axis"><span>'+dd[0]+'</span><span>'+dd[mid]+'</span><span>'+dd[dd.length-1]+'</span></div>';
+  }
+  el.innerHTML=s+axis;
 }
 function barChart(el,vals){
   const w=340,h=180,pad=16;
@@ -781,30 +804,55 @@ function renderPnlAssetLegend(){
   document.getElementById('pnl-asset-legend').innerHTML=SEG_PNL_ASSET.map(s=>'<div style="display:flex;align-items:center;gap:6px;font-size:14px;"><span style="width:14px;height:5px;border-radius:3px;background:'+s.color+';display:inline-block;"></span>'+s.name+' '+s.pct+'%</div>').join('');
 }
 
+/* ---------- date helpers ---------- */
+const TODAY='2026-07-21';
+function md(d){return ('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function spread(startStr,endStr,n){
+  const s=new Date(startStr+'T00:00:00'),e=new Date(endStr+'T00:00:00');
+  const span=(e-s)/86400000,arr=[];
+  for(let i=0;i<n;i++){arr.push(md(new Date(s.getTime()+span*86400000*i/(n-1))));}
+  return arr;
+}
+function iso(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function rangeStart(days){const e=new Date(TODAY+'T00:00:00');e.setDate(e.getDate()-(days-1));return iso(e);}
+
+/* ---------- per-page chart draws (date-aware) ---------- */
+function drawOverviewLine(s,e){
+  areaLine(document.getElementById('ov-linechart'),D_OV,'#00C566',true,{dates:spread(s,e,D_OV.length),fmt:v=>v.toFixed(2)+' USDT'});
+}
+function drawReportCharts(s,e){
+  areaLine(document.getElementById('rp-asset-line'),D_RP_ASSET,'#F6465D',true,{dates:spread(s,e,D_RP_ASSET.length),fmt:v=>'$'+v.toFixed(2)});
+  areaLine(document.getElementById('rp-trade-line'),D_RP_TRADE,'#F6465D',true,{dates:spread(s,e,D_RP_TRADE.length),fmt:v=>(v<0?'-$':'$')+Math.abs(v).toFixed(2)});
+}
+function drawPnlCharts(s,e){
+  areaLine(document.getElementById('pnl-cum-line'),D_PNL_CUM,'#00C566',false,{dates:spread(s,e,D_PNL_CUM.length),fmt:v=>(v>=0?'+':'')+v.toFixed(2)+' USD'});
+  multiLine(document.getElementById('pnl-rate-line'),RATE,{dates:spread(s,e,RATE[0].vals.length)});
+  areaLine(document.getElementById('pnl-value-line'),D_PNL_VALUE,'#00C566',true,{dates:spread(s,e,D_PNL_VALUE.length),fmt:v=>v.toFixed(2)+' USD'});
+}
+
 function initCharts(){
-  // overview
-  areaLine(document.getElementById('ov-linechart'),D_OV,'#00C566',true);
+  // overview (默认7天)
+  drawOverviewLine(rangeStart(7),TODAY);
   donut(document.getElementById('ov-donut'),SEG_OV,140);
   renderLegend(document.getElementById('ov-legend'),SEG_OV,true);
-  // report
-  areaLine(document.getElementById('rp-asset-line'),D_RP_ASSET,'#F6465D',true);
-  areaLine(document.getElementById('rp-trade-line'),D_RP_TRADE,'#F6465D',true);
+  // report (默认7天)
+  drawReportCharts(rangeStart(7),TODAY);
   calHeat(document.getElementById('rp-trade-cal'),calData([0,-2.1,-1.7,-0.3,1.0,-0.5,-0.31],2,15));
   donut(document.getElementById('rp-coin-donut'),SEG_COIN,150);
   renderCoinLegend(document.getElementById('rp-coin-legend'),SEG_COIN);
   renderRank(COIN_PROFIT);
-  // pnl
+  // pnl (默认近1个月)
   barChart(document.getElementById('pnl-daily-bar'),D_PNL_BAR);
   calHeat(document.getElementById('pnl-daily-cal'),calData(D_PNL_BAR,1,22));
-  areaLine(document.getElementById('pnl-cum-line'),D_PNL_CUM,'#00C566',false);
-  document.getElementById('pnl-cum-line').innerHTML+='<div class="axis"><span>06-22</span><span>07-01</span><span>07-11</span><span>07-21</span></div>';
-  multiLine(document.getElementById('pnl-rate-line'),RATE);
-  document.getElementById('pnl-rate-line').innerHTML+='<div class="axis"><span>06-22</span><span>07-01</span><span>07-11</span><span>07-21</span></div>';
+  drawPnlCharts(rangeStart(30),TODAY);
   donut(document.getElementById('pnl-asset-donut'),SEG_PNL_ASSET,150);
   renderPnlAssetLegend();
-  areaLine(document.getElementById('pnl-value-line'),D_PNL_VALUE,'#00C566',true);
-  document.getElementById('pnl-value-line').innerHTML+='<div class="axis"><span>06-22</span><span>07-01</span><span>07-11</span><span>07-21</span></div>';
 }
+
+/* ---------- range selectors ---------- */
+function setOvRange(el,days){pick(el);drawOverviewLine(rangeStart(days),TODAY);}
+function setReportRange(el,days){pick(el);drawReportCharts(rangeStart(days),TODAY);}
+function setPnlRange(el,days){pick(el);drawPnlCharts(rangeStart(days),TODAY);}
 
 /* ---------- view toggles ---------- */
 function toggleOvChart(){
