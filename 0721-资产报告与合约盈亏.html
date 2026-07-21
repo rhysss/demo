@@ -493,6 +493,7 @@ function rangeStart(days){const e=new Date(TODAY+'T00:00:00');e.setDate(e.getDat
 function spread(s,e,n){const a=new Date(s+'T00:00:00'),b=new Date(e+'T00:00:00'),sp=(b-a)/86400000,out=[];for(let i=0;i<n;i++)out.push(md(new Date(a.getTime()+sp*86400000*i/(n-1))));return out;}
 function fullDate(s,e,i,n){const a=new Date(s+'T00:00:00'),b=new Date(e+'T00:00:00');const d=new Date(a.getTime()+(b-a)*i/(n-1));return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();}
 function npts(days){return days<=1?24:days<=30?Math.max(7,days):Math.min(72,30+Math.round((days-30)/6));}
+function hm(i,n,spanH){const mins=Math.round(i/(n-1)*spanH*60),h=Math.floor(mins/60),m=mins%60;return ('0'+h).slice(-2)+':'+('0'+m).slice(-2);}
 
 /* ===== deterministic data gen ===== */
 function rng(seed){let s=seed%2147483647;if(s<=0)s+=2147483646;return()=>{s=s*16807%2147483647;return (s-1)/2147483646;};}
@@ -531,10 +532,13 @@ function areaLine(el,vals,color,fill,opts){
     +'<path d="'+solid+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round"/></svg>';
   const xf=X(active)/w*100,yf=Y(vals[active])/h*100,below=yf<26;
   const clampL=Math.max(16,Math.min(84,xf));
-  const tip='<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+fullDate(opts.start,opts.end,active,n)+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>';
+  const intraday=opts&&opts.intraday, spanH=(opts&&opts.spanH)||23;
+  const dates=intraday?null:spread(opts.start,opts.end,n);
+  const lbl=i=>intraday?hm(i,n,spanH):dates[i];
+  const tipTop=intraday?(fullDate(opts.start,opts.end,active,n)+' '+hm(active,n,spanH)):fullDate(opts.start,opts.end,active,n);
+  const tip='<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+tipTop+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>';
   const dot='<div class="scrub-dot" style="left:'+xf+'%;top:'+yf+'%;border-color:'+color+'"></div>';
-  const dates=spread(opts.start,opts.end,n);
-  const axis='<div class="axis">'+ticks.map(i=>'<span>'+dates[i]+'</span>').join('')+'</div>';
+  const axis='<div class="axis">'+ticks.map(i=>'<span>'+lbl(i)+'</span>').join('')+'</div>';
   el.innerHTML='<div class="chartbox">'+svg+tip+dot+'</div>'+axis;
   bindScrub(el);
 }
@@ -620,10 +624,11 @@ const fPct=v=>(v>=0?'+':'')+v.toFixed(2)+'%';
 const OV_CHANGE={'1天':-3.82,'7天':-12.5,'30天':46.2,'180天':188.4,'360天':523.1};
 function drawOverview(label){
   const days={'1天':1,'7天':7,'30天':30,'180天':180,'360天':360}[label];
-  const n=npts(days),end=2022.95,change=OV_CHANGE[label],seed=days*13+7;
+  const intraday=label==='1天';
+  const n=intraday?24:npts(days),end=2022.95,change=OV_CHANGE[label],seed=days*13+7;
   const data=genLine(n,end,change,Math.max(6,Math.abs(change)*0.5),seed);
   const color=change>=0?'#00C566':'#F6465D';
-  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT});
+  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT,intraday,spanH:23});
   const pct=change/(end-change)*100;
   const pill=document.getElementById('ov-pill');
   pill.className='pill-pct '+(change>=0?'up':'dn');
