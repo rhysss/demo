@@ -189,6 +189,19 @@ section{padding:0 16px;}
 .sheet .item.dis{color:var(--muted2);}
 .sheet .item .ck{color:var(--text);}
 
+/* date-range picker */
+.datesheet-title{font-size:17px;font-weight:700;text-align:center;margin:2px 0 14px;}
+.date-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);}
+.date-row .lb{font-size:15px;color:var(--text);}
+.date-row input{border:none;background:#F5F6F8;border-radius:8px;padding:8px 12px;font-size:15px;color:var(--text);font-family:inherit;}
+.date-presets{display:flex;gap:10px;margin:16px 0;}
+.date-presets button{flex:1;border:1px solid var(--border);background:#fff;border-radius:8px;padding:9px 0;font-size:13px;color:var(--muted);cursor:pointer;}
+.date-presets button.on{border-color:var(--yellow);color:var(--yellow-d);background:#E3F9EF;}
+.date-actions{display:flex;gap:12px;margin-top:6px;}
+.date-actions button{flex:1;height:46px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;}
+.date-actions .cancel{background:#EFF0F2;color:var(--text);}
+.date-actions .confirm{background:var(--yellow);color:#fff;}
+
 /* toast */
 .toast{position:absolute;left:50%;top:46%;transform:translateX(-50%);background:rgba(30,35,41,.9);color:#fff;font-size:13px;padding:10px 18px;border-radius:10px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;}
 .toast.on{opacity:1;}
@@ -394,7 +407,7 @@ section{padding:0 16px;}
   </div>
   <div class="range" style="padding:0 16px;">
     <span class="on" onclick="pick(this)">7天</span><span onclick="pick(this)">30天</span>
-    <span onclick="pick(this)">90天</span><span onclick="pick(this)">自定义</span>
+    <span onclick="pick(this)">90天</span><span onclick="openDatePicker(this)">自定义</span>
   </div>
   <div class="scroll">
     <!-- 资产分析 -->
@@ -482,7 +495,7 @@ section{padding:0 16px;}
     </section>
     <div class="range" style="padding:0 16px;margin-top:16px;">
       <span onclick="pick(this)">7日</span><span class="on" onclick="pick(this)">近1个月</span>
-      <span onclick="pick(this)">近3个月</span><span onclick="pick(this)">近1年</span><span onclick="pick(this)">自定义</span>
+      <span onclick="pick(this)">近3个月</span><span onclick="pick(this)">近1年</span><span onclick="openDatePicker(this)">自定义</span>
     </div>
     <section>
       <div class="kv"><span class="k">总盈利</span><span class="v">1.49 USD</span></div>
@@ -560,6 +573,26 @@ section{padding:0 16px;}
   <div class="item" data-page="pnl" onclick="menuPick('pnl')">合约盈亏 <span class="ck" id="ck-pnl"></span></div>
 </div>
 
+<!-- date-range picker -->
+<div class="mask" id="dmask" onclick="closeDate()"></div>
+<div class="sheet" id="datesheet">
+  <div class="grip"></div>
+  <div style="padding:0 22px;">
+    <div class="datesheet-title">自定义时间</div>
+    <div class="date-row"><span class="lb">开始日期</span><input type="date" id="date-start" value="2026-07-15"></div>
+    <div class="date-row"><span class="lb">结束日期</span><input type="date" id="date-end" value="2026-07-21"></div>
+    <div class="date-presets">
+      <button onclick="setPreset(this,7)">近 7 天</button>
+      <button onclick="setPreset(this,30)">近 30 天</button>
+      <button onclick="setPreset(this,90)">近 90 天</button>
+    </div>
+    <div class="date-actions">
+      <button class="cancel" onclick="closeDate()">取消</button>
+      <button class="confirm" onclick="confirmDate()">确定</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 </div>
 
@@ -593,6 +626,36 @@ function menuPick(page){
 
 /* ---------- generic tab helpers ---------- */
 function pick(el){ el.parentNode.querySelectorAll('span').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
+
+/* ---------- custom date-range picker ---------- */
+let customTarget=null;
+function openDatePicker(el){
+  pick(el); customTarget=el;
+  document.getElementById('dmask').classList.add('on');
+  document.getElementById('datesheet').classList.add('on');
+}
+function closeDate(){
+  document.getElementById('dmask').classList.remove('on');
+  document.getElementById('datesheet').classList.remove('on');
+  document.querySelectorAll('.date-presets button').forEach(b=>b.classList.remove('on'));
+}
+function setPreset(btn,days){
+  document.querySelectorAll('.date-presets button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const end=new Date('2026-07-21T00:00:00');
+  const start=new Date(end); start.setDate(start.getDate()-(days-1));
+  const fmt=d=>d.toISOString().slice(0,10);
+  document.getElementById('date-start').value=fmt(start);
+  document.getElementById('date-end').value=fmt(end);
+}
+function confirmDate(){
+  const s=document.getElementById('date-start').value, e=document.getElementById('date-end').value;
+  if(!s||!e){ toast('请选择开始和结束日期'); return; }
+  if(s>e){ toast('开始日期不能晚于结束日期'); return; }
+  if(customTarget) customTarget.textContent=s.slice(5)+' ~ '+e.slice(5);
+  closeDate();
+  toast('已选择 '+s+' ~ '+e);
+}
 
 /* ---------- toast ---------- */
 let toastTimer;
