@@ -6,10 +6,10 @@
 <title>资产报告 & 合约盈亏 原型</title>
 <style>
 :root{
-  --yellow:#00C566; --yellow-d:#00A857;
+  --green:#00C566; --green-d:#00A857;
   --text:#1E2329; --muted:#707A8A; --muted2:#848E9C;
-  --green:#0ECB81; --red:#F6465D;
-  --border:#EAECEF; --bg:#F5F5F5; --card:#FAFAFA;
+  --up:#00C566; --red:#F6465D;
+  --border:#EAECEF; --bg:#F5F6F8;
   --blue:#2B6CF0; --blue-l:#6AA0F0; --gold:#F5C542; --teal:#16B47A; --gray:#B7BDC6;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -21,17 +21,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 .scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
 .scroll::-webkit-scrollbar{display:none;}
 
-/* status bar */
 .statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-weight:600;font-size:15px;flex-shrink:0;}
 .statusbar .dots{display:flex;gap:5px;align-items:center;}
-.statusbar svg{display:block;}
 
-/* top tabs (overview/contract) */
-.toptabs{display:flex;gap:18px;padding:6px 16px 10px;flex-shrink:0;}
-.toptabs .tt{font-size:19px;font-weight:700;color:var(--muted2);position:relative;cursor:pointer;}
-.toptabs .tt.on{color:var(--text);}
+/* top tabs */
+.toptabs{display:flex;gap:16px;padding:6px 16px 10px;flex-shrink:0;overflow-x:auto;}
+.toptabs::-webkit-scrollbar{display:none;}
+.toptabs .tt{font-size:17px;font-weight:700;color:var(--muted2);white-space:nowrap;cursor:pointer;}
+.toptabs .tt.on{color:var(--text);font-size:19px;}
 
-/* page header (report/pnl) */
+/* page header */
 .pghead{display:flex;align-items:center;justify-content:space-between;padding:6px 16px 12px;flex-shrink:0;}
 .pghead .back{width:26px;height:26px;cursor:pointer;display:flex;align-items:center;}
 .pghead .title{display:flex;align-items:center;gap:6px;font-size:18px;font-weight:700;cursor:pointer;}
@@ -40,102 +39,77 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 
 section{padding:0 16px;}
 .eye{vertical-align:middle;margin-left:4px;}
-.hgap{height:1px;background:var(--border);margin:16px 0;}
-.card{background:#fff;border-radius:14px;box-shadow:0 1px 8px rgba(20,30,50,.05);padding:18px 16px;margin:14px 16px;}
-.card-t{font-size:18px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:14px;}
-.info-i{width:15px;height:15px;color:var(--muted2);}
+.hgap{height:8px;background:var(--bg);margin:8px 0;}
 
 /* overview head */
 .ov-label{color:var(--muted);font-size:14px;}
 .ov-total{font-size:34px;font-weight:700;letter-spacing:-.5px;margin:2px 0;}
 .ov-total .unit{font-size:16px;font-weight:600;color:var(--muted);}
-.ov-usd{color:var(--muted);font-size:13px;}
+.pill-pct{float:right;margin-top:14px;font-size:14px;font-weight:600;padding:5px 12px;border-radius:20px;}
+.pill-pct.dn{color:var(--red);background:#FEECEE;}
+.pill-pct.up{color:var(--green);background:#E3F9EF;}
 .pnl-row{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:14px;cursor:pointer;}
 .pnl-row .lab{color:var(--muted);}
-.pnl-pos{color:var(--green);font-weight:600;}
-.pnl-neg{color:var(--red);font-weight:600;}
+.pos{color:var(--up);font-weight:600;} .neg{color:var(--red);font-weight:600;}
 .arrow-r{color:var(--muted2);}
-.tap-hint{display:inline-block;font-size:10px;color:var(--yellow-d);border:1px solid var(--yellow);border-radius:6px;padding:1px 5px;margin-left:2px;background:#E3F9EF;}
+.tap-hint{display:inline-block;font-size:10px;color:var(--green-d);border:1px solid var(--green);border-radius:6px;padding:1px 5px;margin-left:2px;background:#E3F9EF;}
 
 /* chart toggle */
-.chart-tog{display:inline-flex;background:#F2F3F5;border-radius:8px;padding:3px;margin:14px 0 4px;}
+.chart-tog{display:inline-flex;background:#F2F3F5;border-radius:8px;padding:3px;}
 .chart-tog button{border:none;background:transparent;width:44px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted2);}
 .chart-tog button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
 .view{display:none;} .view.on{display:block;}
+.collapse-btn{cursor:pointer;color:var(--muted2);display:flex;align-items:center;gap:4px;font-size:12px;}
 
 /* time selector */
-.timesel{display:flex;justify-content:space-between;margin-top:10px;}
+.timesel{display:flex;justify-content:space-between;margin-top:12px;}
 .timesel span{font-size:13px;color:var(--muted2);cursor:pointer;padding:4px 8px;border-radius:6px;}
 .timesel span.on{color:var(--text);font-weight:600;background:#F2F3F5;}
 
 /* pie legend */
-.legend{margin-top:8px;}
 .legend .lg{display:flex;align-items:center;justify-content:space-between;padding:9px 8px;border-radius:8px;font-size:14px;}
 .legend .lg.hl{background:#F5F6F8;}
 .legend .lg .l{display:flex;align-items:center;gap:9px;}
 .legend .lg .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.legend .lg .pct{font-weight:600;}
 .pie-note{font-size:12px;color:var(--muted2);margin-top:10px;}
 
-/* action buttons */
-.acts{display:flex;gap:10px;padding:16px;}
-.acts button{flex:1;height:46px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;background:#EFF0F2;color:var(--text);}
-.acts button.primary{background:var(--yellow);color:#fff;}
+/* circular actions */
+.circ-acts{display:flex;justify-content:space-around;padding:20px 8px;}
+.circ-acts .ca{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;}
+.circ{width:56px;height:56px;border-radius:50%;background:#F0F1F3;display:flex;align-items:center;justify-content:center;}
+.circ.green{background:var(--green);}
+.circ-acts .cl{font-size:13px;color:var(--text);}
 
-/* sub tabs */
-.subtabs{display:flex;gap:22px;padding:4px 16px 0;position:relative;}
+/* account rows */
+.subtabs{display:flex;gap:22px;padding:6px 16px 0;position:relative;}
 .subtabs .st{font-size:16px;font-weight:700;color:var(--muted2);cursor:pointer;padding-bottom:8px;position:relative;}
 .subtabs .st.on{color:var(--text);}
-.subtabs .st.on::after{content:"";position:absolute;left:0;bottom:0;width:22px;height:3px;background:var(--yellow);border-radius:2px;}
-.subtabs .st .ndot{position:absolute;top:-1px;right:-8px;width:6px;height:6px;background:var(--yellow-d);border-radius:50%;}
-
-/* account list */
-.acct{display:flex;align-items:center;justify-content:space-between;padding:16px 16px;}
+.subtabs .st.on::after{content:"";position:absolute;left:0;bottom:0;width:22px;height:3px;background:var(--green);border-radius:2px;}
+.acct{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;cursor:pointer;}
+.acct .l{display:flex;align-items:center;gap:12px;}
+.acct .ic{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
 .acct .name{font-size:16px;font-weight:600;}
-.acct .val{text-align:right;}
-.acct .val .u{font-size:16px;font-weight:600;}
-.acct .val .d{font-size:12px;color:var(--muted2);margin-top:2px;}
+.acct .r{display:flex;align-items:center;gap:6px;color:var(--text);}
+.acct .val{font-size:16px;font-weight:600;}
+
+/* grid cards (contract) */
+.grid-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 16px 16px;}
+.gcard{background:#F7F8FA;border-radius:12px;padding:14px 16px;}
+.gcard .k{font-size:12px;color:var(--muted);}
+.gcard .v{font-size:20px;font-weight:700;margin-top:8px;}
 
 /* bottom nav */
 .botnav{display:flex;flex-shrink:0;border-top:1px solid var(--border);padding:8px 0 20px;background:#fff;}
 .botnav .nav{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted2);cursor:pointer;}
-.botnav .nav.on{color:var(--text);}
+.botnav .nav.on{color:var(--green);}
 
-/* contract */
-.mg-head{padding-top:6px;}
-.two-col{display:flex;gap:14px;margin-top:14px;}
-.two-col .c{flex:1;}
-.two-col .lab{font-size:12px;color:var(--muted);border-bottom:1px dashed var(--border);padding-bottom:2px;display:inline-block;}
-.two-col .v{font-size:19px;font-weight:700;margin-top:6px;}
-.two-col .v small{font-size:11px;color:var(--muted2);font-weight:400;display:block;margin-top:2px;}
-.perk{border:1px solid var(--border);border-radius:12px;margin:16px;}
-.perk .row{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--border);font-size:14px;}
-.perk .row:last-child{border-bottom:none;}
-.perk .row .l{display:flex;align-items:center;gap:9px;font-weight:500;}
-.perk .row .icn{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
-.perk .row .r{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:13px;}
-.perk .row .r b{color:var(--text);}
-.tsw{position:relative;width:42px;height:24px;border-radius:12px;background:var(--yellow);cursor:pointer;transition:.2s;}
-.tsw::after{content:"";position:absolute;top:2px;left:20px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;}
-.tsw.off{background:#D5D9DE;} .tsw.off::after{left:2px;}
-/* position card */
-.poscard{margin:8px 16px 16px;}
-.pos-top{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
-.side-l{width:22px;height:22px;border-radius:5px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
-.pos-sym{font-size:17px;font-weight:700;}
-.pos-tag{font-size:11px;color:var(--muted);background:#F2F3F5;border-radius:4px;padding:2px 6px;}
-.pos-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px 8px;}
-.pos-grid .k{font-size:11px;color:var(--muted);}
-.pos-grid .v{font-size:15px;font-weight:600;margin-top:3px;}
-.pos-grid .v.g{color:var(--green);} .pos-grid .v.r{color:var(--red);}
-.pos-hero{display:flex;justify-content:space-between;margin-bottom:16px;}
-.pos-hero .k{font-size:12px;color:var(--muted);}
-.pos-hero .v{font-size:22px;font-weight:700;margin-top:2px;}
-
-/* report/pnl big number */
+/* report/pnl */
+.card{background:#fff;border-radius:14px;box-shadow:0 1px 8px rgba(20,30,50,.05);padding:18px 16px;margin:14px 16px;}
+.card-t{font-size:18px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:14px;}
+.info-i{width:15px;height:15px;color:var(--muted2);}
 .big-pnl{font-size:15px;color:var(--muted);}
-.big-num{font-size:36px;font-weight:700;margin:6px 0;}
-.g{color:var(--green);} .r{color:var(--red);}
+.big-num{font-size:34px;font-weight:700;margin:6px 0;}
+.g{color:var(--up);} .r{color:var(--red);}
 .trip{display:flex;gap:8px;margin-top:12px;}
 .trip .c{flex:1;}
 .trip .kk{font-size:13px;color:var(--muted);}
@@ -146,15 +120,12 @@ section{padding:0 16px;}
 .range span.on{background:#F2F3F5;color:var(--text);font-weight:600;}
 .kv{display:flex;justify-content:space-between;padding:11px 0;font-size:14px;}
 .kv .k{color:var(--muted);} .kv .v{font-weight:600;}
-.hint-box{display:flex;align-items:center;gap:10px;background:#FFFBEB;border-radius:10px;padding:12px 14px;margin-top:12px;font-size:13px;color:#8a6d1f;}
+.hint-box{display:flex;align-items:center;gap:10px;background:#FFFBEB;border-radius:10px;padding:12px 14px;margin-top:14px;font-size:13px;color:#8a6d1f;}
 .chart-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
-.chart-hd .lft .lab{font-size:14px;color:var(--muted);}
-.chart-hd .lft .lab b{color:var(--text);}
-.chart-hd .lft .n{font-size:26px;font-weight:700;margin-top:4px;}
 .viewtog{display:inline-flex;background:#F2F3F5;border-radius:8px;padding:3px;}
 .viewtog button{border:none;background:transparent;width:40px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted2);}
 .viewtog button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
-.axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted2);margin-top:6px;}
+.axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted2);margin-top:8px;}
 .date-lab{font-size:13px;color:var(--muted);margin-top:8px;}
 .pill-tabs{display:inline-flex;background:#F2F3F5;border-radius:10px;padding:4px;margin:14px auto 8px;}
 .pill-tabs button{border:none;background:transparent;padding:8px 34px;border-radius:8px;font-size:14px;font-weight:600;color:var(--muted2);cursor:pointer;}
@@ -170,44 +141,44 @@ section{padding:0 16px;}
 .legend-lines .ll .pct{font-size:16px;font-weight:700;display:block;}
 .footnote{font-size:12px;color:var(--muted2);line-height:1.6;padding:20px 16px 30px;}
 
+/* scrub tooltip */
+.chartbox{position:relative;touch-action:none;}
+.scrub-tip{position:absolute;background:#1E2329;color:#fff;border-radius:10px;padding:6px 11px;font-size:11px;line-height:1.4;text-align:center;white-space:nowrap;z-index:3;pointer-events:none;}
+.scrub-tip .tv{font-weight:700;font-size:12px;}
+.scrub-tip .scrub-arrow{position:absolute;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;}
+.scrub-tip:not(.below) .scrub-arrow{bottom:-5px;border-top:6px solid #1E2329;}
+.scrub-tip.below .scrub-arrow{top:-5px;border-bottom:6px solid #1E2329;}
+.scrub-dot{position:absolute;width:11px;height:11px;border-radius:50%;background:#fff;border:3px solid #000;transform:translate(-50%,-50%);z-index:2;pointer-events:none;}
+
 /* calendar heatmap */
 .cal{margin-top:12px;}
 .cal .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center;font-size:11px;color:var(--muted2);margin-bottom:6px;}
 .cal .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
-.cal .cell{aspect-ratio:1;border-radius:6px;background:#F2F3F5;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;}
-.cal .cell .d{color:var(--muted2);font-size:9px;}
+.cal .cell{aspect-ratio:1;border-radius:6px;background:#F2F3F5;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.cal .cell .d{font-size:9px;}
 .cal .cell .p{font-size:8px;font-weight:600;margin-top:1px;}
 .cal .cell.empty{background:transparent;}
 
-/* bottom-sheet menu */
+/* bottom sheets */
 .mask{position:absolute;inset:0;background:rgba(0,0,0,.4);display:none;z-index:40;}
 .mask.on{display:block;}
 .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform .25s;z-index:41;padding:8px 0 30px;}
 .sheet.on{transform:translateY(0);}
 .sheet .grip{width:40px;height:4px;background:#E0E2E7;border-radius:2px;margin:10px auto 8px;}
 .sheet .item{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;font-size:17px;cursor:pointer;}
-.sheet .item.dis{color:var(--muted2);}
 .sheet .item .ck{color:var(--text);}
-
-/* chart point callouts */
-.pt-callout{position:absolute;background:#fff;border:1px solid var(--border);box-shadow:0 2px 8px rgba(20,30,50,.1);border-radius:8px;padding:4px 8px;font-size:10px;line-height:1.35;white-space:nowrap;z-index:2;pointer-events:none;}
-.pt-callout .cd{color:var(--muted2);font-size:9px;}
-.pt-callout .cv{font-weight:700;font-size:11px;color:var(--text);}
-
-/* date-range picker */
 .datesheet-title{font-size:17px;font-weight:700;text-align:center;margin:2px 0 14px;}
 .date-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);}
-.date-row .lb{font-size:15px;color:var(--text);}
+.date-row .lb{font-size:15px;}
 .date-row input{border:none;background:#F5F6F8;border-radius:8px;padding:8px 12px;font-size:15px;color:var(--text);font-family:inherit;}
 .date-presets{display:flex;gap:10px;margin:16px 0;}
 .date-presets button{flex:1;border:1px solid var(--border);background:#fff;border-radius:8px;padding:9px 0;font-size:13px;color:var(--muted);cursor:pointer;}
-.date-presets button.on{border-color:var(--yellow);color:var(--yellow-d);background:#E3F9EF;}
+.date-presets button.on{border-color:var(--green);color:var(--green-d);background:#E3F9EF;}
 .date-actions{display:flex;gap:12px;margin-top:6px;}
 .date-actions button{flex:1;height:46px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;}
 .date-actions .cancel{background:#EFF0F2;color:var(--text);}
-.date-actions .confirm{background:var(--yellow);color:#fff;}
+.date-actions .confirm{background:var(--green);color:#fff;}
 
-/* toast */
 .toast{position:absolute;left:50%;top:46%;transform:translateX(-50%);background:rgba(30,35,41,.9);color:#fff;font-size:13px;padding:10px 18px;border-radius:10px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;}
 .toast.on{opacity:1;}
 </style>
@@ -216,217 +187,151 @@ section{padding:0 16px;}
 <div class="phone">
 <div class="screens">
 
-<!-- ================= SCREEN: OVERVIEW ================= -->
+<!-- ============ OVERVIEW (green app) ============ -->
 <div class="screen active" id="screen-overview">
-  <div class="statusbar">
-    <span>17:04</span>
-    <span class="dots">
-      <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1" fill="#ccc"/><rect x="15" y="1" width="3" height="11" rx="1" fill="#ccc"/></svg>
-      <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2C5 2 2.5 4 1 6l7.5 6L16 6c-1.5-2-4-4-7.5-4z" fill="none" stroke="#1E2329" stroke-width="1.3"/></svg>
-      <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1E2329" stroke-width="1"/><rect x="3" y="3" width="13" height="7" rx="1.5"/><rect x="23" y="4.5" width="2" height="4" rx="1"/></svg>
-    </span>
-  </div>
+  <div class="statusbar"><span>17:49</span><span class="dots">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/></svg>
+    <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2C5 2 2.5 4 1 6l7.5 6L16 6c-1.5-2-4-4-7.5-4z" fill="none" stroke="#1E2329" stroke-width="1.3"/></svg>
+    <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1E2329" stroke-width="1"/><rect x="3" y="3" width="17" height="7" rx="1.5"/><rect x="23" y="4.5" width="2" height="4" rx="1"/></svg>
+  </span></div>
   <div class="toptabs">
-    <span class="tt on">总览</span><span class="tt" data-toast="资金账户（原型未展开）">资金</span>
+    <span class="tt on">总览</span><span class="tt" data-toast="资金（原型未展开）">资金</span>
+    <span class="tt" data-toast="现货（原型未展开）">现货</span>
     <span class="tt" onclick="go('screen-contract')">合约</span>
-    <span class="tt" data-toast="现货账户（原型未展开）">现货</span><span class="tt" data-toast="理财账户（原型未展开）">理财</span>
+    <span class="tt" data-toast="理财（原型未展开）">理财</span><span class="tt" data-toast="Launchpad（原型未展开）">Launchpad</span>
   </div>
   <div class="scroll">
     <section>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div>
-          <span class="ov-label">预估总资产 <svg class="eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
-          <div class="ov-total">602.17 <span class="unit">USDT ▾</span></div>
-          <div class="ov-usd">≈ $602.17</div>
-        </div>
-        <div style="display:flex;gap:16px;margin-top:4px;align-items:center;">
-          <span id="ov-toggle-icon" onclick="toggleOvChart()" style="cursor:pointer;display:flex;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00C566" stroke-width="1.8"><path d="M3 17l6-6 4 4 8-8"/></svg>
-          </span>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M12 8v8"/></svg>
-        </div>
-      </div>
+      <span class="pill-pct dn" id="ov-pill">▼ -0.54%</span>
+      <span class="ov-label">总资产估值 <svg class="eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <div class="ov-total">2,022.95 <span class="unit">USDT</span></div>
       <div class="pnl-row" onclick="go('screen-report')">
-        <span class="lab">今日盈亏</span>
-        <span class="pnl-pos">+0.98 USDT(+0.17%)</span>
+        <span class="lab">昨日盈亏</span><span class="neg">-$3.82</span>
         <span class="tap-hint">资产报告</span>
         <svg class="arrow-r" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
       </div>
 
-      <!-- NEW: collapsible chart area -->
       <div id="ov-chart-wrap">
-      <!-- NEW: chart toggle -->
-      <div class="chart-tog">
-        <button class="on" id="ov-tab-line" onclick="ovChart('line')" title="资产走势">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l5-5 4 3 8-9"/></svg>
-        </button>
-        <button id="ov-tab-pie" onclick="ovChart('pie')" title="资产分布">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/></svg>
-        </button>
-      </div>
-
-      <div class="view on" id="ov-view-line">
-        <div id="ov-linechart"></div>
-        <div class="timesel">
-          <span onclick="setOvRange(this,1)">1天</span><span class="on" onclick="setOvRange(this,7)">7天</span>
-          <span onclick="setOvRange(this,30)">30天</span><span onclick="setOvRange(this,180)">180天</span><span onclick="setOvRange(this,360)">360天</span>
+        <div class="chart-hd" style="margin-top:16px;">
+          <div class="chart-tog">
+            <button class="on" id="ov-tab-line" onclick="ovChart('line')" title="资产走势"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l5-5 4 3 8-9"/></svg></button>
+            <button id="ov-tab-pie" onclick="ovChart('pie')" title="资产分布"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/></svg></button>
+          </div>
+          <span class="collapse-btn" onclick="collapseOv()">收起 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg></span>
+        </div>
+        <div class="view on" id="ov-view-line">
+          <div id="ov-linechart"></div>
+          <div class="timesel" id="ov-timesel">
+            <span onclick="setOvRange(this,'1天')">1天</span><span class="on" onclick="setOvRange(this,'7天')">7天</span>
+            <span onclick="setOvRange(this,'30天')">30天</span><span onclick="setOvRange(this,'180天')">180天</span><span onclick="setOvRange(this,'360天')">360天</span>
+          </div>
+        </div>
+        <div class="view" id="ov-view-pie">
+          <div style="display:flex;align-items:center;gap:14px;margin-top:8px;">
+            <div id="ov-donut" style="flex-shrink:0;"></div>
+            <div class="legend" style="flex:1;" id="ov-legend"></div>
+          </div>
+          <div class="pie-note">* 资产饼状图不含负债。</div>
         </div>
       </div>
-      <div class="view" id="ov-view-pie">
-        <div style="display:flex;align-items:center;gap:14px;margin-top:8px;">
-          <div id="ov-donut" style="flex-shrink:0;"></div>
-          <div class="legend" style="flex:1;" id="ov-legend"></div>
-        </div>
-        <div class="pie-note">* 资产饼状图不含负债。</div>
+      <div id="ov-expand" style="display:none;text-align:center;padding:10px;">
+        <span class="collapse-btn" style="justify-content:center;" onclick="expandOv()">展开图表 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
       </div>
-      </div><!-- /ov-chart-wrap -->
     </section>
 
-    <div class="acts">
-      <button class="primary" data-toast="添加资金">添加资金</button>
-      <button data-toast="转出">转出</button>
-      <button data-toast="划转">划转</button>
+    <div class="circ-acts">
+      <div class="ca" data-toast="充值"><div class="circ green"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 14h2"/><path d="M12 2v4M10 4l2 2 2-2" stroke-width="1.7"/></svg></div><span class="cl">充值</span></div>
+      <div class="ca" data-toast="提现"><div class="circ"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.7"><path d="M12 20V5M6 11l6-6 6 6"/></svg></div><span class="cl">提现</span></div>
+      <div class="ca" data-toast="划转"><div class="circ"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.7"><path d="M7 10h12l-3-3M17 14H5l3 3"/></svg></div><span class="cl">划转</span></div>
+      <div class="ca" data-toast="历史记录"><div class="circ"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h6M8 12h6M8 16h4"/><circle cx="17.5" cy="16.5" r="3" fill="#fff"/><path d="M17.5 15v1.5l1 .8"/></svg></div><span class="cl">历史记录</span></div>
     </div>
 
-    <div class="subtabs" style="border-bottom:1px solid var(--border);">
-      <span class="st" data-toast="全部资产（原型未展开）">全部资产</span>
-      <span class="st on">账户</span>
-    </div>
+    <div class="hgap"></div>
+    <div class="subtabs"><span class="st on">账户</span><span class="st" data-toast="资产（原型未展开）">资产</span></div>
     <div>
-      <div class="acct"><span class="name">资金</span><div class="val"><div class="u">440.93 USDT</div><div class="d">$440.93</div></div></div>
-      <div class="acct" onclick="go('screen-contract')"><span class="name">合约</span><div class="val"><div class="u">116.62 USDT</div><div class="d">$116.62</div></div></div>
-      <div class="acct"><span class="name">现货</span><div class="val"><div class="u">42.24 USDT</div><div class="d">$42.24</div></div></div>
-      <div class="acct"><span class="name">理财</span><div class="val"><div class="u">2.37 USDT</div><div class="d">$2.37</div></div></div>
-      <div class="acct"><span class="name">交易机器人</span><div class="val"><div class="u">0.00 USDT</div><div class="d">$0.00</div></div></div>
+      <div class="acct"><div class="l"><span class="ic" style="background:#E8F0FE;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2B6CF0" stroke-width="1.8"><path d="M12 3l8 5-8 5-8-5 8-5zM4 13l8 5 8-5"/></svg></span><span class="name">资金账户</span></div><div class="r"><span class="val">34.68 USDT</span><svg class="arrow-r" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C0C4CC" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div></div>
+      <div class="acct"><div class="l"><span class="ic" style="background:#FEF3E2;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#F7931A"><circle cx="12" cy="12" r="10"/></svg></span><span class="name">现货</span></div><div class="r"><span class="val">200.76 USDT</span><svg class="arrow-r" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C0C4CC" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div></div>
+      <div class="acct" onclick="go('screen-contract')"><div class="l"><span class="ic" style="background:#E3F9EF;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00C566" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h5M8 12h8M8 16h6"/></svg></span><span class="name">合约</span></div><div class="r"><span class="val">510.45 USDT</span><svg class="arrow-r" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C0C4CC" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div></div>
+      <div class="acct"><div class="l"><span class="ic" style="background:#EDE9FE;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C6CFF" stroke-width="1.8"><path d="M4 17l5-5 4 3 7-8"/></svg></span><span class="name">理财账户</span></div><div class="r"><span class="val">1,277.06 USDT</span><svg class="arrow-r" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C0C4CC" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div></div>
+      <div class="acct"><div class="l"><span class="ic" style="background:#E8F0FE;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2B6CF0" stroke-width="1.8"><path d="M12 2l3 7h-6zM7 12l-3 8 8-4 8 4-3-8"/></svg></span><span class="name">Launchpad</span></div><div class="r"><span class="val">0.00 USDT</span><svg class="arrow-r" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C0C4CC" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div></div>
     </div>
   </div>
   <div class="botnav">
-    <div class="nav" data-toast="首页">首页</div>
-    <div class="nav" data-toast="行情">行情</div>
-    <div class="nav" data-toast="交易">交易</div>
-    <div class="nav" onclick="go('screen-contract')">合约</div>
+    <div class="nav" data-toast="首页">首页</div><div class="nav" data-toast="市场">市场</div>
+    <div class="nav" data-toast="交易">交易</div><div class="nav" data-toast="理财">理财</div>
     <div class="nav on">资产</div>
   </div>
 </div>
 
-<!-- ================= SCREEN: CONTRACT ================= -->
+<!-- ============ CONTRACT (green app) ============ -->
 <div class="screen" id="screen-contract">
-  <div class="statusbar"><span>17:05</span>
-    <span class="dots">
-      <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1" fill="#ccc"/><rect x="15" y="1" width="3" height="11" rx="1" fill="#ccc"/></svg>
-      <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2C5 2 2.5 4 1 6l7.5 6L16 6c-1.5-2-4-4-7.5-4z" fill="none" stroke="#1E2329" stroke-width="1.3"/></svg>
-      <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1E2329" stroke-width="1"/><rect x="3" y="3" width="13" height="7" rx="1.5"/><rect x="23" y="4.5" width="2" height="4" rx="1"/></svg>
-    </span>
-  </div>
+  <div class="statusbar"><span>17:49</span><span class="dots">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/></svg>
+    <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2C5 2 2.5 4 1 6l7.5 6L16 6c-1.5-2-4-4-7.5-4z" fill="none" stroke="#1E2329" stroke-width="1.3"/></svg>
+    <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1E2329" stroke-width="1"/><rect x="3" y="3" width="17" height="7" rx="1.5"/><rect x="23" y="4.5" width="2" height="4" rx="1"/></svg>
+  </span></div>
   <div class="toptabs">
-    <span class="tt" onclick="go('screen-overview')">总览</span><span class="tt" data-toast="资金账户（原型未展开）">资金</span>
+    <span class="tt" onclick="go('screen-overview')">总览</span><span class="tt" data-toast="资金（原型未展开）">资金</span>
+    <span class="tt" data-toast="现货（原型未展开）">现货</span>
     <span class="tt on">合约</span>
-    <span class="tt" data-toast="现货账户（原型未展开）">现货</span><span class="tt" data-toast="理财账户（原型未展开）">理财</span>
+    <span class="tt" data-toast="理财（原型未展开）">理财</span><span class="tt" data-toast="Launchpad（原型未展开）">Launchpad</span>
   </div>
   <div class="scroll">
-    <div class="subtabs">
-      <span class="st on" style="font-size:14px;">U本位合约</span>
-      <span class="st" style="font-size:14px;" data-toast="币本位合约（原型未展开）">币本位合约</span>
-    </div>
-    <section class="mg-head">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px;">
-        <div>
-          <span class="ov-label">保证金余额 <svg class="eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
-          <div class="ov-total">116.7 <span class="unit">USDT ▾</span></div>
-          <div class="ov-usd">≈ $116.63</div>
-        </div>
-        <div style="display:flex;gap:14px;margin-top:4px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.5"><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M16 4h4v4M20 4l-8 8"/></svg>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.5"><path d="M7 10l5-5 5 5M7 14l5 5 5-5"/></svg>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5"/></svg>
-        </div>
-      </div>
+    <section style="padding-top:4px;">
+      <span class="ov-label">总资产估值 <svg class="eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <div class="ov-total">510.45 <span class="unit">USDT</span></div>
       <div class="pnl-row" onclick="go('screen-pnl')">
-        <span class="lab">今日已实现盈亏</span>
-        <span class="pnl-neg">-$0.01 (-0.01%)</span>
+        <span class="lab">今日已实现盈亏</span><span class="neg">-$0.83 (-0.16%)</span>
         <span class="tap-hint">合约盈亏</span>
         <svg class="arrow-r" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
       </div>
-      <div class="two-col">
-        <div class="c"><span class="lab">钱包余额 (USDT)</span><div class="v">92.7<small>≈ $92.64</small></div></div>
-        <div class="c"><span class="lab">未实现盈亏 (USDT)</span><div class="v">24<small>≈ $23.98</small></div></div>
-      </div>
     </section>
-    <div class="acts">
-      <button class="primary" data-toast="交易">交易</button>
-      <button data-toast="兑换">兑换</button>
-      <button data-toast="划转">划转</button>
+    <div class="circ-acts" style="justify-content:space-around;padding-left:24px;padding-right:24px;">
+      <div class="ca" data-toast="去交易"><div class="circ green"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7"><path d="M4 9a8 8 0 0113-3l2 2M20 15a8 8 0 01-13 3l-2-2"/><path d="M19 4v4h-4M5 20v-4h4"/></svg></div><span class="cl">去交易</span></div>
+      <div class="ca" data-toast="划转"><div class="circ"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.7"><path d="M7 10h12l-3-3M17 14H5l3 3"/></svg></div><span class="cl">划转</span></div>
+      <div class="ca" data-toast="历史记录"><div class="circ"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h6M8 12h6M8 16h4"/><circle cx="17.5" cy="16.5" r="3" fill="#fff"/><path d="M17.5 15v1.5l1 .8"/></svg></div><span class="cl">历史记录</span></div>
     </div>
-    <div class="perk">
-      <div class="row"><div class="l"><span class="icn" style="background:#F0B90B;">B</span>BNB 手续费九折</div><div class="tsw" onclick="this.classList.toggle('off');toast(this.classList.contains('off')?'已关闭':'已开启')"></div></div>
-      <div class="row" data-toast="BFUSD 收益详情"><div class="l"><span class="icn" style="background:#2B6CF0;">F</span>BFUSD 收益</div><div class="r"><b>年化 2.77%</b> ›</div></div>
-      <div class="row" data-toast="LDUSDT 收益详情"><div class="l"><span class="icn" style="background:#F0B90B;">⚡</span>LDUSDT 收益</div><div class="r"><b>年利率 1.50%</b> ›</div></div>
-      <div class="row" data-toast="RWUSD 收益详情"><div class="l"><span class="icn" style="background:#111;">R</span>RWUSD 收益</div><div class="r"><b>年利率 3.36%</b> ›</div></div>
-    </div>
-    <div class="subtabs" style="border-bottom:1px solid var(--border);">
-      <span class="st on">持有仓位</span>
-      <span class="st" data-toast="全部资产（原型未展开）">全部资产</span>
-    </div>
-    <div class="card poscard">
-      <div class="pos-top">
-        <span class="side-l">多</span><span class="pos-sym">ETHUSDT</span>
-        <span class="pos-tag">永续</span><span class="pos-tag">全仓 20X</span>
-        <svg style="margin-left:auto;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><circle cx="6" cy="12" r="2"/><circle cx="15" cy="6" r="2"/><circle cx="15" cy="18" r="2"/><path d="M8 11l5-3M8 13l5 3"/></svg>
-      </div>
-      <div class="pos-hero">
-        <div><div class="k">未实现盈亏 (USDT)</div><div class="v g">+24.00</div></div>
-        <div style="text-align:right;"><div class="k">投资回报率</div><div class="v g">+149.22%</div></div>
-      </div>
-      <div class="pos-grid">
-        <div><div class="k">持仓数量 (USDT)</div><div class="v">321.71</div></div>
-        <div><div class="k">保证金 (USDT)</div><div class="v">16.09</div></div>
-        <div style="text-align:right;"><div class="k">保证金比率</div><div class="v g">1.11%</div></div>
-        <div><div class="k">开仓价格 (USDT)</div><div class="v">1,793.47</div></div>
-        <div><div class="k">标记价格 (USDT)</div><div class="v">1,938.08</div></div>
-        <div style="text-align:right;"><div class="k">强平价格 (USDT)</div><div class="v">1,245.37</div></div>
-      </div>
+    <div class="grid-cards">
+      <div class="gcard"><div class="k">余额(USDT)</div><div class="v">325.66</div></div>
+      <div class="gcard"><div class="k">可用(USDT)</div><div class="v">300.42</div></div>
+      <div class="gcard"><div class="k">持仓保证金(USDT)</div><div class="v">14.49</div></div>
+      <div class="gcard"><div class="k">委托保证金(USDT)</div><div class="v">10.74</div></div>
+      <div class="gcard"><div class="k">未实现盈亏(USDT)</div><div class="v g">+184.78</div></div>
+      <div class="gcard"><div class="k">体验金(USDT)</div><div class="v">0.00</div></div>
     </div>
   </div>
   <div class="botnav">
-    <div class="nav" data-toast="首页">首页</div>
-    <div class="nav" data-toast="行情">行情</div>
-    <div class="nav" data-toast="交易">交易</div>
-    <div class="nav on">合约</div>
-    <div class="nav" onclick="go('screen-overview')">资产</div>
+    <div class="nav" data-toast="首页">首页</div><div class="nav" data-toast="市场">市场</div>
+    <div class="nav" data-toast="交易">交易</div><div class="nav" data-toast="理财">理财</div>
+    <div class="nav on">资产</div>
   </div>
 </div>
 
-<!-- ================= SCREEN: ASSET REPORT ================= -->
+<!-- ============ ASSET REPORT ============ -->
 <div class="screen" id="screen-report">
-  <div class="statusbar"><span>17:01</span>
-    <span class="dots">
-      <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1" fill="#ccc"/><rect x="15" y="1" width="3" height="11" rx="1" fill="#ccc"/></svg>
-      <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2C5 2 2.5 4 1 6l7.5 6L16 6c-1.5-2-4-4-7.5-4z" fill="none" stroke="#1E2329" stroke-width="1.3"/></svg>
-      <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1E2329" stroke-width="1"/><rect x="3" y="3" width="13" height="7" rx="1.5"/><rect x="23" y="4.5" width="2" height="4" rx="1"/></svg>
-    </span>
-  </div>
+  <div class="statusbar"><span>17:51</span><span class="dots">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/></svg>
+    <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2C5 2 2.5 4 1 6l7.5 6L16 6c-1.5-2-4-4-7.5-4z" fill="none" stroke="#1E2329" stroke-width="1.3"/></svg>
+    <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1E2329" stroke-width="1"/><rect x="3" y="3" width="13" height="7" rx="1.5"/><rect x="23" y="4.5" width="2" height="4" rx="1"/></svg>
+  </span></div>
   <div class="pghead">
     <div class="back" onclick="go('screen-overview')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div>
     <div class="title" id="report-title" onclick="openMenu('report')">资产报告 <svg class="caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><circle cx="6" cy="12" r="2"/><circle cx="17" cy="6" r="2"/><circle cx="17" cy="18" r="2"/><path d="M8 11l7-4M8 13l7 4"/></svg>
   </div>
   <div class="range" style="padding:0 16px;">
-    <span class="on" onclick="setReportRange(this,7)">7天</span><span onclick="setReportRange(this,30)">30天</span>
-    <span onclick="setReportRange(this,90)">90天</span><span onclick="openDatePicker(this)">自定义</span>
+    <span class="on" onclick="setReportRange(this,'7天',7)">7天</span><span onclick="setReportRange(this,'30天',30)">30天</span>
+    <span onclick="setReportRange(this,'90天',90)">90天</span><span onclick="openDatePicker(this)">自定义</span>
   </div>
   <div class="scroll">
-    <!-- 资产分析 -->
     <div class="card">
       <div class="card-t">资产分析 <svg class="info-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-      <div class="big-pnl">7 天变化</div>
-      <div class="big-num r">-$5.54</div>
-      <div class="r" style="font-weight:600;">-0.95%</div>
+      <div class="big-pnl" id="ra-label">7 天变化</div>
+      <div class="big-num r" id="ra-change">-$5.54</div>
+      <div class="r" id="ra-pct" style="font-weight:600;">-0.95%</div>
       <div id="rp-asset-line" style="margin-top:8px;"></div>
-      <div class="hint-box">
-        <span>您的资产正在减少，多元化交易可促进财富增长。</span>
-      </div>
+      <div class="hint-box"><span>您的资产正在减少，多元化交易可促进财富增长。</span></div>
     </div>
-    <!-- 交易分析 -->
     <div class="card">
       <div class="chart-hd">
         <div class="card-t" style="margin-bottom:0;">交易分析 <svg class="info-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
@@ -435,87 +340,60 @@ section{padding:0 16px;}
           <button id="ta-tab-cal" onclick="taView('cal')" title="日历图"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button>
         </div>
       </div>
-      <div style="margin-top:10px;"><span class="big-pnl">7 天交易盈亏</span> <span style="color:var(--muted2);font-size:13px;">0 次</span></div>
-      <div class="big-num r" style="font-size:30px;">-$5.00</div>
-      <div class="view on" id="ta-view-line">
-        <div id="rp-trade-line"></div>
-      </div>
-      <div class="view" id="ta-view-cal">
-        <div class="date-lab">每日营收（近 7 天）</div>
-        <div class="cal" id="rp-trade-cal"></div>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:14px;">
-        <div style="flex:1;background:#F7F8FA;border-radius:10px;padding:12px;"><div style="font-size:13px;color:var(--muted);">现货交易 <span style="font-size:11px;">0 次</span></div><div class="r" style="font-weight:700;font-size:16px;margin-top:4px;">-$4.74</div></div>
-        <div style="flex:1;background:#F7F8FA;border-radius:10px;padding:12px;"><div style="font-size:13px;color:var(--muted);">理财 <span style="font-size:11px;">0 次</span></div><div style="font-weight:700;font-size:16px;margin-top:4px;">+$0.00</div></div>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:10px;">
-        <div style="flex:1;background:#F7F8FA;border-radius:10px;padding:12px;"><div style="font-size:13px;color:var(--muted);">合约 <span style="font-size:11px;">0 次</span></div><div class="r" style="font-weight:700;font-size:16px;margin-top:4px;">-$0.25</div></div>
-        <div style="flex:1;"></div>
-      </div>
+      <div style="margin-top:10px;"><span class="big-pnl" id="ta-label">7 天交易盈亏</span> <span style="color:var(--muted2);font-size:13px;">0 次</span></div>
+      <div class="big-num r" id="ta-total" style="font-size:30px;">-$5.00</div>
+      <div class="view on" id="ta-view-line"><div id="rp-trade-line"></div></div>
+      <div class="view" id="ta-view-cal"><div class="date-lab">每日营收</div><div class="cal" id="rp-trade-cal"></div></div>
     </div>
-    <!-- 币种分析 -->
     <div class="card">
       <div class="card-t">币种分析 <svg class="info-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
       <div style="display:flex;justify-content:center;"><div id="rp-coin-donut"></div></div>
       <div class="legend" id="rp-coin-legend" style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:14px;"></div>
-      <div style="display:flex;justify-content:center;">
-        <div class="pill-tabs">
-          <button class="on" id="coin-tab-p" onclick="coinTab('p')">盈利</button>
-          <button id="coin-tab-l" onclick="coinTab('l')">亏损</button>
-        </div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted2);padding:4px 0;"><span>币种</span><span>最近 7 天</span></div>
+      <div style="display:flex;justify-content:center;"><div class="pill-tabs"><button class="on" id="coin-tab-p" onclick="coinTab('p')">盈利</button><button id="coin-tab-l" onclick="coinTab('l')">亏损</button></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted2);padding:4px 0;"><span>币种</span><span>最近区间</span></div>
       <div id="rp-coin-rank"></div>
     </div>
     <div class="footnote">* 此页面上的所有数据均按照 UTC+0 时区计算。</div>
   </div>
 </div>
 
-<!-- ================= SCREEN: CONTRACT P&L ================= -->
+<!-- ============ CONTRACT P&L ============ -->
 <div class="screen" id="screen-pnl">
-  <div class="statusbar"><span>17:06</span>
-    <span class="dots">
-      <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1" fill="#ccc"/><rect x="15" y="1" width="3" height="11" rx="1" fill="#ccc"/></svg>
-      <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2C5 2 2.5 4 1 6l7.5 6L16 6c-1.5-2-4-4-7.5-4z" fill="none" stroke="#1E2329" stroke-width="1.3"/></svg>
-      <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1E2329" stroke-width="1"/><rect x="3" y="3" width="13" height="7" rx="1.5"/><rect x="23" y="4.5" width="2" height="4" rx="1"/></svg>
-    </span>
-  </div>
+  <div class="statusbar"><span>17:06</span><span class="dots">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/></svg>
+    <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2C5 2 2.5 4 1 6l7.5 6L16 6c-1.5-2-4-4-7.5-4z" fill="none" stroke="#1E2329" stroke-width="1.3"/></svg>
+    <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1E2329" stroke-width="1"/><rect x="3" y="3" width="13" height="7" rx="1.5"/><rect x="23" y="4.5" width="2" height="4" rx="1"/></svg>
+  </span></div>
   <div class="pghead">
     <div class="back" onclick="go('screen-contract')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div>
     <div class="title" id="pnl-title" onclick="openMenu('pnl')">合约盈亏 <svg class="caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><circle cx="6" cy="12" r="2"/><circle cx="17" cy="6" r="2"/><circle cx="17" cy="18" r="2"/><path d="M8 11l7-4M8 13l7 4"/></svg>
   </div>
-  <div class="subtabs" style="padding-left:16px;">
-    <span class="st on" style="font-size:14px;padding-bottom:6px;">U本位</span>
-  </div>
+  <div class="subtabs" style="padding-left:16px;"><span class="st on" style="font-size:14px;padding-bottom:6px;">U本位</span></div>
   <div class="scroll">
     <section style="padding-top:14px;">
       <div class="big-pnl">今日盈亏 <svg class="eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></div>
-      <div style="display:flex;align-items:baseline;gap:8px;"><div class="big-num r" style="margin:6px 0;">-0.01%</div><span class="r" style="font-size:15px;">-0.01 USD</span></div>
+      <div style="display:flex;align-items:baseline;gap:8px;"><div class="big-num r" id="pnl-today" style="margin:6px 0;">-0.16%</div><span class="r" id="pnl-today-usd" style="font-size:15px;">-0.83 USD</span></div>
       <div class="trip">
-        <div class="c"><div class="kk">7天盈亏</div><div class="vv r">-0.28%</div><div class="sub r">-0.25 USD</div></div>
-        <div class="c"><div class="kk">30日盈亏</div><div class="vv g">+0.97%</div><div class="sub g">+0.89 USD</div></div>
-        <div class="c"><div class="kk">累计盈亏</div><div class="vv r">-38.01</div><div class="sub" style="color:var(--muted2);">USD</div></div>
+        <div class="c"><div class="kk">7天盈亏</div><div class="vv r">-0.42%</div><div class="sub r">-2.11 USD</div></div>
+        <div class="c"><div class="kk">30日盈亏</div><div class="vv g">+38.10%</div><div class="sub g">+184.78 USD</div></div>
+        <div class="c"><div class="kk">累计盈亏</div><div class="vv g">+142.06</div><div class="sub" style="color:var(--muted2);">USD</div></div>
       </div>
     </section>
     <div class="range" style="padding:0 16px;margin-top:16px;">
-      <span onclick="setPnlRange(this,7)">7日</span><span class="on" onclick="setPnlRange(this,30)">近1个月</span>
-      <span onclick="setPnlRange(this,90)">近3个月</span><span onclick="setPnlRange(this,365)">近1年</span><span onclick="openDatePicker(this)">自定义</span>
+      <span onclick="setPnlRange(this,'7日',7)">7日</span><span class="on" onclick="setPnlRange(this,'近1个月',30)">近1个月</span>
+      <span onclick="setPnlRange(this,'近3个月',90)">近3个月</span><span onclick="setPnlRange(this,'近1年',365)">近1年</span><span onclick="openDatePicker(this)">自定义</span>
     </div>
     <section>
-      <div class="kv"><span class="k">总盈利</span><span class="v">1.49 USD</span></div>
-      <div class="kv"><span class="k">总亏损</span><span class="v">0.59 USD</span></div>
-      <div class="kv"><span class="k">净盈利/亏损</span><span class="v">0.89 USD</span></div>
+      <div class="kv"><span class="k">总盈利</span><span class="v" id="pnl-gain">210.44 USD</span></div>
+      <div class="kv"><span class="k">总亏损</span><span class="v" id="pnl-loss">25.66 USD</span></div>
+      <div class="kv"><span class="k">净盈利/亏损</span><span class="v" id="pnl-net">184.78 USD</span></div>
     </section>
     <div class="hgap"></div>
     <div class="subtabs" style="border-bottom:1px solid var(--border);">
-      <span class="st on">总览</span>
-      <span class="st" data-toast="详情（原型未展开）">详情</span>
-      <span class="st" data-toast="合约分析（原型未展开）">合约分析<span class="ndot"></span></span>
-      <span class="st" style="font-size:13px;" data-toast="资金费用与交易手续费（原型未展开）">资金费用与手续费</span>
+      <span class="st on">总览</span><span class="st" data-toast="详情（原型未展开）">详情</span>
+      <span class="st" data-toast="合约分析（原型未展开）">合约分析</span><span class="st" style="font-size:13px;" data-toast="资金费用与手续费（原型未展开）">资金费用与手续费</span>
     </div>
-
-    <!-- 单日盈亏 -->
     <section style="padding-top:18px;">
       <div class="chart-hd">
         <div><div style="font-size:18px;font-weight:700;">单日盈亏</div><div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21</div></div>
@@ -524,61 +402,50 @@ section{padding:0 16px;}
           <button id="dp-tab-cal" onclick="dpView('cal')" title="日历图"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button>
         </div>
       </div>
-      <div class="r" style="font-size:22px;font-weight:700;margin-top:8px;">-0.01 USD</div>
+      <div class="r" id="dp-today" style="font-size:22px;font-weight:700;margin-top:8px;">-0.83 USD</div>
       <div class="view on" id="dp-view-bar"><div id="pnl-daily-bar"></div></div>
-      <div class="view" id="dp-view-cal"><div class="date-lab">每日营收（近 30 天）</div><div class="cal" id="pnl-daily-cal"></div></div>
+      <div class="view" id="dp-view-cal"><div class="date-lab">每日营收</div><div class="cal" id="pnl-daily-cal"></div></div>
     </section>
-
-    <!-- 累计盈亏 -->
     <section style="padding-top:20px;">
       <div style="font-size:18px;font-weight:700;">累计盈亏</div>
       <div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21</div>
-      <div class="g" style="font-size:22px;font-weight:700;margin-top:8px;">+0.89 USD</div>
+      <div class="g" id="pnl-cum-head" style="font-size:22px;font-weight:700;margin-top:8px;">+142.06 USD</div>
       <div id="pnl-cum-line"></div>
     </section>
-
-    <!-- 累计盈亏率 -->
     <section style="padding-top:20px;">
       <div style="font-size:18px;font-weight:700;">累计盈亏率</div>
       <div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21</div>
       <div class="legend-lines">
-        <div class="ll"><span class="bar" style="background:var(--yellow);"></span><div><span class="pct g">+0.97%</span>累计盈亏率%</div></div>
-        <div class="ll"><span class="bar" style="background:var(--blue);"></span><div><span class="pct g">+4.89%</span>累计BTCUSDT永续合约标记价格涨跌率%</div></div>
-        <div class="ll"><span class="bar" style="background:var(--blue-l);"></span><div><span class="pct r">-0.84%</span>累计BNBUSDT永续合约标记价格涨跌率%</div></div>
+        <div class="ll"><span class="bar" style="background:var(--green);"></span><div><span class="pct g" id="rate-own">+38.10%</span>累计盈亏率%</div></div>
+        <div class="ll"><span class="bar" style="background:var(--blue);"></span><div><span class="pct g" id="rate-btc">+4.89%</span>累计BTCUSDT永续合约标记价格涨跌率%</div></div>
+        <div class="ll"><span class="bar" style="background:var(--blue-l);"></span><div><span class="pct r" id="rate-bnb">-0.84%</span>累计BNBUSDT永续合约标记价格涨跌率%</div></div>
       </div>
       <div id="pnl-rate-line"></div>
     </section>
-
-    <!-- 资产概览 -->
     <section style="padding-top:24px;">
       <div style="font-size:18px;font-weight:700;margin-bottom:12px;">资产概览</div>
       <div style="display:flex;justify-content:center;"><div id="pnl-asset-donut"></div></div>
       <div class="legend" id="pnl-asset-legend" style="display:flex;gap:20px;justify-content:center;margin-top:12px;"></div>
     </section>
-
-    <!-- 资产价值 -->
     <section style="padding-top:24px;">
       <div style="font-size:18px;font-weight:700;">资产价值</div>
       <div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21</div>
-      <div class="g" style="font-size:22px;font-weight:700;margin-top:8px;">+92.71 USD</div>
+      <div class="g" id="pnl-val-head" style="font-size:22px;font-weight:700;margin-top:8px;">+325.66 USD</div>
       <div id="pnl-value-line"></div>
     </section>
-
     <div class="footnote">*此页面上的所有数据均按照 UTC+0 时区计算，自定义时间控件和图表中显示的也是 UTC+0 时区的日期。</div>
   </div>
 </div>
 
 </div><!-- /screens -->
 
-<!-- bottom sheet menu -->
 <div class="mask" id="mask" onclick="closeMenu()"></div>
 <div class="sheet" id="sheet">
   <div class="grip"></div>
-  <div class="item" data-page="report" onclick="menuPick('report')">资产报告 <span class="ck" id="ck-report"></span></div>
-  <div class="item" data-page="pnl" onclick="menuPick('pnl')">合约盈亏 <span class="ck" id="ck-pnl"></span></div>
+  <div class="item" onclick="menuPick('report')">资产报告 <span class="ck" id="ck-report"></span></div>
+  <div class="item" onclick="menuPick('pnl')">合约盈亏 <span class="ck" id="ck-pnl"></span></div>
 </div>
 
-<!-- date-range picker -->
 <div class="mask" id="dmask" onclick="closeDate()"></div>
 <div class="sheet" id="datesheet">
   <div class="grip"></div>
@@ -587,14 +454,9 @@ section{padding:0 16px;}
     <div class="date-row"><span class="lb">开始日期</span><input type="date" id="date-start" value="2026-07-15"></div>
     <div class="date-row"><span class="lb">结束日期</span><input type="date" id="date-end" value="2026-07-21"></div>
     <div class="date-presets">
-      <button onclick="setPreset(this,7)">近 7 天</button>
-      <button onclick="setPreset(this,30)">近 30 天</button>
-      <button onclick="setPreset(this,90)">近 90 天</button>
+      <button onclick="setPreset(this,7)">近 7 天</button><button onclick="setPreset(this,30)">近 30 天</button><button onclick="setPreset(this,90)">近 90 天</button>
     </div>
-    <div class="date-actions">
-      <button class="cancel" onclick="closeDate()">取消</button>
-      <button class="confirm" onclick="confirmDate()">确定</button>
-    </div>
+    <div class="date-actions"><button class="cancel" onclick="closeDate()">取消</button><button class="confirm" onclick="confirmDate()">确定</button></div>
   </div>
 </div>
 
@@ -602,290 +464,251 @@ section{padding:0 16px;}
 </div>
 
 <script>
-/* ---------- navigation ---------- */
-function go(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelector('#'+id+' .scroll')?.scrollTo(0,0);
-}
-let menuFrom='report';
+/* ===== navigation ===== */
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelector('#'+id+' .scroll')?.scrollTo(0,0);}
 function openMenu(from){
-  menuFrom=from;
-  document.getElementById('ck-report').innerHTML = '';
-  document.getElementById('ck-pnl').innerHTML = '';
-  const cur = from==='report'?'ck-report':'ck-pnl';
-  document.getElementById(cur).innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>';
+  document.getElementById('ck-report').innerHTML='';document.getElementById('ck-pnl').innerHTML='';
+  document.getElementById(from==='report'?'ck-report':'ck-pnl').innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>';
   document.getElementById(from==='report'?'report-title':'pnl-title').classList.add('open');
-  document.getElementById('mask').classList.add('on');
-  document.getElementById('sheet').classList.add('on');
+  document.getElementById('mask').classList.add('on');document.getElementById('sheet').classList.add('on');
 }
-function closeMenu(){
-  document.getElementById('mask').classList.remove('on');
-  document.getElementById('sheet').classList.remove('on');
-  document.querySelectorAll('.pghead .title').forEach(t=>t.classList.remove('open'));
-}
-function menuPick(page){
-  closeMenu();
-  go(page==='report'?'screen-report':'screen-pnl');
-}
+function closeMenu(){document.getElementById('mask').classList.remove('on');document.getElementById('sheet').classList.remove('on');document.querySelectorAll('.pghead .title').forEach(t=>t.classList.remove('open'));}
+function menuPick(p){closeMenu();go(p==='report'?'screen-report':'screen-pnl');}
+function pick(el){el.parentNode.querySelectorAll('span').forEach(s=>s.classList.remove('on'));el.classList.add('on');}
 
-/* ---------- generic tab helpers ---------- */
-function pick(el){ el.parentNode.querySelectorAll('span').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
-
-/* ---------- custom date-range picker ---------- */
-let customTarget=null;
-function openDatePicker(el){
-  pick(el); customTarget=el;
-  document.getElementById('dmask').classList.add('on');
-  document.getElementById('datesheet').classList.add('on');
-}
-function closeDate(){
-  document.getElementById('dmask').classList.remove('on');
-  document.getElementById('datesheet').classList.remove('on');
-  document.querySelectorAll('.date-presets button').forEach(b=>b.classList.remove('on'));
-}
-function setPreset(btn,days){
-  document.querySelectorAll('.date-presets button').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  const end=new Date(TODAY+'T00:00:00');
-  const start=new Date(end); start.setDate(start.getDate()-(days-1));
-  document.getElementById('date-start').value=iso(start);
-  document.getElementById('date-end').value=iso(end);
-}
-function confirmDate(){
-  const s=document.getElementById('date-start').value, e=document.getElementById('date-end').value;
-  if(!s||!e){ toast('请选择开始和结束日期'); return; }
-  if(s>e){ toast('开始日期不能晚于结束日期'); return; }
-  if(customTarget){
-    customTarget.textContent=s.slice(5)+' ~ '+e.slice(5);
-    if(customTarget.closest('#screen-report')) drawReportCharts(s,e);
-    else if(customTarget.closest('#screen-pnl')) drawPnlCharts(s,e);
-  }
-  closeDate();
-  toast('已选择 '+s+' ~ '+e);
-}
-
-/* ---------- toast ---------- */
+/* ===== toast ===== */
 let toastTimer;
-function toast(msg){
-  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('on'),1300);
-}
-document.addEventListener('click',e=>{ const el=e.target.closest('[data-toast]'); if(el) toast(el.getAttribute('data-toast')); });
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('on'),1300);}
+document.addEventListener('click',e=>{const el=e.target.closest('[data-toast]');if(el)toast(el.getAttribute('data-toast'));});
 
-/* ---------- chart helpers (pure SVG) ---------- */
-function smoothPath(vals,w,h,pad){
-  const min=Math.min(...vals),max=Math.max(...vals),range=(max-min)||1,n=vals.length;
-  const X=i=>pad+i*(w-2*pad)/(n-1);
-  const Y=v=>pad+(1-(v-min)/range)*(h-2*pad);
-  let d='M '+X(0)+' '+Y(vals[0]);
-  for(let i=1;i<n;i++){const xc=(X(i-1)+X(i))/2;d+=' C '+xc+' '+Y(vals[i-1])+', '+xc+' '+Y(vals[i])+', '+X(i)+' '+Y(vals[i]);}
-  return {d,X,Y};
-}
-function areaLine(el,vals,color,fill,opts){
-  const w=340,h=150,pad=14;
-  const {d,X,Y}=smoothPath(vals,w,h,pad);
-  const area=d+' L '+X(vals.length-1)+' '+(h-pad)+' L '+X(0)+' '+(h-pad)+' Z';
-  const gid='g'+Math.floor(X(0)*1000+vals[0]*13+color.length+vals.length*7);
-  const svg='<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="display:block"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity="0.18"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
-    +(fill?'<path d="'+area+'" fill="url(#'+gid+')"/>':'')
-    +'<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round"/>'
-    +'<circle cx="'+X(vals.length-1)+'" cy="'+Y(vals[vals.length-1])+'" r="4" fill="'+color+'"/>'
-    +'<circle cx="'+X(0)+'" cy="'+Y(vals[0])+'" r="3.5" fill="'+color+'"/></svg>';
-  let bubbles='',axis='';
-  if(opts&&opts.dates){
-    const last=vals.length-1;
-    // start label pinned bottom-left, latest(落点) value pinned top-right — matches app
-    bubbles='<div class="pt-callout" style="left:0;bottom:2px;"><div class="cd">'+opts.dates[0]+'</div><div class="cv">'+opts.fmt(vals[0])+'</div></div>'
-      +'<div class="pt-callout" style="right:0;top:0;"><div class="cd">'+opts.dates[last]+'</div><div class="cv">'+opts.fmt(vals[last])+'</div></div>';
-    const mid=Math.floor(last/2);
-    axis='<div class="axis"><span>'+opts.dates[0]+'</span><span>'+opts.dates[mid]+'</span><span>'+opts.dates[last]+'</span></div>';
-  }
-  el.innerHTML='<div style="position:relative;">'+svg+bubbles+'</div>'+axis;
-}
-function multiLine(el,series,opts){
-  const w=340,h=170,pad=14;
-  const all=[].concat(...series.map(s=>s.vals));
-  const min=Math.min(...all),max=Math.max(...all),range=(max-min)||1;
-  const n=series[0].vals.length;
-  const X=i=>pad+i*(w-2*pad)/(n-1);
-  const Y=v=>pad+(1-(v-min)/range)*(h-2*pad);
-  const zeroY=Y(0);
-  let s='<svg viewBox="0 0 '+w+' '+h+'" width="100%">';
-  s+='<line x1="'+pad+'" y1="'+zeroY+'" x2="'+(w-pad)+'" y2="'+zeroY+'" stroke="#EAECEF" stroke-width="1"/>';
-  series.forEach(se=>{
-    let d='M '+X(0)+' '+Y(se.vals[0]);
-    for(let i=1;i<n;i++){const xc=(X(i-1)+X(i))/2;d+=' C '+xc+' '+Y(se.vals[i-1])+', '+xc+' '+Y(se.vals[i])+', '+X(i)+' '+Y(se.vals[i]);}
-    s+='<path d="'+d+'" fill="none" stroke="'+se.color+'" stroke-width="2" stroke-linecap="round"/>';
-  });
-  s+='</svg>';
-  let axis='';
-  if(opts&&opts.dates){
-    const dd=opts.dates,mid=Math.floor((dd.length-1)/2);
-    axis='<div class="axis"><span>'+dd[0]+'</span><span>'+dd[mid]+'</span><span>'+dd[dd.length-1]+'</span></div>';
-  }
-  el.innerHTML=s+axis;
-}
-function barChart(el,vals){
-  const w=340,h=180,pad=16;
-  const max=Math.max(3,...vals.map(Math.abs));
-  const zeroY=pad+(h-2*pad)*(max/(2*max));
-  const bw=(w-2*pad)/vals.length;
-  let s='<svg viewBox="0 0 '+w+' '+h+'" width="100%">';
-  [max,max/3,-max/3,-max].forEach((gl,i)=>{});
-  s+='<line x1="'+pad+'" y1="'+zeroY+'" x2="'+(w-pad)+'" y2="'+zeroY+'" stroke="#EAECEF" stroke-dasharray="3 3"/>';
-  vals.forEach((v,i)=>{
-    const bh=Math.abs(v)/max*(h/2-pad);
-    const x=pad+i*bw+bw*0.25;
-    const bwi=bw*0.5;
-    if(Math.abs(v)<0.02){
-      s+='<line x1="'+x+'" y1="'+zeroY+'" x2="'+(x+bwi)+'" y2="'+zeroY+'" stroke="'+(v>=0?'#0ECB81':'#F6465D')+'" stroke-width="1.5" opacity="0.4"/>';
-    }else{
-      const y=v>=0?zeroY-bh:zeroY;
-      s+='<rect x="'+x+'" y="'+y+'" width="'+bwi+'" height="'+bh+'" rx="1.5" fill="'+(v>=0?'#0ECB81':'#F6465D')+'"/>';
-    }
-  });
-  s+='</svg>';
-  el.innerHTML=s+'<div class="axis"><span>06-22</span><span>07-01</span><span>07-11</span><span>07-20</span></div>';
-}
-function donut(el,segs,size){
-  size=size||140; const stroke=22, r=(size-stroke)/2, c=size/2, circ=2*Math.PI*r;
-  let off=0,parts='';
-  segs.forEach(s=>{const len=s.pct/100*circ; parts+='<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="'+stroke+'" stroke-dasharray="'+len+' '+(circ-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+c+' '+c+')"/>'; off+=len;});
-  el.innerHTML='<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+parts+'</svg>';
-}
-function calHeat(el,days){
-  let g='<div class="wk"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div class="grid">';
-  for(let i=0;i<days.offset;i++) g+='<div class="cell empty"></div>';
-  days.data.forEach(d=>{
-    let bg='#F2F3F5',col='var(--muted2)';
-    if(d.v>0){const a=Math.min(1,0.3+Math.abs(d.v)/1.5);bg='rgba(14,203,129,'+a+')';col='#fff';}
-    else if(d.v<0){const a=Math.min(1,0.3+Math.abs(d.v)/1.5);bg='rgba(246,70,93,'+a+')';col='#fff';}
-    g+='<div class="cell" style="background:'+bg+'"><span class="d" style="color:'+(d.v!==0?'#fff':'var(--muted2)')+'">'+d.day+'</span>'+(d.v!==0?'<span class="p" style="color:'+col+'">'+(d.v>0?'+':'')+d.v+'</span>':'')+'</div>';
-  });
-  g+='</div>';
-  el.innerHTML=g;
-}
-
-/* ---------- data ---------- */
-const D_OV=[600,604,603,598,591,587.5,586.95,588,590.5,595,602.17];
-const SEG_OV=[{name:'资金',pct:73.22,usd:'$440.93',color:'#2B6CF0'},{name:'合约账户（U本…',pct:19.36,usd:'$116.62',color:'#6AA0F0'},{name:'现货账户',pct:7.01,usd:'$42.24',color:'#F5C542'},{name:'理财账户',pct:0.39,usd:'$2.37',color:'#16B47A'},{name:'其他',pct:0.02,usd:'<0.01',color:'#B7BDC6'}];
-const D_RP_ASSET=[582.83,581.2,580.1,578.4,577.2,576.4,577.29];
-const D_RP_TRADE=[-0.3,-2.4,-4.1,-4.6,-2.8,-1.2,-0.31];
-const SEG_COIN=[{name:'USDT',pct:91.76,usd:'$529.73',color:'#2B6CF0'},{name:'GRAM',pct:7.09,usd:'$40.93',color:'#F5C542'},{name:'BTC',pct:0.92,usd:'$5.33',color:'#16B47A'},{name:'BNB',pct:0.15,usd:'$0.89',color:'#6AA0F0'},{name:'LINEA',pct:0.07,usd:'$0.39',color:'#B7BDC6'}];
-const COIN_PROFIT=[{i:1,nm:'Bitcoin',cd:'BTC',amt:'$0.24',pc:'+97.60%',g:1},{i:2,nm:'BNB',cd:'BNB',amt:'$0.01',pc:'+2.40%',g:1}];
-const COIN_LOSS=[{i:1,nm:'Tether',cd:'USDT',amt:'-$4.74',pc:'-0.89%',g:0},{i:2,nm:'GRAM',cd:'GRAM',amt:'-$0.25',pc:'-0.61%',g:0}];
-// pnl daily bar ~30 days
-const D_PNL_BAR=[0,-.01,.02,0,-.01,0,.03,.01,0,.05,-.02,.04,.02,0,1.2,-.03,0,-.01,0,-.15,-.02,-.05,0,-.03,-.04,-.02,-.03,-.05,-.02,-.01];
-const D_PNL_CUM=[0.42,0.41,0.40,0.42,0.41,0.40,0.42,0.44,0.43,0.46,0.44,0.48,0.50,0.49,1.32,1.30,1.28,1.29,1.27,1.15,1.28,1.20,1.18,1.10,1.05,0.98,0.95,0.92,0.90,0.89];
-const RATE=[
- {color:'#00C566',vals:[0,0,0,0,0.1,0.1,0.15,0.2,0.2,0.3,0.6,0.9,0.95,0.9,0.92,0.9,0.95,0.92,0.9,0.93,0.95,0.94,0.95,0.96,0.96,0.97,0.97,0.97,0.97,0.97]},
- {color:'#2B6CF0',vals:[0.5,-3,-4,-5,-4,-5.5,-6.5,-7,-4,-2,1,2,0.5,2,3,1.5,3.5,2,3,4,2,3.5,2.5,4,3,4.5,3.5,5,4.5,4.89]},
- {color:'#6AA0F0',vals:[0,-4,-5,-4,-6,-5,-7,-7.5,-5,-3,0.5,1,-0.5,1,2,0.5,2,0.5,1.5,2.5,-1,-2,-1.5,-2,-1.5,-2,-1,-1.5,-1,-0.84]}
-];
-const SEG_PNL_ASSET=[{name:'USDT',pct:99.03,color:'#2B6CF0'},{name:'BNB',pct:0.97,color:'#F5C542'}];
-const D_PNL_VALUE=[92.2,92.3,92.1,92.4,92.3,92.5,92.4,92.6,92.5,92.7,92.6,93.1,93.0,92.9,93.2,93.0,92.9,93.0,92.8,92.9,92.7,92.8,92.7,92.6,92.7,92.7,92.7,92.7,92.71,92.71];
-
-function calData(vals, startDow, startDay){
-  return {offset:startDow, data:vals.map((v,i)=>({day:startDay+i, v:Math.round(v*100)/100}))};
-}
-
-/* ---------- render ---------- */
-function renderLegend(el,segs,hlFirst){
-  el.innerHTML=segs.map((s,i)=>'<div class="lg'+(hlFirst&&i===0?' hl':'')+'"><div class="l"><span class="dot" style="background:'+s.color+'"></span><div><div>'+s.name+' <b class="pct">'+s.pct+'%</b></div>'+(s.usd?'<div style="font-size:12px;color:var(--muted2);">'+s.usd+'</div>':'')+'</div></div></div>').join('');
-}
-function renderCoinLegend(el,segs){
-  el.innerHTML=segs.map(s=>'<div style="padding:6px 4px;"><div style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:5px;border-radius:3px;background:'+s.color+';display:inline-block;"></span><span style="font-size:13px;font-weight:600;">'+s.name+' '+s.pct+'%</span></div><div style="font-size:12px;color:var(--muted2);margin-left:20px;">'+s.usd+'</div></div>').join('');
-}
-function renderRank(list){
-  document.getElementById('rp-coin-rank').innerHTML=list.map(r=>'<div class="rank"><div class="l"><span class="idx" style="color:'+(r.i===1?'#F6465D':'#F5C542')+'">'+r.i+'</span><div><div class="nm">'+r.nm+'</div><div class="cd">'+r.cd+'</div></div></div><div><div class="amt">'+r.amt+'</div><div class="pc '+(r.g?'g':'r')+'">'+r.pc+'</div></div></div>').join('');
-}
-function renderPnlAssetLegend(){
-  document.getElementById('pnl-asset-legend').innerHTML=SEG_PNL_ASSET.map(s=>'<div style="display:flex;align-items:center;gap:6px;font-size:14px;"><span style="width:14px;height:5px;border-radius:3px;background:'+s.color+';display:inline-block;"></span>'+s.name+' '+s.pct+'%</div>').join('');
-}
-
-/* ---------- date helpers ---------- */
+/* ===== date helpers ===== */
 const TODAY='2026-07-21';
 function md(d){return ('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
-function spread(startStr,endStr,n){
-  const s=new Date(startStr+'T00:00:00'),e=new Date(endStr+'T00:00:00');
-  const span=(e-s)/86400000,arr=[];
-  for(let i=0;i<n;i++){arr.push(md(new Date(s.getTime()+span*86400000*i/(n-1))));}
-  return arr;
-}
 function iso(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function rangeStart(days){const e=new Date(TODAY+'T00:00:00');e.setDate(e.getDate()-(days-1));return iso(e);}
+function spread(s,e,n){const a=new Date(s+'T00:00:00'),b=new Date(e+'T00:00:00'),sp=(b-a)/86400000,out=[];for(let i=0;i<n;i++)out.push(md(new Date(a.getTime()+sp*86400000*i/(n-1))));return out;}
+function fullDate(s,e,i,n){const a=new Date(s+'T00:00:00'),b=new Date(e+'T00:00:00');const d=new Date(a.getTime()+(b-a)*i/(n-1));return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();}
+function npts(days){return days<=1?24:days<=30?Math.max(7,days):Math.min(72,30+Math.round((days-30)/6));}
 
-/* ---------- per-page chart draws (date-aware) ---------- */
-function drawOverviewLine(s,e){
-  areaLine(document.getElementById('ov-linechart'),D_OV,'#00C566',true,{dates:spread(s,e,D_OV.length),fmt:v=>v.toFixed(2)+' USDT'});
+/* ===== deterministic data gen ===== */
+function rng(seed){let s=seed%2147483647;if(s<=0)s+=2147483646;return()=>{s=s*16807%2147483647;return (s-1)/2147483646;};}
+// line from (endVal-change) to endVal with wobble, ends exact
+function genLine(n,endVal,change,vol,seed){
+  const start=endVal-change,r=rng(seed),raw=[];let acc=0;
+  for(let i=0;i<n;i++){acc+=(r()-0.5)*vol;raw.push(acc);}
+  const a0=raw[0],aN=raw[n-1],out=[];
+  for(let i=0;i<n;i++){const t=i/(n-1);out.push(start+change*t+(raw[i]-(a0+(aN-a0)*t)));}
+  return out;
 }
-function drawReportCharts(s,e){
-  areaLine(document.getElementById('rp-asset-line'),D_RP_ASSET,'#F6465D',true,{dates:spread(s,e,D_RP_ASSET.length),fmt:v=>'$'+v.toFixed(2)});
-  areaLine(document.getElementById('rp-trade-line'),D_RP_TRADE,'#F6465D',true,{dates:spread(s,e,D_RP_TRADE.length),fmt:v=>(v<0?'-$':'$')+Math.abs(v).toFixed(2)});
+// daily pnl values (can be +/-)
+function genDaily(n,amp,bias,seed){const r=rng(seed),a=[];for(let i=0;i<n;i++)a.push((r()-0.5)*2*amp+bias);return a;}
+function cumsum(a){let s=0;return a.map(v=>s+=v);}
+
+/* ===== SVG chart primitives ===== */
+const CHARTS={};
+function pathSeg(vals,X,Y,a,b){let d='M '+X(a)+' '+Y(vals[a]);for(let i=a+1;i<=b;i++){const xc=(X(i-1)+X(i))/2;d+=' C '+xc+' '+Y(vals[i-1])+', '+xc+' '+Y(vals[i])+', '+X(i)+' '+Y(vals[i]);}return d;}
+
+function areaLine(el,vals,color,fill,opts){
+  CHARTS[el.id]={vals,color,fill,opts};
+  const w=340,h=170,pad=16,top=12,botp=14,n=vals.length;
+  const min=Math.min(...vals),max=Math.max(...vals),range=(max-min)||1;
+  const X=i=>pad+i*(w-2*pad)/(n-1);
+  const Y=v=>top+(1-(v-min)/range)*(h-top-botp);
+  const active=opts&&opts.active!=null?Math.max(0,Math.min(n-1,opts.active)):Math.round((n-1)*0.6);
+  const full=pathSeg(vals,X,Y,0,n-1),solid=pathSeg(vals,X,Y,0,active);
+  const gid='g'+el.id;
+  const ticks=[0,.25,.5,.75,1].map(f=>Math.round(f*(n-1)));
+  let grid='';ticks.forEach(i=>{grid+='<line x1="'+X(i)+'" y1="'+top+'" x2="'+X(i)+'" y2="'+(h-botp)+'" stroke="#F1F2F4" stroke-width="1"/>';});
+  const area=solid+' L '+X(active)+' '+(h-botp)+' L '+X(0)+' '+(h-botp)+' Z';
+  const svg='<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="display:block"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity="0.18"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
+    +grid
+    +(fill?'<path d="'+area+'" fill="url(#'+gid+')"/>':'')
+    +'<path d="'+full+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-opacity="0.22" stroke-linecap="round"/>'
+    +'<path d="'+solid+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round"/></svg>';
+  const xf=X(active)/w*100,yf=Y(vals[active])/h*100,below=yf<26;
+  const clampL=Math.max(16,Math.min(84,xf));
+  const tip='<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+fullDate(opts.start,opts.end,active,n)+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>';
+  const dot='<div class="scrub-dot" style="left:'+xf+'%;top:'+yf+'%;border-color:'+color+'"></div>';
+  const dates=spread(opts.start,opts.end,n);
+  const axis='<div class="axis">'+ticks.map(i=>'<span>'+dates[i]+'</span>').join('')+'</div>';
+  el.innerHTML='<div class="chartbox">'+svg+tip+dot+'</div>'+axis;
+  bindScrub(el);
 }
-function drawPnlCharts(s,e){
-  areaLine(document.getElementById('pnl-cum-line'),D_PNL_CUM,'#00C566',false,{dates:spread(s,e,D_PNL_CUM.length),fmt:v=>(v>=0?'+':'')+v.toFixed(2)+' USD'});
-  multiLine(document.getElementById('pnl-rate-line'),RATE,{dates:spread(s,e,RATE[0].vals.length)});
-  areaLine(document.getElementById('pnl-value-line'),D_PNL_VALUE,'#00C566',true,{dates:spread(s,e,D_PNL_VALUE.length),fmt:v=>v.toFixed(2)+' USD'});
+function bindScrub(el){
+  if(el._bound)return;el._bound=true;
+  const w=340,pad=16;
+  const move=ev=>{
+    const cfg=CHARTS[el.id];if(!cfg)return;
+    const box=el.querySelector('.chartbox');if(!box)return;
+    const rect=box.getBoundingClientRect();
+    const cx=((ev.touches?ev.touches[0].clientX:ev.clientX)-rect.left)/rect.width;
+    const frac=(cx-pad/w)/(1-2*pad/w),n=cfg.vals.length;
+    let idx=Math.round(frac*(n-1));idx=Math.max(0,Math.min(n-1,idx));
+    cfg.opts.active=idx;areaLine(el,cfg.vals,cfg.color,cfg.fill,cfg.opts);
+  };
+  el.addEventListener('pointerdown',move);
+  el.addEventListener('pointermove',e=>{if(e.buttons)move(e);});
+  el.addEventListener('touchstart',move,{passive:true});
+  el.addEventListener('touchmove',move,{passive:true});
+}
+function multiLine(el,series,dates){
+  const w=340,h=170,pad=16;
+  const all=[].concat(...series.map(s=>s.vals));
+  const min=Math.min(...all),max=Math.max(...all),range=(max-min)||1,n=series[0].vals.length;
+  const X=i=>pad+i*(w-2*pad)/(n-1),Y=v=>14+(1-(v-min)/range)*(h-28);
+  let s='<svg viewBox="0 0 '+w+' '+h+'" width="100%"><line x1="'+pad+'" y1="'+Y(0)+'" x2="'+(w-pad)+'" y2="'+Y(0)+'" stroke="#EAECEF"/>';
+  series.forEach(se=>{s+='<path d="'+pathSeg(se.vals,X,Y,0,n-1)+'" fill="none" stroke="'+se.color+'" stroke-width="2" stroke-linecap="round"/>';});
+  s+='</svg>';
+  const t=[0,.25,.5,.75,1].map(f=>Math.round(f*(n-1)));
+  el.innerHTML=s+'<div class="axis">'+t.map(i=>'<span>'+dates[i]+'</span>').join('')+'</div>';
+}
+function barChart(el,vals,dates){
+  const w=340,h=180,pad=16,max=Math.max(1,...vals.map(Math.abs)),zeroY=h/2,bw=(w-2*pad)/vals.length;
+  let s='<svg viewBox="0 0 '+w+' '+h+'" width="100%"><line x1="'+pad+'" y1="'+zeroY+'" x2="'+(w-pad)+'" y2="'+zeroY+'" stroke="#EAECEF" stroke-dasharray="3 3"/>';
+  vals.forEach((v,i)=>{const bh=Math.abs(v)/max*(h/2-pad),x=pad+i*bw+bw*0.25,bwi=bw*0.5;
+    if(Math.abs(v)<max*0.01){s+='<line x1="'+x+'" y1="'+zeroY+'" x2="'+(x+bwi)+'" y2="'+zeroY+'" stroke="'+(v>=0?'#00C566':'#F6465D')+'" stroke-width="1.5" opacity="0.4"/>';}
+    else{const y=v>=0?zeroY-bh:zeroY;s+='<rect x="'+x+'" y="'+y+'" width="'+bwi+'" height="'+bh+'" rx="1.5" fill="'+(v>=0?'#00C566':'#F6465D')+'"/>';}});
+  s+='</svg>';
+  const t=[0,.25,.5,.75,1].map(f=>Math.round(f*(vals.length-1)));
+  el.innerHTML=s+'<div class="axis">'+t.map(i=>'<span>'+dates[i]+'</span>').join('')+'</div>';
+}
+function donut(el,segs,size){size=size||140;const stroke=22,r=(size-stroke)/2,c=size/2,circ=2*Math.PI*r;let off=0,p='';segs.forEach(s=>{const len=s.pct/100*circ;p+='<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="'+stroke+'" stroke-dasharray="'+len+' '+(circ-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+c+' '+c+')"/>';off+=len;});el.innerHTML='<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+p+'</svg>';}
+function calHeat(el,vals,dates){
+  const start=new Date(dates[0]+'T00:00:00');let offset=start.getDay();
+  let g='<div class="wk"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div class="grid">';
+  for(let i=0;i<offset;i++)g+='<div class="cell empty"></div>';
+  vals.forEach((v,i)=>{v=Math.round(v*100)/100;let bg='#F2F3F5',col='var(--muted2)';if(v>0){bg='rgba(0,197,102,'+Math.min(1,0.3+Math.abs(v)/(maxAbs(vals)||1))+')';col='#fff';}else if(v<0){bg='rgba(246,70,93,'+Math.min(1,0.3+Math.abs(v)/(maxAbs(vals)||1))+')';col='#fff';}
+    const day=new Date(dates[0]+'T00:00:00');day.setDate(day.getDate()+i);
+    g+='<div class="cell" style="background:'+bg+'"><span class="d" style="color:'+(v!==0?'#fff':'var(--muted2)')+'">'+day.getDate()+'</span>'+(v!==0?'<span class="p" style="color:'+col+'">'+(v>0?'+':'')+v+'</span>':'')+'</div>';});
+  el.innerHTML=g+'</div>';
+}
+function maxAbs(a){return Math.max(...a.map(Math.abs));}
+
+/* ===== static donut/legend data ===== */
+const SEG_OV=[{name:'资金账户',pct:1.71,usd:'$34.68',color:'#2B6CF0'},{name:'现货',pct:9.92,usd:'$200.76',color:'#F5C542'},{name:'合约',pct:25.23,usd:'$510.45',color:'#16B47A'},{name:'理财账户',pct:63.13,usd:'$1,277.06',color:'#7C6CFF'},{name:'Launchpad',pct:0.01,usd:'$0.00',color:'#B7BDC6'}];
+const SEG_COIN=[{name:'USDT',pct:71.4,usd:'$1,444.5',color:'#2B6CF0'},{name:'ETH',pct:15.2,usd:'$307.5',color:'#6AA0F0'},{name:'BTC',pct:8.9,usd:'$180.0',color:'#16B47A'},{name:'BNB',pct:3.1,usd:'$62.7',color:'#F5C542'},{name:'其他',pct:1.4,usd:'$28.3',color:'#B7BDC6'}];
+const COIN_PROFIT=[{i:1,nm:'Ethereum',cd:'ETH',amt:'$96.20',pc:'+18.40%',g:1},{i:2,nm:'Bitcoin',cd:'BTC',amt:'$61.05',pc:'+4.89%',g:1}];
+const COIN_LOSS=[{i:1,nm:'BNB',cd:'BNB',amt:'-$1.72',pc:'-0.84%',g:0},{i:2,nm:'Tether',cd:'USDT',amt:'-$0.30',pc:'-0.02%',g:0}];
+const SEG_PNL_ASSET=[{name:'USDT',pct:96.7,color:'#2B6CF0'},{name:'BNB',pct:3.3,color:'#F5C542'}];
+
+/* ===== formatters ===== */
+const fUSD=v=>(v<0?'-$':'$')+Math.abs(v).toFixed(2);
+const fUSDT=v=>v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' USDT';
+const fUSDword=v=>(v>=0?'+':'')+v.toFixed(2)+' USD';
+const fPct=v=>(v>=0?'+':'')+v.toFixed(2)+'%';
+
+/* ===== per-range draws ===== */
+const OV_CHANGE={'1天':-3.82,'7天':-12.5,'30天':46.2,'180天':188.4,'360天':523.1};
+function drawOverview(label){
+  const days={'1天':1,'7天':7,'30天':30,'180天':180,'360天':360}[label];
+  const n=npts(days),end=2022.95,change=OV_CHANGE[label],seed=days*13+7;
+  const data=genLine(n,end,change,Math.max(6,Math.abs(change)*0.5),seed);
+  const color=change>=0?'#00C566':'#F6465D';
+  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT});
+  const pct=change/(end-change)*100;
+  const pill=document.getElementById('ov-pill');
+  pill.className='pill-pct '+(change>=0?'up':'dn');
+  pill.textContent=(change>=0?'▲ +':'▼ ')+pct.toFixed(2)+'%';
+}
+function drawReport(days,startStr,endStr){
+  const s=startStr||rangeStart(days),e=endStr||TODAY,n=npts(days),seed=days*7+3;
+  // asset analysis — total asset ending 2022.95
+  const change=({7:-14.9,30:-35.4,90:88.6})[days] ?? (days<=30?-days*1.1:days*0.9);
+  const asset=genLine(n,2022.95,change,Math.max(8,Math.abs(change)*0.6),seed);
+  const acolor=change>=0?'#00C566':'#F6465D';
+  areaLine(document.getElementById('rp-asset-line'),asset,acolor,true,{start:s,end:e,fmt:fUSD.bind(null)});
+  document.getElementById('ra-label').textContent=(days+' 天变化');
+  document.getElementById('ra-change').textContent=fUSD(change);
+  document.getElementById('ra-change').className='big-num '+(change>=0?'g':'r');
+  const apct=change/(2022.95-change)*100;
+  document.getElementById('ra-pct').textContent=fPct(apct);
+  document.getElementById('ra-pct').className=(change>=0?'g':'r');
+  // trade analysis — daily pnl
+  const daily=genDaily(n,days<=7?3.2:days<=30?4.5:6.0,-0.7,seed+99);
+  const total=daily.reduce((a,b)=>a+b,0);
+  areaLine(document.getElementById('rp-trade-line'),daily,total>=0?'#00C566':'#F6465D',true,{start:s,end:e,fmt:fUSD});
+  document.getElementById('ta-label').textContent=(days+' 天交易盈亏');
+  document.getElementById('ta-total').textContent=fUSD(total);
+  document.getElementById('ta-total').className='big-num '+(total>=0?'g':'r');
+  const dts=spread(s,e,n);
+  calHeat(document.getElementById('rp-trade-cal'),daily,dts);
+}
+function drawPnl(days,startStr,endStr){
+  const s=startStr||rangeStart(days),e=endStr||TODAY,n=npts(days),seed=days*11+5,dts=spread(s,e,n);
+  // daily pnl
+  const daily=genDaily(n,days<=7?4:days<=30?9:16,days<=7?-0.3:2.2,seed);
+  barChart(document.getElementById('pnl-daily-bar'),daily,dts);
+  calHeat(document.getElementById('pnl-daily-cal'),daily,dts);
+  document.getElementById('dp-today').textContent=fUSDword(daily[n-1]);
+  document.getElementById('dp-today').className=daily[n-1]>=0?'g':'r';
+  // cumulative
+  const cum=cumsum(daily);const cumEnd=cum[n-1];
+  areaLine(document.getElementById('pnl-cum-line'),cum,cumEnd>=0?'#00C566':'#F6465D',false,{start:s,end:e,fmt:fUSDword});
+  document.getElementById('pnl-cum-head').textContent=fUSDword(cumEnd);
+  document.getElementById('pnl-cum-head').className=cumEnd>=0?'g':'r';
+  // gain/loss/net
+  const gain=daily.filter(v=>v>0).reduce((a,b)=>a+b,0),loss=daily.filter(v=>v<0).reduce((a,b)=>a+b,0);
+  document.getElementById('pnl-gain').textContent=gain.toFixed(2)+' USD';
+  document.getElementById('pnl-loss').textContent=Math.abs(loss).toFixed(2)+' USD';
+  document.getElementById('pnl-net').textContent=(gain+loss).toFixed(2)+' USD';
+  // rate multi-line
+  const ownPct=cumEnd/510.45*100;
+  const own=genLine(n,ownPct,ownPct,Math.abs(ownPct)*0.5+1,seed+1);
+  const btcEnd=({7:1.2,30:4.89,90:12.4,365:41.2})[days]??4.89, bnbEnd=({7:-0.84,30:-0.84,90:5.1,365:22.5})[days]??-0.84;
+  const btc=genLine(n,btcEnd,btcEnd,Math.abs(btcEnd)+3,seed+2);
+  const bnb=genLine(n,bnbEnd,bnbEnd,Math.abs(bnbEnd)+3,seed+3);
+  multiLine(document.getElementById('pnl-rate-line'),[{color:'#00C566',vals:own},{color:'#2B6CF0',vals:btc},{color:'#6AA0F0',vals:bnb}],dts);
+  document.getElementById('rate-own').textContent=fPct(ownPct);document.getElementById('rate-own').className='pct '+(ownPct>=0?'g':'r');
+  document.getElementById('rate-btc').textContent=fPct(btcEnd);document.getElementById('rate-btc').className='pct '+(btcEnd>=0?'g':'r');
+  document.getElementById('rate-bnb').textContent=fPct(bnbEnd);document.getElementById('rate-bnb').className='pct '+(bnbEnd>=0?'g':'r');
+  // asset value
+  const val=genLine(n,325.66,({7:-5.2,30:22.4,90:60.5,365:140.2})[days]??20,Math.max(3,days*0.2),seed+4);
+  areaLine(document.getElementById('pnl-value-line'),val,'#00C566',true,{start:s,end:e,fmt:v=>v.toFixed(2)+' USD'});
+  document.getElementById('pnl-val-head').textContent='+'+val[n-1].toFixed(2)+' USD';
 }
 
+/* ===== range selectors ===== */
+function setOvRange(el,label){pick(el);drawOverview(label);}
+function setReportRange(el,label,days){pick(el);drawReport(days);}
+function setPnlRange(el,label,days){pick(el);drawPnl(days);}
+
+/* ===== overview chart toggle/collapse ===== */
+function ovChart(v){document.getElementById('ov-tab-line').classList.toggle('on',v==='line');document.getElementById('ov-tab-pie').classList.toggle('on',v==='pie');document.getElementById('ov-view-line').classList.toggle('on',v==='line');document.getElementById('ov-view-pie').classList.toggle('on',v==='pie');}
+function collapseOv(){document.getElementById('ov-chart-wrap').style.display='none';document.getElementById('ov-expand').style.display='block';}
+function expandOv(){document.getElementById('ov-chart-wrap').style.display='block';document.getElementById('ov-expand').style.display='none';}
+function taView(v){document.getElementById('ta-tab-line').classList.toggle('on',v==='line');document.getElementById('ta-tab-cal').classList.toggle('on',v==='cal');document.getElementById('ta-view-line').classList.toggle('on',v==='line');document.getElementById('ta-view-cal').classList.toggle('on',v==='cal');}
+function dpView(v){document.getElementById('dp-tab-bar').classList.toggle('on',v==='bar');document.getElementById('dp-tab-cal').classList.toggle('on',v==='cal');document.getElementById('dp-view-bar').classList.toggle('on',v==='bar');document.getElementById('dp-view-cal').classList.toggle('on',v==='cal');}
+function coinTab(t){document.getElementById('coin-tab-p').classList.toggle('on',t==='p');document.getElementById('coin-tab-l').classList.toggle('on',t==='l');renderRank(t==='p'?COIN_PROFIT:COIN_LOSS);}
+function renderRank(list){document.getElementById('rp-coin-rank').innerHTML=list.map(r=>'<div class="rank"><div class="l"><span class="idx" style="color:'+(r.i===1?'#F6465D':'#F5C542')+'">'+r.i+'</span><div><div class="nm">'+r.nm+'</div><div class="cd">'+r.cd+'</div></div></div><div><div class="amt">'+r.amt+'</div><div class="pc '+(r.g?'g':'r')+'">'+r.pc+'</div></div></div>').join('');}
+
+/* ===== custom date picker ===== */
+let customTarget=null;
+function openDatePicker(el){pick(el);customTarget=el;document.getElementById('dmask').classList.add('on');document.getElementById('datesheet').classList.add('on');}
+function closeDate(){document.getElementById('dmask').classList.remove('on');document.getElementById('datesheet').classList.remove('on');document.querySelectorAll('.date-presets button').forEach(b=>b.classList.remove('on'));}
+function setPreset(btn,days){document.querySelectorAll('.date-presets button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');const end=new Date(TODAY+'T00:00:00'),start=new Date(end);start.setDate(start.getDate()-(days-1));document.getElementById('date-start').value=iso(start);document.getElementById('date-end').value=iso(end);}
+function confirmDate(){
+  const s=document.getElementById('date-start').value,e=document.getElementById('date-end').value;
+  if(!s||!e){toast('请选择开始和结束日期');return;}
+  if(s>e){toast('开始日期不能晚于结束日期');return;}
+  const days=Math.max(2,Math.round((new Date(e)-new Date(s))/86400000)+1);
+  if(customTarget){customTarget.textContent=s.slice(5)+' ~ '+e.slice(5);
+    if(customTarget.closest('#screen-report'))drawReport(days,s,e);
+    else if(customTarget.closest('#screen-pnl'))drawPnl(days,s,e);}
+  closeDate();toast('已选择 '+s+' ~ '+e);
+}
+
+/* ===== init ===== */
+function renderLegend(el,segs,hl){el.innerHTML=segs.map((s,i)=>'<div class="lg'+(hl&&i===3?' hl':'')+'"><div class="l"><span class="dot" style="background:'+s.color+'"></span><div><div>'+s.name+' <b>'+s.pct+'%</b></div><div style="font-size:12px;color:var(--muted2);">'+s.usd+'</div></div></div></div>').join('');}
+function renderCoinLegend(el,segs){el.innerHTML=segs.map(s=>'<div style="padding:6px 4px;"><div style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:5px;border-radius:3px;background:'+s.color+';display:inline-block;"></span><span style="font-size:13px;font-weight:600;">'+s.name+' '+s.pct+'%</span></div><div style="font-size:12px;color:var(--muted2);margin-left:20px;">'+s.usd+'</div></div>').join('');}
 function initCharts(){
-  // overview (默认7天)
-  drawOverviewLine(rangeStart(7),TODAY);
-  donut(document.getElementById('ov-donut'),SEG_OV,140);
-  renderLegend(document.getElementById('ov-legend'),SEG_OV,true);
-  // report (默认7天)
-  drawReportCharts(rangeStart(7),TODAY);
-  calHeat(document.getElementById('rp-trade-cal'),calData([0,-2.1,-1.7,-0.3,1.0,-0.5,-0.31],2,15));
-  donut(document.getElementById('rp-coin-donut'),SEG_COIN,150);
-  renderCoinLegend(document.getElementById('rp-coin-legend'),SEG_COIN);
-  renderRank(COIN_PROFIT);
-  // pnl (默认近1个月)
-  barChart(document.getElementById('pnl-daily-bar'),D_PNL_BAR);
-  calHeat(document.getElementById('pnl-daily-cal'),calData(D_PNL_BAR,1,22));
-  drawPnlCharts(rangeStart(30),TODAY);
+  drawOverview('7天');
+  donut(document.getElementById('ov-donut'),SEG_OV,140);renderLegend(document.getElementById('ov-legend'),SEG_OV,true);
+  drawReport(7);
+  donut(document.getElementById('rp-coin-donut'),SEG_COIN,150);renderCoinLegend(document.getElementById('rp-coin-legend'),SEG_COIN);renderRank(COIN_PROFIT);
+  drawPnl(30);
   donut(document.getElementById('pnl-asset-donut'),SEG_PNL_ASSET,150);
-  renderPnlAssetLegend();
+  document.getElementById('pnl-asset-legend').innerHTML=SEG_PNL_ASSET.map(s=>'<div style="display:flex;align-items:center;gap:6px;font-size:14px;"><span style="width:14px;height:5px;border-radius:3px;background:'+s.color+';display:inline-block;"></span>'+s.name+' '+s.pct+'%</div>').join('');
 }
-
-/* ---------- range selectors ---------- */
-function setOvRange(el,days){pick(el);drawOverviewLine(rangeStart(days),TODAY);}
-function setReportRange(el,days){pick(el);drawReportCharts(rangeStart(days),TODAY);}
-function setPnlRange(el,days){pick(el);drawPnlCharts(rangeStart(days),TODAY);}
-
-/* ---------- view toggles ---------- */
-function toggleOvChart(){
-  const wrap=document.getElementById('ov-chart-wrap');
-  const icon=document.getElementById('ov-toggle-icon').querySelector('svg');
-  const hidden=wrap.style.display==='none';
-  wrap.style.display=hidden?'block':'none';
-  icon.setAttribute('stroke',hidden?'#00C566':'#B7BDC6');
-}
-function ovChart(v){
-  document.getElementById('ov-tab-line').classList.toggle('on',v==='line');
-  document.getElementById('ov-tab-pie').classList.toggle('on',v==='pie');
-  document.getElementById('ov-view-line').classList.toggle('on',v==='line');
-  document.getElementById('ov-view-pie').classList.toggle('on',v==='pie');
-}
-function taView(v){
-  document.getElementById('ta-tab-line').classList.toggle('on',v==='line');
-  document.getElementById('ta-tab-cal').classList.toggle('on',v==='cal');
-  document.getElementById('ta-view-line').classList.toggle('on',v==='line');
-  document.getElementById('ta-view-cal').classList.toggle('on',v==='cal');
-}
-function dpView(v){
-  document.getElementById('dp-tab-bar').classList.toggle('on',v==='bar');
-  document.getElementById('dp-tab-cal').classList.toggle('on',v==='cal');
-  document.getElementById('dp-view-bar').classList.toggle('on',v==='bar');
-  document.getElementById('dp-view-cal').classList.toggle('on',v==='cal');
-}
-function coinTab(t){
-  document.getElementById('coin-tab-p').classList.toggle('on',t==='p');
-  document.getElementById('coin-tab-l').classList.toggle('on',t==='l');
-  renderRank(t==='p'?COIN_PROFIT:COIN_LOSS);
-}
-
 initCharts();
 </script>
 </body>
