@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PNL 分析竞品口径调研 & 通用规则</title>
+<style>
+:root{--green:#00C566;--green-d:#00A857;--text:#1E2329;--muted:#707A8A;--muted2:#9aa1ab;--border:#EAECEF;--bg:#F5F6F8;--red:#F6465D;--blue:#2B6CF0;--gold:#F5C542;--soft:#F0FBF5;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;color:var(--text);background:#f0f2f5;line-height:1.65;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px 80px;}
+header{background:linear-gradient(135deg,#00C566,#00A857);color:#fff;padding:40px 20px 32px;margin-bottom:28px;}
+header .inner{max-width:1080px;margin:0 auto;}
+header h1{font-size:26px;font-weight:800;letter-spacing:-.3px;}
+header .sub{opacity:.92;margin-top:8px;font-size:14px;}
+header .meta{margin-top:14px;font-size:12px;opacity:.8;}
+h2{font-size:20px;font-weight:800;margin:38px 0 14px;padding-left:12px;border-left:4px solid var(--green);}
+h3{font-size:16px;font-weight:700;margin:24px 0 10px;}
+p{font-size:14px;color:#3a424c;margin:8px 0;}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;vertical-align:middle;margin-left:6px;}
+.tag.hi{background:#FEECEE;color:var(--red);}
+.tag.mid{background:#FFF7E0;color:#b8860b;}
+.tag.low{background:#EEF1F4;color:var(--muted);}
+.tag.yes{background:var(--soft);color:var(--green-d);}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 6px rgba(20,30,50,.04);}
+.tbl-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin:14px 0;-webkit-overflow-scrolling:touch;}
+table{border-collapse:collapse;width:100%;min-width:820px;font-size:13px;}
+th,td{border-bottom:1px solid var(--border);padding:11px 13px;text-align:left;vertical-align:top;}
+th{background:#fafbfc;font-weight:700;color:#333;position:sticky;top:0;white-space:nowrap;}
+td:first-child,th:first-child{position:sticky;left:0;background:#fafbfc;font-weight:600;z-index:1;}
+tbody td:first-child{background:#fff;}
+.f{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#f6f7f9;padding:1px 5px;border-radius:4px;color:#2a2f36;}
+.diff{color:var(--red);font-weight:600;}
+.same{color:var(--green-d);font-weight:600;}
+ul{margin:8px 0 8px 20px;} li{font-size:14px;margin:5px 0;color:#3a424c;}
+.rule{background:var(--soft);border:1px solid #bfebd3;border-radius:12px;padding:16px 20px;margin:14px 0;}
+.rule .f{background:#fff;}
+.two-fam{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+@media(max-width:640px){.two-fam{grid-template-columns:1fr;}}
+.fam{border-radius:12px;padding:16px;}
+.fam.a{background:#EEF4FF;border:1px solid #cddffb;}
+.fam.b{background:#FFF6EC;border:1px solid #f4dcb8;}
+.fam h4{font-size:15px;margin-bottom:6px;}
+.pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:20px;background:#fff;border:1px solid var(--border);margin:3px 4px 3px 0;}
+.rec{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--border);}
+.rec:last-child{border-bottom:none;}
+.rec .verdict{flex-shrink:0;font-size:12px;font-weight:700;width:52px;text-align:center;padding:3px 0;border-radius:6px;}
+.v-add{background:var(--soft);color:var(--green-d);}
+.v-opt{background:#FFF7E0;color:#b8860b;}
+.v-no{background:#EEF1F4;color:var(--muted);}
+.rec .body{font-size:13.5px;}
+.rec .body b{font-weight:700;}
+.rec .body .src{color:var(--muted);font-size:12px;}
+.pri{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:5px;margin-right:6px;}
+.p1{background:#FEECEE;color:var(--red);} .p2{background:#FFF7E0;color:#b8860b;} .p3{background:#EEF1F4;color:var(--muted);}
+.note{font-size:12.5px;color:var(--muted);background:#fafbfc;border-left:3px solid var(--border);padding:8px 12px;margin:10px 0;border-radius:0 8px 8px 0;}
+.foot{text-align:center;color:var(--muted2);font-size:12px;margin-top:40px;}
+</style>
+</head>
+<body>
+<header><div class="inner">
+  <h1>PNL 分析 · 竞品口径调研 &amp; 通用规则</h1>
+  <div class="sub">对标 OKX / Bitget / Bybit / Gate（币安作基准），拉齐字段口径 → 输出统一规则 → 新功能与交互建议</div>
+  <div class="meta">整理日期：2026-07-22 ｜ 素材：各家 App「盈亏/收益分析」页 &amp; 指标说明弹窗 ｜ 用途：PNL 需求评审前置调研</div>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+<p><b>一句话结论：</b>各家的盈亏定义"形似神不同"。核心分歧不在展示，而在<b>三件事</b>——①用<b>总资产</b>还是<b>钱包余额</b>作基准（决定含不含未实现盈亏）；②<b>时区/日切</b>（UTC+0 还是 UTC+8）；③<b>净流水</b>怎么算（净转入 vs 净充值+净提币）。把这三件事定死，其余公式基本可统一。同事说的"没想象那么简单"正是卡在这里。</p>
+</div>
+
+<!-- ============ PART 1 ============ -->
+<h2>一、字段口径对照表</h2>
+<p>下表按指标逐行对比各家公式（Bybit 未展开公式弹窗，主要提供平仓明细/K线维度，单列说明）。</p>
+
+<div class="tbl-scroll">
+<table>
+<thead><tr>
+<th>指标</th><th>币安（基准）</th><th>OKX</th><th>Bitget</th><th>Gate</th><th>差异点</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>今日盈亏</td>
+<td>当前资产 − 今日初始资产 − 今日净划转和净充值<br><span class="src" style="color:#9aa1ab;font-size:11px;">不含 Alpha 账户</span></td>
+<td>当前资产 − 今日初始总资产 − 今日净充值 <b class="diff">+ 今日净提币</b> (UTC)<br><span style="color:#9aa1ab;font-size:11px;">0:00–4:00 维护不计算</span></td>
+<td>当前资产 − 0时(UTC+0)资产 − 当日净划入</td>
+<td>期末资产 − 期初资产 − 净划入（充+提+其他）</td>
+<td><span class="diff">净流水口径不一</span>：币安/Gate 合并"净划转充值"；OKX 拆成"净充值 − 净提币"（符号相反本质相同）</td>
+</tr>
+<tr>
+<td>每日盈亏<br>（合约/交易）</td>
+<td>—</td>
+<td>累计盈亏 = 每日盈亏之和（资产口径）</td>
+<td class="f">每日24:00钱包余额 − 每日00:00钱包余额 − 每日资金净转入，<b class="diff">不含未实现盈亏</b></td>
+<td>当天所有<b>完全平仓仓位</b>总和；统计周期 前一日00:00→当日00:00</td>
+<td><span class="diff">口径分家</span>：Bitget=钱包差额(不含未实现)；Gate=已平仓仓位(已实现)</td>
+</tr>
+<tr>
+<td>累计盈亏</td>
+<td>账户创建以来净盈亏<br><span style="color:#9aa1ab;font-size:11px;">仅 2020-08 后</span></td>
+<td>所选区间每日盈亏之和</td>
+<td>期末钱包余额 − 期初钱包余额 − 期间资金净转入</td>
+<td>当前资产 − 初始资产 − 期间净转入<br><span class="same">含已实现+未实现</span>；初始=180天前00:00</td>
+<td>两种算法：<b>每日之和</b>(OKX) vs <b>期末−期初−净流水</b>(其余)；含不含未实现随口径</td>
+</tr>
+<tr>
+<td>累计盈亏率</td>
+<td>—</td>
+<td>$/% 切换展示</td>
+<td>累计盈亏 ÷ (期初钱包余额 + 期间<b>日均</b>资金总转入)；特殊情境 N/A</td>
+<td>累计盈亏 ÷ (期初账户资产 + 期间转入 − 转出)</td>
+<td><span class="diff">分母口径不一</span>：Bitget用"期初+日均转入"，Gate用"期初+转入−转出"</td>
+</tr>
+<tr>
+<td>本月盈亏</td>
+<td>—</td>
+<td>—</td>
+<td>本月第一个自然日 00:00(UTC+0) → 当前时刻累计盈亏</td>
+<td>（同左，Bitget系）</td>
+<td><span class="same">口径一致</span></td>
+</tr>
+<tr>
+<td>总盈利/总亏损/净</td>
+<td>总盈利=已实现获利加总；净=总盈利−总亏损</td>
+<td>总盈亏(平仓)=已结盈亏 <b class="diff">+ 开平仓手续费 + 资金费用</b></td>
+<td>总盈利/总亏损分列（含平均持仓、多空比、平均盈亏）</td>
+<td>随"展示手续费"开关决定是否计入手续费</td>
+<td><span class="diff">手续费/资金费是否计入不一</span>；OKX明确计入，Gate做成开关</td>
+</tr>
+<tr>
+<td>资产走势</td>
+<td>资产变动%=(末−初)/初</td>
+<td>总资产走势(USD)，$/% 切换</td>
+<td>合约账户资产变化，<b class="diff">不含未实现盈亏</b></td>
+<td>资产市值走势</td>
+<td>Bitget资产走势排除未实现，与其"钱包口径"一致</td>
+</tr>
+<tr>
+<td>对比基准</td>
+<td>—</td>
+<td>—</td>
+<td>累计盈亏率 vs <b>BTC累计涨跌幅</b></td>
+<td>累计盈亏率 vs BTC / BNB 标记价涨跌率</td>
+<td><span class="same">思路一致</span>：叠加 BTC 参照线</td>
+</tr>
+<tr>
+<td>时区 / 日切</td>
+<td>UTC+0（每日0:00）</td>
+<td>UTC（0:00–4:00维护）</td>
+<td>UTC+0（0:00–3:00维护）</td>
+<td>混用：收益页 UTC+8，报告页 UTC+0</td>
+<td><span class="diff">Gate 存在 UTC+8/UTC+0 混用</span>，易误解——我方须统一</td>
+</tr>
+<tr>
+<td>数据边界</td>
+<td>不含 Alpha</td>
+<td>机器人/跟单交易量不计入；维护时段不计算</td>
+<td>平仓后更新；起算有下限</td>
+<td>历史从 2022-11-01；平仓后 3h 内更新</td>
+<td>各家都有"排除项 + 起算下限 + 更新延迟"三类边界</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="note">Bybit 本次主要展示了 <b>平仓订单/平仓仓位明细</b> 与 <b>K线标注开平仓点 + Win 徽章</b>（单笔：入场/出场价、开平仓交易量、开平仓手续费、资金费用、成交类型、持仓周期），属"交易明细"维度，口径公式未单独弹窗。</p>
+
+<!-- ============ PART 2 ============ -->
+<h2>二、通用规则建议（可落地口径）</h2>
+<p>把分歧收敛为<b>两套口径 + 一组统一边界</b>。所有指标按"场景"选口径，不再逐指标各自定义。</p>
+
+<div class="two-fam">
+  <div class="fam a">
+    <h4>🅰 资产口径（Mark-to-Market）</h4>
+    <p style="font-size:13px;">基于<b>总资产/总估值</b>，<b>天然包含未实现盈亏</b>。用于「资产报告 / 总资产今日盈亏 / 累计盈亏(资产)」。</p>
+    <div class="f" style="display:block;margin-top:8px;background:#fff;">盈亏 = 当前资产 − 期初资产 − 期间净流水</div>
+  </div>
+  <div class="fam b">
+    <h4>🅱 钱包口径（Realized/Cash）</h4>
+    <p style="font-size:13px;">基于<b>钱包余额/已平仓</b>，<b>不含未实现盈亏</b>。用于「合约每日盈亏 / 合约累计盈亏 / 交易分析」。</p>
+    <div class="f" style="display:block;margin-top:8px;background:#fff;">盈亏 = 期末钱包 − 期初钱包 − 期间净流水</div>
+  </div>
+</div>
+
+<div class="rule">
+<h3 style="margin-top:0;">统一约定（两套口径共用）</h3>
+<ul>
+<li><b>净流水</b> = 净转入 − 净转出（= 充值+划入 − 提现+划出），符号统一用"净转入"表达。</li>
+<li><b>时区/日切</b>：全线 <b>UTC+0 每日 00:00</b> 切日（含自定义时间控件与图表日期）。<span class="diff">杜绝 Gate 式 UTC+8/UTC+0 混用。</span></li>
+<li><b>维护窗口</b>：每日 <b>0:00–4:00 (UTC)</b> 数据维护，期间不计算/可能延迟，页面显式标注。</li>
+<li><b>累计盈亏率</b> = 累计盈亏 ÷ (期初资产 + 期间日均净转入)；分母 ≤ 0 或初始为 0 时显示 <b>N/A / 仅显额不显率</b>。</li>
+<li><b>手续费/资金费</b>：合约平仓总盈亏<b>默认计入</b>开平仓手续费与资金费用，并提供「<b>展示手续费</b>」开关切换显隐。</li>
+<li><b>排除项</b>：交易机器人、跟单产生的交易量/盈亏<b>不计入</b>统计（或单列）。</li>
+<li><b>起算基线</b>：定一个明确起算时间（如账户创建或某固定日）并在"累计/历史盈亏"弹窗标注。</li>
+<li><b>精度</b>：金额/百分比统一 2 位、<b>截断</b>（已在原型落地）。</li>
+</ul>
+</div>
+
+<!-- ============ PART 3 ============ -->
+<h2>三、竞品新功能 · 是否引入建议</h2>
+
+<div class="card">
+<div class="rec"><span class="verdict v-add">建议加</span><div class="body"><b>交易分析质量指标</b>：胜率、盈亏比、风险回报比、仓位数、多空比、平均持仓时间、最大收益/最大亏损、平均盈亏。<div class="src">来源：Gate/Bitget/OKX ｜ 理由：这是"交易者"最想看的核心，竞品普遍标配，我方目前完全缺失。</div></div></div>
+<div class="rec"><span class="verdict v-add">建议加</span><div class="body"><b>盈亏排名</b>（按合约/币种，按绝对值从大到小）。<div class="src">来源：OKX/Bitget ｜ 理由：快速定位盈亏来源，低成本高价值。</div></div></div>
+<div class="rec"><span class="verdict v-add">建议加</span><div class="body"><b>平仓订单 / 平仓仓位</b> 明细 + 单笔详情（入场/出场价、开平仓量、开平仓手续费、资金费用、成交类型、持仓周期）。<div class="src">来源：OKX/Bybit ｜ Bybit 的 <b>K线标注开平仓点 + Win 徽章</b> 体验很亮眼，值得借鉴。</div></div></div>
+<div class="rec"><span class="verdict v-add">建议加</span><div class="body"><b>BTC 对比基准线</b>（累计盈亏率 vs BTC 涨跌）。<div class="src">来源：Gate/Bitget/OKX ｜ 理由：极低成本，帮助用户判断"跑赢/跑输大盘"。</div></div></div>
+<div class="rec"><span class="verdict v-add">建议加</span><div class="body"><b>收益额 / 收益率 / 资产走势</b> 三视图切换 + <b>$/% 切换</b>。<div class="src">来源：Gate/OKX ｜ 理由：同一区域承载多维度，信息密度高。</div></div></div>
+<div class="rec"><span class="verdict v-add">建议加</span><div class="body"><b>日历点选 tooltip 增强</b>：显示 单日盈亏/已实现/未实现/其他盈亏/净划转/交易量。<div class="src">来源：Bitget/OKX ｜ 我方日历目前只显数字、无点选详情。</div></div></div>
+<div class="rec"><span class="verdict v-add">建议加</span><div class="body"><b>展示手续费开关</b> + <b>数据更新时间/维护提示</b>。<div class="src">来源：Gate/OKX ｜ 口径透明度，减少客诉。</div></div></div>
+<div class="rec"><span class="verdict v-opt">可选</span><div class="body"><b>币种组成 / 资产分布</b> 双切换（币种维度 vs 账户维度）。<div class="src">来源：Bitget/OKX ｜ 我方已有饼图，可低成本升级为双切换。</div></div></div>
+<div class="rec"><span class="verdict v-opt">可选</span><div class="body"><b>账户 / 币种 / 合约 筛选器</b>（主账户/子账户、USDT、全部合约…）。<div class="src">取决于我方是否有子账户体系与多结算币种。</div></div></div>
+<div class="rec"><span class="verdict v-no">暂不</span><div class="body"><b>期权 / TradFi 独立 tab</b>。<div class="src">来源：OKX/Bitget ｜ 取决于我方是否已有这些业务线，无业务则不做。</div></div></div>
+</div>
+
+<!-- ============ PART 4 ============ -->
+<h2>四、当前原型缺失的交互（待补清单）</h2>
+<p>原型<b>已有</b>：时间切换联动、折线落点可拖动 scrub、日历月份切换 + 0值填充、饼图/折线切换、标题下拉切换页面、自定义日期弹层、图表收起。<br><b>对比竞品还缺</b>：</p>
+
+<div class="card">
+<div class="rec"><div class="body"><span class="pri p1">P0</span><b>指标 ⓘ 口径说明弹窗</b>——每个指标（今日盈亏/累计盈亏/累计盈亏率/总盈利…）点 ⓘ 弹出公式说明。竞品<b>全都有</b>，我方全无。<span class="tag hi">最高优先</span></div></div>
+<div class="rec"><div class="body"><span class="pri p1">P0</span><b>日历日期点选 tooltip</b>——点某天弹出该日多维盈亏明细（对齐第三节增强项）。</div></div>
+<div class="rec"><div class="body"><span class="pri p1">P0</span><b>交易分析指标区</b>——新增胜率/盈亏比/最大收益亏损/多空比/平均持仓等（内容+交互）。</div></div>
+<div class="rec"><div class="body"><span class="pri p2">P1</span><b>柱状图落点/点选 tooltip</b>——单日盈亏柱状图支持点选查看当日详情。</div></div>
+<div class="rec"><div class="body"><span class="pri p2">P1</span><b>盈亏排名 + 平仓明细列表</b>——列表 + 单笔详情。</div></div>
+<div class="rec"><div class="body"><span class="pri p2">P1</span><b>收益额/收益率/资产走势 三切换 + BTC 对比线 + $/% 切换</b>。</div></div>
+<div class="rec"><div class="body"><span class="pri p3">P2</span><b>账户/币种/合约 筛选器</b>（顶部下拉）。</div></div>
+<div class="rec"><div class="body"><span class="pri p3">P2</span><b>展示手续费开关</b> &amp; <b>数据更新时间/维护提示</b>。</div></div>
+</div>
+
+<div class="rule">
+<h3 style="margin-top:0;">建议下一步（供你拍板）</h3>
+<p style="margin:4px 0;">先落 <b>P0 三项</b>到原型（指标 ⓘ 弹窗 + 日历点选 tooltip + 交易分析指标区）——它们最贴合"PNL 分析"评审、且改造量可控。P1/P2 再排后续迭代。</p>
+</div>
+
+<div class="foot">本调研由现有 12+ 张竞品截图整理而成；品牌归属为按 UI 风格与术语推断，如有出入以实际为准。</div>
+
+</div>
+</body>
+</html>
