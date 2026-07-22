@@ -163,6 +163,50 @@ section{padding:0 16px;}
 .cal-cell.today{outline:1.5px solid var(--green);}
 .cal-cell.empty{background:transparent;}
 
+/* info sheet + interactions */
+.click-i{cursor:pointer;}
+.info-body{padding:2px 22px 6px;}
+.info-body .fdef{font-size:14.5px;color:#3a424c;line-height:1.65;margin-top:6px;}
+.info-body .fnote{font-size:12px;color:var(--muted2);margin-top:8px;line-height:1.6;}
+.cal-wrapper{position:relative;}
+.cal-cell{cursor:pointer;}
+.cal-tip{position:absolute;z-index:5;background:#1E2329;color:#fff;border-radius:10px;padding:9px 12px;font-size:11px;line-height:1.75;white-space:nowrap;transform:translate(-50%,calc(-100% - 8px));pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.25);}
+.cal-tip .row{display:flex;justify-content:space-between;gap:18px;}
+.cal-tip .k{color:#b7bdc6;} .cal-tip .dd{font-weight:700;margin-bottom:3px;}
+.cal-tip::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #1E2329;}
+.uc-tog{display:inline-flex;background:#F2F3F5;border-radius:8px;padding:2px;vertical-align:middle;margin-left:10px;}
+.uc-tog button{border:none;background:transparent;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted2);cursor:pointer;}
+.uc-tog button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.bar-tip{position:absolute;z-index:5;background:#1E2329;color:#fff;border-radius:8px;padding:6px 10px;font-size:11px;white-space:nowrap;transform:translate(-50%,calc(-100% - 8px));pointer-events:none;}
+.bar-tip .tv{font-weight:700;}
+/* trade metrics */
+.tm-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px 8px;margin:14px 0 4px;}
+.tm-grid .k{font-size:12px;color:var(--muted);}
+.tm-grid .v{font-size:17px;font-weight:700;margin-top:3px;}
+.pl-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:14px 0 6px;background:#F2F3F5;}
+.pl-cap{display:flex;justify-content:space-between;font-size:12px;}
+/* ranking */
+.rk .row{display:flex;align-items:center;gap:10px;padding:8px 0;}
+.rk .nm{width:92px;font-size:13px;font-weight:600;flex-shrink:0;}
+.rk .track{flex:1;height:8px;background:#F2F3F5;border-radius:4px;overflow:hidden;}
+.rk .fill{height:100%;border-radius:4px;}
+.rk .amt{width:70px;text-align:right;font-size:13px;font-weight:700;}
+/* close orders */
+.mini-tabs{display:flex;gap:22px;border-bottom:1px solid var(--border);margin:6px 0 12px;}
+.mini-tabs span{font-size:14px;font-weight:600;color:var(--muted2);padding-bottom:8px;cursor:pointer;position:relative;}
+.mini-tabs span.on{color:var(--text);}
+.mini-tabs span.on::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:2px;background:var(--green);}
+.oc{background:#F7F8FA;border-radius:12px;padding:14px;margin:10px 0;}
+.oc .top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.oc .sym{font-size:15px;font-weight:700;}
+.oc .badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;}
+.oc .b-long{background:#E3F9EF;color:var(--green-d);} .oc .b-short{background:#FEECEE;color:var(--red);} .oc .b-win{background:#FFF3E0;color:#b8860b;}
+.oc .pnl{margin-left:auto;font-weight:700;font-size:15px;}
+.oc .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 8px;font-size:12px;}
+.oc .grid .k{color:var(--muted);} .oc .grid .v{font-weight:600;margin-top:2px;}
+.oc-sum{display:grid;grid-template-columns:1fr 1fr;gap:14px 8px;margin:8px 0 14px;}
+.oc-sum .k{font-size:12px;color:var(--muted);} .oc-sum .v{font-size:18px;font-weight:700;margin-top:3px;}
+
 /* bottom sheets */
 .mask{position:absolute;inset:0;background:rgba(0,0,0,.4);display:none;z-index:40;}
 .mask.on{display:block;}
@@ -376,7 +420,7 @@ section{padding:0 16px;}
   <div class="subtabs" style="padding-left:16px;"><span class="st on" style="font-size:14px;padding-bottom:6px;">U本位</span></div>
   <div class="scroll">
     <section style="padding-top:14px;">
-      <div class="big-pnl">今日盈亏 <svg class="eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></div>
+      <div class="big-pnl">今日盈亏 <svg class="info-i click-i" onclick="openInfo('today')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
       <div style="display:flex;align-items:baseline;gap:8px;"><div class="big-num r" id="pnl-today" style="margin:6px 0;">-0.16%</div><span class="r" id="pnl-today-usd" style="font-size:15px;">-0.83 USD</span></div>
       <div class="trip">
         <div class="c"><div class="kk">7天盈亏</div><div class="vv r">-0.42%</div><div class="sub r">-2.11 USD</div></div>
@@ -389,9 +433,9 @@ section{padding:0 16px;}
       <span onclick="setPnlRange(this,'近3个月',90)">近3个月</span><span onclick="setPnlRange(this,'近1年',365)">近1年</span><span onclick="openDatePicker(this)">自定义</span>
     </div>
     <section>
-      <div class="kv"><span class="k">总盈利</span><span class="v" id="pnl-gain">210.44 USD</span></div>
-      <div class="kv"><span class="k">总亏损</span><span class="v" id="pnl-loss">25.66 USD</span></div>
-      <div class="kv"><span class="k">净盈利/亏损</span><span class="v" id="pnl-net">184.78 USD</span></div>
+      <div class="kv"><span class="k click-i" onclick="openInfo('gain')" style="border-bottom:1px dashed var(--border);">总盈利 ⓘ</span><span class="v" id="pnl-gain">210.44 USD</span></div>
+      <div class="kv"><span class="k click-i" onclick="openInfo('loss')" style="border-bottom:1px dashed var(--border);">总亏损 ⓘ</span><span class="v" id="pnl-loss">25.66 USD</span></div>
+      <div class="kv"><span class="k click-i" onclick="openInfo('net')" style="border-bottom:1px dashed var(--border);">净盈利/亏损 ⓘ</span><span class="v" id="pnl-net">184.78 USD</span></div>
     </section>
     <div class="hgap"></div>
     <div class="subtabs" style="border-bottom:1px solid var(--border);">
@@ -400,7 +444,7 @@ section{padding:0 16px;}
     </div>
     <section style="padding-top:18px;">
       <div class="chart-hd">
-        <div><div style="font-size:18px;font-weight:700;">单日盈亏</div><div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21</div></div>
+        <div><div style="font-size:18px;font-weight:700;">单日盈亏 <svg class="info-i click-i" onclick="openInfo('daily')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div><div style="font-size:12px;color:var(--muted2);margin-top:2px;">点击图表/日历查看当日详情</div></div>
         <div class="viewtog">
           <button class="on" id="dp-tab-bar" onclick="dpView('bar')" title="柱状图"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></button>
           <button id="dp-tab-cal" onclick="dpView('cal')" title="日历图"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button>
@@ -411,14 +455,17 @@ section{padding:0 16px;}
       <div class="view" id="dp-view-cal"><div class="date-lab">每日营收</div><div class="cal" id="pnl-daily-cal"></div></div>
     </section>
     <section style="padding-top:20px;">
-      <div style="font-size:18px;font-weight:700;">累计盈亏</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:18px;font-weight:700;">累计盈亏 <svg class="info-i click-i" onclick="openInfo('cum')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div class="uc-tog"><button class="on" id="cum-usd" onclick="cumMode('usd')">$</button><button id="cum-pct" onclick="cumMode('pct')">%</button></div>
+      </div>
       <div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21</div>
       <div class="g" id="pnl-cum-head" style="font-size:22px;font-weight:700;margin-top:8px;">+142.06 USD</div>
       <div id="pnl-cum-line"></div>
     </section>
     <section style="padding-top:20px;">
-      <div style="font-size:18px;font-weight:700;">累计盈亏率</div>
-      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21</div>
+      <div style="font-size:18px;font-weight:700;">累计盈亏率 <svg class="info-i click-i" onclick="openInfo('rate')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21 · 对比 BTC 累计涨跌</div>
       <div class="legend-lines">
         <div class="ll"><span class="bar" style="background:var(--green);"></span><div><span class="pct g" id="rate-own">+38.10%</span>累计盈亏率%</div></div>
         <div class="ll"><span class="bar" style="background:var(--blue);"></span><div><span class="pct g" id="rate-btc">+4.89%</span>累计BTCUSDT永续合约标记价格涨跌率%</div></div>
@@ -432,11 +479,40 @@ section{padding:0 16px;}
       <div class="legend" id="pnl-asset-legend" style="display:flex;gap:20px;justify-content:center;margin-top:12px;"></div>
     </section>
     <section style="padding-top:24px;">
-      <div style="font-size:18px;font-weight:700;">资产价值</div>
+      <div style="font-size:18px;font-weight:700;">资产价值 <svg class="info-i click-i" onclick="openInfo('value')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
       <div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21</div>
       <div class="g" id="pnl-val-head" style="font-size:22px;font-weight:700;margin-top:8px;">+325.66 USD</div>
       <div id="pnl-value-line"></div>
     </section>
+
+    <!-- 交易分析 (新增) -->
+    <div class="hgap"></div>
+    <section style="padding-top:8px;">
+      <div style="font-size:18px;font-weight:700;">交易分析 <svg class="info-i click-i" onclick="openInfo('trade')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <div class="tm-grid" id="tm-grid"></div>
+      <div class="pl-bar" id="pl-bar"></div>
+      <div class="pl-cap"><span class="g" id="pl-gain">总盈利 0</span><span class="r" id="pl-loss">总亏损 0</span></div>
+    </section>
+
+    <!-- 盈亏排名 (新增) -->
+    <section style="padding-top:24px;">
+      <div style="font-size:18px;font-weight:700;">盈亏排名 <svg class="info-i click-i" onclick="openInfo('rank')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <div class="rk" id="rk-list"></div>
+    </section>
+
+    <!-- 平仓明细 (新增) -->
+    <section style="padding-top:24px;">
+      <div style="font-size:18px;font-weight:700;margin-bottom:12px;">平仓明细</div>
+      <div class="mini-tabs"><span class="on" id="cd-tab-o" onclick="cdTab('o')">平仓订单</span><span id="cd-tab-p" onclick="cdTab('p')">平仓仓位</span></div>
+      <div class="oc-sum">
+        <div><div class="k">平仓订单总数</div><div class="v">5</div></div>
+        <div><div class="k">胜率</div><div class="v g">60%</div></div>
+        <div><div class="k">平仓多单盈亏 (USDT)</div><div class="v g">+0.86</div></div>
+        <div><div class="k">平仓空单盈亏 (USDT)</div><div class="v r">-0.06</div></div>
+      </div>
+      <div id="cd-list"></div>
+    </section>
+
     <div class="footnote">*此页面上的所有数据均按照 UTC+0 时区计算，自定义时间控件和图表中显示的也是 UTC+0 时区的日期。</div>
   </div>
 </div>
@@ -464,6 +540,17 @@ section{padding:0 16px;}
   </div>
 </div>
 
+<div class="mask" id="imask" onclick="closeInfo()"></div>
+<div class="sheet" id="infosheet">
+  <div class="grip"></div>
+  <div class="datesheet-title" id="info-title" style="text-align:left;padding:0 22px;">指标说明</div>
+  <div class="info-body">
+    <div class="fdef" id="info-def"></div>
+    <div class="fnote" id="info-note"></div>
+    <div class="date-actions" style="margin-top:20px;"><button class="confirm" onclick="closeInfo()">我知晓了</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 </div>
 
@@ -484,6 +571,25 @@ function pick(el){el.parentNode.querySelectorAll('span').forEach(s=>s.classList.
 let toastTimer;
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('on'),1300);}
 document.addEventListener('click',e=>{const el=e.target.closest('[data-toast]');if(el)toast(el.getAttribute('data-toast'));});
+
+/* ===== 指标口径说明弹窗 ===== */
+const INFO={
+ today:['今日盈亏','今日盈亏 = 当前资产 − 今日初始资产 − 今日净转入','*今日初始资产为当日 00:00 (UTC+0) 的资产；含未实现盈亏；每日 0:00–4:00 (UTC) 维护期间不计算。'],
+ daily:['每日盈亏','每日盈亏 = 每日 24:00(UTC+0) 钱包余额 − 每日 00:00 钱包余额 − 每日资金净转入','*合约为钱包口径，不包含未实现盈亏。'],
+ cum:['累计盈亏','累计盈亏 = 期末钱包余额 − 期初钱包余额 − 期间资金净转入','*不含未实现盈亏。'],
+ rate:['累计盈亏率','累计盈亏率 = 累计盈亏 ÷ (期初钱包余额 + 期间日均资金总转入)','*特殊情境下计算结果可能为 N/A；对比线为 BTC 累计涨跌幅。'],
+ value:['资产价值','合约账户资产变化趋势，不包含未实现盈亏。',''],
+ gain:['总盈利','期间所有已实现获利加总。',''],
+ loss:['总亏损','期间所有已实现亏损加总。',''],
+ net:['净盈利/亏损','净盈利/亏损 = 总盈利 − 总亏损。',''],
+ trade:['交易分析','基于已完全平仓仓位统计；平仓总盈亏含开平仓手续费与资金费用。','*交易机器人与跟单产生的交易量不纳入统计。'],
+ rank:['盈亏排名','所选时间段内平仓产生的盈亏排名，按绝对值从大到小排序。','']
+};
+function openInfo(k){const i=INFO[k];if(!i)return;document.getElementById('info-title').textContent=i[0];document.getElementById('info-def').textContent=i[1];const n=document.getElementById('info-note');n.textContent=i[2]||'';n.style.display=i[2]?'block':'none';document.getElementById('imask').classList.add('on');document.getElementById('infosheet').classList.add('on');}
+function closeInfo(){document.getElementById('imask').classList.remove('on');document.getElementById('infosheet').classList.remove('on');}
+
+/* pseudo derived metrics for a day (deterministic by date) */
+function dayDerived(key,v){const r=rng(key.split('-').join('')*1+7);const unreal=Math.trunc((r()-0.5)*4*100)/100;const vol=Math.trunc((Math.abs(v)*30+r()*50)*100)/100;return{realized:v,unreal:unreal,other:0,flow:0,vol:vol};}
 
 /* ===== date helpers ===== */
 const TODAY='2026-07-21';
@@ -586,7 +692,24 @@ function barChart(el,vals,dates){
     else{const y=v>=0?zeroY-bh:zeroY;s+='<rect x="'+x+'" y="'+y+'" width="'+bwi+'" height="'+bh+'" rx="1.5" fill="'+(v>=0?'#00C566':'#F6465D')+'"/>';}});
   s+='</svg>';
   const t=[0,.25,.5,.75,1].map(f=>Math.round(f*(vals.length-1)));
-  el.innerHTML=s+'<div class="axis">'+t.map(i=>'<span>'+dates[i]+'</span>').join('')+'</div>';
+  CHARTS_BAR[el.id]={vals,dates};
+  el.innerHTML='<div class="chartbox" style="position:relative">'+s+'<div class="bar-tip" style="display:none"></div></div><div class="axis">'+t.map(i=>'<span>'+dates[i]+'</span>').join('')+'</div>';
+  bindBar(el);
+}
+const CHARTS_BAR={};
+function bindBar(el){
+  const box=el.querySelector('.chartbox');if(!box||el._barBound)return;el._barBound=true;
+  const w=340,pad=16;
+  box.addEventListener('click',ev=>{
+    const cfg=CHARTS_BAR[el.id];if(!cfg)return;const rect=box.getBoundingClientRect();
+    const xv=((ev.clientX)-rect.left)/rect.width*w,bw=(w-2*pad)/cfg.vals.length;
+    let i=Math.floor((xv-pad)/bw);i=Math.max(0,Math.min(cfg.vals.length-1,i));
+    const tip=box.querySelector('.bar-tip'),v=cfg.vals[i];
+    tip.innerHTML='<div>'+cfg.dates[i]+'</div><div class="tv '+(v>=0?'g':'r')+'">'+(v>=0?'+':'')+fSigned(v)+' USDT</div>';
+    const px=(pad+(i+0.5)*bw)/w*rect.width;
+    tip.style.left=Math.max(42,Math.min(rect.width-42,px))+'px';tip.style.top='2px';tip.style.display='block';
+    ev.stopPropagation();
+  });
 }
 function donut(el,segs,size){size=size||140;const stroke=22,r=(size-stroke)/2,c=size/2,circ=2*Math.PI*r;let off=0,p='';segs.forEach(s=>{const len=s.pct/100*circ;p+='<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="'+stroke+'" stroke-dasharray="'+len+' '+(circ-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+c+' '+c+')"/>';off+=len;});el.innerHTML='<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+p+'</svg>';}
 function spreadISO(s,e,n){const a=new Date(s+'T00:00:00'),b=new Date(e+'T00:00:00'),sp=(b-a)/86400000,out=[];for(let i=0;i<n;i++)out.push(iso(new Date(a.getTime()+sp*86400000*i/(n-1))));return out;}
@@ -594,21 +717,39 @@ function calMonth(el,map,y,m){
   const first=new Date(y,m,1),startDow=first.getDay(),dim=new Date(y,m+1,0).getDate();
   const maxA=Math.max(1,...Object.values(map).map(v=>Math.abs(v)));
   let g='<div class="cal-nav"><span class="arw" data-cal="prev">‹</span><span class="mon">'+y+'-'+('0'+(m+1)).slice(-2)+'</span><span class="arw" data-cal="next">›</span></div>';
-  g+='<div class="cal-wk"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div><div class="cal-grid">';
+  g+='<div class="cal-wk"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div><div class="cal-wrapper"><div class="cal-grid">';
   for(let i=0;i<startDow;i++)g+='<div class="cal-cell empty"></div>';
   for(let d=1;d<=dim;d++){
     const key=y+'-'+('0'+(m+1)).slice(-2)+'-'+('0'+d).slice(-2);
-    const v=map[key];let st='',val='',td=(key===TODAY?' today':'');
+    const v=map[key];let st='',val='',td=(key===TODAY?' today':''),click='';
     if(v!==undefined){const a=0.18+Math.abs(v)/maxA*0.55;
       if(v>0){st='background:rgba(0,197,102,'+a.toFixed(2)+')';val='<span class="cv g">+'+abs2(v)+'</span>';}
       else if(v<0){st='background:rgba(246,70,93,'+a.toFixed(2)+')';val='<span class="cv r">-'+abs2(v)+'</span>';}
-      else{st='background:#EFF1F3';val='<span class="cv" style="color:var(--muted2)">0</span>';}}
-    g+='<div class="cal-cell'+td+'" style="'+st+'"><span class="cd">'+d+'</span>'+val+'</div>';
+      else{st='background:#EFF1F3';val='<span class="cv" style="color:var(--muted2)">0</span>';}
+      click=' onclick="calTip(this,\''+key+'\','+v+',event)"';}
+    g+='<div class="cal-cell'+td+'" style="'+st+'"'+click+'><span class="cd">'+d+'</span>'+val+'</div>';
   }
-  el.innerHTML=g+'</div>';
+  g+='</div><div class="cal-tip" style="display:none"></div></div>';
+  el.innerHTML=g;
   el.querySelector('[data-cal=prev]').onclick=()=>{let nm=m-1,ny=y;if(nm<0){nm=11;ny--;}calMonth(el,map,ny,nm);};
   el.querySelector('[data-cal=next]').onclick=()=>{let nm=m+1,ny=y;if(nm>11){nm=0;ny++;}calMonth(el,map,ny,nm);};
 }
+function calTip(el,key,v,ev){
+  if(ev)ev.stopPropagation();
+  const wrap=el.closest('.cal-wrapper'),tip=wrap.querySelector('.cal-tip'),dd=dayDerived(key,v);
+  const sgn=x=>(x>=0?'+':'')+fSigned(x);
+  const row=(k,val,cls)=>'<div class="row"><span class="k">'+k+'</span><span class="'+(cls||'')+'">'+val+'</span></div>';
+  tip.innerHTML='<div class="dd">'+key+'</div>'
+    +row('单日盈亏',sgn(v)+' USDT',v>=0?'g':'r')
+    +row('已实现盈亏',sgn(dd.realized)+' USDT',dd.realized>=0?'g':'r')
+    +row('未实现盈亏',sgn(dd.unreal)+' USDT',dd.unreal>=0?'g':'r')
+    +row('净划转',dd.flow.toFixed(2))
+    +row('交易量',dd.vol.toFixed(2));
+  let cx=el.offsetLeft+el.offsetWidth/2;
+  tip.style.left=Math.max(90,Math.min(wrap.offsetWidth-90,cx))+'px';
+  tip.style.top=el.offsetTop+'px';tip.style.display='block';
+}
+document.addEventListener('click',()=>{document.querySelectorAll('.cal-tip,.bar-tip').forEach(t=>t.style.display='none');});
 function drawCal(el,dates,vals){
   const map={};dates.forEach((d,i)=>{map[d]=vals[i];});
   const em=new Date(dates[dates.length-1]+'T00:00:00');
@@ -678,9 +819,8 @@ function drawPnl(days,startStr,endStr){
   document.getElementById('dp-today').className=daily[dn-1]>=0?'g':'r';
   // cumulative
   const cum=cumsum(daily);const cumEnd=cum[dn-1];
-  areaLine(document.getElementById('pnl-cum-line'),cum,cumEnd>=0?'#00C566':'#F6465D',false,{start:s,end:e,fmt:fUSDword});
-  document.getElementById('pnl-cum-head').textContent=fUSDword(cumEnd);
-  document.getElementById('pnl-cum-head').className=cumEnd>=0?'g':'r';
+  PNL_CUM={cum,s,e,base:510.45,mode:PNL_CUM.mode||'usd'};
+  renderCum();
   // gain/loss/net
   const gain=daily.filter(v=>v>0).reduce((a,b)=>a+b,0),loss=daily.filter(v=>v<0).reduce((a,b)=>a+b,0);
   document.getElementById('pnl-gain').textContent=abs2(gain)+' USD';
@@ -700,7 +840,67 @@ function drawPnl(days,startStr,endStr){
   const val=genLine(n,325.66,({7:-5.2,30:22.4,90:60.5,365:140.2})[days]??20,Math.max(3,days*0.2),seed+4);
   areaLine(document.getElementById('pnl-value-line'),val,'#00C566',true,{start:s,end:e,fmt:v=>fSigned(v)+' USD'});
   document.getElementById('pnl-val-head').textContent='+'+abs2(val[n-1])+' USD';
+  drawTrade(days,daily,seed);drawRanking(days,seed);drawCloseOrders(seed);
 }
+let PNL_CUM={mode:'usd'};
+function renderCum(){
+  const {cum,s,e,base,mode}=PNL_CUM,end=cum[cum.length-1];
+  if(mode==='pct'){const p=cum.map(v=>v/base*100);
+    areaLine(document.getElementById('pnl-cum-line'),p,end>=0?'#00C566':'#F6465D',false,{start:s,end:e,fmt:fPct});
+    document.getElementById('pnl-cum-head').textContent=fPct(end/base*100);
+  }else{
+    areaLine(document.getElementById('pnl-cum-line'),cum,end>=0?'#00C566':'#F6465D',false,{start:s,end:e,fmt:fUSDword});
+    document.getElementById('pnl-cum-head').textContent=fUSDword(end);
+  }
+  document.getElementById('pnl-cum-head').className=end>=0?'g':'r';
+}
+function cumMode(m){PNL_CUM.mode=m;document.getElementById('cum-usd').classList.toggle('on',m==='usd');document.getElementById('cum-pct').classList.toggle('on',m==='pct');renderCum();}
+function drawTrade(days,daily,seed){
+  const trades=daily.filter(v=>v!==0),wins=trades.filter(v=>v>0),losses=trades.filter(v=>v<0);
+  const gain=wins.reduce((a,b)=>a+b,0),loss=Math.abs(losses.reduce((a,b)=>a+b,0));
+  const winRate=trades.length?wins.length/trades.length*100:0;
+  const avgWin=wins.length?gain/wins.length:0,avgLoss=losses.length?loss/losses.length:0;
+  const maxWin=trades.length?Math.max(...trades):0,maxLoss=trades.length?Math.min(...trades):0;
+  const r=rng(seed+987),longs=Math.round(trades.length*(0.4+r()*0.3)),shorts=Math.max(0,trades.length-longs),avgHold=Math.round(2+r()*70);
+  const m=[['胜率',winRate.toFixed(2)+'%'],['盈亏比',(loss?gain/loss:0).toFixed(2)],['风险回报比','1:'+(avgWin?(avgLoss/avgWin).toFixed(2):'0.00')],
+    ['交易金额',(trades.reduce((a,b)=>a+Math.abs(b),0)*35).toFixed(2)],['仓位数',trades.length],['多空比',longs+':'+shorts],
+    ['平均持仓',avgHold+' 小时'],['最大收益','+'+abs2(maxWin)],['最大亏损',fSigned(maxLoss)]];
+  document.getElementById('tm-grid').innerHTML=m.map(x=>'<div><div class="k">'+x[0]+'</div><div class="v">'+x[1]+'</div></div>').join('');
+  const tot=gain+loss||1;
+  document.getElementById('pl-bar').innerHTML='<div style="width:'+(gain/tot*100).toFixed(0)+'%;background:var(--green)"></div><div style="width:'+(loss/tot*100).toFixed(0)+'%;background:var(--red)"></div>';
+  document.getElementById('pl-gain').textContent='总盈利 '+gain.toFixed(2);
+  document.getElementById('pl-loss').textContent='总亏损 '+loss.toFixed(2);
+}
+function drawRanking(days,seed){
+  const r=rng(seed+321),syms=['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT'];
+  let list=syms.map(sym=>({sym,v:Math.trunc((r()-0.45)*40*100)/100}));
+  list.sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
+  const maxA=Math.max(...list.map(x=>Math.abs(x.v)),1);
+  document.getElementById('rk-list').innerHTML=list.map(x=>{const w=Math.abs(x.v)/maxA*100,col=x.v>=0?'#00C566':'#F6465D';
+    return '<div class="row"><span class="nm">'+x.sym+'</span><div class="track"><div class="fill" style="width:'+w.toFixed(0)+'%;background:'+col+'"></div></div><span class="amt '+(x.v>=0?'g':'r')+'">'+(x.v>=0?'+':'')+fSigned(x.v)+'</span></div>';}).join('');
+}
+let CD={tab:'o'};
+function drawCloseOrders(seed){
+  const r=rng(seed+654);
+  CD.orders=[0,1,2,3,4].map(()=>{const long=r()>0.4,win=r()>0.4,pnl=Math.trunc((win?1:-1)*(0.1+r()*1.1)*100)/100;
+    const entry=Math.trunc((60000+r()*10000)*100)/100,exitp=Math.trunc(entry*(1+(win?1:-1)*r()*0.03)*100)/100;
+    return {sym:'BTCUSDT',long,win,pnl,qty:0.001,entry,exitp,ofee:Math.trunc(r()*0.05*1e7)/1e7,cfee:Math.trunc(r()*0.05*1e7)/1e7,fund:Math.trunc((r()-0.5)*0.02*1e7)/1e7,ot:'2026-03-07 17:23',ct:'2026-04-01 19:05',dur:Math.round(1+r()*40)+'天'};});
+  renderCD();
+}
+function cell(k,v){return '<div><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';}
+function renderCD(){
+  document.getElementById('cd-tab-o').classList.toggle('on',CD.tab==='o');
+  document.getElementById('cd-tab-p').classList.toggle('on',CD.tab==='p');
+  const isPos=CD.tab==='p';
+  document.getElementById('cd-list').innerHTML=CD.orders.map(o=>'<div class="oc"><div class="top"><span class="sym">'+o.sym+'</span>'
+    +'<span class="badge '+(o.long?'b-long':'b-short')+'">'+(o.long?'平多':'平空')+'</span><span class="badge b-win">'+(o.win?'盈利':'亏损')+'</span>'
+    +'<span class="pnl '+(o.pnl>=0?'g':'r')+'">'+(o.pnl>=0?'+':'')+fSigned(o.pnl)+' USDT</span></div><div class="grid">'
+    +cell('数量',o.qty)+cell(isPos?'平均入场价':'入场价',o.entry.toLocaleString('en-US'))+cell(isPos?'平均出场价':'出场价',o.exitp.toLocaleString('en-US'))
+    +cell('开仓手续费',o.ofee+' USDT')+cell('平仓手续费',o.cfee+' USDT')+cell('资金费用',o.fund+' USDT')
+    +(isPos?cell('开仓时间',o.ot)+cell('平仓时间',o.ct)+cell('持仓周期',o.dur):cell('成交类型','交易')+cell('平仓时间',o.ct)+'<div></div>')
+    +'</div></div>').join('');
+}
+function cdTab(t){CD.tab=t;renderCD();}
 
 /* ===== range selectors ===== */
 function setOvRange(el,label){pick(el);drawOverview(label);}
