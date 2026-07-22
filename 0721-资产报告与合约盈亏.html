@@ -207,6 +207,47 @@ section{padding:0 16px;}
 .oc-sum{display:grid;grid-template-columns:1fr 1fr;gap:14px 8px;margin:8px 0 14px;}
 .oc-sum .k{font-size:12px;color:var(--muted);} .oc-sum .v{font-size:18px;font-weight:700;margin-top:3px;}
 
+/* detail pane (逐日历史盈亏) */
+.dt-head{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr;font-size:11px;color:var(--muted2);padding:12px 0 8px;border-bottom:1px solid var(--border);}
+.dt-head span:not(:first-child){text-align:right;}
+.dt-row{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr;font-size:13px;padding:12px 0;border-bottom:1px solid #F4F5F7;align-items:center;cursor:pointer;}
+.dt-row .dd{color:var(--muted);font-size:12px;}
+.dt-row span:not(:first-child){text-align:right;font-weight:600;}
+.dt-row.exp{background:#FAFBFC;}
+.dt-detail{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;padding:10px 4px 4px;font-size:12px;}
+.dt-detail .k{color:var(--muted);} .dt-detail .v{font-weight:600;text-align:right;}
+.dt-detail .cell{display:flex;justify-content:space-between;}
+
+/* switch */
+.sw-wrap{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;}
+.sw{width:40px;height:22px;border-radius:22px;background:#D5D8DE;position:relative;transition:background .2s;flex-shrink:0;}
+.sw i{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.sw.on{background:var(--green);} .sw.on i{transform:translateX(18px);}
+
+/* funding cards */
+.ff-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+.ff-c{background:#F7F8FA;border-radius:12px;padding:14px;}
+.ff-c .k{font-size:12px;color:var(--muted);} .ff-c .v{font-size:20px;font-weight:700;margin-top:6px;}
+.ff-c .ff-sub{font-size:11px;color:var(--muted2);margin-top:6px;}
+.ff-donuts{display:grid;grid-template-columns:1fr 1fr;gap:16px 8px;}
+.ff-dn{text-align:center;} .ff-dn .cap{font-size:12px;color:var(--muted);margin-bottom:6px;} .ff-dn .amt{font-size:14px;font-weight:700;margin-top:4px;}
+.ff-dn .dn-legend{font-size:10.5px;color:var(--muted2);margin-top:6px;line-height:1.5;}
+.frt-head{display:grid;grid-template-columns:1.2fr 1fr 1fr;font-size:11px;color:var(--muted2);padding:10px 0 6px;}
+.frt-head span:not(:first-child){text-align:right;}
+.frt-row{display:grid;grid-template-columns:1.2fr 1fr 1fr;font-size:13px;padding:11px 0;border-bottom:1px solid #F4F5F7;align-items:center;}
+.frt-row .sym{font-weight:600;} .frt-row span:not(:first-child){text-align:right;}
+
+/* contract analysis cards */
+.ca-c{background:#F7F8FA;border-radius:12px;padding:14px;margin:12px 0;cursor:pointer;}
+.ca-c .top{display:flex;align-items:center;justify-content:space-between;}
+.ca-c .sym{font-size:15px;font-weight:700;}
+.ca-c .rp{font-size:15px;font-weight:700;}
+.ca-c .caret2{transition:transform .2s;color:var(--muted2);}
+.ca-c.exp .caret2{transform:rotate(180deg);}
+.ca-c .body{display:none;grid-template-columns:1fr 1fr;gap:9px 12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;}
+.ca-c.exp .body{display:grid;}
+.ca-c .body .cell{display:flex;justify-content:space-between;} .ca-c .body .k{color:var(--muted);} .ca-c .body .v{font-weight:600;}
+
 /* bottom sheets */
 .mask{position:absolute;inset:0;background:rgba(0,0,0,.4);display:none;z-index:40;}
 .mask.on{display:block;}
@@ -251,7 +292,7 @@ section{padding:0 16px;}
   <div class="scroll">
     <section>
       <span class="pill-pct dn" id="ov-pill">▼ -0.54%</span>
-      <span class="ov-label">总资产估值 <svg class="eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <span class="ov-label click-i" onclick="openInfo('ovtotal')">总资产估值 ⓘ <svg class="eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
       <div class="ov-total">2,022.95 <span class="unit">USDT</span></div>
       <div class="pnl-row" onclick="go('screen-report')">
         <span class="lab">昨日盈亏</span><span class="neg">-$3.82</span>
@@ -326,7 +367,7 @@ section{padding:0 16px;}
   </div>
   <div class="scroll">
     <section style="padding-top:4px;">
-      <span class="ov-label">总资产估值 <svg class="eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <span class="ov-label click-i" onclick="openInfo('ovtotal')">总资产估值 ⓘ <svg class="eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
       <div class="ov-total">510.45 <span class="unit">USDT</span></div>
       <div class="pnl-row" onclick="go('screen-pnl')">
         <span class="lab">今日已实现盈亏</span><span class="neg">-$0.83 (-0.16%)</span>
@@ -340,12 +381,12 @@ section{padding:0 16px;}
       <div class="ca" data-toast="历史记录"><div class="circ"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h6M8 12h6M8 16h4"/><circle cx="17.5" cy="16.5" r="3" fill="#fff"/><path d="M17.5 15v1.5l1 .8"/></svg></div><span class="cl">历史记录</span></div>
     </div>
     <div class="grid-cards">
-      <div class="gcard"><div class="k">余额(USDT)</div><div class="v">325.66</div></div>
-      <div class="gcard"><div class="k">可用(USDT)</div><div class="v">300.42</div></div>
-      <div class="gcard"><div class="k">持仓保证金(USDT)</div><div class="v">14.49</div></div>
-      <div class="gcard"><div class="k">委托保证金(USDT)</div><div class="v">10.74</div></div>
-      <div class="gcard"><div class="k">未实现盈亏(USDT)</div><div class="v g">+184.78</div></div>
-      <div class="gcard"><div class="k">体验金(USDT)</div><div class="v">0.00</div></div>
+      <div class="gcard"><div class="k click-i" onclick="openInfo('balance')">余额(USDT) ⓘ</div><div class="v">325.66</div></div>
+      <div class="gcard"><div class="k click-i" onclick="openInfo('avail')">可用(USDT) ⓘ</div><div class="v">300.42</div></div>
+      <div class="gcard"><div class="k click-i" onclick="openInfo('posmargin')">持仓保证金(USDT) ⓘ</div><div class="v">14.49</div></div>
+      <div class="gcard"><div class="k click-i" onclick="openInfo('ordmargin')">委托保证金(USDT) ⓘ</div><div class="v">10.74</div></div>
+      <div class="gcard"><div class="k click-i" onclick="openInfo('unreal')">未实现盈亏(USDT) ⓘ</div><div class="v g">+184.78</div></div>
+      <div class="gcard"><div class="k click-i" onclick="openInfo('bonus')">体验金(USDT) ⓘ</div><div class="v">0.00</div></div>
     </div>
   </div>
   <div class="botnav">
@@ -373,7 +414,7 @@ section{padding:0 16px;}
   </div>
   <div class="scroll">
     <div class="card">
-      <div class="card-t">资产分析 <svg class="info-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <div class="card-t">资产分析 <svg class="info-i click-i" onclick="openInfo('ranalysis')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
       <div class="big-pnl" id="ra-label">7 天变化</div>
       <div class="big-num r" id="ra-change">-$5.54</div>
       <div class="r" id="ra-pct" style="font-weight:600;">-0.95%</div>
@@ -382,7 +423,7 @@ section{padding:0 16px;}
     </div>
     <div class="card">
       <div class="chart-hd">
-        <div class="card-t" style="margin-bottom:0;">交易分析 <svg class="info-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div class="card-t" style="margin-bottom:0;">交易分析 <svg class="info-i click-i" onclick="openInfo('tanalysis')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
         <div class="viewtog">
           <button class="on" id="ta-tab-line" onclick="taView('line')" title="折线图"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l5-5 4 3 8-9"/></svg></button>
           <button id="ta-tab-cal" onclick="taView('cal')" title="日历图"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button>
@@ -394,7 +435,7 @@ section{padding:0 16px;}
       <div class="view" id="ta-view-cal"><div class="date-lab">每日营收</div><div class="cal" id="rp-trade-cal"></div></div>
     </div>
     <div class="card">
-      <div class="card-t">币种分析 <svg class="info-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <div class="card-t">币种分析 <svg class="info-i click-i" onclick="openInfo('canalysis2')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
       <div style="display:flex;justify-content:center;"><div id="rp-coin-donut"></div></div>
       <div class="legend" id="rp-coin-legend" style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:14px;"></div>
       <div style="display:flex;justify-content:center;"><div class="pill-tabs"><button class="on" id="coin-tab-p" onclick="coinTab('p')">盈利</button><button id="coin-tab-l" onclick="coinTab('l')">亏损</button></div></div>
@@ -438,10 +479,13 @@ section{padding:0 16px;}
       <div class="kv"><span class="k click-i" onclick="openInfo('net')" style="border-bottom:1px dashed var(--border);">净盈利/亏损 ⓘ</span><span class="v" id="pnl-net">184.78 USD</span></div>
     </section>
     <div class="hgap"></div>
-    <div class="subtabs" style="border-bottom:1px solid var(--border);">
-      <span class="st on">总览</span><span class="st" data-toast="详情（原型未展开）">详情</span>
-      <span class="st" data-toast="合约分析（原型未展开）">合约分析</span><span class="st" style="font-size:13px;" data-toast="资金费用与手续费（原型未展开）">资金费用与手续费</span>
+    <div class="subtabs" id="pnl-subtabs" style="border-bottom:1px solid var(--border);overflow-x:auto;">
+      <span class="st on" onclick="pnlTab('overview',this)">总览</span><span class="st" onclick="pnlTab('detail',this)">详情</span>
+      <span class="st" onclick="pnlTab('contract',this)">合约分析</span><span class="st" style="font-size:13px;white-space:nowrap;" onclick="pnlTab('funding',this)">资金费用与手续费</span>
     </div>
+
+    <!-- ===== 总览 pane ===== -->
+    <div id="pnl-pane-overview">
     <section style="padding-top:18px;">
       <div class="chart-hd">
         <div><div style="font-size:18px;font-weight:700;">单日盈亏 <svg class="info-i click-i" onclick="openInfo('daily')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div><div style="font-size:12px;color:var(--muted2);margin-top:2px;">点击图表/日历查看当日详情</div></div>
@@ -512,6 +556,52 @@ section{padding:0 16px;}
       </div>
       <div id="cd-list"></div>
     </section>
+    </div><!-- /pnl-pane-overview -->
+
+    <!-- ===== 详情 pane (逐日历史盈亏) ===== -->
+    <div id="pnl-pane-detail" style="display:none;">
+      <section style="padding-top:18px;">
+        <div style="font-size:18px;font-weight:700;">历史盈亏 <svg class="info-i click-i" onclick="openInfo('hist')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div style="font-size:12px;color:var(--muted2);margin-top:2px;">已扣除交易手续费 / 资金费用 / 强平成本，逐日列出</div>
+        <div class="dt-head">
+          <span>日期</span><span>单日盈亏</span><span>累计盈亏</span><span>累计盈亏率</span>
+        </div>
+        <div id="dt-list"></div>
+      </section>
+    </div>
+
+    <!-- ===== 合约分析 pane (按币逐合约) ===== -->
+    <div id="pnl-pane-contract" style="display:none;">
+      <section style="padding-top:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:18px;font-weight:700;">合约分析 <svg class="info-i click-i" onclick="openInfo('canalysis')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+          <span style="font-size:12px;color:var(--muted2);">按合约 · 已实现口径</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted2);margin-top:2px;">总计已实现盈亏不含手续费；点击卡片展开逐项</div>
+        <div id="ca-list"></div>
+      </section>
+    </div>
+
+    <!-- ===== 资金费用与手续费 pane ===== -->
+    <div id="pnl-pane-funding" style="display:none;">
+      <section style="padding-top:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:18px;font-weight:700;">资金费用与手续费 <svg class="info-i click-i" onclick="openInfo('funding')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+          <label class="sw-wrap">显示交易手续费<span class="sw on" id="fee-sw" onclick="toggleFee()"><i></i></span></label>
+        </div>
+        <div class="ff-cards">
+          <div class="ff-c"><div class="k click-i" onclick="openInfo('fundfee')">总资金费用 ⓘ</div><div class="v" id="ff-fund">—</div><div class="ff-sub"><span class="g" id="ff-fund-recv">已收 —</span> · <span class="r" id="ff-fund-pay">已付 —</span></div></div>
+          <div class="ff-c" id="ff-tradecard"><div class="k click-i" onclick="openInfo('tradefee')">总交易费用 ⓘ</div><div class="v" id="ff-trade">—</div><div class="ff-sub"><span id="ff-trade-usd">— USD</span> · <span id="ff-trade-bnb">— BNB</span></div></div>
+        </div>
+        <div style="font-size:15px;font-weight:700;margin:18px 0 4px;">每日资金费用</div>
+        <div id="ff-daily-bar"></div>
+        <div style="font-size:15px;font-weight:700;margin:20px 0 6px;">费用分布 <span style="font-size:12px;color:var(--muted2);font-weight:400;">按币对占比</span></div>
+        <div class="ff-donuts" id="ff-donuts"></div>
+        <div style="font-size:15px;font-weight:700;margin:22px 0 2px;">持仓实时资金费率 <svg class="info-i click-i" onclick="openInfo('fundrate')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div class="frt-head"><span>合约</span><span>实时资金费率</span><span>预估资金费用</span></div>
+        <div id="frt-list"></div>
+      </section>
+    </div>
 
     <div class="footnote">*此页面上的所有数据均按照 UTC+0 时区计算，自定义时间控件和图表中显示的也是 UTC+0 时区的日期。</div>
   </div>
@@ -583,7 +673,29 @@ const INFO={
  loss:['总亏损','期间所有已实现亏损加总。',''],
  net:['净盈利/亏损','净盈利/亏损 = 总盈利 − 总亏损。',''],
  trade:['交易分析','基于已完全平仓仓位统计；平仓总盈亏含开平仓手续费与资金费用。','*交易机器人与跟单产生的交易量不纳入统计。'],
- rank:['盈亏排名','所选时间段内平仓产生的盈亏排名，按绝对值从大到小排序。','']
+ rank:['盈亏排名','所选时间段内平仓产生的盈亏排名，按绝对值从大到小排序。','按合约(如 BTCUSDT)聚合。'],
+ // ===== 资产报告 =====
+ ranalysis:['资产分析','资产变动% = 资产净值(最后一天 − 初始日) ÷ 初始日；资产PNL = 所选时间内所有钱包的资产净盈亏。','*每日基于每天 0:00 (UTC+0)；法币按 App 设置折算。'],
+ tanalysis:['交易分析','含现货/理财/杠杆/合约四类钱包盈亏，基于四类历史记录汇总。','*交易次数与 PNL 仅供参考。'],
+ canalysis2:['币种分析','数字币余额 = 所选区间最后一日 0:00 各钱包数字币余额之和。','*分盈利/亏损两个视图；环形高亮当前选中币种。'],
+ // ===== 总览 / 合约资产卡 =====
+ ovtotal:['总资产估值','各账户(资金/现货/合约/理财/Launchpad)资产折算为计价币种后的合计估值。','*不含负债；估值随标记价格实时变化。'],
+ ydpnl:['昨日盈亏','昨日盈亏 = 昨日 24:00 资产 − 昨日 00:00 资产 − 昨日净转入。','*含未实现盈亏，按 UTC+0 计算。'],
+ balance:['余额','合约账户中持有的加密货币总值(钱包余额)。',''],
+ avail:['可用','可用于开仓的保证金 = 余额 − 持仓保证金 − 委托保证金 + 未实现盈亏。',''],
+ posmargin:['持仓保证金','当前所有持仓已占用的保证金。',''],
+ ordmargin:['委托保证金','当前挂单(未成交委托)冻结的保证金。',''],
+ unreal:['未实现盈亏','按标记价格计算的所有持仓浮动盈亏，尚未平仓落袋。',''],
+ bonus:['体验金','平台发放的合约体验金，可用作保证金但不可提现。',''],
+ // ===== 详情 / 合约分析 / 资金费用 =====
+ hist:['历史盈亏','已扣除交易手续费 / 资金费用 / 强平成本；账户级含实际盈亏 + 费用 + 持有资产汇率波动的未实现盈亏，皆换算为 USD。','*单日盈亏 = 单日内所有已实现盈亏加总；累计盈亏 = 第1日到第N日单日盈亏加总。'],
+ nettrans:['净划入','净划入 = 当日划入合约账户总额 − 当日划出合约账户总额。',''],
+ vol:['交易量','每日 0:00–23:59:59 (UTC) 计算，按联合保证金模式汇率折算为 USD。',''],
+ canalysis:['合约分析','按合约逐一统计：总计已实现盈亏(不含手续费) / 已实现盈利 / 已实现亏损 / 买入总量 / 卖出总量 / 平均买价 / 平均卖价。','*已实现口径，不含未平仓浮盈浮亏。'],
+ funding:['资金费用与手续费','资金费用为持仓跨结算周期时按资金费率收取/支付的费用；交易手续费为开平仓成交所产生的费用。','*可通过开关控制图表是否计入交易手续费。'],
+ fundfee:['总资金费用','总资金费用 = 已收取资金费用 − 已支付资金费用(绿为收、红为付)。',''],
+ tradefee:['总交易费用','期间开平仓成交产生的交易手续费合计，按 USD 与抵扣币(BNB)分列。',''],
+ fundrate:['持仓实时资金费率','当前持仓合约的实时资金费率(降序)及按下一结算周期预估的资金费用。','*正费率多头付空头，负费率反之。']
 };
 function openInfo(k){const i=INFO[k];if(!i)return;document.getElementById('info-title').textContent=i[0];document.getElementById('info-def').textContent=i[1];const n=document.getElementById('info-note');n.textContent=i[2]||'';n.style.display=i[2]?'block':'none';document.getElementById('imask').classList.add('on');document.getElementById('infosheet').classList.add('on');}
 function closeInfo(){document.getElementById('imask').classList.remove('on');document.getElementById('infosheet').classList.remove('on');}
@@ -902,10 +1014,104 @@ function renderCD(){
 }
 function cdTab(t){CD.tab=t;renderCD();}
 
+/* ===== 合约盈亏 子 Tab 切换 ===== */
+let PNL_DAYS=30;
+function pnlTab(t,el){
+  document.querySelectorAll('#pnl-subtabs .st').forEach(s=>s.classList.remove('on'));el.classList.add('on');
+  ['overview','detail','contract','funding'].forEach(p=>{document.getElementById('pnl-pane-'+p).style.display=(p===t?'block':'none');});
+  if(t==='detail')drawDetail(PNL_DAYS);
+  else if(t==='contract')drawContract(PNL_DAYS);
+  else if(t==='funding')drawFunding(PNL_DAYS);
+}
+
+/* ===== 详情：逐日历史盈亏列表 ===== */
+function drawDetail(days){
+  const s=rangeStart(days),e=TODAY,seed=days*11+5;
+  const {dates,vals}=genDailyFull(s,e,days<=7?4:days<=30?9:16,days<=7?-0.3:1.8,seed,0.15);
+  const cum=cumsum(vals),base=510.45;
+  // 逐日累计净划入(此处示意为0)，累计盈亏率 = 累计盈亏 ÷ 期初钱包余额
+  const rows=[];
+  for(let i=vals.length-1;i>=0;i--){
+    const rate=cum[i]/base*100;
+    rows.push({date:dates[i],day:vals[i],cum:cum[i],rate, vol:dayDerived(dates[i],vals[i]).vol, flow:0});
+  }
+  document.getElementById('dt-list').innerHTML=rows.map((r,idx)=>{
+    const dc=r.day>=0?'g':'r',cc=r.cum>=0?'g':'r',rc=r.rate>=0?'g':'r';
+    return '<div class="dt-row" onclick="toggleDt('+idx+')" id="dtr-'+idx+'">'
+      +'<span class="dd">'+r.date+'</span>'
+      +'<span class="'+dc+'">'+(r.day>=0?'+':'')+fSigned(r.day)+'</span>'
+      +'<span class="'+cc+'">'+(r.cum>=0?'+':'')+fSigned(r.cum)+'</span>'
+      +'<span class="'+rc+'">'+fPct(r.rate)+'</span>'
+      +'<div class="dt-detail" id="dtd-'+idx+'" style="display:none">'
+        +'<div class="cell"><span class="k">净划入</span><span class="v">'+r.flow.toFixed(2)+' USD</span></div>'
+        +'<div class="cell"><span class="k">交易量</span><span class="v">'+r.vol.toFixed(2)+' USD</span></div>'
+      +'</div></div>';
+  }).join('');
+}
+function toggleDt(i){const row=document.getElementById('dtr-'+i),d=document.getElementById('dtd-'+i);const open=d.style.display==='none';d.style.display=open?'grid':'none';row.classList.toggle('exp',open);}
+
+/* ===== 合约分析：按币逐合约 ===== */
+function drawContract(days){
+  const r=rng(days*17+3),syms=['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT'];
+  const list=syms.map(sym=>{
+    const rp=Math.trunc((r()-0.42)*60*100)/100;
+    const gain=Math.trunc((Math.abs(rp)+r()*40)*100)/100,loss=Math.trunc((gain-rp)*100)/100;
+    const buyV=Math.trunc((0.5+r()*8)*1000)/1000,sellV=Math.trunc((0.5+r()*8)*1000)/1000;
+    const avgB=Math.trunc((r()*60000+2000)*100)/100,avgS=Math.trunc(avgB*(1+(r()-0.5)*0.05)*100)/100;
+    return {sym,rp,gain,loss,buyV,sellV,avgB,avgS};
+  }).sort((a,b)=>Math.abs(b.rp)-Math.abs(a.rp));
+  document.getElementById('ca-list').innerHTML=list.map((x,i)=>'<div class="ca-c" onclick="this.classList.toggle(\'exp\')">'
+    +'<div class="top"><span class="sym">'+x.sym+'</span><span style="display:flex;align-items:center;gap:8px;"><span class="rp '+(x.rp>=0?'g':'r')+'">'+(x.rp>=0?'+':'')+fSigned(x.rp)+' USDT</span>'
+    +'<svg class="caret2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></div>'
+    +'<div class="body">'
+    +cacell('总计已实现盈亏',(x.rp>=0?'+':'')+fSigned(x.rp),x.rp>=0?'g':'r')
+    +cacell('已实现盈利','+'+x.gain.toFixed(2),'g')
+    +cacell('已实现亏损','-'+x.loss.toFixed(2),'r')
+    +cacell('买入总量',x.buyV.toFixed(3))
+    +cacell('卖出总量',x.sellV.toFixed(3))
+    +cacell('平均买价',x.avgB.toLocaleString('en-US'))
+    +cacell('平均卖价',x.avgS.toLocaleString('en-US'))
+    +'</div></div>').join('');
+}
+function cacell(k,v,cls){return '<div class="cell"><span class="k">'+k+'</span><span class="v '+(cls||'')+'">'+v+'</span></div>';}
+
+/* ===== 资金费用与手续费 ===== */
+let FEE_ON=true;
+function toggleFee(){FEE_ON=!FEE_ON;document.getElementById('fee-sw').classList.toggle('on',FEE_ON);document.getElementById('ff-tradecard').style.opacity=FEE_ON?'1':'0.4';drawFunding(PNL_DAYS,true);}
+function drawFunding(days,keep){
+  const r=rng(days*23+9);
+  const recv=Math.trunc((r()*3+0.5)*100)/100,pay=Math.trunc((r()*3+0.5)*100)/100,net=tr2(recv-pay);
+  const tradeUsd=Math.trunc((r()*4+0.5)*100)/100,tradeBnb=Math.trunc(r()*0.03*1e4)/1e4;
+  document.getElementById('ff-fund').textContent=(net>=0?'+':'')+fSigned(net)+' USD';
+  document.getElementById('ff-fund').className='v '+(net>=0?'g':'r');
+  document.getElementById('ff-fund-recv').textContent='已收 +'+recv.toFixed(2);
+  document.getElementById('ff-fund-pay').textContent='已付 -'+pay.toFixed(2);
+  document.getElementById('ff-trade').textContent='-'+tradeUsd.toFixed(2)+' USD';
+  document.getElementById('ff-trade-usd').textContent=tradeUsd.toFixed(2)+' USD';
+  document.getElementById('ff-trade-bnb').textContent=tradeBnb.toFixed(4)+' BNB';
+  // 每日资金费用柱
+  const s=rangeStart(days),e=TODAY;
+  const {dates,vals}=genDailyFull(s,e,0.6,0.02,days*23+40,0.3);
+  barChart(document.getElementById('ff-daily-bar'),vals,dates.map(d=>d.slice(5)));
+  // 4 张分布环形
+  const donuts=[
+    {cap:'收取资金费用分布',amt:'+'+recv.toFixed(2),segs:[{name:'BTCUSDT',pct:52,color:'#00C566'},{name:'ETHUSDT',pct:31,color:'#2B6CF0'},{name:'其他',pct:17,color:'#B7BDC6'}]},
+    {cap:'支付资金费用分布',amt:'-'+pay.toFixed(2),segs:[{name:'SOLUSDT',pct:44,color:'#F6465D'},{name:'BNBUSDT',pct:38,color:'#F5C542'},{name:'其他',pct:18,color:'#B7BDC6'}]},
+    {cap:'已收交易手续费分布',amt:'—',segs:[{name:'BTCUSDT',pct:60,color:'#16B47A'},{name:'ETHUSDT',pct:40,color:'#6AA0F0'}]},
+    {cap:'已付交易手续费分布',amt:'-'+tradeUsd.toFixed(2),segs:[{name:'BTCUSDT',pct:48,color:'#2B6CF0'},{name:'ETHUSDT',pct:29,color:'#6AA0F0'},{name:'XRPUSDT',pct:23,color:'#B7BDC6'}]}
+  ];
+  document.getElementById('ff-donuts').innerHTML=donuts.map((d,i)=>'<div class="ff-dn"><div class="cap">'+d.cap+'</div><div id="ffd-'+i+'"></div><div class="amt">'+d.amt+'</div><div class="dn-legend">'+d.segs.map(s=>s.name+' '+s.pct+'%').join(' · ')+'</div></div>').join('');
+  donuts.forEach((d,i)=>donut(document.getElementById('ffd-'+i),d.segs,96));
+  // 实时资金费率
+  const frs=[['BTCUSDT',0.0100,0.42],['ETHUSDT',0.0087,0.19],['SOLUSDT',-0.0053,-0.06],['BNBUSDT',0.0125,0.08]];
+  document.getElementById('frt-list').innerHTML=frs.map(f=>'<div class="frt-row"><span class="sym">'+f[0]+'</span><span class="'+(f[1]>=0?'g':'r')+'">'+(f[1]>=0?'+':'')+f[1].toFixed(4)+'%</span><span class="'+(f[2]>=0?'g':'r')+'">'+(f[2]>=0?'+':'')+f[2].toFixed(2)+' USDT</span></div>').join('');
+}
+
 /* ===== range selectors ===== */
 function setOvRange(el,label){pick(el);drawOverview(label);}
 function setReportRange(el,label,days){pick(el);drawReport(days);}
-function setPnlRange(el,label,days){pick(el);drawPnl(days);}
+function setPnlRange(el,label,days){pick(el);PNL_DAYS=days;drawPnl(days);refreshPnlPane();}
+function refreshPnlPane(){const on=document.querySelector('#pnl-subtabs .st.on');if(!on)return;const t=on.textContent.trim();if(t==='详情')drawDetail(PNL_DAYS);else if(t==='合约分析')drawContract(PNL_DAYS);else if(t==='资金费用与手续费')drawFunding(PNL_DAYS);}
 
 /* ===== overview chart toggle/collapse ===== */
 function ovChart(v){document.getElementById('ov-tab-line').classList.toggle('on',v==='line');document.getElementById('ov-tab-pie').classList.toggle('on',v==='pie');document.getElementById('ov-view-line').classList.toggle('on',v==='line');document.getElementById('ov-view-pie').classList.toggle('on',v==='pie');}
@@ -928,7 +1134,7 @@ function confirmDate(){
   const days=Math.max(2,Math.round((new Date(e)-new Date(s))/86400000)+1);
   if(customTarget){customTarget.textContent=s.slice(5)+' ~ '+e.slice(5);
     if(customTarget.closest('#screen-report'))drawReport(days,s,e);
-    else if(customTarget.closest('#screen-pnl'))drawPnl(days,s,e);}
+    else if(customTarget.closest('#screen-pnl')){PNL_DAYS=days;drawPnl(days,s,e);refreshPnlPane();}}
   closeDate();toast('已选择 '+s+' ~ '+e);
 }
 
