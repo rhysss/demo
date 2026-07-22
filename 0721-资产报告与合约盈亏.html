@@ -507,6 +507,14 @@ function genLine(n,endVal,change,vol,seed){
 }
 // daily pnl values (can be +/-)
 function genDaily(n,amp,bias,seed){const r=rng(seed),a=[];for(let i=0;i<n;i++)a.push((r()-0.5)*2*amp+bias);return a;}
+// one value per calendar day across [s,e]; some days = 0 (no trade)
+function genDailyFull(s,e,amp,bias,seed,zeroP){
+  const a=new Date(s+'T00:00:00'),b=new Date(e+'T00:00:00'),days=Math.round((b-a)/86400000)+1;
+  const r=rng(seed),dates=[],vals=[];
+  for(let i=0;i<days;i++){const d=new Date(a.getTime()+i*86400000);dates.push(iso(d));
+    vals.push(r()<zeroP?0:Math.round(((r()-0.5)*2*amp+bias)*100)/100);}
+  return {dates,vals};
+}
 function cumsum(a){let s=0;return a.map(v=>s+=v);}
 
 /* ===== SVG chart primitives ===== */
@@ -592,18 +600,18 @@ function calMonth(el,map,y,m){
     const key=y+'-'+('0'+(m+1)).slice(-2)+'-'+('0'+d).slice(-2);
     const v=map[key];let st='',val='',td=(key===TODAY?' today':'');
     if(v!==undefined){const a=0.18+Math.abs(v)/maxA*0.55;
-      if(v>=0){st='background:rgba(0,197,102,'+a.toFixed(2)+')';val='<span class="cv g">+'+v.toFixed(2)+'</span>';}
-      else{st='background:rgba(246,70,93,'+a.toFixed(2)+')';val='<span class="cv r">'+v.toFixed(2)+'</span>';}}
+      if(v>0){st='background:rgba(0,197,102,'+a.toFixed(2)+')';val='<span class="cv g">+'+v.toFixed(2)+'</span>';}
+      else if(v<0){st='background:rgba(246,70,93,'+a.toFixed(2)+')';val='<span class="cv r">'+v.toFixed(2)+'</span>';}
+      else{st='background:#EFF1F3';val='<span class="cv" style="color:var(--muted2)">0</span>';}}
     g+='<div class="cal-cell'+td+'" style="'+st+'"><span class="cd">'+d+'</span>'+val+'</div>';
   }
   el.innerHTML=g+'</div>';
   el.querySelector('[data-cal=prev]').onclick=()=>{let nm=m-1,ny=y;if(nm<0){nm=11;ny--;}calMonth(el,map,ny,nm);};
   el.querySelector('[data-cal=next]').onclick=()=>{let nm=m+1,ny=y;if(nm>11){nm=0;ny++;}calMonth(el,map,ny,nm);};
 }
-function drawCal(el,daily,s,e){
-  const n=daily.length,isod=spreadISO(s,e,n),map={};
-  daily.forEach((v,i)=>{map[isod[i]]=Math.round(v*100)/100;});
-  const em=new Date(e+'T00:00:00');
+function drawCal(el,dates,vals){
+  const map={};dates.forEach((d,i)=>{map[d]=vals[i];});
+  const em=new Date(dates[dates.length-1]+'T00:00:00');
   calMonth(el,map,em.getFullYear(),em.getMonth());
 }
 
@@ -648,24 +656,25 @@ function drawReport(days,startStr,endStr){
   document.getElementById('ra-pct').textContent=fPct(apct);
   document.getElementById('ra-pct').className=(change>=0?'g':'r');
   // trade analysis — daily pnl
-  const daily=genDaily(n,days<=7?3.2:days<=30?4.5:6.0,-0.7,seed+99);
-  const total=daily.reduce((a,b)=>a+b,0);
-  areaLine(document.getElementById('rp-trade-line'),daily,total>=0?'#00C566':'#F6465D',true,{start:s,end:e,fmt:fUSD});
+  const {dates:tdates,vals:tvals}=genDailyFull(s,e,days<=7?3.2:days<=30?4.5:6.0,-0.55,seed+99,0.22);
+  const total=tvals.reduce((a,b)=>a+b,0);
+  areaLine(document.getElementById('rp-trade-line'),tvals,total>=0?'#00C566':'#F6465D',true,{start:s,end:e,fmt:fUSD});
   document.getElementById('ta-label').textContent=(days+' 天交易盈亏');
   document.getElementById('ta-total').textContent=fUSD(total);
   document.getElementById('ta-total').className='big-num '+(total>=0?'g':'r');
-  drawCal(document.getElementById('rp-trade-cal'),daily,s,e);
+  drawCal(document.getElementById('rp-trade-cal'),tdates,tvals);
 }
 function drawPnl(days,startStr,endStr){
   const s=startStr||rangeStart(days),e=endStr||TODAY,n=npts(days),seed=days*11+5,dts=spread(s,e,n);
-  // daily pnl
-  const daily=genDaily(n,days<=7?4:days<=30?9:16,days<=7?-0.3:2.2,seed);
-  barChart(document.getElementById('pnl-daily-bar'),daily,dts);
-  drawCal(document.getElementById('pnl-daily-cal'),daily,s,e);
-  document.getElementById('dp-today').textContent=fUSDword(daily[n-1]);
-  document.getElementById('dp-today').className=daily[n-1]>=0?'g':'r';
+  // daily pnl — one value per calendar day (some 0)
+  const {dates:ddates,vals:daily}=genDailyFull(s,e,days<=7?4:days<=30?9:16,days<=7?-0.3:1.8,seed,0.15);
+  const dn=daily.length;
+  barChart(document.getElementById('pnl-daily-bar'),daily,ddates.map(d=>d.slice(5)));
+  drawCal(document.getElementById('pnl-daily-cal'),ddates,daily);
+  document.getElementById('dp-today').textContent=fUSDword(daily[dn-1]);
+  document.getElementById('dp-today').className=daily[dn-1]>=0?'g':'r';
   // cumulative
-  const cum=cumsum(daily);const cumEnd=cum[n-1];
+  const cum=cumsum(daily);const cumEnd=cum[dn-1];
   areaLine(document.getElementById('pnl-cum-line'),cum,cumEnd>=0?'#00C566':'#F6465D',false,{start:s,end:e,fmt:fUSDword});
   document.getElementById('pnl-cum-head').textContent=fUSDword(cumEnd);
   document.getElementById('pnl-cum-head').className=cumEnd>=0?'g':'r';
