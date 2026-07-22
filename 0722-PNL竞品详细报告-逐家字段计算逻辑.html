@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PNL 分析竞品详细报告 · 逐家字段计算逻辑</title>
+<style>
+:root{--green:#00C566;--green-d:#00A857;--text:#1E2329;--muted:#707A8A;--muted2:#9aa1ab;--border:#EAECEF;--bg:#F5F6F8;--red:#F6465D;--blue:#2B6CF0;--gold:#F5C542;--soft:#F0FBF5;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;color:var(--text);background:#f0f2f5;line-height:1.6;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px 90px;}
+header{background:linear-gradient(135deg,#00C566,#00A857);color:#fff;padding:40px 20px 30px;margin-bottom:24px;}
+header .inner{max-width:1080px;margin:0 auto;}
+header h1{font-size:25px;font-weight:800;letter-spacing:-.3px;}
+header .sub{opacity:.92;margin-top:8px;font-size:14px;}
+header .meta{margin-top:12px;font-size:12px;opacity:.82;}
+.toc{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 20px;margin:14px 0 6px;font-size:14px;}
+.toc a{color:var(--green-d);text-decoration:none;margin-right:16px;font-weight:600;white-space:nowrap;}
+h2{font-size:21px;font-weight:800;margin:40px 0 6px;padding:14px 16px;border-radius:12px 12px 0 0;color:#fff;}
+h2 .badge{font-size:12px;font-weight:700;background:rgba(255,255,255,.25);padding:3px 10px;border-radius:20px;margin-left:8px;vertical-align:middle;}
+.ex{border:1px solid var(--border);border-radius:0 0 14px 14px;background:#fff;padding:2px 22px 20px;margin-bottom:22px;box-shadow:0 1px 6px rgba(20,30,50,.04);}
+.okx h2{background:#111;} .bitget h2{background:#00C7B1;} .bybit h2{background:#1a1a1a;} .gate h2{background:#2354E6;} .bnc h2{background:#F0B90B;color:#1E2329;} .bnc h2 .badge{background:rgba(0,0,0,.12);}
+h3{font-size:16px;font-weight:700;margin:20px 0 8px;color:#1E2329;}
+p{font-size:13.5px;color:#3a424c;margin:6px 0;}
+.chips{margin:10px 0;}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;margin:3px 6px 3px 0;background:var(--bg);color:#4a5560;border:1px solid var(--border);}
+.chip.u0{background:var(--soft);color:var(--green-d);border-color:#bfebd3;} .chip.u8{background:#FFF3E0;color:#b8860b;border-color:#f4d7a3;}
+.chip.mtm{background:#EEF4FF;color:var(--blue);border-color:#cddffb;} .chip.cash{background:#FFF6EC;color:#b8860b;border-color:#f4dcb8;}
+.tbl-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:10px;margin:10px 0;-webkit-overflow-scrolling:touch;}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:12.5px;}
+th,td{border-bottom:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top;}
+th{background:#fafbfc;font-weight:700;white-space:nowrap;}
+td:first-child{font-weight:600;white-space:nowrap;color:#1E2329;}
+.f{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:#f6f7f9;padding:1px 5px;border-radius:4px;color:#242a31;}
+.note{font-size:11.5px;color:var(--muted);}
+ul{margin:6px 0 6px 20px;} li{font-size:13px;margin:4px 0;color:#3a424c;}
+.hl{background:#FFF9E6;}
+.diff{color:var(--red);font-weight:700;}
+.summary-tbl{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+.summary-tbl table{min-width:820px;}
+.summary-tbl td:first-child{background:#fafbfc;}
+.foot{text-align:center;color:var(--muted2);font-size:12px;margin-top:36px;}
+</style>
+</head>
+<body>
+<header><div class="inner">
+  <h1>PNL 分析竞品详细报告 · 逐家字段计算逻辑</h1>
+  <div class="sub">按交易所维度拆解 OKX · Bitget · Bybit · Gate · Binance,逐字段列出计算公式与统计口径</div>
+  <div class="meta">整理日期 2026-07-22 ｜ 素材：各家 App 盈亏/收益分析页 + 全部指标 ⓘ 弹窗原文 ｜ 配套：<b>五列对照表 + 通用规则</b> 见另一份文档</div>
+</div></header>
+
+<div class="wrap">
+
+<div class="toc">
+  <b>速览：</b>
+  <a href="#okx">OKX</a><a href="#bitget">Bitget</a><a href="#bybit">Bybit</a><a href="#gate">Gate</a><a href="#binance">Binance</a><a href="#cmp">关键分歧速查</a>
+</div>
+<p class="note">口径底色：<span class="chip mtm" style="padding:1px 8px">资产口径·含未实现</span> = 基于总资产;<span class="chip cash" style="padding:1px 8px">钱包口径·不含未实现</span> = 基于钱包余额/已平仓。</p>
+
+<!-- ============ OKX ============ -->
+<div class="ex okx" id="okx">
+<h2>OKX（欧易）<span class="badge">UTC+8 ｜ 资产口径</span></h2>
+<div class="chips"><span class="chip u8">时区 UTC+8</span><span class="chip mtm">资产口径·含未实现</span><span class="chip">分账户：资产 / 现货收益 / 合约收益 / 赚币</span><span class="chip">收益额 / 收益率 / 资产走势 三视图</span></div>
+<p><b>结构定位：</b>「分析」页按业务线拆 4 个 tab;顶部 <span class="f">总览▾ · 30天▾ · USDT▾</span> 三段筛选;资产 tab 用「收益额/收益率/资产走势」三视图切换,是五家里视图切换最完整的。合约收益单列，含胜率/风险回报比与资金费明细。</p>
+
+<h3>字段计算逻辑</h3>
+<div class="tbl-scroll"><table>
+<thead><tr><th>字段</th><th>计算逻辑</th><th>口径/边界</th></tr></thead>
+<tbody>
+<tr><td>今日收益</td><td class="f">收益 = 期末资产 − 期初资产 − 净划入资产</td><td>净划入 = 充币+提币+其他;期初/期末带 UTC+8 时间戳</td></tr>
+<tr><td>收益表现</td><td>每日 0:00 (UTC+8) 系统计算所选账户的收益额</td><td>三视图：收益额 / 收益率 / 资产走势</td></tr>
+<tr class="hl"><td>累计收益率</td><td class="f">= 累计收益 ÷ (期初资产 + 转入 − 转出)</td><td>对比线：BTC(可切 ETH/SOL 币种)</td></tr>
+<tr><td>每日盈亏</td><td>指定日期账户持仓及交易活动产生的收益额</td><td>盈亏月历/柱状双视图;点选 tooltip = 日期 + 额(%)</td></tr>
+<tr><td>各产品盈亏</td><td>合约 / 现货 / 赚币收益额汇总</td><td class="diff">可能与账户总收益不完全一致;现货 24-12 / 合约 22-11 / 赚币 23-01 起可查</td></tr>
+<tr><td>资产分布</td><td>所选账户资产明细 → 折算成偏好币种估值</td><td>币种维度环形</td></tr>
+<tr class="hl"><td>合约·每日盈利/亏损</td><td>当天所有<b>完全平仓仓位</b>的总和</td><td>统计周期 = 前一日 00:00 → 当日 00:00</td></tr>
+<tr><td>合约·胜率/风险回报比</td><td>盈亏总览含 胜率 / 总仓位数 / 风险回报比(1:x)</td><td>按仓位口径;「展示手续费」开关控制是否计入</td></tr>
+<tr><td>资金费</td><td>总资金费 / 已收取 / 已支付;每月资金费柱(绿收粉付)</td><td>实时资金费率(降序) OKBUSDT永续 + 预估资金费用;历史 22-11-01 起,平仓后 3h 内更新</td></tr>
+</tbody>
+</table></div>
+<p class="note">特色：三视图切换、$/% 切换、分账户 tab、资金费实时费率;弱点：无累计盈亏率对比 BNB、无按币合约分析。</p>
+</div>
+
+<!-- ============ Bitget ============ -->
+<div class="ex bitget" id="bitget">
+<h2>Bitget<span class="badge">UTC+0 ｜ 合约走钱包口径</span></h2>
+<div class="chips"><span class="chip u0">时区 UTC+0（维护 0:00–3:00）</span><span class="chip cash">合约·钱包口径·不含未实现</span><span class="chip">USDT-M / 币本位 / USDC-M</span><span class="chip">账户分析 / 交易分析</span></div>
+<p><b>结构定位：</b>「合约盈亏分析」分「账户分析 / 交易分析」双 tab。<b>唯一把合约盈亏明确落在"钱包余额差额"口径</b>的一家(不含未实现),累计盈亏图叠加总盈亏/已实现/未实现三线。</p>
+
+<h3>字段计算逻辑</h3>
+<div class="tbl-scroll"><table>
+<thead><tr><th>字段</th><th>计算逻辑</th><th>口径/边界</th></tr></thead>
+<tbody>
+<tr><td>今日盈亏</td><td class="f">= 当前资产 − 0时(UTC+0)资产 − 当日净划入</td><td>—</td></tr>
+<tr><td>钱包余额</td><td>用户合约账户中持有的加密货币总值</td><td>—</td></tr>
+<tr class="hl"><td>每日盈亏</td><td class="f">= 每日24:00(UTC+0)钱包余额 − 每日00:00钱包余额 − 每日资金净转入</td><td class="diff">不含未实现盈亏;日历 tooltip = 单日/已实现/未实现/其他盈亏</td></tr>
+<tr class="hl"><td>累计盈亏</td><td class="f">= 期末钱包余额 − 期初钱包余额 − 期间资金净转入</td><td>图含 总盈亏 / 已实现 / 未实现 三线;折线可拖落点</td></tr>
+<tr class="hl"><td>累计盈亏率</td><td class="f">= 累计盈亏 ÷ (期初钱包余额 + 期间<b>日均</b>资金总转入)</td><td>特殊情境 N/A;对比 BTC 累计涨跌</td></tr>
+<tr><td>资产走势</td><td>合约账户资产变化趋势</td><td class="diff">不包含未实现盈亏</td></tr>
+<tr><td>交易分析</td><td>总盈亏 + 今日盈亏;胜率/盈亏比/交易金额;仓位数/最大收益/最大亏损</td><td>总盈利↔总亏损占比条 + 多空分列(平均持仓/仓位数/多空比/平均盈亏);盈亏排行(盈亏额⇌切换)</td></tr>
+</tbody>
+</table></div>
+<p class="note">特色：三线(总/已实现/未实现)累计盈亏、日历四项 tooltip、交易分析质量指标齐;弱点：无资金费明细页、无按币合约分析。</p>
+</div>
+
+<!-- ============ Bybit ============ -->
+<div class="ex bybit" id="bybit">
+<h2>Bybit<span class="badge">UTC ｜ 资产口径</span></h2>
+<div class="chips"><span class="chip">时区 UTC（维护 0:00–4:00）</span><span class="chip mtm">资产口径·含未实现</span><span class="chip">资产 / 现货 / 永续和交割 / 期权</span><span class="chip">平仓订单 / 平仓仓位明细</span></div>
+<p><b>结构定位：</b>深色 UI,分析页按 资产/现货/永续和交割/期权 拆。<b>差异化最强的是"平仓明细 + K线标点单笔详情"</b>——把每一笔平仓在 K 线上标出开/平点位并给 Win/Lose 徽章。今日盈亏公式把充值、提币拆成两项。</p>
+
+<h3>字段计算逻辑</h3>
+<div class="tbl-scroll"><table>
+<thead><tr><th>字段</th><th>计算逻辑</th><th>口径/边界</th></tr></thead>
+<tbody>
+<tr class="hl"><td>今日盈亏(USD)</td><td class="f">= 当前资产 − 今日初始总资产 − 今日净充值 + 今日净提币 (UTC)</td><td class="diff">每日 0:00–4:00 (UTC) 维护不计算;净转入/转出含充值提币</td></tr>
+<tr><td>历史盈亏(USD)</td><td>某区间(如 2025-03-25 ~ 2026-07-21)的累计收益</td><td>初始资产为 0/已全部转出 → 仅显累计盈亏、不显率</td></tr>
+<tr><td>累计盈亏(USD)</td><td class="f">= 所选区间每日盈亏之和</td><td>折线可拖落点(灰点+虚线);$/% 切换</td></tr>
+<tr class="hl"><td>每日盈亏(USD)</td><td class="f">= 当日结束时资产 − 当日开始时资产 − 当日净充值资产 + 当日净提币资产</td><td>日历(tooltip = 日期/每日盈亏/净转入/净转出)/柱状;月盈亏+回报率</td></tr>
+<tr class="hl"><td>永续·总盈亏(USD)</td><td class="f">= 所选区间平仓产生的总盈亏,含 已结盈亏 + 开平仓手续费 + 资金费用</td><td>—</td></tr>
+<tr><td>永续·交易量(USD)</td><td>—</td><td class="diff">交易机器人和跟单用户产生的交易量不纳入统计</td></tr>
+<tr><td>盈亏排名</td><td>所选区间平仓产生的盈亏排名,按<b>绝对值</b>从大到小</td><td>按合约(BTCUSDT)</td></tr>
+<tr><td>平仓订单</td><td>总数/胜率/平仓多单盈亏/平仓空单盈亏</td><td>按 USDT永续/交割·USDC永续·反向 分;单条=入场/出场价/开平仓量/手续费/资金费/成交类型</td></tr>
+<tr><td>平仓仓位</td><td>仓位总数/胜率/平均交易周期;多仓·空仓分组(平均周期/总数/胜率/平均盈亏/收益最高合约)</td><td>单条含开平仓时间 + 详情</td></tr>
+<tr><td>单笔详情</td><td>盈亏/成交量 + 开仓时间·周期·平仓时间</td><td class="hl">K线图(1分~1月)标注 开仓S/平仓收 点位 + 入场出场价虚线 + Win/Lose 徽章 + 成交列表</td></tr>
+</tbody>
+</table></div>
+<p class="note">特色：K线标开平仓点 + Win/Lose、多空分组统计、平仓明细全;弱点：无累计盈亏率、无资金费分布、交易质量指标不如 Gate/Binance 全。</p>
+</div>
+
+<!-- ============ Gate ============ -->
+<div class="ex gate" id="gate">
+<h2>Gate<span class="badge">UTC+0 ｜ 资产口径</span></h2>
+<div class="chips"><span class="chip u0">时区 UTC+0（维护 0:00–3:00）</span><span class="chip mtm">资产口径·含未实现</span><span class="chip">总资产 / 合约盈亏 / 现货资产分析</span><span class="chip">交易分析质量指标最全</span></div>
+<p><b>结构定位：</b>顶部标题下拉切「总资产分析/合约盈亏分析/现货资产分析」;总览图支持折线/饼图,饼图再切币种/账户双维度。<b>交易分析是五家里最完整的</b>:盈亏比、多空分列、盈亏排行(可切额/胜率),并有资金费下钻环形。钱包余额给了独特的分解式。</p>
+
+<h3>字段计算逻辑</h3>
+<div class="tbl-scroll"><table>
+<thead><tr><th>字段</th><th>计算逻辑</th><th>口径/边界</th></tr></thead>
+<tbody>
+<tr><td>今日盈亏</td><td class="f">= 当前资产 − 今日初始资产 − 今日净转入</td><td>今日初始 = 当日 00:00 (UTC+0)</td></tr>
+<tr><td>本月盈亏</td><td>本月第一个自然日 00:00 (UTC+0) → 当前时刻的累计盈亏</td><td>—</td></tr>
+<tr class="hl"><td>累计盈亏</td><td class="f">= 当前资产 − 初始资产 − 期间净转入</td><td>含已实现 + 未实现;初始 = 180天前 00:00</td></tr>
+<tr class="hl"><td>累计盈亏率</td><td class="f">= 累计盈亏 ÷ (初始账户资产 + 期间转入)</td><td>统计以 00:00 (UTC+0) 为准;对比 BTC 累计涨跌</td></tr>
+<tr><td>每日盈亏</td><td class="f">= 当前资产 − 今日初始资产 − 今日净转入</td><td>0:00–03:00 维护延迟;盈亏月历/柱状双切;点选 = 日期 + 额(%)</td></tr>
+<tr class="hl"><td>钱包余额(合约)</td><td class="f">= 总共净划入 + 总已实现盈亏 + 总净资金费用 − 总手续费</td><td>独特分解式</td></tr>
+<tr><td>未实现盈亏</td><td>根据标记价格计算平仓时所有仓位的盈亏</td><td>—</td></tr>
+<tr class="hl"><td>交易分析·总盈亏</td><td class="f">= 总平仓盈亏 + 交易手续费 + 资金费用</td><td class="diff">仅 USDT 本位永续;仓位全部平仓后 1 小时计入</td></tr>
+<tr class="hl"><td>交易分析·盈亏比</td><td class="f">= (总盈利 / 盈利仓位数) : (总亏损 / 亏损仓位数)</td><td>—</td></tr>
+<tr><td>交易分析(其它)</td><td>胜率/交易金额/仓位数/最大收益/最大亏损;总盈利↔总亏损占比条(多空分列:平均持仓/仓位数/多空比/平均盈亏)</td><td>盈亏排行:币对 + 盈亏额⇌胜率切换,前 5</td></tr>
+<tr><td>每日盈亏(交易口径)</td><td>点选 tooltip = 已实现盈亏 / 平仓盈亏 / 交易金额 / 资金费用</td><td>盈利X天/亏损X天</td></tr>
+<tr><td>资金费</td><td>总资金费 / 已收取 / 已支付</td><td>已收取详情=环形按币对;已支付=空状态</td></tr>
+<tr><td>资产配置</td><td>币种组成(各币数量占比) / 资产分布(各账户市值占比)</td><td>双切换</td></tr>
+</tbody>
+</table></div>
+<p class="note">特色：交易分析质量指标最全 + 盈亏比公式 + 多空分列 + 盈亏排行可切额/胜率 + 资金费下钻 + 币种/账户双维度饼图。</p>
+</div>
+
+<!-- ============ Binance ============ -->
+<div class="ex bnc" id="binance">
+<h2>Binance（基准 / 我方蓝本）<span class="badge">UTC+0 ｜ 资产口径 ｜ 模块最全</span></h2>
+<div class="chips"><span class="chip u0">时区 UTC+0</span><span class="chip mtm">资产口径·含未实现（资产PNL=所有钱包净PNL）</span><span class="chip">资产报告 / 合约盈亏</span><span class="chip diff" style="background:#FEECEE;color:#F6465D;border-color:#f4c1c9">胜率按"天"</span></div>
+<p><b>结构定位：</b>我方原型的蓝本,也是五家里模块最全的:合约盈亏含 总览/详情/合约分析/资金费用与交易手续费 四子 tab。<b>胜率用"按天"口径</b>(区别于其余按仓位),累计盈亏率对比 BTC+BNB 双基准。</p>
+
+<h3>资产/合约页 字段逻辑</h3>
+<div class="tbl-scroll"><table>
+<thead><tr><th>字段</th><th>计算逻辑</th><th>口径/边界</th></tr></thead>
+<tbody>
+<tr class="hl"><td>今日盈利(总览)</td><td class="f">= 当前资产 − 今日初始资产总额 − 今日净划转和净充值</td><td>净转入充值 = 转入充值 − 转出提现;<b>不含 Alpha 账户</b></td></tr>
+<tr><td>资产分析·资产变动%</td><td class="f">= 资产净值(最后一天 − 初始日) / 初始日</td><td>资产PNL = 所选时间内所有钱包的资产净PNL;每日基于每天 0:00 (UTC+0);法币按 App 设置</td></tr>
+<tr><td>交易分析·交易PNL</td><td>含现货/理财/杠杆/合约四类钱包盈亏</td><td>基于四类历史记录;次数与 PNL 仅供参考</td></tr>
+<tr><td>币种分析·数字币余额</td><td class="f">= 所选区间最后一日 0:00 各钱包数字币余额之和</td><td>盈利/亏损 tab;环形+图例(高亮选中)</td></tr>
+<tr class="hl"><td>合约·保证金余额</td><td class="f">= 钱包余额 + 未实现盈亏</td><td>钱包余额 = 合约账户持有加密货币总值</td></tr>
+<tr><td>合约·今日已实现盈亏</td><td class="f">= 当前资产 − 今日初始资产 − 今日净划转和净充值</td><td>未实现盈亏 = 按所选价格基准计算</td></tr>
+</tbody>
+</table></div>
+
+<h3>合约盈亏 · 展开指标</h3>
+<div class="tbl-scroll"><table>
+<thead><tr><th>字段</th><th>计算逻辑</th></tr></thead>
+<tbody>
+<tr><td>总盈利</td><td class="f">期间所有已实现获利加总</td></tr>
+<tr><td>总亏损</td><td class="f">期间所有已实现亏损加总</td></tr>
+<tr><td>净盈利/亏损</td><td class="f">= 总盈利 − 总亏损</td></tr>
+<tr><td>交易量</td><td class="f">每日 0:00–23:59:59 (UTC) 计算,按联合保证金模式汇率折算 USD</td></tr>
+<tr><td>盈利/亏损/持平天数</td><td>期间单日已实现盈亏为 正 / 负 / 零 的天数</td></tr>
+<tr class="hl"><td>胜率</td><td class="f diff">= 盈利天数 ÷ (盈利天数 + 亏损天数 + 持平天数)　← 按"天"口径</td></tr>
+<tr><td>累计盈亏</td><td class="f">账户创建以来净盈亏(仅 2020-08 后) = 第1日到第N日的单日盈亏加总</td></tr>
+</tbody>
+</table></div>
+
+<h3>合约盈亏 · 详情(逐日历史盈亏)</h3>
+<div class="tbl-scroll"><table>
+<thead><tr><th>字段</th><th>计算逻辑</th></tr></thead>
+<tbody>
+<tr><td>历史盈亏(总述)</td><td>已扣除交易成本(手续费/资金费/<b>强平成本</b>);账户级含实际盈亏+费用+持有资产汇率波动未实现盈亏,皆换算 USD</td></tr>
+<tr><td>单日盈亏</td><td class="f">单日内所有已实现盈亏的加总</td></tr>
+<tr><td>累计盈亏</td><td class="f">第1日到第N日的单日盈亏加总</td></tr>
+<tr class="hl"><td>累计盈亏率</td><td class="f">= 累计盈亏 ÷ (第1日初始钱包余额 + 第1日至第N日期间每日累计净划入<b>平均</b>)　特殊情境 N/A</td></tr>
+<tr><td>净划入</td><td class="f">= 当日划入合约账户总额 − 当日划出合约账户总额</td></tr>
+<tr><td>单日盈亏日历 tooltip</td><td>单日盈亏 / 累计盈亏 / 累计盈亏率 / 净划转 / 交易量</td></tr>
+</tbody>
+</table></div>
+
+<h3>合约盈亏 · 合约分析(按币) & 资金费用与手续费</h3>
+<div class="tbl-scroll"><table>
+<thead><tr><th>模块</th><th>字段</th></tr></thead>
+<tbody>
+<tr><td>合约分析(逐合约)</td><td>总计已实现盈亏(<b>不含手续费</b>) / 已实现盈利 / 已实现亏损 / 买入总量 / 卖出总量 / 平均买价 / 平均卖价</td></tr>
+<tr><td>资金费用与手续费</td><td>「显示交易手续费」开关;总资金费用(已收/已付) / 总交易费用(USD+BNB);每日资金费用柱</td></tr>
+<tr class="hl"><td>4 张分布环形</td><td>收取资金费用分布 / 支付资金费用分布 / 已收交易手续费分布 / 已付交易手续费分布(均按币对占比)</td></tr>
+<tr><td>持仓实时资金费率</td><td>降序;ETHUSDT 实时资金费率 + 预估资金费用</td></tr>
+<tr><td>累计盈亏率对比</td><td class="hl">自己 vs 累计 BTCUSDT 永续标记价涨跌率% vs 累计 BNBUSDT 永续标记价涨跌率%(三线,<b>双基准</b>)</td></tr>
+</tbody>
+</table></div>
+<p class="note">特色：模块最全(详情逐日列表 / 按币合约分析 / 资金费用四环形 / 实时费率 / 双基准 / 按天胜率);它就是我方原型的对齐标杆。</p>
+</div>
+
+<!-- ============ 关键分歧速查 ============ -->
+<h2 id="cmp" style="background:var(--green);">关键分歧速查</h2>
+<div class="summary-tbl">
+<div class="tbl-scroll"><table>
+<thead><tr><th>分歧点</th><th>OKX</th><th>Bitget</th><th>Bybit</th><th>Gate</th><th>Binance</th></tr></thead>
+<tbody>
+<tr><td>时区</td><td class="diff">UTC+8</td><td>UTC+0</td><td>UTC+0</td><td>UTC+0</td><td>UTC+0</td></tr>
+<tr><td>含未实现</td><td>含</td><td class="diff">合约不含</td><td>含</td><td>含</td><td>含</td></tr>
+<tr><td>胜率口径</td><td>按仓位</td><td>按仓位</td><td>按仓位</td><td>按仓位</td><td class="diff">按天</td></tr>
+<tr><td>净流水</td><td>充+提+其他</td><td>净转入</td><td>净充值−净提币拆列</td><td>净转入</td><td>净划转和净充值</td></tr>
+<tr><td>累计率分母</td><td>期初+转入−转出</td><td>期初+日均净转入</td><td>—</td><td>初始+期间转入</td><td>期初+日均净划入</td></tr>
+<tr><td>对比基准</td><td>BTC</td><td>BTC</td><td>—</td><td>BTC</td><td>BTC+BNB</td></tr>
+</tbody>
+</table></div>
+</div>
+<div class="rule" style="background:var(--soft);border:1px solid #bfebd3;border-radius:12px;padding:16px 20px;margin:16px 0;">
+<p style="margin:0"><b>四个必须拍板的开关：</b>①<b>时区</b>——建议全站 UTC+0(仅 OKX 例外);②<b>基准</b>——资产报告走资产口径(含未实现)、合约盈亏走钱包口径(不含未实现),分场景;③<b>胜率</b>——投资者视角可用"按天"、交易者视角用"按仓位",二选一后全站统一并在 ⓘ 写明;④<b>累计盈亏率分母</b>——采用"期初+日均净转入"(Bitget/Binance 已一致)。</p>
+</div>
+
+<div class="foot">品牌归属以你分批标注为准;个别公式为弹窗原文或合理推断,以实际为准。本文件随原型同仓部署。</div>
+
+</div>
+</body>
+</html>
