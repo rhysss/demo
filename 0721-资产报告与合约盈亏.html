@@ -512,7 +512,7 @@ function genDailyFull(s,e,amp,bias,seed,zeroP){
   const a=new Date(s+'T00:00:00'),b=new Date(e+'T00:00:00'),days=Math.round((b-a)/86400000)+1;
   const r=rng(seed),dates=[],vals=[];
   for(let i=0;i<days;i++){const d=new Date(a.getTime()+i*86400000);dates.push(iso(d));
-    vals.push(r()<zeroP?0:Math.round(((r()-0.5)*2*amp+bias)*100)/100);}
+    vals.push(r()<zeroP?0:Math.trunc(((r()-0.5)*2*amp+bias)*100)/100);}
   return {dates,vals};
 }
 function cumsum(a){let s=0;return a.map(v=>s+=v);}
@@ -600,8 +600,8 @@ function calMonth(el,map,y,m){
     const key=y+'-'+('0'+(m+1)).slice(-2)+'-'+('0'+d).slice(-2);
     const v=map[key];let st='',val='',td=(key===TODAY?' today':'');
     if(v!==undefined){const a=0.18+Math.abs(v)/maxA*0.55;
-      if(v>0){st='background:rgba(0,197,102,'+a.toFixed(2)+')';val='<span class="cv g">+'+v.toFixed(2)+'</span>';}
-      else if(v<0){st='background:rgba(246,70,93,'+a.toFixed(2)+')';val='<span class="cv r">'+v.toFixed(2)+'</span>';}
+      if(v>0){st='background:rgba(0,197,102,'+a.toFixed(2)+')';val='<span class="cv g">+'+abs2(v)+'</span>';}
+      else if(v<0){st='background:rgba(246,70,93,'+a.toFixed(2)+')';val='<span class="cv r">-'+abs2(v)+'</span>';}
       else{st='background:#EFF1F3';val='<span class="cv" style="color:var(--muted2)">0</span>';}}
     g+='<div class="cal-cell'+td+'" style="'+st+'"><span class="cd">'+d+'</span>'+val+'</div>';
   }
@@ -623,10 +623,13 @@ const COIN_LOSS=[{i:1,nm:'BNB',cd:'BNB',amt:'-$1.72',pc:'-0.84%',g:0},{i:2,nm:'T
 const SEG_PNL_ASSET=[{name:'USDT',pct:96.7,color:'#2B6CF0'},{name:'BNB',pct:3.3,color:'#F5C542'}];
 
 /* ===== formatters ===== */
-const fUSD=v=>(v<0?'-$':'$')+Math.abs(v).toFixed(2);
-const fUSDT=v=>v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' USDT';
-const fUSDword=v=>(v>=0?'+':'')+v.toFixed(2)+' USD';
-const fPct=v=>(v>=0?'+':'')+v.toFixed(2)+'%';
+const tr2=v=>Math.trunc(v*100)/100;                 // 截断到2位
+const abs2=v=>Math.abs(tr2(v)).toFixed(2);           // 绝对值·2位·无符号
+const fSigned=v=>(v<0?'-':'')+abs2(v);               // 负数带-，正数不带+
+const fUSD=v=>(v<0?'-$':'$')+abs2(v);
+const fUSDT=v=>tr2(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' USDT';
+const fUSDword=v=>(v<0?'-':'+')+abs2(v)+' USD';
+const fPct=v=>(v<0?'-':'+')+abs2(v)+'%';
 
 /* ===== per-range draws ===== */
 const OV_CHANGE={'1天':-3.82,'7天':-12.5,'30天':46.2,'180天':188.4,'360天':523.1};
@@ -640,7 +643,7 @@ function drawOverview(label){
   const pct=change/(end-change)*100;
   const pill=document.getElementById('ov-pill');
   pill.className='pill-pct '+(change>=0?'up':'dn');
-  pill.textContent=(change>=0?'▲ +':'▼ ')+pct.toFixed(2)+'%';
+  pill.textContent=(change>=0?'▲ +':'▼ -')+abs2(pct)+'%';
 }
 function drawReport(days,startStr,endStr){
   const s=startStr||rangeStart(days),e=endStr||TODAY,n=npts(days),seed=days*7+3;
@@ -680,9 +683,9 @@ function drawPnl(days,startStr,endStr){
   document.getElementById('pnl-cum-head').className=cumEnd>=0?'g':'r';
   // gain/loss/net
   const gain=daily.filter(v=>v>0).reduce((a,b)=>a+b,0),loss=daily.filter(v=>v<0).reduce((a,b)=>a+b,0);
-  document.getElementById('pnl-gain').textContent=gain.toFixed(2)+' USD';
-  document.getElementById('pnl-loss').textContent=Math.abs(loss).toFixed(2)+' USD';
-  document.getElementById('pnl-net').textContent=(gain+loss).toFixed(2)+' USD';
+  document.getElementById('pnl-gain').textContent=abs2(gain)+' USD';
+  document.getElementById('pnl-loss').textContent=abs2(loss)+' USD';
+  document.getElementById('pnl-net').textContent=fSigned(gain+loss)+' USD';
   // rate multi-line
   const ownPct=cumEnd/510.45*100;
   const own=genLine(n,ownPct,ownPct,Math.abs(ownPct)*0.5+1,seed+1);
@@ -695,8 +698,8 @@ function drawPnl(days,startStr,endStr){
   document.getElementById('rate-bnb').textContent=fPct(bnbEnd);document.getElementById('rate-bnb').className='pct '+(bnbEnd>=0?'g':'r');
   // asset value
   const val=genLine(n,325.66,({7:-5.2,30:22.4,90:60.5,365:140.2})[days]??20,Math.max(3,days*0.2),seed+4);
-  areaLine(document.getElementById('pnl-value-line'),val,'#00C566',true,{start:s,end:e,fmt:v=>v.toFixed(2)+' USD'});
-  document.getElementById('pnl-val-head').textContent='+'+val[n-1].toFixed(2)+' USD';
+  areaLine(document.getElementById('pnl-value-line'),val,'#00C566',true,{start:s,end:e,fmt:v=>fSigned(v)+' USD'});
+  document.getElementById('pnl-val-head').textContent='+'+abs2(val[n-1])+' USD';
 }
 
 /* ===== range selectors ===== */
