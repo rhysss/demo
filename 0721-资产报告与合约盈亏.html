@@ -471,7 +471,7 @@ section{padding:0 16px;}
 
     <!-- 资产市值 -->
     <div class="card">
-      <div class="chart-hd"><div style="font-size:18px;font-weight:700;">资产市值</div><span class="scope-sel" onclick="toast('账户筛选（原型未展开）')">全部 ›</span></div>
+      <div style="font-size:18px;font-weight:700;">资产走势</div>
       <div class="val-box"><span id="av-date">2026/07/22</span><span class="vv2" id="av-val">2,022.95 USD</span></div>
       <div id="rp-asset-line"></div>
     </div>
@@ -822,7 +822,7 @@ function pathSeg(vals,X,Y,a,b){let d='M '+X(a)+' '+Y(vals[a]);for(let i=a+1;i<=b
 
 function areaLine(el,vals,color,fill,opts){
   opts=opts||{};
-  const w=340,h=opts.yLabels?190:170,top=14,botp=16,n=vals.length;
+  const w=340,h=opts.yLabels?(opts.markers?206:190):170,top=opts.markers?30:14,botp=opts.markers?28:16,n=vals.length;
   const padL=opts.yLabels?38:16,padR=opts.yLabels?12:16;
   CHARTS[el.id]={vals,color,fill,opts,padL,padR,w};
   const min=Math.min(...vals),max=Math.max(...vals),range=(max-min)||1;
@@ -842,7 +842,7 @@ function areaLine(el,vals,color,fill,opts){
   }
   let mk='';
   if(opts.markers){const iMax=vals.indexOf(max),iMin=vals.indexOf(min);
-    const one=(i,vv,above)=>'<circle cx="'+X(i)+'" cy="'+Y(vv)+'" r="3.2" fill="'+color+'"/><text x="'+Math.max(24,Math.min(w-24,X(i)))+'" y="'+(above?Y(vv)-8:Y(vv)+16)+'" font-size="10.5" font-weight="700" fill="'+color+'" text-anchor="middle">'+tr2(vv).toFixed(2)+'</text>';
+    const one=(i,vv,above)=>'<circle cx="'+X(i)+'" cy="'+Y(vv)+'" r="3.2" fill="'+color+'"/><text x="'+Math.max(32,Math.min(w-32,X(i)))+'" y="'+(above?Y(vv)-10:Y(vv)+18)+'" font-size="10.5" font-weight="700" fill="'+color+'" text-anchor="middle">'+tr2(vv).toFixed(2)+'</text>';
     mk=one(iMax,max,true)+one(iMin,min,false);}
   const area=solid+' L '+X(active)+' '+(h-botp)+' L '+X(0)+' '+(h-botp)+' Z';
   const svg='<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="display:block"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity="0.18"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
