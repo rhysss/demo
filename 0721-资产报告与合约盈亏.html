@@ -149,6 +149,7 @@ section{padding:0 16px;}
 .scrub-tip:not(.below) .scrub-arrow{bottom:-5px;border-top:6px solid #1E2329;}
 .scrub-tip.below .scrub-arrow{top:-5px;border-bottom:6px solid #1E2329;}
 .scrub-dot{position:absolute;width:11px;height:11px;border-radius:50%;background:#fff;border:3px solid #000;transform:translate(-50%,-50%);z-index:2;pointer-events:none;}
+.scrub-vline{position:absolute;top:0;bottom:0;border-left:1px dashed #B7BDC6;transform:translateX(-0.5px);z-index:1;pointer-events:none;}
 
 /* month calendar */
 .cal{margin-top:6px;}
@@ -826,6 +827,8 @@ function areaLine(el,vals,color,fill,opts){
   const padL=opts.yLabels?38:16,padR=opts.yLabels?12:16;
   CHARTS[el.id]={vals,color,fill,opts,padL,padR,w};
   const min=Math.min(...vals),max=Math.max(...vals),range=(max-min)||1;
+  const bigY=Math.abs(max)>=1000||Math.abs(min)>=1000;
+  const fmtY=v=>bigY?Math.round(v).toLocaleString('en-US'):tr2(v).toFixed(2);
   const X=i=>padL+i*(w-padL-padR)/(n-1);
   const Y=v=>top+(1-(v-min)/range)*(h-top-botp);
   const active=opts.active!=null?Math.max(0,Math.min(n-1,opts.active)):Math.round((n-1)*0.6);
@@ -835,14 +838,14 @@ function areaLine(el,vals,color,fill,opts){
   if(opts.yLabels){
     for(let k=0;k<=4;k++){const val=max-(max-min)*k/4,yy=Y(val);
       grid+='<line x1="'+padL+'" y1="'+yy+'" x2="'+(w-padR)+'" y2="'+yy+'" stroke="#F1F2F4" stroke-width="1"/>';
-      yl+='<text x="2" y="'+(yy+3)+'" font-size="9.5" fill="#B7BDC6">'+tr2(val).toFixed(2)+'</text>';}
+      yl+='<text x="2" y="'+(yy+3)+'" font-size="9.5" fill="#B7BDC6">'+fmtY(val)+'</text>';}
   }else{
     const ticks=[0,.25,.5,.75,1].map(f=>Math.round(f*(n-1)));
     ticks.forEach(i=>{grid+='<line x1="'+X(i)+'" y1="'+top+'" x2="'+X(i)+'" y2="'+(h-botp)+'" stroke="#F1F2F4" stroke-width="1"/>';});
   }
   let mk='';
   if(opts.markers){const iMax=vals.indexOf(max),iMin=vals.indexOf(min);
-    const one=(i,vv,above)=>'<circle cx="'+X(i)+'" cy="'+Y(vv)+'" r="3.2" fill="'+color+'"/><text x="'+Math.max(32,Math.min(w-32,X(i)))+'" y="'+(above?Y(vv)-10:Y(vv)+18)+'" font-size="10.5" font-weight="700" fill="'+color+'" text-anchor="middle">'+tr2(vv).toFixed(2)+'</text>';
+    const one=(i,vv,above)=>'<circle cx="'+X(i)+'" cy="'+Y(vv)+'" r="3.2" fill="'+color+'"/><text x="'+Math.max(32,Math.min(w-32,X(i)))+'" y="'+(above?Y(vv)-10:Y(vv)+18)+'" font-size="10.5" font-weight="700" fill="'+color+'" text-anchor="middle">'+fmtY(vv)+'</text>';
     mk=one(iMax,max,true)+one(iMin,min,false);}
   const area=solid+' L '+X(active)+' '+(h-botp)+' L '+X(0)+' '+(h-botp)+' Z';
   const svg='<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="display:block"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity="0.18"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
@@ -859,10 +862,11 @@ function areaLine(el,vals,color,fill,opts){
   const tipTop=intraday?(fullDate(opts.start,opts.end,active,n)+' '+hm(active,n,spanH)):fullDate(opts.start,opts.end,active,n);
   const tip='<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+tipTop+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>';
   const dot='<div class="scrub-dot" style="left:'+xf+'%;top:'+yf+'%;border-color:'+color+'"></div>';
+  const vline='<div class="scrub-vline" style="left:'+xf+'%"></div>';
   let axis;
   if(opts.yLabels){axis='<div class="axis" style="padding:0 '+padR+'px 0 '+padL+'px"><span>'+lbl(0)+'</span><span>'+lbl(n-1)+'</span></div>';}
   else{const ticks=[0,.25,.5,.75,1].map(f=>Math.round(f*(n-1)));axis='<div class="axis">'+ticks.map(i=>'<span>'+lbl(i)+'</span>').join('')+'</div>';}
-  el.innerHTML='<div class="chartbox">'+svg+tip+dot+'</div>'+axis;
+  el.innerHTML='<div class="chartbox">'+svg+vline+tip+dot+'</div>'+axis;
   bindScrub(el);
 }
 function bindScrub(el){
@@ -966,7 +970,8 @@ function calTip(el,key,v,ev){
   tip.style.left=Math.max(90,Math.min(wrap.offsetWidth-90,cx))+'px';
   tip.style.top=el.offsetTop+'px';tip.style.display='block';
 }
-document.addEventListener('click',()=>{document.querySelectorAll('.cal-tip,.bar-tip').forEach(t=>t.style.display='none');});
+document.addEventListener('click',e=>{document.querySelectorAll('.cal-tip,.bar-tip').forEach(t=>t.style.display='none');
+  if(!e.target.closest('.chartbox'))document.querySelectorAll('.scrub-tip,.scrub-dot,.scrub-vline').forEach(t=>t.style.display='none');});
 function drawCal(el,dates,vals,plain,onMonth){
   const map={};dates.forEach((d,i)=>{map[d]=vals[i];});
   const em=new Date(dates[dates.length-1]+'T00:00:00');
@@ -1019,10 +1024,14 @@ function drawReport(days,startStr,endStr){
   const s=startStr||rangeStart(days),e=endStr||TODAY,n=npts(days),seed=days*7+3,base=2022.95;
   // 资产市值 走势 (带Y轴/最高最低标注)
   const change=({7:-14.9,30:-35.4,90:88.6,180:188.4})[days] ?? (days<=30?-days*1.1:days*0.9);
-  const asset=genLine(n,base,change,Math.max(8,Math.abs(change)*0.6),seed);
-  areaLine(document.getElementById('rp-asset-line'),asset,change>=0?'#00C566':'#F6465D',true,{start:s,end:e,fmt:fUSD,yLabels:true,markers:true});
+  const raw=genLine(n,base,change,Math.max(8,Math.abs(change)*0.6),seed);
+  // 演示大区间：市值最低≈60 / 最高≈10000（线性映射，两端极值必然出现）
+  const rmin=Math.min(...raw),rmax=Math.max(...raw);
+  const asset=raw.map(v=>60+(v-rmin)/((rmax-rmin)||1)*(10000-60));
+  const endV=asset[n-1],up=endV>=asset[0];
+  areaLine(document.getElementById('rp-asset-line'),asset,up?'#00C566':'#F6465D',true,{start:s,end:e,fmt:v=>(v<0?'-$':'$')+Math.abs(tr2(v)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),yLabels:true,markers:true});
   document.getElementById('av-date').textContent=TODAY.replace(/-/g,'/');
-  document.getElementById('av-val').textContent=base.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' USD';
+  document.getElementById('av-val').textContent=Math.round(endV).toLocaleString('en-US')+' USD';
   // 账户级每日盈亏 (资产口径, 含未实现)
   const {dates:ddates,vals:daily}=genDailyFull(s,e,days<=7?7:days<=30?13:22,0.6,seed+41,0);
   const dn=daily.length;
