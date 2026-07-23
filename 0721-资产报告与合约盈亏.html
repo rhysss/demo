@@ -1005,6 +1005,16 @@ function drawOverview(label){
   pill.textContent=(change>=0?'▲ +':'▼ -')+abs2(pct)+'%';
 }
 let RALLOC='coin',PSTAT={mode:'rate'};
+/* 头部盈亏概览：账户级 PnL，固定值，不随时间区间变化 */
+function drawAssetHead(){
+  const base=2022.95,today=3.82,month=101.46,cum=142.06;
+  const set=(id,txt,pos)=>{const el=document.getElementById(id);el.textContent=txt;el.className=pos?'g':'r';};
+  set('r-today',(today>=0?'+':'-')+abs2(today)+' USD ('+fPct(today/base*100)+')',today>=0);
+  set('r-month',(month>=0?'+':'-')+abs2(month),month>=0);
+  set('r-month-sub',fPct(month/base*100),month>=0);
+  set('r-cum',(cum>=0?'+':'-')+abs2(cum),cum>=0);
+  set('r-cum-sub',fPct(cum/base*100),cum>=0);
+}
 function drawReport(days,startStr,endStr){
   const s=startStr||rangeStart(days),e=endStr||TODAY,n=npts(days),seed=days*7+3,base=2022.95;
   // 资产市值 走势 (带Y轴/最高最低标注)
@@ -1024,16 +1034,8 @@ function drawReport(days,startStr,endStr){
   const dlast=daily[dn-1];
   document.getElementById('dm-bar-date').textContent=ddates[dn-1].replace(/-/g,'/');
   const dbv=document.getElementById('dm-bar-val');dbv.textContent=(dlast>=0?'+':'-')+abs2(dlast)+' ('+fPct(dlast/base*100)+')';dbv.className='vv2 '+(dlast>=0?'g':'r');
-  // 盈亏概览头部
-  const rt=document.getElementById('r-today');rt.textContent=(dlast>=0?'+':'-')+abs2(dlast)+' USD ('+fPct(dlast/base*100)+')';rt.className=dlast>=0?'g':'r';
-  const monStart=TODAY.slice(0,8)+'01';
-  const monPnl=ddates.reduce((a,d,i)=>d>=monStart?a+daily[i]:a,0);
-  const rm=document.getElementById('r-month');rm.textContent=(monPnl>=0?'+':'-')+abs2(monPnl);rm.className=monPnl>=0?'g':'r';
-  const rms=document.getElementById('r-month-sub');rms.textContent=fPct(monPnl/base*100);rms.className=monPnl>=0?'g':'r';
+  // 盈亏统计 数据 (随区间变化)
   const cum=cumsum(daily),cumEnd=cum[dn-1];
-  const rc=document.getElementById('r-cum');rc.textContent=(cumEnd>=0?'+':'-')+abs2(cumEnd);rc.className=cumEnd>=0?'g':'r';
-  const rcs=document.getElementById('r-cum-sub');rcs.textContent=fPct(cumEnd/base*100);rcs.className=cumEnd>=0?'g':'r';
-  // 盈亏统计 数据
   const ownPct=cumEnd/base*100;
   const own=genLine(n,ownPct,ownPct,Math.abs(ownPct)*0.5+1,seed+1);
   const btcEnd=({7:1.2,30:4.89,90:12.4,180:20.5})[days]??8.5;
@@ -1360,6 +1362,7 @@ function renderCoinLegend(el,segs){el.innerHTML=segs.map(s=>'<div style="padding
 function initCharts(){
   drawOverview('7天');
   donut(document.getElementById('ov-donut'),SEG_OV,140);renderLegend(document.getElementById('ov-legend'),SEG_OV,true);
+  drawAssetHead();
   drawReport(30);
   drawPnl(30);
 }
