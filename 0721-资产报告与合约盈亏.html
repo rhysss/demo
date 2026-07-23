@@ -425,11 +425,11 @@ section{padding:0 16px;}
     <div class="title" id="report-title" onclick="openMenu('report')">资产报告 <svg class="caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><circle cx="6" cy="12" r="2"/><circle cx="17" cy="6" r="2"/><circle cx="17" cy="18" r="2"/><path d="M8 11l7-4M8 13l7 4"/></svg>
   </div>
-  <div class="range" style="padding:0 16px;">
+  <div class="range range-top" style="position:static;">
     <span class="on" onclick="setReportRange(this,'7天',7)">7天</span><span onclick="setReportRange(this,'30天',30)">30天</span>
     <span onclick="setReportRange(this,'90天',90)">90天</span><span onclick="openDatePicker(this)">自定义</span>
   </div>
-  <div class="scroll">
+  <div class="scroll paged">
     <div class="card">
       <div class="card-t">资产分析 <svg class="info-i click-i" onclick="openInfo('ranalysis')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
       <div class="big-pnl" id="ra-label">7 天变化</div>
