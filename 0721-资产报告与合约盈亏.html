@@ -901,19 +901,33 @@ function multiLine(el,series,dates){
   const t=[0,.25,.5,.75,1].map(f=>Math.round(f*(n-1)));
   el.innerHTML=s+'<div class="axis">'+t.map(i=>'<span>'+dates[i]+'</span>').join('')+'</div>';
 }
-function barChart(el,vals,dates){
+function barChart(el,vals,dates,opts){opts=opts||{};
   const w=340,h=180,pad=16,max=Math.max(1,...vals.map(Math.abs)),zeroY=h/2,bw=(w-2*pad)/vals.length;
+  const active=opts.active!=null?Math.max(0,Math.min(vals.length-1,opts.active)):(opts.onPick?vals.length-1:-1);
   let s='<svg viewBox="0 0 '+w+' '+h+'" width="100%"><line x1="'+pad+'" y1="'+zeroY+'" x2="'+(w-pad)+'" y2="'+zeroY+'" stroke="#EAECEF" stroke-dasharray="3 3"/>';
+  if(opts.onPick&&active>=0){const cx=pad+active*bw+bw*0.5;s+='<line x1="'+cx+'" y1="6" x2="'+cx+'" y2="'+(h-6)+'" stroke="#B7BDC6" stroke-width="1" stroke-dasharray="3 3"/>';}
   vals.forEach((v,i)=>{const bh=Math.abs(v)/max*(h/2-pad),x=pad+i*bw+bw*0.25,bwi=bw*0.5;
     if(Math.abs(v)<max*0.01){s+='<line x1="'+x+'" y1="'+zeroY+'" x2="'+(x+bwi)+'" y2="'+zeroY+'" stroke="'+(v>=0?'#00C566':'#F6465D')+'" stroke-width="1.5" opacity="0.4"/>';}
     else{const y=v>=0?zeroY-bh:zeroY;s+='<rect x="'+x+'" y="'+y+'" width="'+bwi+'" height="'+bh+'" rx="1.5" fill="'+(v>=0?'#00C566':'#F6465D')+'"/>';}});
   s+='</svg>';
   const t=[0,.25,.5,.75,1].map(f=>Math.round(f*(vals.length-1)));
-  CHARTS_BAR[el.id]={vals,dates};
-  el.innerHTML='<div class="chartbox" style="position:relative">'+s+'<div class="bar-tip" style="display:none"></div></div><div class="axis">'+t.map(i=>'<span>'+dates[i]+'</span>').join('')+'</div>';
-  bindBar(el);
+  CHARTS_BAR[el.id]={vals,dates,opts,active};
+  const tip=opts.noTip?'':'<div class="bar-tip" style="display:none"></div>';
+  el.innerHTML='<div class="chartbox" style="position:relative">'+s+tip+'</div><div class="axis">'+t.map(i=>'<span>'+dates[i]+'</span>').join('')+'</div>';
+  if(opts.onPick){bindBarPick(el);opts.onPick(active,vals[active]);}
+  else bindBar(el);
 }
 const CHARTS_BAR={};
+function bindBarPick(el){
+  if(el._bpBound)return;el._bpBound=true;
+  const w=340,pad=16;
+  const move=ev=>{const cfg=CHARTS_BAR[el.id];if(!cfg||!cfg.opts.onPick)return;const box=el.querySelector('.chartbox');if(!box)return;
+    const rect=box.getBoundingClientRect();const xv=((ev.touches?ev.touches[0].clientX:ev.clientX)-rect.left)/rect.width*w,bw=(w-2*pad)/cfg.vals.length;
+    let i=Math.floor((xv-pad)/bw);i=Math.max(0,Math.min(cfg.vals.length-1,i));
+    cfg.opts.active=i;barChart(el,cfg.vals,cfg.dates,cfg.opts);};
+  el.addEventListener('pointerdown',move);el.addEventListener('pointermove',e=>{if(e.buttons)move(e);});
+  el.addEventListener('touchstart',move,{passive:true});el.addEventListener('touchmove',move,{passive:true});
+}
 function bindBar(el){
   const box=el.querySelector('.chartbox');if(!box||el._barBound)return;el._barBound=true;
   const w=340,pad=16;
@@ -1029,15 +1043,14 @@ function drawAssetHead(){
 function drawDailyPnl(){
   const base=2022.95,e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.getDate()-89);const s=iso(a);
   const {dates:ddates,vals:daily}=genDailyFull(s,e,12,0.6,3517,0);
-  const dn=daily.length;
-  barChart(document.getElementById('r-daily-bar'),daily,ddates.map(d=>d.slice(5)));
+  barChart(document.getElementById('r-daily-bar'),daily,ddates.map(d=>d.slice(5)),{noTip:true,onPick:(i,v)=>{
+    document.getElementById('dm-bar-date').textContent=ddates[i].replace(/-/g,'/');
+    const dbv=document.getElementById('dm-bar-val');dbv.textContent=(v>=0?'+':'-')+abs2(v)+' ('+fPct(v/base*100)+')';dbv.className='vv2 '+(v>=0?'g':'r');
+  }});
   drawCal(document.getElementById('r-daily-cal'),ddates,daily,true,(y,m,tot,has)=>{
     document.getElementById('dm-mon-label').textContent=(m+1)+'月 盈亏额';
     const el=document.getElementById('dm-mon-val');el.textContent=(tot>=0?'+':'-')+abs2(tot)+' ('+fPct(tot/base*100)+')';el.className='vv2 '+(tot>=0?'g':'r');
   });
-  const dlast=daily[dn-1];
-  document.getElementById('dm-bar-date').textContent=ddates[dn-1].replace(/-/g,'/');
-  const dbv=document.getElementById('dm-bar-val');dbv.textContent=(dlast>=0?'+':'-')+abs2(dlast)+' ('+fPct(dlast/base*100)+')';dbv.className='vv2 '+(dlast>=0?'g':'r');
 }
 function drawReport(days,startStr,endStr){
   const s=startStr||rangeStart(days),e=endStr||TODAY,n=npts(days),seed=days*7+3,base=2022.95;
