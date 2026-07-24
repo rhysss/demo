@@ -956,9 +956,9 @@ function calMonth(el,map,y,m,plain,onMonth){
   for(let i=0;i<startDow;i++)g+='<div class="cal-cell empty"></div>';
   for(let d=1;d<=dim;d++){
     const key=y+'-'+('0'+(m+1)).slice(-2)+'-'+('0'+d).slice(-2);
-    const v=map[key];let st='',val='',td=(key===TODAY?' today':''),click='';
+    const v=map[key];let st='',val='',td=(!plain&&key===TODAY?' today':''),click='';
     if(v!==undefined){
-      if(plain){st=(key===TODAY?'background:#F0F1F3':'');
+      if(plain){st='';
         val=v>0?'<span class="cv g">+'+abs2(v)+'</span>':v<0?'<span class="cv r">-'+abs2(v)+'</span>':'<span class="cv" style="color:var(--muted2)">0</span>';}
       else{const a=0.18+Math.abs(v)/maxA*0.55;
         if(v>0){st='background:rgba(0,197,102,'+a.toFixed(2)+')';val='<span class="cv g">+'+abs2(v)+'</span>';}
