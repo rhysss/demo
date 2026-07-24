@@ -1005,6 +1005,24 @@ function drawCal(el,dates,vals,plain,onMonth){
 /* ===== static donut/legend data ===== */
 const SEG_OV=[{name:'资金账户',pct:1.71,usd:'$34.68',color:'#2B6CF0'},{name:'现货',pct:9.92,usd:'$200.76',color:'#F5C542'},{name:'合约',pct:25.23,usd:'$510.45',color:'#16B47A'},{name:'理财账户',pct:63.13,usd:'$1,277.06',color:'#7C6CFF'},{name:'Launchpad',pct:0.01,usd:'$0.00',color:'#B7BDC6'}];
 const SEG_COIN=[{name:'USDT',pct:71.4,usd:'$1,444.5',color:'#2B6CF0'},{name:'ETH',pct:15.2,usd:'$307.5',color:'#6AA0F0'},{name:'BTC',pct:8.9,usd:'$180.0',color:'#16B47A'},{name:'BNB',pct:3.1,usd:'$62.7',color:'#F5C542'},{name:'其他',pct:1.4,usd:'$28.3',color:'#B7BDC6'}];
+/* 全量币种(演示16个)——展示时取占比前10,其余归入「其他」 */
+const COIN_ALL=[
+ {name:'USDT',pct:62.6,usd:1266.4,color:'#2B6CF0'},{name:'ETH',pct:12.2,usd:246.8,color:'#6AA0F0'},
+ {name:'BTC',pct:7.9,usd:159.8,color:'#16B47A'},{name:'BNB',pct:3.1,usd:62.7,color:'#F5C542'},
+ {name:'SOL',pct:2.8,usd:56.6,color:'#7C6CFF'},{name:'XRP',pct:2.1,usd:42.5,color:'#F6465D'},
+ {name:'DOGE',pct:1.7,usd:34.4,color:'#FF9F43'},{name:'ADA',pct:1.4,usd:28.3,color:'#00C566'},
+ {name:'TRX',pct:1.2,usd:24.3,color:'#26C6DA'},{name:'LINK',pct:1.0,usd:20.2,color:'#EC407A'},
+ {name:'AVAX',pct:0.9,usd:18.2,color:'#8D6E63'},{name:'DOT',pct:0.8,usd:16.2,color:'#5C6BC0'},
+ {name:'MATIC',pct:0.7,usd:14.2,color:'#AB47BC'},{name:'LTC',pct:0.6,usd:12.1,color:'#78909C'},
+ {name:'ATOM',pct:0.5,usd:10.1,color:'#66BB6A'},{name:'UNI',pct:0.5,usd:10.1,color:'#FF7043'}];
+function topN(list,n){
+  const sorted=list.slice().sort((a,b)=>b.pct-a.pct);
+  if(sorted.length<=n)return sorted;
+  const top=sorted.slice(0,n),rest=sorted.slice(n);
+  const pct=tr2(rest.reduce((a,b)=>a+b.pct,0)),usd=rest.reduce((a,b)=>a+(typeof b.usd==='number'?b.usd:0),0);
+  return top.concat([{name:'其他',pct:pct,usd:usd,color:'#B7BDC6',more:rest.length}]);
+}
+function fmtAllocUsd(s){return typeof s.usd==='number'?'$'+s.usd.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1}):s.usd;}
 const COIN_PROFIT=[{i:1,nm:'Ethereum',cd:'ETH',amt:'$96.20',pc:'+18.40%',g:1},{i:2,nm:'Bitcoin',cd:'BTC',amt:'$61.05',pc:'+4.89%',g:1}];
 const COIN_LOSS=[{i:1,nm:'BNB',cd:'BNB',amt:'-$1.72',pc:'-0.84%',g:0},{i:2,nm:'Tether',cd:'USDT',amt:'-$0.30',pc:'-0.02%',g:0}];
 const ALLOC_COIN=[{name:'USDT',pct:96.7,color:'#2B6CF0'},{name:'BNB',pct:3.3,color:'#F5C542'}];
@@ -1108,20 +1126,20 @@ function rAllocMode(m){RALLOC=m;ALLOC_SEL=0;
 }
 function allocPick(i){ALLOC_SEL=i;renderAlloc();}
 function renderAlloc(){
-  const segs=RALLOC==='coin'?SEG_COIN:SEG_OV,sel=Math.max(0,Math.min(ALLOC_SEL,segs.length-1));
+  const segs=RALLOC==='coin'?topN(COIN_ALL,10):SEG_OV,sel=Math.max(0,Math.min(ALLOC_SEL,segs.length-1));
   // 环形：选中段加粗凸显、其余淡化;点击段/行均可切换
   const size=170,c=size/2,r=(size-28)/2,circ=2*Math.PI*r;let off=0,p='';
   segs.forEach((s,i)=>{const len=s.pct/100*circ,sw=(i===sel?27:18),op=(i===sel?1:0.5);
     p+='<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="'+sw+'" stroke-opacity="'+op+'" stroke-dasharray="'+len+' '+(circ-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+c+' '+c+')" style="cursor:pointer" onclick="allocPick('+i+')"/>';
     off+=len;});
   const cs=segs[sel];
-  const ctr='<text x="'+c+'" y="'+(c-9)+'" text-anchor="middle" font-size="11" fill="#848E9C">'+cs.usd+'</text>'
+  const ctr='<text x="'+c+'" y="'+(c-9)+'" text-anchor="middle" font-size="11" fill="#848E9C">'+fmtAllocUsd(cs)+'</text>'
     +'<text x="'+c+'" y="'+(c+9)+'" text-anchor="middle" font-size="21" font-weight="700" fill="#1E2329">'+cs.pct+'%</text>'
     +'<text x="'+c+'" y="'+(c+25)+'" text-anchor="middle" font-size="11" fill="#848E9C">'+cs.name+'</text>';
   document.getElementById('r-alloc-donut').innerHTML='<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+p+ctr+'</svg>';
   const title=RALLOC==='coin'?'币种':'资产分布';
   document.getElementById('r-alloc-table').innerHTML='<div class="alloc-tbl"><div class="hd"><span>'+title+'</span><span>占比</span><span>总资产价值(USD)</span></div><div class="alloc-rows">'
-    +segs.map((s,i)=>'<div class="rw'+(i===sel?' on':'')+'" onclick="allocPick('+i+')"><span class="nm"><span class="dot" style="background:'+s.color+'"></span>'+s.name+'</span><span class="pc">'+s.pct+'%</span><span class="vl">'+s.usd+'</span></div>').join('')+'</div></div>';
+    +segs.map((s,i)=>'<div class="rw'+(i===sel?' on':'')+'" onclick="allocPick('+i+')"><span class="nm"><span class="dot" style="background:'+s.color+'"></span>'+s.name+(s.more?' <span style="font-size:11px;color:var(--muted2)">('+s.more+'种)</span>':'')+'</span><span class="pc">'+s.pct+'%</span><span class="vl">'+fmtAllocUsd(s)+'</span></div>').join('')+'</div></div>';
 }
 /* 多线对比图 + 拖动落点 (盈亏统计·累计盈亏率) */
 const MCHARTS={};
