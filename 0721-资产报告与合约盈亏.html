@@ -508,6 +508,7 @@ section{padding:0 16px;}
     <!-- 资产配置 (币种组成 / 资产分布 切换) -->
     <div class="card">
       <div style="font-size:18px;font-weight:700;">资产配置 <svg class="info-i click-i" onclick="openInfo('ralloc')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <div style="font-size:12px;color:var(--muted2);margin-top:3px;">最近更新 2026-07-21 17:51 (UTC+0)</div>
       <div class="seg-tabs"><button class="on" id="ral-coin" onclick="rAllocMode('coin')">币种组成</button><button id="ral-acct" onclick="rAllocMode('acct')">资产分布</button></div>
       <div style="display:flex;justify-content:center;margin-top:16px;"><div id="r-alloc-donut"></div></div>
       <div id="r-alloc-table"></div>
@@ -1098,8 +1099,7 @@ function drawReport(days,startStr,endStr){
   PSTAT.data={own,btc,ownEnd:own[n-1],btcEnd:btc[n-1],cum,cumEnd,s,e};
   document.getElementById('r-stat-line')._active=null;
   pStat(PSTAT.mode);
-  // 资产配置
-  rAllocMode(RALLOC);
+  // 资产配置不随区间变化，见 initCharts 里的 rAllocMode()
 }
 function pStat(m){PSTAT.mode=m;
   document.getElementById('ps-rate').classList.toggle('on',m==='rate');
@@ -1437,6 +1437,7 @@ function initCharts(){
   donut(document.getElementById('ov-donut'),SEG_OV,140);renderLegend(document.getElementById('ov-legend'),SEG_OV,true);
   drawAssetHead();
   drawDailyPnl();
+  rAllocMode('coin');
   drawReport(30);
   drawPnl(30);
 }
