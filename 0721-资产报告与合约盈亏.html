@@ -860,13 +860,14 @@ function areaLine(el,vals,color,fill,opts){
   const dates=intraday?null:spread(opts.start,opts.end,n);
   const lbl=i=>intraday?hm(i,n,spanH):dates[i];
   const tipTop=intraday?(fullDate(opts.start,opts.end,active,n)+' '+hm(active,n,spanH)):fullDate(opts.start,opts.end,active,n);
-  const tip='<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+tipTop+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>';
+  const tip=opts.noTip?'':'<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+tipTop+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>';
   const dot='<div class="scrub-dot" style="left:'+xf+'%;top:'+yf+'%;border-color:'+color+'"></div>';
   const vline='<div class="scrub-vline" style="left:'+xf+'%"></div>';
   let axis;
   if(opts.yLabels){axis='<div class="axis" style="padding:0 '+padR+'px 0 '+padL+'px"><span>'+lbl(0)+'</span><span>'+lbl(n-1)+'</span></div>';}
   else{const ticks=[0,.25,.5,.75,1].map(f=>Math.round(f*(n-1)));axis='<div class="axis">'+ticks.map(i=>'<span>'+lbl(i)+'</span>').join('')+'</div>';}
   el.innerHTML='<div class="chartbox">'+svg+vline+tip+dot+'</div>'+axis;
+  if(opts.onScrub&&!intraday){const isoA=spreadISO(opts.start,opts.end,n);opts.onScrub(active,vals[active],isoA[active].replace(/-/g,'/'));}
   bindScrub(el);
 }
 function bindScrub(el){
@@ -1029,9 +1030,8 @@ function drawReport(days,startStr,endStr){
   const rmin=Math.min(...raw),rmax=Math.max(...raw);
   const asset=raw.map(v=>60+(v-rmin)/((rmax-rmin)||1)*(10000-60));
   const endV=asset[n-1],up=endV>=asset[0];
-  areaLine(document.getElementById('rp-asset-line'),asset,up?'#00C566':'#F6465D',true,{start:s,end:e,fmt:v=>(v<0?'-$':'$')+Math.abs(tr2(v)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),yLabels:true,markers:true});
-  document.getElementById('av-date').textContent=TODAY.replace(/-/g,'/');
-  document.getElementById('av-val').textContent=Math.round(endV).toLocaleString('en-US')+' USD';
+  const avBox=(i,v,date)=>{document.getElementById('av-date').textContent=date;document.getElementById('av-val').textContent=Math.round(v).toLocaleString('en-US')+' USD';};
+  areaLine(document.getElementById('rp-asset-line'),asset,up?'#00C566':'#F6465D',true,{start:s,end:e,yLabels:true,markers:true,noTip:true,active:n-1,onScrub:avBox});
   // 账户级每日盈亏 (资产口径, 含未实现)
   const {dates:ddates,vals:daily}=genDailyFull(s,e,days<=7?7:days<=30?13:22,0.6,seed+41,0);
   const dn=daily.length;
@@ -1061,13 +1061,13 @@ function pStat(m){PSTAT.mode=m;
   document.getElementById('ps-cum').classList.toggle('on',m==='cum');
   const d=PSTAT.data;if(!d)return;const el=document.getElementById('r-stat-line'),box=document.getElementById('ps-box');
   if(m==='rate'){
-    box.innerHTML='<div style="color:var(--muted2)">'+TODAY.replace(/-/g,'/')+'</div>'
-      +'<div class="row"><span class="lgd"><span class="dot" style="background:#2B6CF0"></span>累计盈亏率</span><span class="'+(d.ownEnd>=0?'g':'r')+'" style="font-weight:700">'+fPct(d.ownEnd)+'</span></div>'
-      +'<div class="row"><span class="lgd"><span class="dot" style="background:#F5C542"></span>BTC累计涨跌率</span><span class="'+(d.btcEnd>=0?'g':'r')+'" style="font-weight:700">'+fPct(d.btcEnd)+'</span></div>';
-    el._active=null;rateChart(el,[{color:'#2B6CF0',vals:d.own},{color:'#F5C542',vals:d.btc}],d.s,d.e);
+    const rateBox=(i,date)=>{box.innerHTML='<div style="color:var(--muted2)">'+date+'</div>'
+      +'<div class="row"><span class="lgd"><span class="dot" style="background:#2B6CF0"></span>累计盈亏率</span><span class="'+(d.own[i]>=0?'g':'r')+'" style="font-weight:700">'+fPct(d.own[i])+'</span></div>'
+      +'<div class="row"><span class="lgd"><span class="dot" style="background:#F5C542"></span>BTC累计涨跌率</span><span class="'+(d.btc[i]>=0?'g':'r')+'" style="font-weight:700">'+fPct(d.btc[i])+'</span></div>';};
+    el._active=null;rateChart(el,[{color:'#2B6CF0',vals:d.own},{color:'#F5C542',vals:d.btc}],d.s,d.e,{noTip:true,onScrub:rateBox});
   }else{
-    box.innerHTML='<div class="row"><span style="color:var(--muted2)">'+TODAY.replace(/-/g,'/')+' 累计盈亏</span><span class="vv2 '+(d.cumEnd>=0?'g':'r')+'">'+fUSDword(d.cumEnd)+'</span></div>';
-    el._active=null;areaLine(el,d.cum,d.cumEnd>=0?'#00C566':'#F6465D',true,{start:d.s,end:d.e,fmt:fUSDword});
+    const cumBox=(i,v,date)=>{box.innerHTML='<div class="row"><span style="color:var(--muted2)">'+date+' 累计盈亏</span><span class="vv2 '+(v>=0?'g':'r')+'">'+fUSDword(v)+'</span></div>';};
+    el._active=null;areaLine(el,d.cum,d.cumEnd>=0?'#00C566':'#F6465D',true,{start:d.s,end:d.e,fmt:fUSDword,noTip:true,active:d.cum.length-1,onScrub:cumBox});
   }
 }
 function dmView(v){document.getElementById('dm-cal').classList.toggle('on',v==='cal');document.getElementById('dm-bar').classList.toggle('on',v==='bar');
@@ -1084,7 +1084,7 @@ function rAllocMode(m){RALLOC=m;
 }
 /* 多线对比图 + 拖动落点 (盈亏统计·累计盈亏率) */
 const MCHARTS={};
-function rateChart(el,series,s,e){
+function rateChart(el,series,s,e,opts){opts=opts||{};
   const w=340,h=180,padL=8,padR=8,top=18,botp=18,n=series[0].vals.length;
   const all=[].concat(...series.map(x=>x.vals));
   const min=Math.min(...all,0),max=Math.max(...all,0),range=(max-min)||1;
@@ -1098,10 +1098,11 @@ function rateChart(el,series,s,e){
   g+='</svg>';
   const dts=spread(s,e,n),xf=X(active)/w*100;
   const rows=series.map(se=>'<div class="row"><span class="lgd"><span class="dot" style="background:'+se.color+'"></span></span><span class="'+(se.vals[active]>=0?'g':'r')+'" style="font-weight:700">'+fPct(se.vals[active])+'</span></div>').join('');
-  const tip='<div class="scrub-tip" style="left:'+Math.max(20,Math.min(80,xf))+'%;top:6px;transform:translate(-50%,0)"><div>'+fullDate(s,e,active,n)+'</div>'+rows+'<span class="scrub-arrow"></span></div>';
+  const tip=opts.noTip?'':'<div class="scrub-tip" style="left:'+Math.max(20,Math.min(80,xf))+'%;top:6px;transform:translate(-50%,0)"><div>'+fullDate(s,e,active,n)+'</div>'+rows+'<span class="scrub-arrow"></span></div>';
   const axis='<div class="axis" style="padding:0 '+padR+'px"><span>'+dts[0]+'</span><span>'+dts[n-1]+'</span></div>';
-  MCHARTS[el.id]={series,s,e,n,padL,padR,w};
+  MCHARTS[el.id]={series,s,e,n,padL,padR,w,opts};
   el.innerHTML='<div class="chartbox">'+g+tip+'</div>'+axis;
+  if(opts.onScrub){const isoA=spreadISO(s,e,n);opts.onScrub(active,isoA[active].replace(/-/g,'/'));}
   bindMScrub(el);
 }
 function bindMScrub(el){
@@ -1109,7 +1110,7 @@ function bindMScrub(el){
   const move=ev=>{const cfg=MCHARTS[el.id];if(!cfg)return;const box=el.querySelector('.chartbox');if(!box)return;
     const rect=box.getBoundingClientRect();const cx=((ev.touches?ev.touches[0].clientX:ev.clientX)-rect.left)/rect.width;
     const frac=(cx-cfg.padL/cfg.w)/(1-cfg.padL/cfg.w-cfg.padR/cfg.w);let idx=Math.round(frac*(cfg.n-1));idx=Math.max(0,Math.min(cfg.n-1,idx));
-    el._active=idx;rateChart(el,cfg.series,cfg.s,cfg.e);};
+    el._active=idx;rateChart(el,cfg.series,cfg.s,cfg.e,cfg.opts);};
   el.addEventListener('pointerdown',move);el.addEventListener('pointermove',e=>{if(e.buttons)move(e);});
   el.addEventListener('touchstart',move,{passive:true});el.addEventListener('touchmove',move,{passive:true});
 }
