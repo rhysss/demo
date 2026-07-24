@@ -1124,8 +1124,8 @@ function rAllocMode(m){RALLOC=m;ALLOC_SEL=0;
   document.getElementById('ral-acct').classList.toggle('on',m==='acct');
   renderAlloc();
 }
-function allocPick(i){ALLOC_SEL=i;renderAlloc();}
-function renderAlloc(){
+function allocPick(i){ALLOC_SEL=i;renderAlloc(true);}
+function renderAlloc(keepScroll){
   const segs=RALLOC==='coin'?topN(COIN_ALL,10):SEG_OV,sel=Math.max(0,Math.min(ALLOC_SEL,segs.length-1));
   // 环形：选中段加粗凸显、其余淡化;点击段/行均可切换
   const size=170,c=size/2,r=(size-28)/2,circ=2*Math.PI*r;let off=0,p='';
@@ -1138,8 +1138,11 @@ function renderAlloc(){
     +'<text x="'+c+'" y="'+(c+25)+'" text-anchor="middle" font-size="11" fill="#848E9C">'+cs.name+'</text>';
   document.getElementById('r-alloc-donut').innerHTML='<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'+p+ctr+'</svg>';
   const title=RALLOC==='coin'?'币种':'资产分布';
+  const oldRows=document.querySelector('#r-alloc-table .alloc-rows');
+  const sc=(keepScroll&&oldRows)?oldRows.scrollTop:0;
   document.getElementById('r-alloc-table').innerHTML='<div class="alloc-tbl"><div class="hd"><span>'+title+'</span><span>占比</span><span>总资产价值(USD)</span></div><div class="alloc-rows">'
-    +segs.map((s,i)=>'<div class="rw'+(i===sel?' on':'')+'" onclick="allocPick('+i+')"><span class="nm"><span class="dot" style="background:'+s.color+'"></span>'+s.name+(s.more?' <span style="font-size:11px;color:var(--muted2)">('+s.more+'种)</span>':'')+'</span><span class="pc">'+s.pct+'%</span><span class="vl">'+fmtAllocUsd(s)+'</span></div>').join('')+'</div></div>';
+    +segs.map((s,i)=>'<div class="rw'+(i===sel?' on':'')+'" onclick="allocPick('+i+')"><span class="nm"><span class="dot" style="background:'+s.color+'"></span>'+s.name+'</span><span class="pc">'+s.pct+'%</span><span class="vl">'+fmtAllocUsd(s)+'</span></div>').join('')+'</div></div>';
+  const nw=document.querySelector('#r-alloc-table .alloc-rows');if(nw)nw.scrollTop=sc;
 }
 /* 多线对比图 + 拖动落点 (盈亏统计·累计盈亏率) */
 const MCHARTS={};
