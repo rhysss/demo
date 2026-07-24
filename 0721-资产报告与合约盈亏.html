@@ -162,6 +162,7 @@ section{padding:0 16px;}
 .cal-cell .cd{font-size:13px;color:var(--text);}
 .cal-cell .cv{font-size:9.5px;font-weight:600;}
 .cal-cell.today{outline:1.5px solid var(--green);}
+.cal-cell.sel{outline:2px solid var(--green);background:#E9F9F0!important;border-radius:9px;}
 .cal-cell.empty{background:transparent;}
 
 /* info sheet + interactions */
@@ -959,6 +960,7 @@ function calMonth(el,map,y,m,plain,onMonth){
 }
 function calTip(el,key,v,ev){
   if(ev)ev.stopPropagation();
+  const grid=el.closest('.cal-grid');if(grid){grid.querySelectorAll('.cal-cell.sel').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
   const wrap=el.closest('.cal-wrapper'),tip=wrap.querySelector('.cal-tip'),dd=dayDerived(key,v);
   const sgn=x=>(x>=0?'+':'')+fSigned(x);
   const row=(k,val,cls)=>'<div class="row"><span class="k">'+k+'</span><span class="'+(cls||'')+'">'+val+'</span></div>';
@@ -1022,6 +1024,20 @@ function drawAssetHead(){
   set('r-cum',(cum>=0?'+':'-')+abs2(cum),cum>=0);
   set('r-cum-sub',fPct(cum/base*100),cum>=0);
 }
+/* 每日盈亏：独立完整数据集(近90天),不随顶部时间区间变化;月历可翻月查看 */
+function drawDailyPnl(){
+  const base=2022.95,e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.getDate()-89);const s=iso(a);
+  const {dates:ddates,vals:daily}=genDailyFull(s,e,12,0.6,3517,0);
+  const dn=daily.length;
+  barChart(document.getElementById('r-daily-bar'),daily,ddates.map(d=>d.slice(5)));
+  drawCal(document.getElementById('r-daily-cal'),ddates,daily,true,(y,m,tot,has)=>{
+    document.getElementById('dm-mon-label').textContent=(m+1)+'月 盈亏额';
+    const el=document.getElementById('dm-mon-val');el.textContent=(tot>=0?'+':'-')+abs2(tot)+' ('+fPct(tot/base*100)+')';el.className='vv2 '+(tot>=0?'g':'r');
+  });
+  const dlast=daily[dn-1];
+  document.getElementById('dm-bar-date').textContent=ddates[dn-1].replace(/-/g,'/');
+  const dbv=document.getElementById('dm-bar-val');dbv.textContent=(dlast>=0?'+':'-')+abs2(dlast)+' ('+fPct(dlast/base*100)+')';dbv.className='vv2 '+(dlast>=0?'g':'r');
+}
 function drawReport(days,startStr,endStr){
   const s=startStr||rangeStart(days),e=endStr||TODAY,n=npts(days),seed=days*7+3,base=2022.95;
   // 资产市值 走势 (带Y轴/最高最低标注)
@@ -1033,18 +1049,9 @@ function drawReport(days,startStr,endStr){
   const endV=asset[n-1],up=endV>=asset[0];
   const avBox=(i,v,date)=>{document.getElementById('av-date').textContent=date;document.getElementById('av-val').textContent=Math.round(v).toLocaleString('en-US')+' USD';};
   areaLine(document.getElementById('rp-asset-line'),asset,up?'#00C566':'#F6465D',true,{start:s,end:e,yLabels:true,markers:true,noTip:true,active:n-1,onScrub:avBox});
-  // 账户级每日盈亏 (资产口径, 含未实现)
-  const {dates:ddates,vals:daily}=genDailyFull(s,e,days<=7?7:days<=30?13:22,0.6,seed+41,0);
+  // 盈亏统计 数据 (随区间变化) —— 每日盈亏卡不随区间变，见 drawDailyPnl()
+  const {vals:daily}=genDailyFull(s,e,days<=7?7:days<=30?13:22,0.6,seed+41,0);
   const dn=daily.length;
-  barChart(document.getElementById('r-daily-bar'),daily,ddates.map(d=>d.slice(5)));
-  drawCal(document.getElementById('r-daily-cal'),ddates,daily,true,(y,m,tot)=>{
-    document.getElementById('dm-mon-label').textContent=(m+1)+'月 盈亏额';
-    const el=document.getElementById('dm-mon-val');el.textContent=(tot>=0?'+':'-')+abs2(tot)+' ('+fPct(tot/base*100)+')';el.className='vv2 '+(tot>=0?'g':'r');
-  });
-  const dlast=daily[dn-1];
-  document.getElementById('dm-bar-date').textContent=ddates[dn-1].replace(/-/g,'/');
-  const dbv=document.getElementById('dm-bar-val');dbv.textContent=(dlast>=0?'+':'-')+abs2(dlast)+' ('+fPct(dlast/base*100)+')';dbv.className='vv2 '+(dlast>=0?'g':'r');
-  // 盈亏统计 数据 (随区间变化)
   const cum=cumsum(daily),cumEnd=cum[dn-1];
   const ownPct=cumEnd/base*100;
   const btcEnd=({7:1.2,30:4.89,90:12.4,180:20.5})[days]??8.5;
@@ -1375,6 +1382,7 @@ function initCharts(){
   drawOverview('7天');
   donut(document.getElementById('ov-donut'),SEG_OV,140);renderLegend(document.getElementById('ov-legend'),SEG_OV,true);
   drawAssetHead();
+  drawDailyPnl();
   drawReport(30);
   drawPnl(30);
 }
