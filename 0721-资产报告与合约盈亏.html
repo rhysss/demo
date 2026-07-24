@@ -480,7 +480,7 @@ section{padding:0 16px;}
     <!-- 盈亏统计 (累计盈亏率 / 累计盈亏 切换) -->
     <div class="card">
       <div style="font-size:18px;font-weight:700;">盈亏统计 <svg class="info-i click-i" onclick="openInfo('rrate')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-      <div class="seg-tabs"><button class="on" id="ps-rate" onclick="pStat('rate')">累计盈亏率</button><button id="ps-cum" onclick="pStat('cum')">累计盈亏</button></div>
+      <div class="seg-tabs"><button class="on" id="ps-cum" onclick="pStat('cum')">累计盈亏</button><button id="ps-rate" onclick="pStat('rate')">累计盈亏率</button></div>
       <div class="val-box" id="ps-box" style="flex-direction:column;align-items:stretch;gap:8px;"></div>
       <div id="r-stat-line"></div>
     </div>
@@ -1009,7 +1009,7 @@ function drawOverview(label){
   pill.className='pill-pct '+(change>=0?'up':'dn');
   pill.textContent=(change>=0?'▲ +':'▼ -')+abs2(pct)+'%';
 }
-let RALLOC='coin',PSTAT={mode:'rate'};
+let RALLOC='coin',PSTAT={mode:'cum'};
 /* 头部盈亏概览：账户级 PnL，固定值，不随时间区间变化 */
 function drawAssetHead(){
   const base=2022.95,today=3.82,month=101.46,cum=142.06;
@@ -1046,10 +1046,11 @@ function drawReport(days,startStr,endStr){
   // 盈亏统计 数据 (随区间变化)
   const cum=cumsum(daily),cumEnd=cum[dn-1];
   const ownPct=cumEnd/base*100;
-  const own=genLine(n,ownPct,ownPct,Math.abs(ownPct)*0.5+1,seed+1);
   const btcEnd=({7:1.2,30:4.89,90:12.4,180:20.5})[days]??8.5;
-  const btc=genLine(n,btcEnd,btcEnd,Math.abs(btcEnd)+3,seed+2);
-  PSTAT.data={own,btc,ownEnd:ownPct,btcEnd,cum,cumEnd,s,e};
+  // 累计曲线：均从 0% 起、末点精确落在各自累计值；波动幅度收敛，避免 BTC 摆幅过大压平自身曲线
+  const own=genLine(n,ownPct,ownPct,Math.abs(ownPct)*0.35+0.8,seed+1);
+  const btc=genLine(n,btcEnd,btcEnd,Math.abs(btcEnd)*0.35+1,seed+2);
+  PSTAT.data={own,btc,ownEnd:own[n-1],btcEnd:btc[n-1],cum,cumEnd,s,e};
   document.getElementById('r-stat-line')._active=null;
   pStat(PSTAT.mode);
   // 资产配置
