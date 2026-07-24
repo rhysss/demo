@@ -825,7 +825,7 @@ function areaLine(el,vals,color,fill,opts){
   opts=opts||{};
   const w=340,h=opts.yLabels?(opts.markers?206:190):170,top=opts.markers?30:14,botp=opts.markers?28:16,n=vals.length;
   const padL=opts.yLabels?38:16,padR=opts.yLabels?12:16;
-  CHARTS[el.id]={vals,color,fill,opts,padL,padR,w};
+  CHARTS[el.id]={vals,color,fill,opts,padL,padR,w};el._mode='area';
   const min=Math.min(...vals),max=Math.max(...vals),range=(max-min)||1;
   const bigY=Math.abs(max)>=1000||Math.abs(min)>=1000;
   const fmtY=v=>bigY?Math.round(v).toLocaleString('en-US'):tr2(v).toFixed(2);
@@ -873,6 +873,7 @@ function areaLine(el,vals,color,fill,opts){
 function bindScrub(el){
   if(el._bound)return;el._bound=true;
   const move=ev=>{
+    if(el._mode==='rate')return;
     const cfg=CHARTS[el.id];if(!cfg)return;
     const box=el.querySelector('.chartbox');if(!box)return;
     const rect=box.getBoundingClientRect();
@@ -1100,14 +1101,14 @@ function rateChart(el,series,s,e,opts){opts=opts||{};
   const rows=series.map(se=>'<div class="row"><span class="lgd"><span class="dot" style="background:'+se.color+'"></span></span><span class="'+(se.vals[active]>=0?'g':'r')+'" style="font-weight:700">'+fPct(se.vals[active])+'</span></div>').join('');
   const tip=opts.noTip?'':'<div class="scrub-tip" style="left:'+Math.max(20,Math.min(80,xf))+'%;top:6px;transform:translate(-50%,0)"><div>'+fullDate(s,e,active,n)+'</div>'+rows+'<span class="scrub-arrow"></span></div>';
   const axis='<div class="axis" style="padding:0 '+padR+'px"><span>'+dts[0]+'</span><span>'+dts[n-1]+'</span></div>';
-  MCHARTS[el.id]={series,s,e,n,padL,padR,w,opts};
+  MCHARTS[el.id]={series,s,e,n,padL,padR,w,opts};el._mode='rate';
   el.innerHTML='<div class="chartbox">'+g+tip+'</div>'+axis;
   if(opts.onScrub){const isoA=spreadISO(s,e,n);opts.onScrub(active,isoA[active].replace(/-/g,'/'));}
   bindMScrub(el);
 }
 function bindMScrub(el){
   if(el._mbound)return;el._mbound=true;
-  const move=ev=>{const cfg=MCHARTS[el.id];if(!cfg)return;const box=el.querySelector('.chartbox');if(!box)return;
+  const move=ev=>{if(el._mode!=='rate')return;const cfg=MCHARTS[el.id];if(!cfg)return;const box=el.querySelector('.chartbox');if(!box)return;
     const rect=box.getBoundingClientRect();const cx=((ev.touches?ev.touches[0].clientX:ev.clientX)-rect.left)/rect.width;
     const frac=(cx-cfg.padL/cfg.w)/(1-cfg.padL/cfg.w-cfg.padR/cfg.w);let idx=Math.round(frac*(cfg.n-1));idx=Math.max(0,Math.min(cfg.n-1,idx));
     el._active=idx;rateChart(el,cfg.series,cfg.s,cfg.e,cfg.opts);};
