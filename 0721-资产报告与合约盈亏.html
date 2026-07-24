@@ -976,15 +976,17 @@ function calMonth(el,map,y,m,plain,onMonth){
 function calTip(el,key,v,ev){
   if(ev)ev.stopPropagation();
   const grid=el.closest('.cal-grid');if(grid){grid.querySelectorAll('.cal-cell.sel').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');grid.classList.add('has-sel');}
-  const wrap=el.closest('.cal-wrapper'),tip=wrap.querySelector('.cal-tip'),dd=dayDerived(key,v);
+  const wrap=el.closest('.cal-wrapper'),tip=wrap.querySelector('.cal-tip');
+  const simple=!!el.closest('#r-daily-cal');   // 总资产分析·每日盈亏 → 仅当日盈亏
   const sgn=x=>(x>=0?'+':'')+fSigned(x);
   const row=(k,val,cls)=>'<div class="row"><span class="k">'+k+'</span><span class="'+(cls||'')+'">'+val+'</span></div>';
-  tip.innerHTML='<div class="dd">'+key+'</div>'
-    +row('单日盈亏',sgn(v)+' USDT',v>=0?'g':'r')
-    +row('已实现盈亏',sgn(dd.realized)+' USDT',dd.realized>=0?'g':'r')
-    +row('未实现盈亏',sgn(dd.unreal)+' USDT',dd.unreal>=0?'g':'r')
-    +row('净划转',dd.flow.toFixed(2))
-    +row('交易量',dd.vol.toFixed(2));
+  let html='<div class="dd">'+key+'</div>'+row('当日盈亏',sgn(v)+' USDT',v>=0?'g':'r');
+  if(!simple){const dd=dayDerived(key,v);
+    html+=row('已实现盈亏',sgn(dd.realized)+' USDT',dd.realized>=0?'g':'r')
+      +row('未实现盈亏',sgn(dd.unreal)+' USDT',dd.unreal>=0?'g':'r')
+      +row('净划转',dd.flow.toFixed(2))
+      +row('交易量',dd.vol.toFixed(2));}
+  tip.innerHTML=html;
   let cx=el.offsetLeft+el.offsetWidth/2;
   tip.style.left=Math.max(90,Math.min(wrap.offsetWidth-90,cx))+'px';
   tip.style.top=el.offsetTop+'px';tip.style.display='block';
