@@ -163,6 +163,7 @@ section{padding:0 16px;}
 .cal-cell .cv{font-size:9.5px;font-weight:600;}
 .cal-cell.today{outline:1.5px solid var(--green);}
 .cal-cell.sel{outline:2px solid var(--green);background:#E9F9F0!important;border-radius:9px;}
+.cal-grid.has-sel .cal-cell.today:not(.sel){outline:none;}
 .cal-cell.empty{background:transparent;}
 
 /* info sheet + interactions */
@@ -960,7 +961,7 @@ function calMonth(el,map,y,m,plain,onMonth){
 }
 function calTip(el,key,v,ev){
   if(ev)ev.stopPropagation();
-  const grid=el.closest('.cal-grid');if(grid){grid.querySelectorAll('.cal-cell.sel').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+  const grid=el.closest('.cal-grid');if(grid){grid.querySelectorAll('.cal-cell.sel').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');grid.classList.add('has-sel');}
   const wrap=el.closest('.cal-wrapper'),tip=wrap.querySelector('.cal-tip'),dd=dayDerived(key,v);
   const sgn=x=>(x>=0?'+':'')+fSigned(x);
   const row=(k,val,cls)=>'<div class="row"><span class="k">'+k+'</span><span class="'+(cls||'')+'">'+val+'</span></div>';
