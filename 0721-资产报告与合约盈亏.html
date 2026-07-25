@@ -544,12 +544,7 @@ section{padding:0 16px;}
       <div class="trip" style="border-top:1px solid var(--border);margin-top:14px;padding-top:16px;">
         <div class="c"><div class="kk click-i" onclick="openInfo('month')">本月盈亏 ⓘ</div><div class="vv g" id="pnl-month">+0.00</div><div class="sub g" id="pnl-month-sub">+0.00%</div></div>
         <div class="c"><div class="kk click-i" onclick="openInfo('cum')">累计盈亏 ⓘ</div><div class="vv g" id="pnl-cum3">+142.06</div><div class="sub" style="color:var(--muted2);">USD</div></div>
-        <div class="c"><div class="kk click-i" onclick="openInfo('rate')">累计盈亏率 ⓘ</div><div class="vv g" id="pnl-rate3">+38.10%</div><div class="sub" style="color:var(--muted2);">对比 BTC</div></div>
       </div>
-      <div style="height:1px;background:var(--border);margin:14px 0 2px;"></div>
-      <div class="kv" style="padding:8px 0;"><span class="k click-i" onclick="openInfo('gain')">总盈利 ⓘ</span><span class="v" id="pnl-gain">210.44 USD</span></div>
-      <div class="kv" style="padding:8px 0;"><span class="k click-i" onclick="openInfo('loss')">总亏损 ⓘ</span><span class="v" id="pnl-loss">25.66 USD</span></div>
-      <div class="kv" style="padding:8px 0;"><span class="k click-i" onclick="openInfo('net')">净盈利/亏损 ⓘ</span><span class="v" id="pnl-net">184.78 USD</span></div>
     </div>
 
     <!-- 每日盈亏 (柱状/日历/明细 三视图) -->
@@ -1195,14 +1190,8 @@ function drawPnl(days,startStr,endStr){
   setStat('pnl-month',(monPnl>=0?'+':'')+fSigned(monPnl),monPnl>=0);
   setStat('pnl-month-sub',fPct(monPnl/510.45*100),monPnl>=0,'sub');
   setStat('pnl-cum3',(cumEnd>=0?'+':'')+fSigned(cumEnd),cumEnd>=0);
-  // gain/loss/net
-  const gain=daily.filter(v=>v>0).reduce((a,b)=>a+b,0),loss=daily.filter(v=>v<0).reduce((a,b)=>a+b,0);
-  document.getElementById('pnl-gain').textContent=abs2(gain)+' USD';
-  document.getElementById('pnl-loss').textContent=abs2(loss)+' USD';
-  document.getElementById('pnl-net').textContent=fSigned(gain+loss)+' USD';
   // rate multi-line
   const ownPct=cumEnd/510.45*100;
-  setStat('pnl-rate3',fPct(ownPct),ownPct>=0);
   const own=genLine(n,ownPct,ownPct,Math.abs(ownPct)*0.5+1,seed+1);
   const btcEnd=({7:1.2,30:4.89,90:12.4,365:41.2})[days]??4.89, bnbEnd=({7:-0.84,30:-0.84,90:5.1,365:22.5})[days]??-0.84;
   const btc=genLine(n,btcEnd,btcEnd,Math.abs(btcEnd)+3,seed+2);
