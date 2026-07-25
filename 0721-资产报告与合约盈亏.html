@@ -547,25 +547,19 @@ section{padding:0 16px;}
       </div>
     </div>
 
-    <!-- 每日盈亏 (柱状/日历/明细 三视图) -->
+    <!-- 每日盈亏 (柱状/日历 双视图) -->
     <div class="card">
       <div class="chart-hd">
         <div style="font-size:18px;font-weight:700;">每日盈亏 <svg class="info-i click-i" onclick="openInfo('daily')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
         <div class="viewtog">
           <button class="on" id="dp-tab-bar" onclick="dpView('bar')" title="柱状图"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></button>
           <button id="dp-tab-cal" onclick="dpView('cal')" title="日历图"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button>
-          <button id="dp-tab-list" onclick="dpView('list')" title="明细"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
         </div>
       </div>
-      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">点击图表/日历查看当日 已实现·平仓·交易金额·资金费</div>
+      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">点击柱状图/日历查看当日盈亏</div>
       <div class="r" id="dp-today" style="font-size:22px;font-weight:700;margin-top:8px;">-0.83 USD</div>
       <div class="view on" id="dp-view-bar"><div id="pnl-daily-bar"></div></div>
       <div class="view" id="dp-view-cal"><div class="date-lab">每日营收</div><div class="cal" id="pnl-daily-cal"></div></div>
-      <div class="view" id="dp-view-list">
-        <div style="font-size:12px;color:var(--muted2);margin:6px 0 2px;">逐日历史盈亏 · 点行展开净划入/交易量</div>
-        <div class="dt-head"><span>日期</span><span>单日盈亏</span><span>累计盈亏</span><span>累计盈亏率</span></div>
-        <div id="dt-list"></div>
-      </div>
     </div>
 
     <!-- 累计盈亏 -->
@@ -1176,10 +1170,10 @@ function drawPnl(days,startStr,endStr){
   // daily pnl — one value per calendar day (some 0)
   const {dates:ddates,vals:daily}=genDailyFull(s,e,days<=7?4:days<=30?9:16,days<=7?-0.3:1.8,seed,0.15);
   const dn=daily.length;
-  barChart(document.getElementById('pnl-daily-bar'),daily,ddates.map(d=>d.slice(5)));
+  barChart(document.getElementById('pnl-daily-bar'),daily,ddates.map(d=>d.slice(5)),{noTip:true,onPick:(i,v)=>{
+    document.getElementById('dp-today').textContent=fUSDword(v);document.getElementById('dp-today').className=v>=0?'g':'r';
+  }});
   drawCal(document.getElementById('pnl-daily-cal'),ddates,daily);
-  document.getElementById('dp-today').textContent=fUSDword(daily[dn-1]);
-  document.getElementById('dp-today').className=daily[dn-1]>=0?'g':'r';
   // cumulative
   const cum=cumsum(daily);const cumEnd=cum[dn-1];
   PNL_CUM={cum,s,e,base:510.45,mode:PNL_CUM.mode||'usd'};
@@ -1206,7 +1200,7 @@ function drawPnl(days,startStr,endStr){
   document.getElementById('pnl-val-head').textContent='+'+abs2(val[n-1])+' USD';
   drawTrade(days,daily,seed);drawRanking(days,seed);drawCloseOrders(seed);
   // 折叠进卡片流的模块
-  drawDetail(days);drawContract(days);drawFunding(days);drawWallet(cumEnd);allocMode(ALLOC_MODE);
+  drawContract(days);drawFunding(days);drawWallet(cumEnd);allocMode(ALLOC_MODE);
 }
 /* 统一设置数值+涨跌色 */
 function setStat(id,txt,pos,base){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className=(base||'vv')+' '+(pos?'g':'r');}
@@ -1398,7 +1392,7 @@ function setPnlRange(el,label,days){pick(el);PNL_DAYS=days;drawPnl(days);}
 function ovChart(v){document.getElementById('ov-tab-line').classList.toggle('on',v==='line');document.getElementById('ov-tab-pie').classList.toggle('on',v==='pie');document.getElementById('ov-view-line').classList.toggle('on',v==='line');document.getElementById('ov-view-pie').classList.toggle('on',v==='pie');}
 function collapseOv(){document.getElementById('ov-chart-wrap').style.display='none';document.getElementById('ov-expand').style.display='block';}
 function expandOv(){document.getElementById('ov-chart-wrap').style.display='block';document.getElementById('ov-expand').style.display='none';}
-function dpView(v){['bar','cal','list'].forEach(x=>{document.getElementById('dp-tab-'+x).classList.toggle('on',v===x);document.getElementById('dp-view-'+x).classList.toggle('on',v===x);});}
+function dpView(v){['bar','cal'].forEach(x=>{document.getElementById('dp-tab-'+x).classList.toggle('on',v===x);document.getElementById('dp-view-'+x).classList.toggle('on',v===x);});}
 function coinTab(t){document.getElementById('coin-tab-p').classList.toggle('on',t==='p');document.getElementById('coin-tab-l').classList.toggle('on',t==='l');renderRank(t==='p'?COIN_PROFIT:COIN_LOSS);}
 function renderRank(list){document.getElementById('rp-coin-rank').innerHTML=list.map(r=>'<div class="rank"><div class="l"><span class="idx" style="color:'+(r.i===1?'#F6465D':'#F5C542')+'">'+r.i+'</span><div><div class="nm">'+r.nm+'</div><div class="cd">'+r.cd+'</div></div></div><div><div class="amt">'+r.amt+'</div><div class="pc '+(r.g?'g':'r')+'">'+r.pc+'</div></div></div>').join('');}
 
