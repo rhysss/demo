@@ -557,7 +557,7 @@ section{padding:0 16px;}
         </div>
       </div>
       <div style="font-size:12px;color:var(--muted2);margin-top:2px;">点击柱状图/日历查看当日盈亏</div>
-      <div class="r" id="dp-today" style="font-size:22px;font-weight:700;margin-top:8px;">-0.83 USD</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-top:8px;"><span class="r" id="dp-today" style="font-size:22px;font-weight:700;">-0.83 USD</span><span style="font-size:13px;color:var(--muted2);" id="dp-date">2026-07-21</span></div>
       <div class="view on" id="dp-view-bar"><div id="pnl-daily-bar"></div></div>
       <div class="view" id="dp-view-cal"><div class="date-lab">每日营收</div><div class="cal" id="pnl-daily-cal"></div></div>
     </div>
@@ -1165,6 +1165,7 @@ function drawPnl(days,startStr,endStr){
   const dn=daily.length;
   barChart(document.getElementById('pnl-daily-bar'),daily,ddates.map(d=>d.slice(5)),{noTip:true,onPick:(i,v)=>{
     document.getElementById('dp-today').textContent=fUSDword(v);document.getElementById('dp-today').className=v>=0?'g':'r';
+    document.getElementById('dp-date').textContent=ddates[i];
   }});
   drawCal(document.getElementById('pnl-daily-cal'),ddates,daily);
   // cumulative
