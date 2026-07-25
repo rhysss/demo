@@ -216,6 +216,7 @@ section{padding:0 16px;}
 .asset-head{background:#fff;padding:10px 16px 18px;}
 .val-box{display:flex;justify-content:space-between;align-items:center;background:#F7F8FA;border-radius:10px;padding:12px 14px;margin:14px 0 6px;font-size:13px;color:var(--muted);}
 .val-box .vv2{font-weight:700;color:var(--text);font-size:15px;}
+.val-box .vv2.g{color:var(--up);} .val-box .vv2.r{color:var(--red);}
 .val-box .row{display:flex;justify-content:space-between;align-items:center;}
 .val-box .row .lgd{display:flex;align-items:center;gap:7px;color:var(--muted);}
 .val-box .row .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
@@ -1046,13 +1047,16 @@ function drawAssetHead(){
   set('r-cum-sub',fPct(cum/base*100),cum>=0);
 }
 /* 每日盈亏：独立完整数据集(近90天),不随顶部时间区间变化;月历可翻月查看 */
+/* 合约盈亏·每日盈亏月历:固定完整数据(热力图),不随区间变化;柱状图仍随区间(见 drawPnl) */
+function drawPnlDailyCal(){
+  const e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.getDate()-89);const s=iso(a);
+  const {dates,vals}=genDailyFull(s,e,9,1.8,4243,0.15);
+  drawCal(document.getElementById('pnl-daily-cal'),dates,vals);
+}
+/* 每日盈亏·月历:固定完整数据集,不随顶部时间区间变化(柱状图由 drawReport 按区间渲染) */
 function drawDailyPnl(){
   const base=2022.95,e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.getDate()-89);const s=iso(a);
   const {dates:ddates,vals:daily}=genDailyFull(s,e,12,0.6,3517,0);
-  barChart(document.getElementById('r-daily-bar'),daily,ddates.map(d=>d.slice(5)),{noTip:true,onPick:(i,v)=>{
-    document.getElementById('dm-bar-date').textContent=ddates[i].replace(/-/g,'/');
-    const dbv=document.getElementById('dm-bar-val');dbv.textContent=(v>=0?'+':'-')+abs2(v)+' ('+fPct(v/base*100)+')';dbv.className='vv2 '+(v>=0?'g':'r');
-  }});
   drawCal(document.getElementById('r-daily-cal'),ddates,daily,true,(y,m,tot,has)=>{
     document.getElementById('dm-mon-label').textContent=(m+1)+'月 盈亏额';
     const el=document.getElementById('dm-mon-val');el.textContent=(tot>=0?'+':'-')+abs2(tot)+' ('+fPct(tot/base*100)+')';el.className='vv2 '+(tot>=0?'g':'r');
@@ -1070,8 +1074,13 @@ function drawReport(days,startStr,endStr){
   const avBox=(i,v,date)=>{document.getElementById('av-date').textContent=date;document.getElementById('av-val').textContent=Math.round(v).toLocaleString('en-US')+' USD';};
   areaLine(document.getElementById('rp-asset-line'),asset,up?'#00C566':'#F6465D',true,{start:s,end:e,yLabels:true,markers:true,noTip:true,active:n-1,onScrub:avBox});
   // 盈亏统计 数据 (随区间变化) —— 每日盈亏卡不随区间变，见 drawDailyPnl()
-  const {vals:daily}=genDailyFull(s,e,days<=7?7:days<=30?13:22,0.6,seed+41,0);
+  const {dates:ddates,vals:daily}=genDailyFull(s,e,days<=7?7:days<=30?13:22,0.6,seed+41,0);
   const dn=daily.length;
+  // 每日盈亏·柱状图:随顶部时间区间变化(月历为固定数据,见 drawDailyPnl)
+  barChart(document.getElementById('r-daily-bar'),daily,ddates.map(d=>d.slice(5)),{noTip:true,onPick:(i,v)=>{
+    document.getElementById('dm-bar-date').textContent=ddates[i].replace(/-/g,'/');
+    const dbv=document.getElementById('dm-bar-val');dbv.textContent=(v>=0?'+':'-')+abs2(v)+' ('+fPct(v/base*100)+')';dbv.className='vv2 '+(v>=0?'g':'r');
+  }});
   const cum=cumsum(daily),cumEnd=cum[dn-1];
   const ownPct=cumEnd/base*100;
   const btcEnd=({7:1.2,30:4.89,90:12.4,180:20.5})[days]??8.5;
@@ -1167,7 +1176,7 @@ function drawPnl(days,startStr,endStr){
     document.getElementById('dp-today').textContent=fUSDword(v);document.getElementById('dp-today').className=v>=0?'g':'r';
     document.getElementById('dp-date').textContent=ddates[i];
   }});
-  drawCal(document.getElementById('pnl-daily-cal'),ddates,daily);
+  // 月历为固定完整数据,不随区间变化,见 drawPnlDailyCal()
   // cumulative
   const cum=cumsum(daily);const cumEnd=cum[dn-1];
   PNL_CUM={cum,s,e,base:510.45,mode:PNL_CUM.mode||'usd'};
@@ -1417,6 +1426,7 @@ function initCharts(){
   rAllocMode('coin');
   drawReport(30);
   drawPnl(30);
+  drawPnlDailyCal();
 }
 initCharts();
 </script>
