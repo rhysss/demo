@@ -599,7 +599,7 @@ section{padding:0 16px;}
         <div class="tm-grid" id="tm-grid"></div>
         <div class="pl-cap" id="pl-cap" style="margin-top:16px;"></div>
         <div class="pl-bar" id="pl-bar" style="margin-top:6px;"></div>
-        <div class="tm-grid" id="tm-grid2" style="margin-top:14px;"></div>
+        <div class="ls-grid" id="tm-grid2" style="margin-top:14px;"></div>
       </div>
       <!-- 盈亏排行 -->
       <div class="card">
@@ -1194,18 +1194,20 @@ function drawTrade(days,daily,seed){
   if(plCap) plCap.innerHTML='<span class="g">+'+gain.toFixed(2)+' 总盈利</span><span class="r">-'+loss.toFixed(2)+' 总亏损</span>';
   const plBar=document.getElementById('pl-bar');
   if(plBar) plBar.innerHTML='<div style="width:'+(gain/tot*100).toFixed(0)+'%;background:var(--green)"></div><div style="width:'+(loss/tot*100).toFixed(0)+'%;background:var(--red)"></div>';
-  // 第二层指标
+  // 多头/空头 双列
   const longs=Math.round(trades.length*(0.4+r()*0.3)),shorts=Math.max(0,trades.length-longs);
-  const avgHold=Math.round(2+r()*70);
-  const avgPnl=trades.length?(gain-loss)/trades.length:0;
-  const m2=[
-    ['平均持仓',avgHold+' 小时',''],
-    ['仓位数',trades.length,''],
-    ['多空比',longs+':'+shorts,''],
-    ['平均盈亏',(avgPnl>=0?'+':'')+fSigned(avgPnl),avgPnl>=0?'g':'r']
-  ];
+  const lHold=Math.round(2+r()*70),sHold=Math.round(2+r()*70);
+  const lAvg=Math.trunc((r()-0.35)*6*100)/100,sAvg=Math.trunc((r()-0.45)*6*100)/100;
+  const lsRatio=longs+':'+shorts;
+  const mkCol=(title,cls,cnt,hold,avg)=>`<div class="ls-col">
+    <div class="h"><span class="tag ${cls}">${title}</span></div>
+    <div class="row">平均持仓<b>${hold} 小时</b></div>
+    <div class="row">仓位数<b>${cnt}</b></div>
+    <div class="row">多空比<b>${lsRatio}</b></div>
+    <div class="row">平均盈亏<b class="${avg>=0?'g':'r'}">${avg>=0?'+':''}${fSigned(avg)}</b></div>
+  </div>`;
   const grid2=document.getElementById('tm-grid2');
-  if(grid2) grid2.innerHTML=m2.map(x=>'<div><div class="k">'+x[0]+'</div><div class="v '+(x[2]||'')+'">'+x[1]+'</div></div>').join('');
+  if(grid2) grid2.innerHTML=mkCol('多头','long',longs,lHold,lAvg)+mkCol('空头','short',shorts,sHold,sAvg);
 }
 let RANK={mode:'amt',list:[]};
 function drawRanking(days,seed){
