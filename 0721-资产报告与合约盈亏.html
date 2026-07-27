@@ -1188,26 +1188,31 @@ function drawTrade(days,daily,seed){
     ['最大亏损',fSigned(maxLoss),'r']
   ];
   document.getElementById('tm-grid').innerHTML=m.map(x=>'<div><div class="k">'+x[0]+'</div><div class="v '+(x[2]||'')+'">'+x[1]+'</div></div>').join('');
-  // 总盈利/总亏损 标题 + 进度条
+  // 总盈利/总亏损 标题+数值 双列
   const tot=gain+loss||1;
   const plCap=document.getElementById('pl-cap');
-  if(plCap) plCap.innerHTML='<span class="g">+'+gain.toFixed(2)+' 总盈利</span><span class="r">-'+loss.toFixed(2)+' 总亏损</span>';
+  if(plCap) plCap.innerHTML=
+    '<div><div class="k" style="font-size:13px;">总盈利</div><div style="font-size:17px;font-weight:700;margin-top:3px;">'+gain.toFixed(2)+' USDT</div></div>'+
+    '<div style="text-align:right"><div class="k" style="font-size:13px;">总亏损</div><div class="r" style="font-size:17px;font-weight:700;margin-top:3px;">-'+loss.toFixed(2)+' USDT</div></div>';
   const plBar=document.getElementById('pl-bar');
   if(plBar) plBar.innerHTML='<div style="width:'+(gain/tot*100).toFixed(0)+'%;background:var(--green)"></div><div style="width:'+(loss/tot*100).toFixed(0)+'%;background:var(--red)"></div>';
-  // 多头/空头 双列
+  // 多头/空头 双列 4行
   const longs=Math.round(trades.length*(0.4+r()*0.3)),shorts=Math.max(0,trades.length-longs);
   const lHold=Math.round(2+r()*70),sHold=Math.round(2+r()*70);
   const lAvg=Math.trunc((r()-0.35)*6*100)/100,sAvg=Math.trunc((r()-0.45)*6*100)/100;
   const lsRatio=longs+':'+shorts;
-  const mkCol=(title,cls,cnt,hold,avg)=>`<div class="ls-col">
-    <div class="h"><span class="tag ${cls}">${title}</span></div>
-    <div class="row">平均持仓<b>${hold} 小时</b></div>
-    <div class="row">仓位数<b>${cnt}</b></div>
-    <div class="row">多空比<b>${lsRatio}</b></div>
-    <div class="row">平均盈亏<b class="${avg>=0?'g':'r'}">${avg>=0?'+':''}${fSigned(avg)}</b></div>
-  </div>`;
+  const mkSide=(cnt,hold,avg,right)=>{
+    const s=right?'text-align:right':'';
+    const vStyle='font-size:16px;font-weight:700;margin:3px 0 14px;';
+    return '<div style="'+s+'">'+
+      '<div class="k">平均持仓时间</div><div style="'+vStyle+'">'+hold+' 小时</div>'+
+      '<div class="k">仓位数</div><div style="'+vStyle+'">'+cnt+'</div>'+
+      '<div class="k">多空比</div><div style="'+vStyle+'">'+lsRatio+'</div>'+
+      '<div class="k">平均盈亏</div><div class="'+(avg>=0?'g':'r')+'" style="'+vStyle+'">'+(avg>=0?'+':'')+fSigned(avg)+' USDT</div>'+
+    '</div>';
+  };
   const grid2=document.getElementById('tm-grid2');
-  if(grid2) grid2.innerHTML=mkCol('多头','long',longs,lHold,lAvg)+mkCol('空头','short',shorts,sHold,sAvg);
+  if(grid2) grid2.innerHTML=mkSide(longs,lHold,lAvg,false)+mkSide(shorts,sHold,sAvg,true);
 }
 let RANK={mode:'amt',list:[]};
 function drawRanking(days,seed){
