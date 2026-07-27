@@ -1009,11 +1009,20 @@
         </div>
       </div>
 
-      <!-- TRA PnL -->
-      <div class="data-card card-neutral">
-        <div class="data-card-label">TRA 账户余额</div>
-        <div class="data-card-value val-text" style="font-size:2.25rem;">-- U</div>
-        <div class="data-card-sub" style="margin-top:8px;">配资到账后开始计算</div>
+      <!-- TRA 账户余额 -->
+      <div class="data-card card-neutral" id="tra-balance-card">
+        <div class="data-card-label" style="display:flex;align-items:center;gap:5px;">
+          TRA 账户余额
+          <span id="tra-period-badge" style="
+            font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;
+            background:rgba(255,255,255,.08);color:#9ca3af;letter-spacing:.3px;">
+            首期
+          </span>
+        </div>
+        <div class="data-card-value val-text" id="tra-balance-value" style="font-size:2.25rem;">0 U</div>
+        <div class="data-card-sub" id="tra-balance-sub" style="margin-top:8px;">
+          首期暂无余额，第二期起统计
+        </div>
       </div>
     </div>
 
@@ -1537,6 +1546,37 @@
     lblEl.innerHTML = barData.map(b => `
       <span class="bar-day-lbl${b.type === 'future' ? ' future' : ''}">${b.day}</span>`).join('');
   }
+  // ── TRA 账户余额：周期状态 ──
+  // periodIndex: 0 = 首期, 1+ = 第N+1期
+  function setTraPeriod(periodIndex, prevBalance) {
+    const card   = document.getElementById('tra-balance-card');
+    const badge  = document.getElementById('tra-period-badge');
+    const value  = document.getElementById('tra-balance-value');
+    const sub    = document.getElementById('tra-balance-sub');
+    if (!card) return;
+
+    if (periodIndex === 0) {
+      // 首期
+      badge.textContent = '首期';
+      badge.style.background = 'rgba(255,255,255,.08)';
+      badge.style.color = '#9ca3af';
+      value.textContent = '0 U';
+      value.style.color = '';
+      sub.textContent = '第二期起展示上周期 TRA 账户余额';
+    } else {
+      // 第二期及以后
+      const period = periodIndex + 1;
+      badge.textContent = `第 ${period} 期`;
+      badge.style.background = 'rgba(234,179,8,.12)';
+      badge.style.color = '#fbbf24';
+      value.textContent = prevBalance != null ? `${prevBalance.toLocaleString()} U` : '-- U';
+      value.style.color = prevBalance > 0 ? 'var(--gold, #f59e0b)' : '';
+      sub.textContent = '上一周期 TRA 账户发放的余额';
+    }
+  }
+
+  // 默认渲染为首期
+  setTraPeriod(0);
 </script>
 
 </body>
