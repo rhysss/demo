@@ -222,8 +222,14 @@ section{padding:0 16px;}
 .oc .grid3-pos .k{color:var(--muted);} .oc .grid3-pos .v{font-weight:700;margin-top:4px;font-size:14px;}
 .oc .grid3-pos > div:nth-child(3n){text-align:right;}
 /* 交易历史卡 (图2) */
-.oc .badge-time{display:flex;align-items:center;gap:10px;margin:10px 0 6px;}
+.oc .badge-time{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:10px 0 6px;}
 .oc .badge-time .date{margin-top:0;}
+/* 订单详情页 (图3) */
+.od-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:11px 0;}
+.od-row .k{color:var(--muted);} .od-row .v{font-weight:600;}
+.od-badges{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px;}
+.bdg{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;display:inline-block;}
+.bdg.long{background:#E3F9EF;color:var(--green-d);} .bdg.short{background:#FEECEE;color:var(--red);} .bdg.gray{background:#EEF0F3;color:var(--muted);}
 .oc-sum{display:grid;grid-template-columns:1fr 1fr;gap:14px 8px;margin:8px 0 14px;}
 .oc-sum .k{font-size:12px;color:var(--muted);} .oc-sum .v{font-size:18px;font-weight:700;margin-top:3px;}
 
@@ -629,12 +635,40 @@ section{padding:0 16px;}
       </div>
       <!-- 平仓明细 -->
       <div class="card">
-        <div style="font-size:18px;font-weight:700;margin-bottom:12px;">平仓明细</div>
-        <div class="mini-tabs"><span class="on" id="cd-tab-o" onclick="cdTab('o')">平仓订单</span><span id="cd-tab-p" onclick="cdTab('p')">平仓仓位</span></div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px;">订单明细</div>
+        <div class="mini-tabs"><span class="on" id="cd-tab-ord" onclick="cdTab('ord')">订单历史</span><span id="cd-tab-trade" onclick="cdTab('trade')">交易历史</span><span id="cd-tab-pos" onclick="cdTab('pos')">仓位历史</span></div>
         <div id="cd-list"></div>
       </div>
     </div><!-- /pnl-tab-ca -->
 
+  </div>
+</div>
+
+<!-- 订单详情 (图3) -->
+<div class="screen" id="screen-order-detail">
+  <div class="statusbar"><span>17:41</span><span class="dots">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/></svg>
+    <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2C5 2 2.5 4 1 6l7.5 6L16 6c-1.5-2-4-4-7.5-4z" fill="none" stroke="#1E2329" stroke-width="1.3"/></svg>
+    <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1E2329" stroke-width="1"/><rect x="3" y="3" width="13" height="7" rx="1.5"/><rect x="23" y="4.5" width="2" height="4" rx="1"/></svg>
+  </span></div>
+  <div class="pghead">
+    <div class="back" onclick="go('screen-pnl')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    <div class="title">订单详情</div>
+    <div style="width:24px;"></div>
+  </div>
+  <div class="scroll paged">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span class="sym" id="od-sym" style="font-size:16px;font-weight:700;">BTCUSDT 永续</span>
+        <span id="od-status" style="font-size:14px;font-weight:600;">已成交</span>
+      </div>
+      <div class="od-badges" id="od-badges"></div>
+      <div id="od-kv" style="margin-top:6px;"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px;">成交明细</div>
+      <div id="od-fill"></div>
+    </div>
   </div>
 </div>
 
@@ -1249,7 +1283,7 @@ function drawWallet(realized){
   document.getElementById('wb-break').innerHTML=rows.map(x=>'<div class="row"><span class="k"><span class="op">'+x[0]+'</span>'+x[1]+'</span><span class="v '+(x[3]?(x[2]>=0?'g':'r'):'')+'">'+(x[3]&&x[2]>=0?'+':'')+fSigned(x[2])+' USDT</span></div>').join('')
     +'<div class="row" style="border:none;padding-top:12px;"><span class="k" style="font-weight:700;color:var(--text);">钱包余额</span><span class="v" style="font-size:15px;">'+base.toFixed(2)+' USDT</span></div>';
 }
-let CD={tab:'o'};
+let CD={tab:'ord'};
 function drawCloseOrders(seed){
   const r=rng(seed+654);
   const levs=[10,20,25,50,100,200];
@@ -1259,19 +1293,24 @@ function drawCloseOrders(seed){
     const entry=Math.trunc((60000+r()*10000)*100)/100,exitp=Math.trunc(entry*(1+(win?1:-1)*r()*0.03)*100)/100;
     const lev=levs[Math.floor(r()*levs.length)],roe=Math.trunc((win?1:-1)*(5+r()*55)*100)/100;
     const orderId=1100000000+Math.floor(r()*99999999);
-    return {sym:'BTCUSDT',long,win,pnl,qty:0.001,entry,exitp,ofee:Math.trunc(r()*0.05*1e7)/1e7,cfee:Math.trunc(r()*0.05*1e7)/1e7,fund:Math.trunc((r()-0.5)*0.02*1e7)/1e7,ot:ots[i],ct:cts[i],dur:Math.round(1+r()*40)+'天',lev,mode:(r()>0.5?'逐仓':'全仓'),closeType:(r()>0.7?'强平':'交易'),roe,orderId,role:(r()>0.5?'吃单':'挂单')};});
+    // 订单历史字段
+    const isOpen=r()>0.45,otype=r()>0.4?'市价':'限价';
+    const status=otype==='市价'?'已成交':(r()>0.45?'已成交':'已取消');
+    const done=status==='已成交',filled=done?0.001:0;
+    const olimit=Math.trunc((60000+r()*10000)*100)/100;
+    const isBuy=(isOpen&&long)||(!isOpen&&!long);
+    return {sym:'BTCUSDT',long,win,pnl,qty:0.001,entry,exitp,ofee:Math.trunc(r()*0.05*1e7)/1e7,cfee:Math.trunc(r()*0.05*1e7)/1e7,fund:Math.trunc((r()-0.5)*0.02*1e7)/1e7,ot:ots[i],ct:cts[i],dur:Math.round(1+r()*40)+'天',lev,mode:(r()>0.5?'逐仓':'全仓'),closeType:(r()>0.7?'强平':'交易'),roe,orderId,role:(r()>0.5?'吃单':'挂单'),
+      isOpen,otype,status,done,filled,olimit,isBuy,oside:(isOpen?'开':'平')+(long?'多':'空'),avgPrice:done?exitp:null};});
   renderCD();
 }
 function cell(k,v,cls){return '<div><div class="k">'+k+'</div><div class="v '+(cls||'')+'">'+v+'</div></div>';}
 const EXT_ICON='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="1.7"><path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
 const CP_ICON='<svg class="cp" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-2px;margin-left:4px;" data-toast="订单编号已复制"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
 function renderCD(){
-  document.getElementById('cd-tab-o').classList.toggle('on',CD.tab==='o');
-  document.getElementById('cd-tab-p').classList.toggle('on',CD.tab==='p');
-  const isPos=CD.tab==='p';
+  ['ord','trade','pos'].forEach(t=>document.getElementById('cd-tab-'+t).classList.toggle('on',CD.tab===t));
   const base=CD.orders[0]?CD.orders[0].sym.replace('USDT',''):'';
-  document.getElementById('cd-list').innerHTML=CD.orders.map(o=>{
-    if(isPos){
+  document.getElementById('cd-list').innerHTML=CD.orders.map((o,i)=>{
+    if(CD.tab==='pos'){
       // 仓位历史样式 (图1)
       return '<div class="oc">'
         +'<div class="top-pos"><span class="sym">'+o.sym+' 永续</span>'+EXT_ICON+'</div>'
@@ -1289,25 +1328,80 @@ function renderCD(){
         +cell('平仓时间',o.ct)
         +'</div></div>';
     }
-    // 交易历史样式 (图2) — 平仓成交
-    const badgeCls=o.long?'b-short':'b-long';
+    if(CD.tab==='trade'){
+      // 交易历史样式 (图2旧) — 成交明细
+      const badgeCls=o.long?'b-short':'b-long';
+      const kv=[
+        ['订单编号',o.orderId+CP_ICON],
+        ['价格',o.exitp.toLocaleString('en-US')+' USDT'],
+        ['数量',o.qty+' '+base],
+        ['手续费',o.cfee+' USDT'],
+        ['已实现盈亏',(o.pnl>=0?'+':'')+fSigned(o.pnl)+' USDT',o.pnl>=0?'g':'r'],
+        ['角色',o.role]
+      ];
+      return '<div class="oc">'
+        +'<div class="sym">'+o.sym+' 永续</div>'
+        +'<div class="badge-time"><span class="badge '+badgeCls+'">'+(o.long?'平多':'平空')+'</span><span class="date">'+o.ct+'</span></div>'
+        +'<div class="kv-list">'
+        +kv.map(x=>'<div class="kv"><span>'+x[0]+'</span><b class="'+(x[2]||'')+'">'+x[1]+'</b></div>').join('')
+        +'</div></div>';
+    }
+    // 订单历史样式 (图2新) — 点击进详情
+    const badgeCls=o.isBuy?'b-long':'b-short';
+    const priceTxt=o.otype==='市价'?'市价':o.olimit.toLocaleString('en-US');
+    const statusCls=o.status==='已成交'?'g':'r';
     const kv=[
-      ['订单编号',o.orderId+CP_ICON],
-      ['价格',o.exitp.toLocaleString('en-US')+' USDT'],
-      ['数量',o.qty+' '+base],
-      ['手续费',o.cfee+' USDT'],
-      ['已实现盈亏',(o.pnl>=0?'+':'')+fSigned(o.pnl)+' USDT',o.pnl>=0?'g':'r'],
-      ['角色',o.role]
+      ['价格',priceTxt],
+      ['数量',o.filled+'/'+o.qty+' '+base],
+      ['状态','<span class="'+statusCls+'">'+o.status+'</span>']
     ];
-    return '<div class="oc">'
+    return '<div class="oc" onclick="openOrderDetail('+i+')" style="cursor:pointer;">'
       +'<div class="sym">'+o.sym+' 永续</div>'
-      +'<div class="badge-time"><span class="badge '+badgeCls+'">'+(o.long?'平多':'平空')+'</span><span class="date">'+o.ct+'</span></div>'
+      +'<div class="badge-time"><span class="badge '+badgeCls+'">'+o.oside+'</span>'
+      +'<span class="badge b-mode">'+o.otype+'</span><span class="badge b-mode">'+o.mode+'</span>'
+      +'<span class="badge b-lev">'+o.lev+'x</span><span class="date">'+o.ot+'</span></div>'
       +'<div class="kv-list">'
-      +kv.map(x=>'<div class="kv"><span>'+x[0]+'</span><b class="'+(x[2]||'')+'">'+x[1]+'</b></div>').join('')
+      +kv.map(x=>'<div class="kv"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('')
       +'</div></div>';
   }).join('');
 }
 function cdTab(t){CD.tab=t;renderCD();}
+function odRow(k,v,cls){return '<div class="od-row"><span class="k">'+k+'</span><span class="v '+(cls||'')+'">'+v+'</span></div>';}
+function openOrderDetail(i){
+  const o=CD.orders[i],base=o.sym.replace('USDT','');
+  document.getElementById('od-sym').textContent=o.sym+' 永续';
+  const st=document.getElementById('od-status');st.textContent=o.status;st.className=o.status==='已成交'?'g':'r';
+  st.style.fontWeight='600';st.style.fontSize='14px';
+  document.getElementById('od-badges').innerHTML='<span class="bdg '+(o.isBuy?'long':'short')+'">'+o.oside+'</span>'
+    +'<span class="bdg gray">'+o.otype+'</span><span class="bdg gray">'+o.mode+'</span><span class="bdg gray">'+o.lev+'x</span>';
+  const priceTxt=o.otype==='市价'?'市价':o.olimit.toLocaleString('en-US')+' USDT';
+  const pnlTxt=o.isOpen?'--':(o.pnl>=0?'+':'')+fSigned(o.pnl)+' USDT';
+  const pnlCls=o.isOpen?'':(o.pnl>=0?'g':'r');
+  document.getElementById('od-kv').innerHTML=
+    odRow('订单编号',o.orderId+CP_ICON)
+    +odRow('订单价格',priceTxt)
+    +odRow('平均成交价格',o.done?o.avgPrice.toLocaleString('en-US')+' USDT':'--')
+    +odRow('订单数量',o.qty+' '+base)
+    +odRow('成交数量',o.filled+' '+base)
+    +odRow('手续费',(o.done?o.cfee:0)+' USDT')
+    +odRow('已实现盈亏',pnlTxt,pnlCls)
+    +odRow('订单时间',o.ot)
+    +odRow('更新时间',o.ct);
+  const fill=document.getElementById('od-fill');
+  if(o.done){
+    fill.style.display='';
+    fill.innerHTML=odRow('价格',o.avgPrice.toLocaleString('en-US')+' USDT')
+      +odRow('数量',o.filled+' '+base)
+      +odRow('手续费',o.cfee+' USDT')
+      +odRow('已实现盈亏',pnlTxt,pnlCls)
+      +odRow('角色',o.role)
+      +odRow('时间',o.ct);
+    fill.parentElement.style.display='';
+  }else{
+    fill.parentElement.style.display='none';
+  }
+  go('screen-order-detail');
+}
 
 let PNL_DAYS=30;
 
