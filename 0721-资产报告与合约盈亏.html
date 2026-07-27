@@ -199,14 +199,20 @@ section{padding:0 16px;}
 .mini-tabs span{font-size:14px;font-weight:600;color:var(--muted2);padding-bottom:8px;cursor:pointer;position:relative;}
 .mini-tabs span.on{color:var(--text);}
 .mini-tabs span.on::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:2px;background:var(--green);}
-.oc{background:#F7F8FA;border-radius:12px;padding:14px;margin:10px 0;}
-.oc .top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.oc .sym{font-size:15px;font-weight:700;}
+.oc{background:#F7F8FA;border-radius:12px;padding:16px 14px;margin:10px 0;}
+.oc .top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.oc .sym{font-size:16px;font-weight:700;}
 .oc .badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;}
-.oc .b-long{background:#E3F9EF;color:var(--green-d);} .oc .b-short{background:#FEECEE;color:var(--red);} .oc .b-win{background:#FFF3E0;color:#b8860b;}
-.oc .pnl{margin-left:auto;font-weight:700;font-size:15px;}
-.oc .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 8px;font-size:12px;}
-.oc .grid .k{color:var(--muted);} .oc .grid .v{font-weight:600;margin-top:2px;}
+.oc .b-long{background:#E3F9EF;color:var(--green-d);} .oc .b-short{background:#FEECEE;color:var(--red);} .oc .b-win{background:#FFF3E0;color:#b8860b;} .oc .b-loss{background:#FEECEE;color:var(--red);}
+.oc .date{font-size:11px;color:var(--muted2);margin-top:7px;}
+.oc .pnl-lab{font-size:12px;color:var(--muted);}
+.oc .pnl-big{font-size:18px;font-weight:700;margin-top:5px;}
+.oc .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 8px;font-size:12px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.oc .grid3 .k{color:var(--muted);} .oc .grid3 .v{font-weight:700;margin-top:4px;font-size:14px;}
+.oc .grid3 > div:last-child{text-align:right;}
+.oc .kv-list{margin-top:12px;}
+.oc .kv{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:7px 0;}
+.oc .kv span{color:var(--muted);} .oc .kv b{font-weight:600;}
 .oc-sum{display:grid;grid-template-columns:1fr 1fr;gap:14px 8px;margin:8px 0 14px;}
 .oc-sum .k{font-size:12px;color:var(--muted);} .oc-sum .v{font-size:18px;font-weight:700;margin-top:3px;}
 
@@ -1259,13 +1265,30 @@ function renderCD(){
   document.getElementById('cd-tab-o').classList.toggle('on',CD.tab==='o');
   document.getElementById('cd-tab-p').classList.toggle('on',CD.tab==='p');
   const isPos=CD.tab==='p';
-  document.getElementById('cd-list').innerHTML=CD.orders.map(o=>'<div class="oc"><div class="top"><span class="sym">'+o.sym+'</span>'
-    +'<span class="badge '+(o.long?'b-long':'b-short')+'">'+(o.long?'平多':'平空')+'</span><span class="badge b-win">'+(o.win?'盈利':'亏损')+'</span>'
-    +'<span class="pnl '+(o.pnl>=0?'g':'r')+'">'+(o.pnl>=0?'+':'')+fSigned(o.pnl)+' USDT</span></div><div class="grid">'
-    +cell('数量',o.qty)+cell(isPos?'平均入场价':'入场价',o.entry.toLocaleString('en-US'))+cell(isPos?'平均出场价':'出场价',o.exitp.toLocaleString('en-US'))
-    +cell('开仓手续费',o.ofee+' USDT')+cell('平仓手续费',o.cfee+' USDT')+cell('资金费用',o.fund+' USDT')
-    +(isPos?cell('开仓时间',o.ot)+cell('平仓时间',o.ct)+cell('持仓周期',o.dur):cell('成交类型','交易')+cell('平仓时间',o.ct)+'<div></div>')
-    +'</div></div>').join('');
+  document.getElementById('cd-list').innerHTML=CD.orders.map(o=>{
+    const openVol=tr2(o.entry*o.qty),closeVol=tr2(o.exitp*o.qty);
+    const kv=[
+      ['开仓交易量',openVol],
+      ['平仓交易量',closeVol],
+      ['开仓手续费',o.ofee+' USDT'],
+      ['平仓手续费',o.cfee+' USDT'],
+      ['资金费用',o.fund+' USDT']
+    ];
+    if(isPos){kv.push(['开仓时间',o.ot+':59'],['平仓时间',o.ct+':59'],['持仓周期',o.dur]);}
+    else{kv.push(['成交类型','交易'],['平仓时间',o.ct+':59']);}
+    return '<div class="oc"><div class="top">'
+      +'<div><div style="display:flex;align-items:center;gap:8px;"><span class="sym">'+o.sym+'</span>'
+      +'<span class="badge '+(o.long?'b-long':'b-short')+'">'+(o.long?'平多':'平空')+'</span>'
+      +'<span class="badge '+(o.win?'b-win':'b-loss')+'">'+(o.win?'盈利':'亏损')+'</span></div>'
+      +'<div class="date">'+o.ct+':59</div></div>'
+      +'<div style="text-align:right;"><div class="pnl-lab">平仓盈亏(USDT) ⇗</div>'
+      +'<div class="pnl-big '+(o.pnl>=0?'g':'r')+'">'+(o.pnl>=0?'+':'')+fSigned(o.pnl)+'</div></div>'
+      +'</div><div class="grid3">'
+      +cell('订单数量',o.qty)+cell(isPos?'平均入场价':'入场价格',o.entry.toLocaleString('en-US'))+cell(isPos?'平均出场价':'出场价格',o.exitp.toLocaleString('en-US'))
+      +'</div><div class="kv-list">'
+      +kv.map(x=>'<div class="kv"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('')
+      +'</div></div>';
+  }).join('');
 }
 function cdTab(t){CD.tab=t;renderCD();}
 
