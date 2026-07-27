@@ -597,10 +597,6 @@ section{padding:0 16px;}
         <div style="font-size:18px;font-weight:700;">交易分析 <svg class="info-i click-i" onclick="openInfo('trade')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
         <div style="font-size:12px;color:var(--muted2);margin-top:2px;">仅 USDT 本位永续 · 仓位全部平仓后 1 小时计入</div>
         <div class="tm-grid" id="tm-grid"></div>
-        <div class="pl-bar" id="pl-bar"></div>
-        <div class="pl-cap"><span class="g" id="pl-gain">总盈利 0</span><span class="r" id="pl-loss">总亏损 0</span></div>
-        <div class="ls-grid" id="ls-grid"></div>
-        <div style="font-size:11.5px;color:var(--muted2);margin-top:12px;line-height:1.6;">盈亏比 = (总盈利 ÷ 盈利仓位数) : (总亏损 ÷ 亏损仓位数)</div>
       </div>
       <!-- 盈亏排行 -->
       <div class="card">
@@ -1180,21 +1176,15 @@ function drawTrade(days,daily,seed){
   const avgWin=wins.length?gain/wins.length:0,avgLoss=losses.length?loss/losses.length:0;
   const maxWin=trades.length?Math.max(...trades):0,maxLoss=trades.length?Math.min(...trades):0;
   const r=rng(seed+987),longs=Math.round(trades.length*(0.4+r()*0.3)),shorts=Math.max(0,trades.length-longs),avgHold=Math.round(2+r()*70);
-  const m=[['胜率',winRate.toFixed(2)+'%'],['盈亏比',(loss?gain/loss:0).toFixed(2)],['风险回报比','1:'+(avgWin?(avgLoss/avgWin).toFixed(2):'0.00')],
-    ['交易金额',(trades.reduce((a,b)=>a+Math.abs(b),0)*35).toFixed(2)],['仓位数',trades.length],['多空比',longs+':'+shorts],
-    ['平均持仓',avgHold+' 小时'],['最大收益','+'+abs2(maxWin)],['最大亏损',fSigned(maxLoss)]];
-  document.getElementById('tm-grid').innerHTML=m.map(x=>'<div><div class="k">'+x[0]+'</div><div class="v">'+x[1]+'</div></div>').join('');
-  const tot=gain+loss||1;
-  document.getElementById('pl-bar').innerHTML='<div style="width:'+(gain/tot*100).toFixed(0)+'%;background:var(--green)"></div><div style="width:'+(loss/tot*100).toFixed(0)+'%;background:var(--red)"></div>';
-  document.getElementById('pl-gain').textContent='总盈利 '+gain.toFixed(2);
-  document.getElementById('pl-loss').textContent='总亏损 '+loss.toFixed(2);
-  // 多空分列 (Gate)
-  const lHold=Math.round(2+r()*70),sHold=Math.round(2+r()*70);
-  const lAvg=Math.trunc((r()-0.35)*6*100)/100,sAvg=Math.trunc((r()-0.45)*6*100)/100;
-  const col=(title,cls,pos,cnt,hold,avg)=>'<div class="ls-col"><div class="h"><span class="tag '+cls+'">'+title+'</span></div>'
-    +'<div class="row">仓位数<b>'+cnt+'</b></div><div class="row">平均持仓<b>'+hold+' 小时</b></div>'
-    +'<div class="row">平均盈亏<b class="'+(avg>=0?'g':'r')+'">'+(avg>=0?'+':'')+fSigned(avg)+'</b></div></div>';
-  document.getElementById('ls-grid').innerHTML=col('多头','long',1,longs,lHold,lAvg)+col('空头','short',0,shorts,sHold,sAvg);
+  const m=[
+    ['胜率',winRate.toFixed(2)+'%',''],
+    ['总仓位',trades.length,''],
+    ['总盈亏比',(loss?gain/loss:0).toFixed(2),''],
+    ['交易金额',(trades.reduce((a,b)=>a+Math.abs(b),0)*35).toFixed(2),''],
+    ['最大收益','+'+abs2(maxWin),'g'],
+    ['最大亏损',fSigned(maxLoss),'r']
+  ];
+  document.getElementById('tm-grid').innerHTML=m.map(x=>'<div><div class="k">'+x[0]+'</div><div class="v '+(x[2]||'')+'">'+x[1]+'</div></div>').join('');
 }
 let RANK={mode:'amt',list:[]};
 function drawRanking(days,seed){
