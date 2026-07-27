@@ -1178,7 +1178,7 @@ function drawTrade(days,daily,seed){
   const winRate=trades.length?wins.length/trades.length*100:0;
   const avgWin=wins.length?gain/wins.length:0,avgLoss=losses.length?loss/losses.length:0;
   const maxWin=trades.length?Math.max(...trades):0,maxLoss=trades.length?Math.min(...trades):0;
-  const r=rng(seed+987),longs=Math.round(trades.length*(0.4+r()*0.3)),shorts=Math.max(0,trades.length-longs),avgHold=Math.round(2+r()*70);
+  const r=rng(seed+987);
   const m=[
     ['胜率',winRate.toFixed(2)+'%',''],
     ['总仓位',trades.length,''],
