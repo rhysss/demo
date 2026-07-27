@@ -540,7 +540,10 @@ section{padding:0 16px;}
   <div class="scroll paged">
     <!-- 盈亏概览 -->
     <div class="card">
-      <div class="big-pnl">今日盈亏 <svg class="info-i click-i" onclick="openInfo('today')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div class="big-pnl">今日盈亏 <svg class="info-i click-i" onclick="openInfo('today')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div style="font-size:12px;color:var(--muted2);background:#F4F5F7;border-radius:6px;padding:3px 8px;cursor:pointer;" onclick="switchPnlTab('ca')">交易额</div>
+      </div>
       <div style="display:flex;align-items:baseline;gap:8px;"><div class="big-num r" id="pnl-today" style="margin:6px 0;">-0.16%</div><span class="r" id="pnl-today-usd" style="font-size:15px;">-0.83 USD</span></div>
       <div class="trip" style="border-top:1px solid var(--border);margin-top:14px;padding-top:16px;">
         <div class="c"><div class="kk click-i" onclick="openInfo('month')">本月盈亏 ⓘ</div><div class="vv g" id="pnl-month">+0.00</div><div class="sub g" id="pnl-month-sub">+0.00%</div></div>
@@ -584,27 +587,6 @@ section{padding:0 16px;}
       <div class="view on" id="dp-view-cal"><div class="date-lab">每日营收</div><div class="cal" id="pnl-daily-cal"></div></div>
     </div>
 
-    <!-- 盈亏排行 (盈亏额/胜率 切换) -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="font-size:18px;font-weight:700;">盈亏排行 <svg class="info-i click-i" onclick="openInfo('rank')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-        <div class="uc-tog"><button class="on" id="rk-amt">盈亏额</button></div>
-      </div>
-      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">按合约 · 前 5</div>
-      <div class="rk" id="rk-list"></div>
-    </div>
-
-    <!-- 交易分析 (Gate 最全 · 含多空分列) -->
-    <div class="card">
-      <div style="font-size:18px;font-weight:700;">交易分析 <svg class="info-i click-i" onclick="openInfo('trade')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">仅 USDT 本位永续 · 仓位全部平仓后 1 小时计入</div>
-      <div class="tm-grid" id="tm-grid"></div>
-      <div class="pl-bar" id="pl-bar"></div>
-      <div class="pl-cap"><span class="g" id="pl-gain">总盈利 0</span><span class="r" id="pl-loss">总亏损 0</span></div>
-      <div class="ls-grid" id="ls-grid"></div>
-      <div style="font-size:11.5px;color:var(--muted2);margin-top:12px;line-height:1.6;">盈亏比 = (总盈利 ÷ 盈利仓位数) : (总亏损 ÷ 亏损仓位数)</div>
-    </div>
-
     <!-- 平仓明细 -->
     <div class="card">
       <div style="font-size:18px;font-weight:700;margin-bottom:12px;">平仓明细</div>
@@ -623,6 +605,26 @@ section{padding:0 16px;}
 
     <!-- 合约分析内容 (默认隐藏) -->
     <div id="pnl-tab-ca" style="display:none;">
+      <!-- 交易分析 -->
+      <div class="card">
+        <div style="font-size:18px;font-weight:700;">交易分析 <svg class="info-i click-i" onclick="openInfo('trade')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div style="font-size:12px;color:var(--muted2);margin-top:2px;">仅 USDT 本位永续 · 仓位全部平仓后 1 小时计入</div>
+        <div class="tm-grid" id="tm-grid"></div>
+        <div class="pl-bar" id="pl-bar"></div>
+        <div class="pl-cap"><span class="g" id="pl-gain">总盈利 0</span><span class="r" id="pl-loss">总亏损 0</span></div>
+        <div class="ls-grid" id="ls-grid"></div>
+        <div style="font-size:11.5px;color:var(--muted2);margin-top:12px;line-height:1.6;">盈亏比 = (总盈利 ÷ 盈利仓位数) : (总亏损 ÷ 亏损仓位数)</div>
+      </div>
+      <!-- 盈亏排行 -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:18px;font-weight:700;">盈亏排行 <svg class="info-i click-i" onclick="openInfo('rank')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+          <div class="uc-tog"><button class="on" id="rk-amt">盈亏额</button></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted2);margin-top:2px;">按合约 · 前 5</div>
+        <div class="rk" id="rk-list"></div>
+      </div>
+      <!-- 合约分析 -->
       <div class="card">
         <div style="font-size:18px;font-weight:700;">合约分析 <svg class="info-i click-i" onclick="openInfo('canalysis')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span style="font-size:12px;color:var(--muted2);font-weight:400;">按合约 · 已实现</span></div>
         <div style="font-size:12px;color:var(--muted2);margin-top:2px;">总计已实现盈亏不含手续费；点击卡片展开逐项</div>
