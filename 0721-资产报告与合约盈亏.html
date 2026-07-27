@@ -538,11 +538,6 @@ section{padding:0 16px;}
   </div>
   <div class="subtabs" style="padding-left:16px;"><span class="st on" style="font-size:14px;padding-bottom:6px;">U本位</span></div>
   <div class="scroll paged">
-    <div class="range range-top">
-      <span onclick="setPnlRange(this,'7日',7)">7日</span><span class="on" onclick="setPnlRange(this,'近1个月',30)">近1个月</span>
-      <span onclick="setPnlRange(this,'近3个月',90)">近3个月</span><span onclick="setPnlRange(this,'近1年',365)">近1年</span><span onclick="openDatePicker(this)">自定义</span>
-    </div>
-
     <!-- 盈亏概览 -->
     <div class="card">
       <div class="big-pnl">今日盈亏 <svg class="info-i click-i" onclick="openInfo('today')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
@@ -551,6 +546,11 @@ section{padding:0 16px;}
         <div class="c"><div class="kk click-i" onclick="openInfo('month')">本月盈亏 ⓘ</div><div class="vv g" id="pnl-month">+0.00</div><div class="sub g" id="pnl-month-sub">+0.00%</div></div>
         <div class="c"><div class="kk click-i" onclick="openInfo('cum')">累计盈亏 ⓘ</div><div class="vv g" id="pnl-cum3">+142.06</div><div class="sub g" id="pnl-cum3-pct">+0.00%</div></div>
       </div>
+    </div>
+
+    <div class="range range-top">
+      <span onclick="setPnlRange(this,'7日',7)">7日</span><span class="on" onclick="setPnlRange(this,'近1个月',30)">近1个月</span>
+      <span onclick="setPnlRange(this,'近3个月',90)">近3个月</span><span onclick="setPnlRange(this,'近1年',365)">近1年</span><span onclick="openDatePicker(this)">自定义</span>
     </div>
 
     <!-- 每日盈亏 (柱状/日历 双视图) -->
@@ -568,27 +568,12 @@ section{padding:0 16px;}
       <div class="view" id="dp-view-cal"><div class="date-lab">每日营收</div><div class="cal" id="pnl-daily-cal"></div></div>
     </div>
 
-    <!-- 累计盈亏 -->
+    <!-- 盈亏统计 (累计盈亏 / 累计盈亏率 切换) -->
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="font-size:18px;font-weight:700;">累计盈亏 <svg class="info-i click-i" onclick="openInfo('cum')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-        <div class="uc-tog"><button class="on" id="cum-usd" onclick="cumMode('usd')">$</button><button id="cum-pct" onclick="cumMode('pct')">%</button></div>
-      </div>
-      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21</div>
-      <div class="g" id="pnl-cum-head" style="font-size:22px;font-weight:700;margin-top:8px;">+142.06 USD</div>
-      <div id="pnl-cum-line"></div>
-    </div>
-
-    <!-- 累计盈亏率 -->
-    <div class="card">
-      <div style="font-size:18px;font-weight:700;">累计盈亏率 <svg class="info-i click-i" onclick="openInfo('rate')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21 · 对比 BTC / BNB 累计涨跌</div>
-      <div class="legend-lines">
-        <div class="ll"><span class="bar" style="background:var(--green);"></span><div><span class="pct g" id="rate-own">+38.10%</span>累计盈亏率%</div></div>
-        <div class="ll"><span class="bar" style="background:var(--blue);"></span><div><span class="pct g" id="rate-btc">+4.89%</span>累计BTCUSDT永续标记价涨跌率%</div></div>
-        <div class="ll"><span class="bar" style="background:var(--blue-l);"></span><div><span class="pct r" id="rate-bnb">-0.84%</span>累计BNBUSDT永续标记价涨跌率%</div></div>
-      </div>
-      <div id="pnl-rate-line"></div>
+      <div style="font-size:18px;font-weight:700;">盈亏统计 <svg class="info-i click-i" onclick="openInfo('cum')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <div class="seg-tabs"><button class="on" id="ps2-cum" onclick="pnlStat('cum')">累计盈亏</button><button id="ps2-rate" onclick="pnlStat('rate')">累计盈亏率</button></div>
+      <div class="val-box" id="ps2-box" style="flex-direction:column;align-items:stretch;gap:8px;"></div>
+      <div id="pnl-stat-line"></div>
     </div>
 
     <!-- 交易分析 (Gate 最全 · 含多空分列) -->
@@ -1182,27 +1167,23 @@ function drawPnl(days,startStr,endStr){
     document.getElementById('dp-date').textContent=ddates[i];
   }});
   // 月历为固定完整数据,不随区间变化,见 drawPnlDailyCal()
-  // cumulative
-  const cum=cumsum(daily);const cumEnd=cum[dn-1];
-  PNL_CUM={cum,s,e,base:510.45,mode:PNL_CUM.mode||'usd'};
-  renderCum();
+  const cum=cumsum(daily),cumEnd=cum[dn-1];
   // 概览三段：本月盈亏 / 累计盈亏 / 累计盈亏率
   const monStart=TODAY.slice(0,8)+'01';
   const monPnl=ddates.reduce((a,d,i)=>d>=monStart?a+daily[i]:a,0);
   setStat('pnl-month',(monPnl>=0?'+':'')+fSigned(monPnl),monPnl>=0);
   setStat('pnl-month-sub',fPct(monPnl/510.45*100),monPnl>=0,'sub');
   setStat('pnl-cum3',(cumEnd>=0?'+':'')+fSigned(cumEnd),cumEnd>=0);
-  // rate multi-line
+  // 盈亏统计(累计盈亏 / 累计盈亏率)数据 —— 采用总资产分析同款卡片+落点交互
   const ownPct=cumEnd/510.45*100;
   setStat('pnl-cum3-pct',fPct(ownPct),ownPct>=0,'sub');
-  const own=genLine(n,ownPct,ownPct,Math.abs(ownPct)*0.5+1,seed+1);
+  const own=genLine(n,ownPct,ownPct,Math.abs(ownPct)*0.35+0.8,seed+1);
   const btcEnd=({7:1.2,30:4.89,90:12.4,365:41.2})[days]??4.89, bnbEnd=({7:-0.84,30:-0.84,90:5.1,365:22.5})[days]??-0.84;
-  const btc=genLine(n,btcEnd,btcEnd,Math.abs(btcEnd)+3,seed+2);
-  const bnb=genLine(n,bnbEnd,bnbEnd,Math.abs(bnbEnd)+3,seed+3);
-  multiLine(document.getElementById('pnl-rate-line'),[{color:'#00C566',vals:own},{color:'#2B6CF0',vals:btc},{color:'#6AA0F0',vals:bnb}],dts);
-  document.getElementById('rate-own').textContent=fPct(ownPct);document.getElementById('rate-own').className='pct '+(ownPct>=0?'g':'r');
-  document.getElementById('rate-btc').textContent=fPct(btcEnd);document.getElementById('rate-btc').className='pct '+(btcEnd>=0?'g':'r');
-  document.getElementById('rate-bnb').textContent=fPct(bnbEnd);document.getElementById('rate-bnb').className='pct '+(bnbEnd>=0?'g':'r');
+  const btc=genLine(n,btcEnd,btcEnd,Math.abs(btcEnd)*0.35+1,seed+2);
+  const bnb=genLine(n,bnbEnd,bnbEnd,Math.abs(bnbEnd)*0.35+1,seed+3);
+  PNLSTAT.data={own,btc,bnb,ownEnd:own[n-1],btcEnd:btc[n-1],bnbEnd:bnb[n-1],cum,cumEnd,base:510.45,s,e};
+  document.getElementById('pnl-stat-line')._active=null;
+  pnlStat(PNLSTAT.mode);
   // asset value
   const val=genLine(n,325.66,({7:-5.2,30:22.4,90:60.5,365:140.2})[days]??20,Math.max(3,days*0.2),seed+4);
   areaLine(document.getElementById('pnl-value-line'),val,'#00C566',true,{start:s,end:e,fmt:v=>fSigned(v)+' USD'});
@@ -1213,19 +1194,22 @@ function drawPnl(days,startStr,endStr){
 }
 /* 统一设置数值+涨跌色 */
 function setStat(id,txt,pos,base){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className=(base||'vv')+' '+(pos?'g':'r');}
-let PNL_CUM={mode:'usd'};
-function renderCum(){
-  const {cum,s,e,base,mode}=PNL_CUM,end=cum[cum.length-1];
-  if(mode==='pct'){const p=cum.map(v=>v/base*100);
-    areaLine(document.getElementById('pnl-cum-line'),p,end>=0?'#00C566':'#F6465D',false,{start:s,end:e,fmt:fPct});
-    document.getElementById('pnl-cum-head').textContent=fPct(end/base*100);
+/* 合约·盈亏统计:累计盈亏 / 累计盈亏率 切换(与总资产分析同款卡片+落点交互) */
+let PNLSTAT={mode:'cum'};
+function pnlStat(m){PNLSTAT.mode=m;
+  document.getElementById('ps2-cum').classList.toggle('on',m==='cum');
+  document.getElementById('ps2-rate').classList.toggle('on',m==='rate');
+  const d=PNLSTAT.data;if(!d)return;const el=document.getElementById('pnl-stat-line'),box=document.getElementById('ps2-box');
+  if(m==='rate'){
+    const series=[{name:'累计盈亏率',color:'#00C566',vals:d.own},{name:'BTC累计涨跌率',color:'#2B6CF0',vals:d.btc},{name:'BNB累计涨跌率',color:'#6AA0F0',vals:d.bnb}];
+    const rbox=(i,date)=>{box.innerHTML='<div style="color:var(--muted2)">'+date+' · 对比 BTC / BNB</div>'
+      +series.map(se=>'<div class="row"><span class="lgd"><span class="dot" style="background:'+se.color+'"></span>'+se.name+'</span><span class="'+(se.vals[i]>=0?'g':'r')+'" style="font-weight:700">'+fPct(se.vals[i])+'</span></div>').join('');};
+    el._active=null;rateChart(el,series,d.s,d.e,{noTip:true,onScrub:rbox});
   }else{
-    areaLine(document.getElementById('pnl-cum-line'),cum,end>=0?'#00C566':'#F6465D',false,{start:s,end:e,fmt:fUSDword});
-    document.getElementById('pnl-cum-head').textContent=fUSDword(end);
+    const cbox=(i,v,date)=>{box.innerHTML='<div class="row"><span style="color:var(--muted2)">'+date+' 累计盈亏</span><span class="vv2 '+(v>=0?'g':'r')+'">'+fUSDword(v)+'</span></div>';};
+    el._active=null;areaLine(el,d.cum,d.cumEnd>=0?'#00C566':'#F6465D',true,{start:d.s,end:d.e,fmt:fUSDword,noTip:true,active:d.cum.length-1,onScrub:cbox});
   }
-  document.getElementById('pnl-cum-head').className=end>=0?'g':'r';
 }
-function cumMode(m){PNL_CUM.mode=m;document.getElementById('cum-usd').classList.toggle('on',m==='usd');document.getElementById('cum-pct').classList.toggle('on',m==='pct');renderCum();}
 function drawTrade(days,daily,seed){
   const trades=daily.filter(v=>v!==0),wins=trades.filter(v=>v>0),losses=trades.filter(v=>v<0);
   const gain=wins.reduce((a,b)=>a+b,0),loss=Math.abs(losses.reduce((a,b)=>a+b,0));
