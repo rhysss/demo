@@ -536,7 +536,6 @@ section{padding:0 16px;}
     <div class="title" id="pnl-title" onclick="openMenu('pnl')">合约盈亏 <svg class="caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><circle cx="6" cy="12" r="2"/><circle cx="17" cy="6" r="2"/><circle cx="17" cy="18" r="2"/><path d="M8 11l7-4M8 13l7 4"/></svg>
   </div>
-  <div class="subtabs" style="padding-left:16px;"><span class="st on" style="font-size:14px;padding-bottom:6px;">U本位</span></div>
   <div class="scroll paged">
     <!-- 盈亏概览 -->
     <div class="card">
@@ -548,11 +547,19 @@ section{padding:0 16px;}
       </div>
     </div>
 
+    <!-- 总览 / 合约分析 tab bar -->
+    <div class="subtabs" style="padding:0 16px;background:#fff;border-bottom:1px solid var(--border);">
+      <span class="st on" id="pnl-main-tab-ov" onclick="switchPnlTab('ov')" style="font-size:14px;padding-bottom:6px;">总览</span>
+      <span class="st" id="pnl-main-tab-ca" onclick="switchPnlTab('ca')" style="font-size:14px;padding-bottom:6px;">合约分析</span>
+    </div>
+
     <div class="range range-top">
       <span onclick="setPnlRange(this,'7日',7)">7日</span><span class="on" onclick="setPnlRange(this,'近1个月',30)">近1个月</span>
       <span onclick="setPnlRange(this,'近3个月',90)">近3个月</span><span onclick="setPnlRange(this,'近1年',365)">近1年</span><span onclick="openDatePicker(this)">自定义</span>
     </div>
 
+    <!-- 总览内容 -->
+    <div id="pnl-tab-ov">
     <!-- 盈亏统计 (累计盈亏 / 累计盈亏率 切换) -->
     <div class="card">
       <div style="font-size:18px;font-weight:700;">盈亏统计 <svg class="info-i click-i" onclick="openInfo('cum')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
@@ -597,13 +604,6 @@ section{padding:0 16px;}
       <div style="font-size:11.5px;color:var(--muted2);margin-top:12px;line-height:1.6;">盈亏比 = (总盈利 ÷ 盈利仓位数) : (总亏损 ÷ 亏损仓位数)</div>
     </div>
 
-    <!-- 合约分析 (按币逐合约) -->
-    <div class="card">
-      <div style="font-size:18px;font-weight:700;">合约分析 <svg class="info-i click-i" onclick="openInfo('canalysis')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span style="font-size:12px;color:var(--muted2);font-weight:400;">按合约 · 已实现</span></div>
-      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">总计已实现盈亏不含手续费；点击卡片展开逐项</div>
-      <div id="ca-list"></div>
-    </div>
-
     <!-- 平仓明细 -->
     <div class="card">
       <div style="font-size:18px;font-weight:700;margin-bottom:12px;">平仓明细</div>
@@ -618,6 +618,17 @@ section{padding:0 16px;}
     </div>
 
     <div class="footnote">*此页面上的所有数据均按照 UTC+0 时区计算，自定义时间控件和图表中显示的也是 UTC+0 时区的日期。</div>
+    </div><!-- /pnl-tab-ov -->
+
+    <!-- 合约分析内容 (默认隐藏) -->
+    <div id="pnl-tab-ca" style="display:none;">
+      <div class="card">
+        <div style="font-size:18px;font-weight:700;">合约分析 <svg class="info-i click-i" onclick="openInfo('canalysis')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> <span style="font-size:12px;color:var(--muted2);font-weight:400;">按合约 · 已实现</span></div>
+        <div style="font-size:12px;color:var(--muted2);margin-top:2px;">总计已实现盈亏不含手续费；点击卡片展开逐项</div>
+        <div id="ca-list"></div>
+      </div>
+    </div><!-- /pnl-tab-ca -->
+
   </div>
 </div>
 
@@ -1334,6 +1345,12 @@ function ovChart(v){document.getElementById('ov-tab-line').classList.toggle('on'
 function collapseOv(){document.getElementById('ov-chart-wrap').style.display='none';document.getElementById('ov-expand').style.display='block';}
 function expandOv(){document.getElementById('ov-chart-wrap').style.display='block';document.getElementById('ov-expand').style.display='none';}
 function dpView(v){['bar','cal'].forEach(x=>{document.getElementById('dp-tab-'+x).classList.toggle('on',v===x);document.getElementById('dp-view-'+x).classList.toggle('on',v===x);});}
+function switchPnlTab(t){
+  ['ov','ca'].forEach(x=>{
+    document.getElementById('pnl-main-tab-'+x).classList.toggle('on',x===t);
+    document.getElementById('pnl-tab-'+x).style.display=x===t?'':'none';
+  });
+}
 function coinTab(t){document.getElementById('coin-tab-p').classList.toggle('on',t==='p');document.getElementById('coin-tab-l').classList.toggle('on',t==='l');renderRank(t==='p'?COIN_PROFIT:COIN_LOSS);}
 function renderRank(list){document.getElementById('rp-coin-rank').innerHTML=list.map(r=>'<div class="rank"><div class="l"><span class="idx" style="color:'+(r.i===1?'#F6465D':'#F5C542')+'">'+r.i+'</span><div><div class="nm">'+r.nm+'</div><div class="cd">'+r.cd+'</div></div></div><div><div class="amt">'+r.amt+'</div><div class="pc '+(r.g?'g':'r')+'">'+r.pc+'</div></div></div>').join('');}
 
