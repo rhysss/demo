@@ -1178,10 +1178,9 @@ function drawPnl(days,startStr,endStr){
   const ownPct=cumEnd/510.45*100;
   setStat('pnl-cum3-pct',fPct(ownPct),ownPct>=0,'sub');
   const own=genLine(n,ownPct,ownPct,Math.abs(ownPct)*0.35+0.8,seed+1);
-  const btcEnd=({7:1.2,30:4.89,90:12.4,365:41.2})[days]??4.89, bnbEnd=({7:-0.84,30:-0.84,90:5.1,365:22.5})[days]??-0.84;
+  const btcEnd=({7:1.2,30:4.89,90:12.4,365:41.2})[days]??4.89;
   const btc=genLine(n,btcEnd,btcEnd,Math.abs(btcEnd)*0.35+1,seed+2);
-  const bnb=genLine(n,bnbEnd,bnbEnd,Math.abs(bnbEnd)*0.35+1,seed+3);
-  PNLSTAT.data={own,btc,bnb,ownEnd:own[n-1],btcEnd:btc[n-1],bnbEnd:bnb[n-1],cum,cumEnd,base:510.45,s,e};
+  PNLSTAT.data={own,btc,ownEnd:own[n-1],btcEnd:btc[n-1],cum,cumEnd,base:510.45,s,e};
   document.getElementById('pnl-stat-line')._active=null;
   pnlStat(PNLSTAT.mode);
   // asset value
@@ -1201,8 +1200,8 @@ function pnlStat(m){PNLSTAT.mode=m;
   document.getElementById('ps2-rate').classList.toggle('on',m==='rate');
   const d=PNLSTAT.data;if(!d)return;const el=document.getElementById('pnl-stat-line'),box=document.getElementById('ps2-box');
   if(m==='rate'){
-    const series=[{name:'累计盈亏率',color:'#00C566',vals:d.own},{name:'BTC累计涨跌率',color:'#2B6CF0',vals:d.btc},{name:'BNB累计涨跌率',color:'#6AA0F0',vals:d.bnb}];
-    const rbox=(i,date)=>{box.innerHTML='<div style="color:var(--muted2)">'+date+' · 对比 BTC / BNB</div>'
+    const series=[{name:'累计盈亏率',color:'#00C566',vals:d.own},{name:'BTC累计涨跌率',color:'#2B6CF0',vals:d.btc}];
+    const rbox=(i,date)=>{box.innerHTML='<div style="color:var(--muted2)">'+date+' · 对比 BTC</div>'
       +series.map(se=>'<div class="row"><span class="lgd"><span class="dot" style="background:'+se.color+'"></span>'+se.name+'</span><span class="'+(se.vals[i]>=0?'g':'r')+'" style="font-weight:700">'+fPct(se.vals[i])+'</span></div>').join('');};
     el._active=null;rateChart(el,series,d.s,d.e,{noTip:true,onScrub:rbox});
   }else{
