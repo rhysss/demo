@@ -604,51 +604,6 @@ section{padding:0 16px;}
       <div id="ca-list"></div>
     </div>
 
-    <!-- 钱包余额 (Gate 分解式) -->
-    <div class="card">
-      <div style="font-size:18px;font-weight:700;">钱包余额 <svg class="info-i click-i" onclick="openInfo('wallet')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-      <div class="g" id="wb-total-v" style="font-size:26px;font-weight:700;margin:8px 0 3px;">325.66 USDT</div>
-      <div style="font-size:11.5px;color:var(--muted2);">= 总净划入 + 总已实现盈亏 + 总净资金费用 − 总手续费</div>
-      <div class="wb-break" id="wb-break"></div>
-    </div>
-
-    <!-- 资金费用与手续费 -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="font-size:18px;font-weight:700;">资金费用与手续费 <svg class="info-i click-i" onclick="openInfo('funding')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-        <label class="sw-wrap">显示交易手续费<span class="sw on" id="fee-sw" onclick="toggleFee()"><i></i></span></label>
-      </div>
-      <div class="ff-cards">
-        <div class="ff-c"><div class="k click-i" onclick="openInfo('fundfee')">总资金费用 ⓘ</div><div class="v" id="ff-fund">—</div><div class="ff-sub"><span class="g" id="ff-fund-recv">已收 —</span> · <span class="r" id="ff-fund-pay">已付 —</span></div></div>
-        <div class="ff-c" id="ff-tradecard"><div class="k click-i" onclick="openInfo('tradefee')">总交易费用 ⓘ</div><div class="v" id="ff-trade">—</div><div class="ff-sub"><span id="ff-trade-usd">— USD</span> · <span id="ff-trade-bnb">— BNB</span></div></div>
-      </div>
-      <div style="font-size:15px;font-weight:700;margin:18px 0 4px;">每日资金费用</div>
-      <div id="ff-daily-bar"></div>
-      <div style="font-size:15px;font-weight:700;margin:20px 0 6px;">费用分布 <span style="font-size:12px;color:var(--muted2);font-weight:400;">按币对占比</span></div>
-      <div class="ff-donuts" id="ff-donuts"></div>
-      <div style="font-size:15px;font-weight:700;margin:22px 0 2px;">持仓实时资金费率 <svg class="info-i click-i" onclick="openInfo('fundrate')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-      <div class="frt-head"><span>合约</span><span>实时资金费率</span><span>预估资金费用</span></div>
-      <div id="frt-list"></div>
-    </div>
-
-    <!-- 资产配置 (币种组成/资产分布 双切换) -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="font-size:18px;font-weight:700;">资产配置 <svg class="info-i click-i" onclick="openInfo('alloc')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-        <div class="uc-tog"><button class="on" id="al-coin" onclick="allocMode('coin')">币种组成</button><button id="al-acct" onclick="allocMode('acct')">资产分布</button></div>
-      </div>
-      <div style="display:flex;justify-content:center;margin-top:12px;"><div id="pnl-asset-donut"></div></div>
-      <div class="legend" id="pnl-asset-legend" style="display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:center;margin-top:14px;"></div>
-    </div>
-
-    <!-- 资产价值 -->
-    <div class="card">
-      <div style="font-size:18px;font-weight:700;">资产价值 <svg class="info-i click-i" onclick="openInfo('value')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">2026-07-21 · 不含未实现盈亏</div>
-      <div class="g" id="pnl-val-head" style="font-size:22px;font-weight:700;margin-top:8px;">+325.66 USD</div>
-      <div id="pnl-value-line"></div>
-    </div>
-
     <!-- 平仓明细 -->
     <div class="card">
       <div style="font-size:18px;font-weight:700;margin-bottom:12px;">平仓明细</div>
@@ -1183,13 +1138,9 @@ function drawPnl(days,startStr,endStr){
   PNLSTAT.data={own,btc,ownEnd:own[n-1],btcEnd:btc[n-1],cum,cumEnd,base:510.45,s,e};
   document.getElementById('pnl-stat-line')._active=null;
   pnlStat(PNLSTAT.mode);
-  // asset value
-  const val=genLine(n,325.66,({7:-5.2,30:22.4,90:60.5,365:140.2})[days]??20,Math.max(3,days*0.2),seed+4);
-  areaLine(document.getElementById('pnl-value-line'),val,'#00C566',true,{start:s,end:e,fmt:v=>fSigned(v)+' USD'});
-  document.getElementById('pnl-val-head').textContent='+'+abs2(val[n-1])+' USD';
   drawTrade(days,daily,seed);drawRanking(days,seed);drawCloseOrders(seed);
   // 折叠进卡片流的模块
-  drawContract(days);drawFunding(days);drawWallet(cumEnd);allocMode(ALLOC_MODE);
+  drawContract(days);
 }
 /* 统一设置数值+涨跌色 */
 function setStat(id,txt,pos,base){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className=(base||'vv')+' '+(pos?'g':'r');}
