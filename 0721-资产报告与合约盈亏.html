@@ -1191,7 +1191,7 @@ function drawRanking(days,seed){
 }
 function renderRankList(){
   const byWin=RANK.mode==='win';
-  let list=RANK.list.slice().sort((a,b)=>b.v-a.v);
+  let list=RANK.list.slice().sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
   const maxA=Math.max(...list.map(x=>Math.abs(x.v)),1);
   document.getElementById('rk-list').innerHTML=list.map(x=>{
     const w=Math.abs(x.v)/maxA*100,col=x.v>=0?'#00C566':'#F6465D';
