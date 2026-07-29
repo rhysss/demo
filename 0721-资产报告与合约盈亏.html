@@ -45,7 +45,7 @@ section{padding:0 16px;}
 .ov-label{color:var(--muted);font-size:14px;}
 .ov-total{font-size:34px;font-weight:700;letter-spacing:-.5px;margin:2px 0;}
 .ov-total .unit{font-size:16px;font-weight:600;color:var(--muted);}
-.pill-pct{float:right;margin-top:14px;font-size:14px;font-weight:600;padding:5px 12px;border-radius:20px;}
+.pill-pct{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;}
 .pill-pct.dn{color:var(--red);background:#FEECEE;}
 .pill-pct.up{color:var(--green);background:#E3F9EF;}
 .pnl-row{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:14px;cursor:pointer;}
@@ -359,11 +359,11 @@ section{padding:0 16px;}
   </div>
   <div class="scroll">
     <section>
-      <span class="pill-pct dn" id="ov-pill">▼ -0.54%</span>
       <span class="ov-label click-i" onclick="openInfo('ovtotal')">总资产估值 ⓘ <svg class="eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
       <div class="ov-total"><span id="ov-total-num">2,022.95</span> <span class="unit">USDT</span></div>
       <div class="pnl-row" onclick="go('screen-report')">
         <span class="lab click-i" id="ov-pnl-lab" onclick="event.stopPropagation();openInfo(window.OV_CUR_INFO||'today')" style="border-bottom:1px dashed var(--muted2);">今日盈亏</span><span class="pos" id="ov-pnl-val">+$3.82</span>
+        <span class="pill-pct dn" id="ov-pill">▼ -0.54%</span>
         <svg class="arrow-r" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
       </div>
 
