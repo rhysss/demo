@@ -1032,11 +1032,12 @@ function drawOverview(label){
   const startD=new Date(rangeStart(days)+'T00:00:00');
   const pad=x=>('0'+x).slice(-2);
   const tsD=i=>new Date(startD.getTime()+i*ivMin*60000);
-  const dmy=d=>pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
+  const md=d=>(d.getMonth()+1)+'/'+d.getDate();
   const hhmm=d=>pad(d.getHours())+':'+pad(d.getMinutes());
-  const stampTip=i=>{const d=tsD(i);return subDaily?dmy(d)+' '+hhmm(d):dmy(d);};
+  // 落点提示：1天=时分；7天/30天=月日 时分；180天/360天=月日
+  const stampTip=i=>{const d=tsD(i);if(label==='1天')return hhmm(d);return subDaily?md(d)+' '+hhmm(d):md(d);};
   const stampAxis=i=>{const d=tsD(i);return label==='1天'?hhmm(d):pad(d.getMonth()+1)+'-'+pad(d.getDate());};
-  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT,intraday,spanH:23,stampTip,stampAxis,
+  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT,intraday,spanH:23,stampTip,stampAxis,markers:true,
     onScrub:(i,v)=>{const t=document.getElementById('ov-total-num');if(t)t.textContent=fmtTop(v);}});
   const pct=change/(end-change)*100;
   const pill=document.getElementById('ov-pill');
