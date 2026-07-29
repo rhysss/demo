@@ -148,6 +148,7 @@ section{padding:0 16px;}
 .scrub-tip .scrub-arrow{position:absolute;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;}
 .scrub-tip:not(.below) .scrub-arrow{bottom:-5px;border-top:6px solid #1E2329;}
 .scrub-tip.below .scrub-arrow{top:-5px;border-bottom:6px solid #1E2329;}
+.scrub-timetop{position:absolute;top:0;transform:translateX(-50%);background:#1E2329;color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:8px;white-space:nowrap;z-index:4;pointer-events:none;}
 .scrub-dot{position:absolute;width:11px;height:11px;border-radius:50%;background:#fff;border:3px solid #000;transform:translate(-50%,-50%);z-index:2;pointer-events:none;}
 .scrub-vline{position:absolute;top:0;bottom:0;border-left:1px dashed #B7BDC6;transform:translateX(-0.5px);z-index:1;pointer-events:none;}
 
@@ -851,7 +852,9 @@ function areaLine(el,vals,color,fill,opts){
   const dates=intraday?null:spread(opts.start,opts.end,n);
   const lbl=i=>opts.stampAxis?opts.stampAxis(i):(intraday?hm(i,n,spanH):dates[i]);
   const tipTop=opts.stampTip?opts.stampTip(active):(intraday?(fullDate(opts.start,opts.end,active,n)+' '+hm(active,n,spanH)):fullDate(opts.start,opts.end,active,n));
-  const tip=opts.noTip?'':'<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+tipTop+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>';
+  const tip=opts.timeTop
+    ?'<div class="scrub-timetop" style="left:'+clampL+'%">'+tipTop+'</div>'
+    :(opts.noTip?'':'<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+tipTop+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>');
   const dot='<div class="scrub-dot" style="left:'+xf+'%;top:'+yf+'%;border-color:'+color+'"></div>';
   const vline='<div class="scrub-vline" style="left:'+xf+'%"></div>';
   let axis;
@@ -1037,7 +1040,7 @@ function drawOverview(label){
   // 落点提示：1天=时分；7天/30天=月日 时分；180天/360天=月日
   const stampTip=i=>{const d=tsD(i);if(label==='1天')return hhmm(d);return subDaily?md(d)+' '+hhmm(d):md(d);};
   const stampAxis=i=>{const d=tsD(i);return label==='1天'?hhmm(d):pad(d.getMonth()+1)+'-'+pad(d.getDate());};
-  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT,intraday,spanH:23,stampTip,stampAxis,markers:true,
+  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT,intraday,spanH:23,stampTip,stampAxis,markers:true,timeTop:true,
     onScrub:(i,v)=>{const t=document.getElementById('ov-total-num');if(t)t.textContent=fmtTop(v);}});
   const pct=change/(end-change)*100;
   const pill=document.getElementById('ov-pill');
