@@ -362,8 +362,7 @@ section{padding:0 16px;}
       <span class="ov-label click-i" onclick="openInfo('ovtotal')">总资产估值 ⓘ <svg class="eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
       <div class="ov-total"><span id="ov-total-num">2,022.95</span> <span class="unit">USDT</span></div>
       <div class="pnl-row" onclick="go('screen-report')">
-        <span class="lab" id="ov-pnl-lab">今日盈亏</span><span class="pos" id="ov-pnl-val">+$3.82</span>
-        <span class="tap-hint">资产报告</span>
+        <span class="lab click-i" id="ov-pnl-lab" onclick="event.stopPropagation();openInfo(window.OV_CUR_INFO||'today')" style="border-bottom:1px dashed var(--muted2);">今日盈亏 ⓘ</span><span class="pos" id="ov-pnl-val">+$3.82</span>
         <svg class="arrow-r" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
       </div>
 
@@ -748,6 +747,10 @@ const INFO={
  // ===== 总览 / 合约资产卡 =====
  ovtotal:['总资产估值','各账户(资金/现货/合约/理财/Launchpad)资产折算为计价币种后的合计估值。','*不含负债；估值随标记价格实时变化。'],
  ydpnl:['今日盈亏','今日盈亏 = 当前资产 − 今日初始资产 − 今日净转入；今日净转入 = 今日划入 − 今日划出。','*今日初始 = 当日 00:00(UTC+8) 资产；含未实现盈亏；每小时更新一次。'],
+ ov7:['近7天盈亏','近7天盈亏 = 当前资产 − 7天前初始资产 − 期间净转入；期间净转入 = 期间划入 − 期间划出','*起点为 7 天前当日 00:00(UTC+8) 的资产；含未实现盈亏。'],
+ ov30:['近30天盈亏','近30天盈亏 = 当前资产 − 30天前初始资产 − 期间净转入；期间净转入 = 期间划入 − 期间划出','*起点为 30 天前当日 00:00(UTC+8) 的资产；含未实现盈亏。'],
+ ov180:['近180天盈亏','近180天盈亏 = 当前资产 − 180天前初始资产 − 期间净转入；期间净转入 = 期间划入 − 期间划出','*起点为 180 天前当日 00:00(UTC+8) 的资产；含未实现盈亏。'],
+ ov360:['近360天盈亏','近360天盈亏 = 当前资产 − 360天前初始资产 − 期间净转入；期间净转入 = 期间划入 − 期间划出','*起点为 360 天前当日 00:00(UTC+8) 的资产；含未实现盈亏。'],
  balance:['余额','合约账户中持有的加密货币总值(钱包余额)。',''],
  avail:['可用','可用于开仓的保证金 = 余额 − 持仓保证金 − 委托保证金 + 未实现盈亏。',''],
  posmargin:['持仓保证金','当前所有持仓已占用的保证金。',''],
@@ -1041,8 +1044,9 @@ function drawOverview(label){
   pill.textContent=(change>=0?'▲ +':'▼ -')+abs2(pct)+'%';
   // 顶部今日盈亏随所选区间变化
   const labMap={'1天':'今日盈亏','7天':'近7天盈亏','30天':'近30天盈亏','180天':'近180天盈亏','360天':'近360天盈亏'};
+  window.OV_CUR_INFO={'1天':'today','7天':'ov7','30天':'ov30','180天':'ov180','360天':'ov360'}[label];
   const ol=document.getElementById('ov-pnl-lab'),ov=document.getElementById('ov-pnl-val');
-  if(ol)ol.textContent=labMap[label];
+  if(ol)ol.textContent=labMap[label]+' ⓘ';
   if(ov){ov.textContent=(change>=0?'+$':'-$')+abs2(change);ov.className=change>=0?'pos':'neg';}
 }
 let RALLOC='coin',PSTAT={mode:'cum'};
