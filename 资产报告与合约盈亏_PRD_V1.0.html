@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>资产报告与合约盈亏分析 PRD V1.0</title>
+<style>
+  :root{
+    --purple:#6c63ff; --purple-deep:#5046e5; --purple-soft:#f0eeff;
+    --dark:#1a1a2e; --gray:#6b7280; --line:#e7e9f0; --bg:#f5f6fa; --code:#f3f4f6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:#23232f;
+    font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
+    line-height:1.7;font-size:15px;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 0 80px;}
+  .doc{background:#fff;margin:24px;border-radius:14px;box-shadow:0 4px 24px rgba(30,30,60,.06);
+       padding:48px 54px;}
+  .cover{border-left:5px solid var(--purple);padding:4px 0 4px 18px;margin-bottom:8px;}
+  .cover h1{font-size:28px;margin:0 0 6px;font-weight:800;color:var(--dark);letter-spacing:-.5px;}
+  .cover .ver{color:var(--purple-deep);font-weight:700;font-size:14px;}
+
+  h1{font-size:24px;}
+  h2{font-size:21px;font-weight:800;color:var(--dark);margin:38px 0 6px;
+     padding-bottom:8px;border-bottom:2px solid var(--purple);}
+  h3{font-size:17px;font-weight:700;color:var(--dark);margin:26px 0 4px;}
+  h4{font-size:15px;font-weight:700;color:#3a3a4d;margin:18px 0 4px;}
+  h2:first-of-type{margin-top:10px;}
+
+  p{margin:8px 0;}
+  strong{color:#15151f;font-weight:700;}
+  a{color:var(--purple-deep);}
+  hr{border:none;border-top:1px dashed var(--line);margin:28px 0;}
+  ul,ol{padding-left:22px;margin:8px 0;}
+  li{margin:4px 0;}
+
+  blockquote{
+    margin:14px 0;padding:12px 16px;background:#fff8e6;border-left:4px solid #f0b429;
+    border-radius:0 8px 8px 0;color:#7a5b00;font-size:14px;
+  }
+  blockquote p{margin:4px 0;}
+
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px;
+        display:block;overflow-x:auto;white-space:nowrap;}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top;white-space:normal;}
+  th{background:var(--purple-soft);color:var(--dark);font-weight:700;}
+  tr:nth-child(even) td{background:#fafafe;}
+
+  code{background:var(--code);padding:2px 6px;border-radius:5px;font-size:13px;
+       font-family:'SF Mono',Menlo,Consolas,monospace;color:#5046e5;}
+  pre{background:var(--code);padding:14px 16px;border-radius:8px;overflow-x:auto;}
+  pre code{background:none;padding:0;color:#374151;}
+
+  .mermaid{background:#fff;border:1px solid var(--line);border-radius:10px;
+           padding:18px;margin:16px 0;text-align:center;overflow-x:auto;}
+
+  .tbd{background:#fdecea;color:#c0392b;font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;}
+  .assume{background:#eaf4ff;color:#1d6fb8;font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;}
+
+  @media print{
+    body{background:#fff;} .doc{box-shadow:none;margin:0;padding:20px;}
+    table{display:table;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap"><div class="doc">
+
+<div class="cover">
+  <h1>资产报告与合约盈亏分析 PRD</h1>
+  <span class="ver">V1.0 · 2026-07-29 · Rhys</span>
+</div>
+
+<table>
+<thead><tr><th>版本</th><th>日期</th><th>修订人</th><th>备注</th></tr></thead>
+<tbody><tr><td>V1.0</td><td>2026-07-29</td><td>Rhys</td><td>依据交互原型 <code>0721-资产报告与合约盈亏.html</code> 首次输出</td></tr></tbody>
+</table>
+
+<blockquote><p>本文档以现有高保真原型为需求基准。原型内每个带 ⓘ / 虚线下划线的字段均可点开「口径说明」，本文档第四章将其固化为可开发的计算公式。凡原型未明确、需业务或研发确认的点，均标注 <span class="tbd">待确认</span>。</p></blockquote>
+
+<h2>一、概述</h2>
+
+<h3>1.1 背景与目标</h3>
+<p><strong>背景</strong>：现有 App「资产」模块只展示静态余额，用户无法回看资产变化趋势与合约盈亏表现，缺少体检式的数据分析页。本次新增两个分析页——<strong>总资产分析</strong>（账户级）与<strong>合约盈亏分析</strong>（合约账户级），帮助用户理解「钱从哪来、赚亏多少、仓位表现如何」。</p>
+<p><strong>产品目标</strong></p>
+<ul>
+<li>业务目标：提升资产页停留时长与合约复访率；为后续「跟单 / 策略」等增值功能提供数据入口。</li>
+<li>用户目标：一屏看清指定周期内的资产走势、每日盈亏、累计盈亏率（对比 BTC）、资产构成，以及合约的交易表现与逐笔订单历史。</li>
+</ul>
+
+<h3>1.2 目标用户</h3>
+<ul>
+<li>持有多账户资产（资金/现货/合约/理财/Launchpad）的普通用户 → 主要看<strong>总资产分析</strong>。</li>
+<li>活跃合约交易者 → 主要看<strong>合约盈亏分析</strong>。</li>
+</ul>
+
+<h3>1.3 名词说明</h3>
+<table>
+<thead><tr><th>名词</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>钱包余额</td><td>合约账户持有加密货币总值，钱包口径，<strong>不含未实现盈亏</strong></td></tr>
+<tr><td>未实现盈亏</td><td>按标记价格计算的持仓浮动盈亏，未平仓</td></tr>
+<tr><td>已实现盈亏</td><td>平仓落袋的盈亏</td></tr>
+<tr><td>净转入 / 净划入</td><td>划入金额 − 划出金额</td></tr>
+<tr><td>资金费用</td><td>持仓跨结算周期按资金费率收取/支付的费用</td></tr>
+<tr><td>ROE</td><td>收益率，单笔仓位已实现盈亏 ÷ 初始保证金</td></tr>
+<tr><td>UTC+8</td><td>全站统计时区，所有「日」按 UTC+8 自然日切分</td></tr>
+</tbody>
+</table>
+
+<h3>1.4 角色与权限</h3>
+<p>仅登录用户本人查看自己的数据，无多角色。<span class="assume">假设</span> 无子账户维度。</p>
+
+<h3>1.5 阅读对象</h3>
+<p>产品、设计、前端、后端、测试、数据。</p>
+
+<hr>
+
+<h2>二、产品描述</h2>
+
+<h3>2.1 信息架构与入口</h3>
+<div class="mermaid">flowchart TD
+  A[资产 · 总览页] -->|点击"昨日盈亏 · 资产报告"| B[总资产分析]
+  A -->|顶部 Tab 合约| C[资产 · 合约页]
+  C -->|点击"今日已实现盈亏 · 合约盈亏"| D[合约盈亏分析]
+  B -->|标题下拉切换| D
+  D -->|标题下拉切换| B
+  D -->|订单明细 · 订单历史 点击某条| E[订单详情]
+  E -->|返回| D
+</div>
+
+<h3>2.2 页面清单</h3>
+<table>
+<thead><tr><th>#</th><th>页面</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>P1</td><td>资产·总览（已存在，入口）</td><td>总资产估值、走势/分布图、账户列表</td></tr>
+<tr><td>P2</td><td>资产·合约（已存在，入口）</td><td>合约总估值、余额/可用/保证金等 6 宫格</td></tr>
+<tr><td>P3</td><td><strong>总资产分析</strong>（新增）</td><td>账户级资产走势 / 盈亏统计 / 每日盈亏 / 资产配置</td></tr>
+<tr><td>P4</td><td><strong>合约盈亏分析</strong>（新增）</td><td>合约级盈亏概览 / 盈亏统计 / 每日盈亏 / 交易分析 / 盈亏排行 / 订单明细</td></tr>
+<tr><td>P5</td><td><strong>订单详情</strong>（新增）</td><td>单笔合约订单的完整字段 + 成交明细</td></tr>
+</tbody>
+</table>
+
+<h3>2.3 全局规则</h3>
+<ul>
+<li><strong>时区</strong>：所有统计按 UTC+8 自然日切分；「今日」= 当日 00:00 起。</li>
+<li><strong>数值精度</strong>：金额展示截断至 2 位小数；费率类 2 位；手续费展示原始精度（7 位）。<span class="tbd">待确认</span> 截断 vs 四舍五入。</li>
+<li><strong>涨跌色</strong>：绿涨 / 红跌（品牌配色，与部分竞品红涨绿跌相反，为刻意保留）。</li>
+<li><strong>空数据</strong>：无数据周期图表显示占位，数值显示 <code>0.00</code>；累计盈亏率在分母为 0 等特殊情境显示 <code>N/A</code>。</li>
+<li><strong>维护期</strong>：每日 0:00–4:00（UTC+8）维护期间「今日盈亏」不计算。</li>
+</ul>
+
+<hr>
+
+<h2>三、功能需求</h2>
+
+<h3>3.1 总资产分析（P3）</h3>
+<p><strong>用户故事</strong>：作为多账户用户，我希望按周期查看总资产走势、每日盈亏日历、累计盈亏率与资产构成，以便判断整体投资表现。</p>
+<p><strong>结构（从上到下）</strong></p>
+<ol>
+<li><strong>固定头部块</strong>（不随下方时间筛选变化，仅与「今日/本月/累计」口径相关）：总资产估值 + ≈BTC 估值、今日盈亏（额+%）、本月盈亏（额+%）、累计盈亏（额+%）</li>
+<li><strong>时间筛选</strong>（吸顶）：7天 / 30天 / 90天 / 180天 / 自定义时间</li>
+<li><strong>资产走势</strong>卡：折线图 + 顶部高亮框（日期+当日估值）；拖动出现竖虚线落点，数据回填高亮框</li>
+<li><strong>盈亏统计</strong>卡：切换「累计盈亏 / 累计盈亏率」；累计盈亏率叠加 <strong>BTC 累计涨跌幅</strong>对比线</li>
+<li><strong>每日盈亏</strong>卡：日历图（默认，热力底色）/ 柱状图 双视图；点选某日高亮显示当日盈亏。<strong>本卡为固定全量数据，不随上方时间筛选变化</strong></li>
+<li><strong>资产配置</strong>卡：环形图；切换「币种组成 / 资产分布」；副标题「最近更新 时间」；点击币种高亮，超过 Top10 归并「其他」</li>
+</ol>
+
+<h3>3.2 合约盈亏分析（P4）</h3>
+<p><strong>用户故事</strong>：作为合约交易者，我希望查看合约账户的今日/本月/累计盈亏、盈亏率对比、每日盈亏日历，以及交易分析、盈亏排行和逐笔订单，以便复盘交易表现。</p>
+<p><strong>结构</strong></p>
+<ol>
+<li><strong>盈亏概览</strong>卡：今日盈亏（%+USD）；本月盈亏、累计盈亏（累计下方附盈亏率）；右上角「交易额」标签，点击跳「合约分析」子 Tab</li>
+<li><strong>时间筛选</strong>：7日 / 近1个月 / 近3个月 / 近1年 / 自定义</li>
+<li><strong>主 Tab（吸顶）</strong>：总览 / 合约分析
+  <ul>
+  <li><strong>总览</strong>：盈亏统计（累计盈亏 / 累计盈亏率，率含 BTC 对比线）+ 每日盈亏（日历默认 / 柱状）</li>
+  <li><strong>合约分析</strong>：交易分析卡（见 3.2.1）→ 盈亏排行卡（按合约聚合，按盈亏额<strong>绝对值从大到小</strong> Top5）→ 订单明细卡（见 3.2.2）</li>
+  </ul>
+</li>
+<li>页脚：数据按 UTC+8 计算说明</li>
+</ol>
+
+<h4>3.2.1 交易分析卡字段</h4>
+<table>
+<thead><tr><th>区块</th><th>字段</th></tr></thead>
+<tbody>
+<tr><td>上排 6 项</td><td>胜率、总仓位、总盈亏比、交易金额、最大收益（绿）、最大亏损（红）</td></tr>
+<tr><td>中部</td><td>总盈利（绿）/ 总亏损（红）标题+数值，下方绿红占比进度条</td></tr>
+<tr><td>下排 双列</td><td>多头（左）/ 空头（右），各含：平均持仓时间、仓位数、多空比、平均盈亏（涨跌色）</td></tr>
+</tbody>
+</table>
+
+<h4>3.2.2 订单明细卡（三 Tab）</h4>
+<table>
+<thead><tr><th>Tab</th><th>卡片字段</th><th>交互</th></tr></thead>
+<tbody>
+<tr><td><strong>订单历史</strong></td><td>币种·永续；标签行（开/平多空 · 市价/限价 · 逐仓/全仓 · 杠杆倍数 · 委托时间）；价格、数量（成交/委托）、状态（已成交绿 / 已取消红）</td><td>点击整卡 → 订单详情（P5）</td></tr>
+<tr><td><strong>交易历史</strong></td><td>币种·永续；标签（平多/平空）+ 成交时间；订单编号（可复制）、价格、数量、手续费、已实现盈亏（涨跌色）、角色（吃单/挂单）</td><td>—</td></tr>
+<tr><td><strong>仓位历史</strong></td><td>币种·永续 + 跳转图标；标签（多/空 · 逐仓/全仓 · 杠杆）；九宫格：开仓价/数量/已实现盈亏、平仓价/平仓类型/ROE、开仓时间/平仓时间</td><td>—</td></tr>
+</tbody>
+</table>
+
+<h3>3.3 订单详情（P5）</h3>
+<ul>
+<li>头部：币种·永续 + 状态（已成交绿/已取消红）；标签行（开/平多空 · 市价/限价 · 逐仓/全仓 · 杠杆）</li>
+<li>订单信息：订单编号（可复制）、订单价格、平均成交价格、订单数量、成交数量、手续费、已实现盈亏、订单时间、更新时间</li>
+<li>成交明细（仅已成交展示）：价格、数量、手续费、已实现盈亏、角色、时间</li>
+</ul>
+
+<hr>
+
+<h2>四、字段计算口径（核心）</h2>
+<blockquote><p>以下公式与原型内「口径说明」完全一致，作为研发实现依据。</p></blockquote>
+
+<h3>4.1 账户级（总资产分析）</h3>
+<table>
+<thead><tr><th>字段</th><th>计算公式</th><th>口径说明</th></tr></thead>
+<tbody>
+<tr><td>总资产估值</td><td>Σ 各账户(资金/现货/合约/理财/Launchpad) 折算计价币种后的估值</td><td>不含负债；随标记价格实时变化</td></tr>
+<tr><td>今日盈亏</td><td>当前资产 − 今日初始资产 − 今日净转入</td><td>今日初始 = 当日 00:00(UTC+8) 资产；<strong>含未实现盈亏</strong>；维护期不计算</td></tr>
+<tr><td>昨日盈亏</td><td>昨日 24:00 资产 − 昨日 00:00 资产 − 昨日净转入</td><td>含未实现盈亏</td></tr>
+<tr><td>本月盈亏</td><td>本月第一个自然日 00:00(UTC+8) 至当前时刻的累计盈亏</td><td>—</td></tr>
+<tr><td>累计盈亏（账户）</td><td>当前资产 − 期初资产 − 期间净转入</td><td><strong>含已实现 + 未实现盈亏</strong></td></tr>
+<tr><td>累计盈亏率（账户）</td><td>累计盈亏 ÷ (期初账户资产 + 期间转入)</td><td>对比线为 BTC 累计涨跌幅；特殊情境可能为 N/A</td></tr>
+<tr><td>每日盈亏（账户）</td><td>指定日期账户持仓与交易活动产生的收益额</td><td>盈亏月历 / 柱状双视图</td></tr>
+<tr><td>资产配置·币种组成</td><td>各币种折算市值 ÷ 总市值</td><td>Top10 + 其他</td></tr>
+<tr><td>资产配置·资产分布</td><td>各账户市值 ÷ 总市值</td><td>—</td></tr>
+</tbody>
+</table>
+
+<h3>4.2 合约级（合约盈亏分析）</h3>
+<table>
+<thead><tr><th>字段</th><th>计算公式</th><th>口径说明</th></tr></thead>
+<tbody>
+<tr><td>钱包余额</td><td>总净划入 + 总已实现盈亏 + 总净资金费用 − 总手续费</td><td>钱包口径，<strong>不含未实现盈亏</strong></td></tr>
+<tr><td>今日盈亏（合约）</td><td>当前资产 − 今日初始资产 − 今日净转入</td><td>—</td></tr>
+<tr><td>本月盈亏（合约）</td><td>本月第一个自然日 00:00(UTC+8) 至当前的累计盈亏</td><td>—</td></tr>
+<tr><td>每日盈亏（合约）</td><td>每日 24:00(UTC+8) 钱包余额 − 每日 00:00 钱包余额 − 每日资金净转入</td><td>钱包口径，不含未实现盈亏</td></tr>
+<tr><td>累计盈亏（合约）</td><td>期末钱包余额 − 期初钱包余额 − 期间资金净转入</td><td>不含未实现盈亏</td></tr>
+<tr><td>累计盈亏率（合约）</td><td>累计盈亏 ÷ (期初钱包余额 + 期间日均资金总转入)</td><td>对比线 BTC；特殊情境 N/A</td></tr>
+<tr><td>净划入</td><td>当日划入合约账户总额 − 当日划出合约账户总额</td><td>—</td></tr>
+<tr><td>交易量</td><td>每日 0:00–23:59:59(UTC+8) 成交额，按联合保证金汇率折算 USD</td><td>—</td></tr>
+</tbody>
+</table>
+
+<h3>4.3 交易分析卡</h3>
+<table>
+<thead><tr><th>字段</th><th>计算公式</th></tr></thead>
+<tbody>
+<tr><td>胜率</td><td>盈利仓位数 ÷ 总平仓仓位数</td></tr>
+<tr><td>总盈亏比</td><td>总盈利 ÷ 总亏损</td></tr>
+<tr><td>总盈利</td><td>期间所有已实现获利加总</td></tr>
+<tr><td>总亏损</td><td>期间所有已实现亏损加总（取正值）</td></tr>
+<tr><td>净盈利/亏损</td><td>总盈利 − 总亏损</td></tr>
+<tr><td>平均盈亏</td><td>(总盈利 − 总亏损) ÷ 仓位数</td></tr>
+<tr><td>多空比</td><td>多头仓位数 : 空头仓位数</td></tr>
+<tr><td>最大收益 / 最大亏损</td><td>期间单笔已实现盈亏的最大正值 / 最小负值</td></tr>
+</tbody>
+</table>
+<blockquote><p>口径：基于<strong>已完全平仓仓位</strong>统计；平仓总盈亏含开平仓手续费与资金费用；交易机器人与跟单交易量不纳入。</p></blockquote>
+
+<h3>4.4 单笔订单 / 仓位</h3>
+<table>
+<thead><tr><th>字段</th><th>计算公式 / 口径</th></tr></thead>
+<tbody>
+<tr><td>ROE（仓位）</td><td>已实现盈亏 ÷ 初始保证金 ≈ 价格变动% × 杠杆（多头正、空头反） <span class="tbd">待确认</span> 精确口径</td></tr>
+<tr><td>平仓类型</td><td>交易 / 强平</td></tr>
+<tr><td>手续费</td><td>开仓手续费 + 平仓手续费（原始精度展示）</td></tr>
+<tr><td>资金费用</td><td>持仓跨结算周期按资金费率收取(+)/支付(−)</td></tr>
+<tr><td>角色</td><td>吃单 / 挂单（taker/maker）</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>五、非功能与验收</h2>
+
+<h3>5.1 非功能需求（精简）</h3>
+<ul>
+<li><strong>性能</strong>：分析页首屏图表数据接口响应 <span class="tbd">待确认</span> &lt; 800ms；时间筛选切换 &lt; 500ms。</li>
+<li><strong>数据</strong>：统计口径依赖每日 0:00(UTC+8) 快照 + 实时估值；累计类可预计算。</li>
+<li><strong>埋点</strong>（建议）：页面 PV（总资产分析 / 合约盈亏 / 订单详情）；时间区间切换、Tab 切换、口径说明点开、订单卡点击进详情、复制订单号等事件。</li>
+<li><strong>安全</strong>：仅本人可见；资产数值支持「眼睛」隐藏。</li>
+</ul>
+
+<h3>5.2 验收要点</h3>
+<ol>
+<li>切换时间区间后，走势图、盈亏统计、盈亏排行随之刷新；每日盈亏卡<strong>不随</strong>区间变化。</li>
+<li>累计盈亏率图与 BTC 对比线均落到标注端点；分母为 0 时显示 N/A。</li>
+<li>每日盈亏日历：默认展示日历图，点选某日高亮并回填当日盈亏；无默认选中态。</li>
+<li>订单历史点击整卡进入订单详情；已取消订单不展示「成交明细」。</li>
+<li>全站时区显示为 UTC+8；涨跌色为绿涨红跌。</li>
+</ol>
+
+<hr>
+
+<h2>六、待确认项清单</h2>
+
+<h3>必须确认（阻塞开发）</h3>
+<ol>
+<li><span class="tbd">待确认</span> 数值精度是截断还是四舍五入？（见 2.3）</li>
+<li><span class="tbd">待确认</span> 仓位 ROE 的精确计算口径（初始保证金定义）？（见 4.4）</li>
+</ol>
+<h3>建议确认</h3>
+<ol start="3">
+<li><span class="tbd">待确认</span> 分析页接口性能指标基线？（见 5.1）</li>
+<li><span class="assume">假设</span> 无子账户维度，仅账户本人数据。（见 1.4）</li>
+<li><span class="tbd">待确认</span> 「今日盈亏」维护期（0:00–4:00）内页面是否置灰/提示？</li>
+</ol>
+<h3>可后续补充</h3>
+<ol start="6">
+<li><span class="tbd">待确认</span> 埋点事件命名规范与上报属性明细。</li>
+</ol>
+
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({startOnLoad:true,theme:'neutral',flowchart:{curve:'basis'}});
+</script>
+</body>
+</html>
