@@ -360,9 +360,9 @@ section{padding:0 16px;}
     <section>
       <span class="pill-pct dn" id="ov-pill">▼ -0.54%</span>
       <span class="ov-label click-i" onclick="openInfo('ovtotal')">总资产估值 ⓘ <svg class="eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
-      <div class="ov-total">2,022.95 <span class="unit">USDT</span></div>
+      <div class="ov-total"><span id="ov-total-num">2,022.95</span> <span class="unit">USDT</span></div>
       <div class="pnl-row" onclick="go('screen-report')">
-        <span class="lab">今日盈亏</span><span class="pos">+$3.82</span>
+        <span class="lab" id="ov-pnl-lab">今日盈亏</span><span class="pos" id="ov-pnl-val">+$3.82</span>
         <span class="tap-hint">资产报告</span>
         <svg class="arrow-r" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
       </div>
@@ -846,8 +846,8 @@ function areaLine(el,vals,color,fill,opts){
   const clampL=Math.max(16,Math.min(84,xf));
   const intraday=opts.intraday, spanH=opts.spanH||23;
   const dates=intraday?null:spread(opts.start,opts.end,n);
-  const lbl=i=>intraday?hm(i,n,spanH):dates[i];
-  const tipTop=intraday?(fullDate(opts.start,opts.end,active,n)+' '+hm(active,n,spanH)):fullDate(opts.start,opts.end,active,n);
+  const lbl=i=>opts.stampAxis?opts.stampAxis(i):(intraday?hm(i,n,spanH):dates[i]);
+  const tipTop=opts.stampTip?opts.stampTip(active):(intraday?(fullDate(opts.start,opts.end,active,n)+' '+hm(active,n,spanH)):fullDate(opts.start,opts.end,active,n));
   const tip=opts.noTip?'':'<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+tipTop+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>';
   const dot='<div class="scrub-dot" style="left:'+xf+'%;top:'+yf+'%;border-color:'+color+'"></div>';
   const vline='<div class="scrub-vline" style="left:'+xf+'%"></div>';
@@ -855,7 +855,7 @@ function areaLine(el,vals,color,fill,opts){
   if(opts.yLabels){axis='<div class="axis" style="padding:0 '+padR+'px 0 '+padL+'px"><span>'+lbl(0)+'</span><span>'+lbl(n-1)+'</span></div>';}
   else{const ticks=[0,.25,.5,.75,1].map(f=>Math.round(f*(n-1)));axis='<div class="axis">'+ticks.map(i=>'<span>'+lbl(i)+'</span>').join('')+'</div>';}
   el.innerHTML='<div class="chartbox">'+svg+vline+tip+dot+'</div>'+axis;
-  if(opts.onScrub&&!intraday){const isoA=spreadISO(opts.start,opts.end,n);opts.onScrub(active,vals[active],isoA[active].replace(/-/g,'/'));}
+  if(opts.onScrub){const isoA=spreadISO(opts.start,opts.end,n);opts.onScrub(active,vals[active],(isoA[active]||'').replace(/-/g,'/'));}
   bindScrub(el);
 }
 function bindScrub(el){
@@ -971,7 +971,7 @@ function calTip(el,key,v,ev){
   tip.style.top=el.offsetTop+'px';tip.style.display='block';
 }
 document.addEventListener('click',e=>{document.querySelectorAll('.cal-tip,.bar-tip').forEach(t=>t.style.display='none');
-  if(!e.target.closest('.chartbox'))document.querySelectorAll('.scrub-tip,.scrub-dot,.scrub-vline').forEach(t=>t.style.display='none');});
+  if(!e.target.closest('.chartbox')){document.querySelectorAll('.scrub-tip,.scrub-dot,.scrub-vline').forEach(t=>t.style.display='none');const ovn=document.getElementById('ov-total-num');if(ovn)ovn.textContent=OV_TOTAL_BASE;}});
 function drawCal(el,dates,vals,plain,onMonth){
   const map={};dates.forEach((d,i)=>{map[d]=vals[i];});
   const em=new Date(dates[dates.length-1]+'T00:00:00');
@@ -1015,18 +1015,35 @@ const fPct=v=>(v<0?'-':'+')+abs2(v)+'%';
 
 /* ===== per-range draws ===== */
 const OV_CHANGE={'1天':-3.82,'7天':-12.5,'30天':46.2,'180天':188.4,'360天':523.1};
+const OV_TOTAL_BASE='2,022.95';
+function fmtTop(v){return (Math.trunc(v*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function drawOverview(label){
   const days={'1天':1,'7天':7,'30天':30,'180天':180,'360天':360}[label];
   const intraday=label==='1天';
   // 粒度：1天/10分钟、7天/30分钟、30天/1小时、180天&360天/按天
-  const n={'1天':144,'7天':336,'30天':720,'180天':180,'360天':360}[label],end=2022.95,change=OV_CHANGE[label],seed=days*13+7;
+  const G={'1天':{iv:10,n:144},'7天':{iv:30,n:336},'30天':{iv:60,n:720},'180天':{iv:1440,n:180},'360天':{iv:1440,n:360}}[label];
+  const n=G.n,ivMin=G.iv,subDaily=ivMin<1440,end=2022.95,change=OV_CHANGE[label],seed=days*13+7;
   const data=genLine(n,end,change,Math.max(6,Math.abs(change)*0.5),seed);
   const color=change>=0?'#00C566':'#F6465D';
-  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT,intraday,spanH:23});
+  // 逐点时间戳（起点为区间首日 00:00，按粒度递增）
+  const startD=new Date(rangeStart(days)+'T00:00:00');
+  const pad=x=>('0'+x).slice(-2);
+  const tsD=i=>new Date(startD.getTime()+i*ivMin*60000);
+  const dmy=d=>pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
+  const hhmm=d=>pad(d.getHours())+':'+pad(d.getMinutes());
+  const stampTip=i=>{const d=tsD(i);return subDaily?dmy(d)+' '+hhmm(d):dmy(d);};
+  const stampAxis=i=>{const d=tsD(i);return label==='1天'?hhmm(d):pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT,intraday,spanH:23,stampTip,stampAxis,
+    onScrub:(i,v)=>{const t=document.getElementById('ov-total-num');if(t)t.textContent=fmtTop(v);}});
   const pct=change/(end-change)*100;
   const pill=document.getElementById('ov-pill');
   pill.className='pill-pct '+(change>=0?'up':'dn');
   pill.textContent=(change>=0?'▲ +':'▼ -')+abs2(pct)+'%';
+  // 顶部今日盈亏随所选区间变化
+  const labMap={'1天':'今日盈亏','7天':'近7天盈亏','30天':'近30天盈亏','180天':'近180天盈亏','360天':'近360天盈亏'};
+  const ol=document.getElementById('ov-pnl-lab'),ov=document.getElementById('ov-pnl-val');
+  if(ol)ol.textContent=labMap[label];
+  if(ov){ov.textContent=(change>=0?'+$':'-$')+abs2(change);ov.className=change>=0?'pos':'neg';}
 }
 let RALLOC='coin',PSTAT={mode:'cum'};
 /* 头部盈亏概览：账户级 PnL，固定值，不随时间区间变化 */
