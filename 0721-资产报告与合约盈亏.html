@@ -1018,7 +1018,8 @@ const OV_CHANGE={'1天':-3.82,'7天':-12.5,'30天':46.2,'180天':188.4,'360天':
 function drawOverview(label){
   const days={'1天':1,'7天':7,'30天':30,'180天':180,'360天':360}[label];
   const intraday=label==='1天';
-  const n=intraday?24:npts(days),end=2022.95,change=OV_CHANGE[label],seed=days*13+7;
+  // 粒度：1天/10分钟、7天/30分钟、30天/1小时、180天&360天/按天
+  const n={'1天':144,'7天':336,'30天':720,'180天':180,'360天':360}[label],end=2022.95,change=OV_CHANGE[label],seed=days*13+7;
   const data=genLine(n,end,change,Math.max(6,Math.abs(change)*0.5),seed);
   const color=change>=0?'#00C566':'#F6465D';
   areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT,intraday,spanH:23});
