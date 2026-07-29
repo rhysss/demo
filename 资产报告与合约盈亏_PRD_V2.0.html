@@ -61,7 +61,7 @@
 <ul>
 <li>原型链接：<a href="https://forclaudecode.vercel.app">https://forclaudecode.vercel.app</a>（原型文件 <code>0721-资产报告与合约盈亏.html</code>）</li>
 <li>设计稿链接：后期补充</li>
-<li>全局约定：统计时区 <strong>UTC+8</strong>（按自然日切分）；涨跌色<strong>绿涨红跌</strong>（品牌配色）；金额展示截断 2 位小数 <span class="tbd">待确认</span>；未登录点击带用户属性 CTA → 跳登录注册；跟用户相关数据默认展示 <code>--</code>。</li>
+<li>全局约定：统计时区 <strong>UTC+8</strong>（按自然日切分）；涨跌色<strong>绿涨红跌</strong>（品牌配色）；金额展示<strong>截断 2 位小数</strong>（不四舍五入）；未登录点击带用户属性 CTA → 跳登录注册；跟用户相关数据默认展示 <code>--</code>。</li>
 </ul>
 
 <h2>App 功能列表</h2>
@@ -100,7 +100,7 @@
 <ul>
 <li><b>总资产估值</b>：Σ 各账户(资金/现货/合约/理财/Launchpad)折算计价币种后的估值；不含负债，随标记价格实时变化；支持「眼睛」隐藏</li>
 <li><b>≈BTC 估值</b>：总资产估值 ÷ BTC 标记价</li>
-<li><b>今日盈亏</b>：= 当前资产 − 今日初始资产 − 今日净转入；今日初始 = 当日 00:00(UTC+8) 资产；含未实现盈亏；维护期(0:00–4:00)不计算</li>
+<li><b>今日盈亏</b>：= 当前资产 − 今日初始资产 − 今日净转入；今日初始 = 当日 00:00(UTC+8) 资产；含未实现盈亏；维护期(0:00–4:00)<strong>不置灰</strong>，页面照常展示并继续捞取数据</li>
 <li><b>本月盈亏</b>：= 本月第一个自然日 00:00(UTC+8) 至当前的累计盈亏</li>
 <li><b>累计盈亏</b>：= 当前资产 − 期初资产 − 期间净转入；含已实现 + 未实现盈亏</li>
 </ul>
@@ -236,7 +236,7 @@
 <ul>
 <li>币种 · 永续 + 跳转图标；标签（多/空 · 逐仓/全仓 · 杠杆）</li>
 <li>九宫格：<b>开仓价 / 数量 / 已实现盈亏</b>、<b>平仓价 / 平仓类型(交易·强平) / ROE</b>、<b>开仓时间 / 平仓时间</b></li>
-<li><b>ROE</b> = 已实现盈亏 ÷ 初始保证金 <span class="tbd">待确认</span> 精确口径</li>
+<li><b>ROE</b>：沿用平台现有合约仓位 ROE 口径</li>
 </ul>
 </td>
 </tr>
@@ -283,14 +283,17 @@
 
 <hr>
 
-<h2>待确认项</h2>
-<ol>
-<li><span class="tbd">待确认</span> 数值精度：截断 vs 四舍五入（原型现为截断 2 位）</li>
-<li><span class="tbd">待确认</span> 仓位 ROE 精确口径（初始保证金定义）</li>
-<li><span class="tbd">待确认</span> 分析页接口性能基线（建议首屏 &lt; 800ms、切换 &lt; 500ms）</li>
-<li><span class="tbd">待确认</span> 维护期内「今日盈亏」是否置灰/提示</li>
-<li><span class="tbd">待确认</span> 埋点事件命名与上报属性明细</li>
-</ol>
+<h2>确认记录</h2>
+<table>
+<thead><tr><th>#</th><th>问题</th><th>结论</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>数值精度：截断 vs 四舍五入</td><td>✅ <strong>截断 2 位</strong>（不四舍五入）</td></tr>
+<tr><td>2</td><td>仓位 ROE 精确口径</td><td>✅ <strong>沿用平台现有 ROE 口径</strong> <span class="tbd">待补</span> 请提供现有公式文本以嵌入</td></tr>
+<tr><td>3</td><td>分析页接口性能基线</td><td>✅ 遵循团队通用接口性能规范（建议首屏 &lt; 800ms、切换 &lt; 500ms）</td></tr>
+<tr><td>4</td><td>维护期内「今日盈亏」处理</td><td>✅ <strong>不置灰</strong>，照常展示并继续捞取数据</td></tr>
+<tr><td>5</td><td>埋点事件命名与上报属性</td><td><span class="tbd">待定</span> 需确认是否有统一埋点规范；否则按建议清单执行 <span class="tbd">待补</span></td></tr>
+</tbody>
+</table>
 
 </div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
