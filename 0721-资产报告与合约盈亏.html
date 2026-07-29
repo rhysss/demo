@@ -363,7 +363,7 @@ section{padding:0 16px;}
       <span class="ov-label click-i" onclick="openInfo('ovtotal')">总资产估值 ⓘ <svg class="eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
       <div class="ov-total"><span id="ov-total-num">2,022.95</span> <span class="unit">USDT</span></div>
       <div class="pnl-row" onclick="go('screen-report')">
-        <span class="lab click-i" id="ov-pnl-lab" onclick="event.stopPropagation();openInfo(window.OV_CUR_INFO||'today')" style="border-bottom:1px dashed var(--muted2);">今日盈亏 ⓘ</span><span class="pos" id="ov-pnl-val">+$3.82</span>
+        <span class="lab click-i" id="ov-pnl-lab" onclick="event.stopPropagation();openInfo(window.OV_CUR_INFO||'today')" style="border-bottom:1px dashed var(--muted2);">今日盈亏</span><span class="pos" id="ov-pnl-val">+$3.82</span>
         <svg class="arrow-r" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
       </div>
 
@@ -1050,7 +1050,7 @@ function drawOverview(label){
   const labMap={'1天':'今日盈亏','7天':'近7天盈亏','30天':'近30天盈亏','180天':'近180天盈亏','360天':'近360天盈亏'};
   window.OV_CUR_INFO={'1天':'today','7天':'ov7','30天':'ov30','180天':'ov180','360天':'ov360'}[label];
   const ol=document.getElementById('ov-pnl-lab'),ov=document.getElementById('ov-pnl-val');
-  if(ol)ol.textContent=labMap[label]+' ⓘ';
+  if(ol)ol.textContent=labMap[label];
   if(ov){ov.textContent=(change>=0?'+$':'-$')+abs2(change);ov.className=change>=0?'pos':'neg';}
 }
 let RALLOC='coin',PSTAT={mode:'cum'};
