@@ -741,7 +741,7 @@ const INFO={
  canalysis2:['币种分析','数字币余额 = 所选区间最后一日 0:00 各钱包数字币余额之和。','*分盈利/亏损两个视图；环形高亮当前选中币种。'],
  rtoday:['今日盈亏','今日盈亏 = 当前资产 − 今日初始资产 − 今日净转入；今日净转入 = 今日划入 − 今日划出。','*资产口径，含所有钱包未实现盈亏；今日初始 = 当日 00:00(UTC+8)；每小时更新一次。'],
  rmonth:['本月盈亏','本月盈亏 = 当前资产 − 本月初资产 − 本月净转入；本月初 = 本月第一个自然日 00:00(UTC+8) 的资产。',''],
- rcum:['累计盈亏','累计盈亏 = 当前资产 − 期初资产 − 期间净转入。','*含已实现 + 未实现盈亏。'],
+ rcum:['累计盈亏','每日 PnL = 当日期末资产 − 当日期初资产 − 当日净转入；累计盈亏 = 期间每日 PnL 依次累加（走势图即把每日 PnL 串联展示）。','*含已实现 + 未实现盈亏。'],
  rrate:['累计盈亏率','累计盈亏率 = 累计盈亏 ÷ (期初账户资产 + 期间转入)。','*对比线为 BTC 累计涨跌幅；特殊情境下可能为 N/A。'],
  rdaily:['每日盈亏','指定日期账户持仓与交易活动产生的收益额。','*盈亏月历/柱状双视图，点选查看当日。'],
  ralloc:['资产配置','币种组成 = 各币种折算市值占比；资产分布 = 各账户市值占比。','两个维度可切换查看。'],
@@ -1127,10 +1127,14 @@ function pStat(m){PSTAT.mode=m;
     const rateBox=(i,date)=>{box.innerHTML='<div style="color:var(--muted2)">'+date+'</div>'
       +'<div class="row"><span class="lgd"><span class="dot" style="background:#2B6CF0"></span>累计盈亏率</span><span class="'+(d.own[i]>=0?'g':'r')+'" style="font-weight:700">'+fPct(d.own[i])+'</span></div>'
       +'<div class="row"><span class="lgd"><span class="dot" style="background:#F5C542"></span>BTC累计涨跌率</span><span class="'+(d.btc[i]>=0?'g':'r')+'" style="font-weight:700">'+fPct(d.btc[i])+'</span></div>';};
-    el._active=null;rateChart(el,[{color:'#2B6CF0',vals:d.own},{color:'#F5C542',vals:d.btc}],d.s,d.e,{noTip:true,onScrub:rateBox});
+    const rateReset=()=>rateBox(d.own.length-1,d.e.replace(/-/g,'/'));
+    rateReset();
+    el._active=null;rateChart(el,[{color:'#2B6CF0',vals:d.own},{color:'#F5C542',vals:d.btc}],d.s,d.e,{noTip:true,resetOnRelease:true,onScrub:rateBox,onReset:rateReset});
   }else{
     const cumBox=(i,v,date)=>{box.innerHTML='<div class="row"><span style="color:var(--muted2)">'+date+' 累计盈亏</span><span class="vv2 '+(v>=0?'g':'r')+'">'+fUSDword(v)+'</span></div>';};
-    el._active=null;areaLine(el,d.cum,d.cumEnd>=0?'#00C566':'#F6465D',true,{start:d.s,end:d.e,fmt:fUSDword,noTip:true,active:d.cum.length-1,onScrub:cumBox});
+    const cumReset=()=>cumBox(d.cum.length-1,d.cumEnd,d.e.replace(/-/g,'/'));
+    cumReset();
+    el._active=null;areaLine(el,d.cum,d.cumEnd>=0?'#00C566':'#F6465D',true,{start:d.s,end:d.e,fmt:fUSDword,noTip:true,resetOnRelease:true,onScrub:cumBox,onReset:cumReset});
   }
 }
 function dmView(v){document.getElementById('dm-cal').classList.toggle('on',v==='cal');document.getElementById('dm-bar').classList.toggle('on',v==='bar');
@@ -1169,20 +1173,21 @@ function rateChart(el,series,s,e,opts){opts=opts||{};
   const all=[].concat(...series.map(x=>x.vals));
   const min=Math.min(...all,0),max=Math.max(...all,0),range=(max-min)||1;
   const X=i=>padL+i*(w-padL-padR)/(n-1),Y=v=>top+(1-(v-min)/range)*(h-top-botp);
-  const active=(el._active!=null)?Math.max(0,Math.min(n-1,el._active)):n-1;
+  const hasAct=(el._active!=null)&&el._active>=0;
+  const active=hasAct?Math.max(0,Math.min(n-1,el._active)):n-1;
   let g='<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="display:block">';
   g+='<line x1="'+padL+'" y1="'+Y(0)+'" x2="'+(w-padR)+'" y2="'+Y(0)+'" stroke="#EAECEF"/>';
-  g+='<line x1="'+X(active)+'" y1="'+top+'" x2="'+X(active)+'" y2="'+(h-botp)+'" stroke="#C0C4CC" stroke-width="1" stroke-dasharray="3 3"/>';
+  if(hasAct)g+='<line x1="'+X(active)+'" y1="'+top+'" x2="'+X(active)+'" y2="'+(h-botp)+'" stroke="#C0C4CC" stroke-width="1" stroke-dasharray="3 3"/>';
   series.forEach(se=>{g+='<path d="'+pathSeg(se.vals,X,Y,0,n-1)+'" fill="none" stroke="'+se.color+'" stroke-width="2" stroke-linecap="round"/>';});
-  series.forEach(se=>{g+='<circle cx="'+X(active)+'" cy="'+Y(se.vals[active])+'" r="3" fill="'+se.color+'"/>';});
+  if(hasAct)series.forEach(se=>{g+='<circle cx="'+X(active)+'" cy="'+Y(se.vals[active])+'" r="3" fill="'+se.color+'"/>';});
   g+='</svg>';
   const dts=spread(s,e,n),xf=X(active)/w*100;
   const rows=series.map(se=>'<div class="row"><span class="lgd"><span class="dot" style="background:'+se.color+'"></span></span><span class="'+(se.vals[active]>=0?'g':'r')+'" style="font-weight:700">'+fPct(se.vals[active])+'</span></div>').join('');
-  const tip=opts.noTip?'':'<div class="scrub-tip" style="left:'+Math.max(20,Math.min(80,xf))+'%;top:6px;transform:translate(-50%,0)"><div>'+fullDate(s,e,active,n)+'</div>'+rows+'<span class="scrub-arrow"></span></div>';
+  const tip=(!hasAct||opts.noTip)?'':'<div class="scrub-tip" style="left:'+Math.max(20,Math.min(80,xf))+'%;top:6px;transform:translate(-50%,0)"><div>'+fullDate(s,e,active,n)+'</div>'+rows+'<span class="scrub-arrow"></span></div>';
   const axis='<div class="axis" style="padding:0 '+padR+'px"><span>'+dts[0]+'</span><span>'+dts[n-1]+'</span></div>';
   MCHARTS[el.id]={series,s,e,n,padL,padR,w,opts};el._mode='rate';
   el.innerHTML='<div class="chartbox">'+g+tip+'</div>'+axis;
-  if(opts.onScrub){const isoA=spreadISO(s,e,n);opts.onScrub(active,isoA[active].replace(/-/g,'/'));}
+  if(opts.onScrub&&hasAct){const isoA=spreadISO(s,e,n);opts.onScrub(active,isoA[active].replace(/-/g,'/'));}
   bindMScrub(el);
 }
 function bindMScrub(el){
@@ -1191,8 +1196,10 @@ function bindMScrub(el){
     const rect=box.getBoundingClientRect();const cx=((ev.touches?ev.touches[0].clientX:ev.clientX)-rect.left)/rect.width;
     const frac=(cx-cfg.padL/cfg.w)/(1-cfg.padL/cfg.w-cfg.padR/cfg.w);let idx=Math.round(frac*(cfg.n-1));idx=Math.max(0,Math.min(cfg.n-1,idx));
     el._active=idx;rateChart(el,cfg.series,cfg.s,cfg.e,cfg.opts);};
+  const reset=()=>{const cfg=MCHARTS[el.id];if(!cfg||!cfg.opts.resetOnRelease)return;if(el._active==null)return;el._active=null;rateChart(el,cfg.series,cfg.s,cfg.e,cfg.opts);if(cfg.opts.onReset)cfg.opts.onReset();};
   el.addEventListener('pointerdown',move);el.addEventListener('pointermove',e=>{if(e.buttons)move(e);});
-  el.addEventListener('touchstart',move,{passive:true});el.addEventListener('touchmove',move,{passive:true});
+  el.addEventListener('pointerup',reset);el.addEventListener('pointercancel',reset);el.addEventListener('pointerleave',e=>{if(!e.buttons)return;reset();});
+  el.addEventListener('touchstart',move,{passive:true});el.addEventListener('touchmove',move,{passive:true});el.addEventListener('touchend',reset);
 }
 function drawPnl(days,startStr,endStr){
   const s=startStr||rangeStart(days),e=endStr||TODAY,n=npts(days),seed=days*11+5,dts=spread(s,e,n);
