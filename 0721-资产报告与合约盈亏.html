@@ -823,8 +823,9 @@ function areaLine(el,vals,color,fill,opts){
   const fmtY=v=>bigY?Math.round(v).toLocaleString('en-US'):tr2(v).toFixed(2);
   const X=i=>padL+i*(w-padL-padR)/(n-1);
   const Y=v=>top+(1-(v-min)/range)*(h-top-botp);
-  const active=opts.active!=null?Math.max(0,Math.min(n-1,opts.active)):Math.round((n-1)*0.6);
-  const full=pathSeg(vals,X,Y,0,n-1),solid=pathSeg(vals,X,Y,0,active);
+  const hasAct=opts.active!=null&&opts.active>=0;
+  const active=hasAct?Math.max(0,Math.min(n-1,opts.active)):n-1;
+  const full=pathSeg(vals,X,Y,0,n-1),solid=pathSeg(vals,X,Y,0,hasAct?active:n-1);
   const gid='g'+el.id;
   let grid='',yl='';
   if(opts.yLabels){
@@ -837,7 +838,7 @@ function areaLine(el,vals,color,fill,opts){
   }
   let mk='';
   if(opts.markers){const iMax=vals.indexOf(max),iMin=vals.indexOf(min);
-    const one=(i,vv,above)=>'<circle cx="'+X(i)+'" cy="'+Y(vv)+'" r="3.2" fill="'+color+'"/><text x="'+Math.max(32,Math.min(w-32,X(i)))+'" y="'+(above?Y(vv)-10:Y(vv)+18)+'" font-size="10.5" font-weight="700" fill="'+color+'" text-anchor="middle">'+fmtY(vv)+'</text>';
+    const one=(i,vv,above)=>'<text x="'+Math.max(32,Math.min(w-32,X(i)))+'" y="'+(above?Y(vv)-8:Y(vv)+16)+'" font-size="10.5" font-weight="700" fill="'+color+'" text-anchor="middle">'+fmtY(vv)+'</text>';
     mk=one(iMax,max,true)+one(iMin,min,false);}
   const area=solid+' L '+X(active)+' '+(h-botp)+' L '+X(0)+' '+(h-botp)+' Z';
   const svg='<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="display:block"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity="0.18"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
@@ -852,16 +853,16 @@ function areaLine(el,vals,color,fill,opts){
   const dates=intraday?null:spread(opts.start,opts.end,n);
   const lbl=i=>opts.stampAxis?opts.stampAxis(i):(intraday?hm(i,n,spanH):dates[i]);
   const tipTop=opts.stampTip?opts.stampTip(active):(intraday?(fullDate(opts.start,opts.end,active,n)+' '+hm(active,n,spanH)):fullDate(opts.start,opts.end,active,n));
-  const tip=opts.timeTop
+  const tip=!hasAct?'':(opts.timeTop
     ?'<div class="scrub-timetop" style="left:'+clampL+'%">'+tipTop+'</div>'
-    :(opts.noTip?'':'<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+tipTop+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>');
-  const dot='<div class="scrub-dot" style="left:'+xf+'%;top:'+yf+'%;border-color:'+color+'"></div>';
-  const vline='<div class="scrub-vline" style="left:'+xf+'%"></div>';
+    :(opts.noTip?'':'<div class="scrub-tip'+(below?' below':'')+'" style="left:'+clampL+'%;top:'+yf+'%;transform:translate(-50%,'+(below?'12px':'calc(-100% - 12px)')+')"><div>'+tipTop+'</div><div class="tv">'+opts.fmt(vals[active])+'</div><span class="scrub-arrow"></span></div>'));
+  const dot=hasAct?'<div class="scrub-dot" style="left:'+xf+'%;top:'+yf+'%;border-color:'+color+'"></div>':'';
+  const vline=hasAct?'<div class="scrub-vline" style="left:'+xf+'%"></div>':'';
   let axis;
   if(opts.yLabels){axis='<div class="axis" style="padding:0 '+padR+'px 0 '+padL+'px"><span>'+lbl(0)+'</span><span>'+lbl(n-1)+'</span></div>';}
   else{const ticks=[0,.25,.5,.75,1].map(f=>Math.round(f*(n-1)));axis='<div class="axis">'+ticks.map(i=>'<span>'+lbl(i)+'</span>').join('')+'</div>';}
   el.innerHTML='<div class="chartbox">'+svg+vline+tip+dot+'</div>'+axis;
-  if(opts.onScrub){const isoA=spreadISO(opts.start,opts.end,n);opts.onScrub(active,vals[active],(isoA[active]||'').replace(/-/g,'/'));}
+  if(opts.onScrub&&hasAct){const isoA=spreadISO(opts.start,opts.end,n);opts.onScrub(active,vals[active],(isoA[active]||'').replace(/-/g,'/'));}
   bindScrub(el);
 }
 function bindScrub(el){
@@ -877,10 +878,15 @@ function bindScrub(el){
     let idx=Math.round(frac*(n-1));idx=Math.max(0,Math.min(n-1,idx));
     cfg.opts.active=idx;areaLine(el,cfg.vals,cfg.color,cfg.fill,cfg.opts);
   };
+  const reset=()=>{const cfg=CHARTS[el.id];if(!cfg||!cfg.opts.resetOnRelease)return;if(cfg.opts.active==null)return;cfg.opts.active=null;areaLine(el,cfg.vals,cfg.color,cfg.fill,cfg.opts);if(cfg.opts.onReset)cfg.opts.onReset();};
   el.addEventListener('pointerdown',move);
   el.addEventListener('pointermove',e=>{if(e.buttons)move(e);});
+  el.addEventListener('pointerup',reset);
+  el.addEventListener('pointercancel',reset);
+  el.addEventListener('pointerleave',e=>{if(!e.buttons)return;reset();});
   el.addEventListener('touchstart',move,{passive:true});
   el.addEventListener('touchmove',move,{passive:true});
+  el.addEventListener('touchend',reset);
 }
 function multiLine(el,series,dates){
   const w=340,h=170,pad=16;
@@ -1040,8 +1046,9 @@ function drawOverview(label){
   // 落点提示：1天=时分；7天/30天=月日 时分；180天/360天=月日
   const stampTip=i=>{const d=tsD(i);if(label==='1天')return hhmm(d);return subDaily?md(d)+' '+hhmm(d):md(d);};
   const stampAxis=i=>{const d=tsD(i);return label==='1天'?hhmm(d):pad(d.getMonth()+1)+'-'+pad(d.getDate());};
-  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT,intraday,spanH:23,stampTip,stampAxis,markers:true,timeTop:true,
-    onScrub:(i,v)=>{const t=document.getElementById('ov-total-num');if(t)t.textContent=fmtTop(v);}});
+  areaLine(document.getElementById('ov-linechart'),data,color,true,{start:rangeStart(days),end:TODAY,fmt:fUSDT,intraday,spanH:23,stampTip,stampAxis,markers:true,timeTop:true,resetOnRelease:true,
+    onScrub:(i,v)=>{const t=document.getElementById('ov-total-num');if(t)t.textContent=fmtTop(v);},
+    onReset:()=>{const t=document.getElementById('ov-total-num');if(t)t.textContent=OV_TOTAL_BASE;}});
   const pct=change/(end-change)*100;
   const pill=document.getElementById('ov-pill');
   pill.className='pill-pct '+(change>=0?'up':'dn');
