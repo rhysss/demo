@@ -1097,7 +1097,9 @@ function drawReport(days,startStr,endStr){
   const asset=raw.map(v=>60+(v-rmin)/((rmax-rmin)||1)*(10000-60));
   const endV=asset[n-1],up=endV>=asset[0];
   const avBox=(i,v,date)=>{document.getElementById('av-date').textContent=date;document.getElementById('av-val').textContent=Math.round(v).toLocaleString('en-US')+' USD';};
-  areaLine(document.getElementById('rp-asset-line'),asset,up?'#00C566':'#F6465D',true,{start:s,end:e,yLabels:true,markers:true,noTip:true,active:n-1,onScrub:avBox});
+  const avReset=()=>{document.getElementById('av-date').textContent=e.replace(/-/g,'/');document.getElementById('av-val').textContent=Math.round(endV).toLocaleString('en-US')+' USD';};
+  avReset();
+  areaLine(document.getElementById('rp-asset-line'),asset,up?'#00C566':'#F6465D',true,{start:s,end:e,yLabels:true,markers:true,noTip:true,resetOnRelease:true,onScrub:avBox,onReset:avReset});
   // 盈亏统计 数据 (随区间变化) —— 每日盈亏卡不随区间变，见 drawDailyPnl()
   const {dates:ddates,vals:daily}=genDailyFull(s,e,days<=7?7:days<=30?13:22,0.6,seed+41,0);
   const dn=daily.length;
