@@ -508,7 +508,7 @@ section{padding:0 16px;}
 
     <!-- 盈亏统计 (累计盈亏率 / 累计盈亏 切换) -->
     <div class="card">
-      <div style="font-size:18px;font-weight:700;">盈亏统计 <svg class="info-i click-i" onclick="openInfo('rrate')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <div style="font-size:18px;font-weight:700;">盈亏统计 <svg class="info-i click-i" onclick="openInfo('pstat')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
       <div class="seg-tabs"><button class="on" id="ps-cum" onclick="pStat('cum')">累计盈亏</button><button id="ps-rate" onclick="pStat('rate')">累计盈亏率</button></div>
       <div class="val-box" id="ps-box" style="flex-direction:column;align-items:stretch;gap:8px;"></div>
       <div id="r-stat-line"></div>
@@ -741,7 +741,8 @@ const INFO={
  canalysis2:['币种分析','数字币余额 = 所选区间最后一日 0:00 各钱包数字币余额之和。','*分盈利/亏损两个视图；环形高亮当前选中币种。'],
  rtoday:['今日盈亏','今日盈亏 = 当前资产 − 今日初始资产 − 今日净转入；今日净转入 = 今日划入 − 今日划出。','*资产口径，含所有钱包未实现盈亏；今日初始 = 当日 00:00(UTC+8)；每小时更新一次。'],
  rmonth:['本月盈亏','本月盈亏 = 当前资产 − 本月初资产 − 本月净转入；本月初 = 本月第一个自然日 00:00(UTC+8) 的资产。',''],
- rcum:['累计盈亏','每日 PnL = 当日期末资产 − 当日期初资产 − 当日净转入；累计盈亏 = 期间每日 PnL 依次累加（走势图即把每日 PnL 串联展示）。','*含已实现 + 未实现盈亏。'],
+ rcum:['累计盈亏','累计盈亏 = 当前资产 − 初始资产 − 期间净转入','*包含未实现盈亏、已实现盈亏。'],
+ pstat:['盈亏统计','<b>累计盈亏</b><br>累计盈亏 = 当前资产 − 初始资产 − 期间净转入<br><span style="color:var(--muted2);font-size:12px;">*包含未实现盈亏、已实现盈亏</span><br><br><b>累计盈亏率</b><br>累计盈亏率 = 累计盈亏 ÷ (初始账户资产 + 期间转入)','*盈亏统计数据统计时间以 00:00(UTC+8) 为准'],
  rrate:['累计盈亏率','累计盈亏率 = 累计盈亏 ÷ (期初账户资产 + 期间转入)。','*对比线为 BTC 累计涨跌幅；特殊情境下可能为 N/A。'],
  rdaily:['每日盈亏','指定日期账户持仓与交易活动产生的收益额。','*盈亏月历/柱状双视图，点选查看当日。'],
  ralloc:['资产配置','币种组成 = 各币种折算市值占比；资产分布 = 各账户市值占比。','两个维度可切换查看。'],
@@ -771,7 +772,7 @@ const INFO={
  wallet:['钱包余额','钱包余额 = 总共净划入 + 总已实现盈亏 + 总净资金费用 − 总手续费。','*合约账户中持有加密货币的总值，为钱包口径，不含未实现盈亏。'],
  alloc:['资产配置','币种组成 = 账户内各币种数量折算市值占比；资产分布 = 账户内可用/持仓保证金/委托保证金等市值占比。','两个维度可切换查看。']
 };
-function openInfo(k){const i=INFO[k];if(!i)return;document.getElementById('info-title').textContent=i[0];document.getElementById('info-def').textContent=i[1];const n=document.getElementById('info-note');n.textContent=i[2]||'';n.style.display=i[2]?'block':'none';document.getElementById('imask').classList.add('on');document.getElementById('infosheet').classList.add('on');}
+function openInfo(k){const i=INFO[k];if(!i)return;document.getElementById('info-title').textContent=i[0];document.getElementById('info-def').innerHTML=i[1];const n=document.getElementById('info-note');n.innerHTML=i[2]||'';n.style.display=i[2]?'block':'none';document.getElementById('imask').classList.add('on');document.getElementById('infosheet').classList.add('on');}
 function closeInfo(){document.getElementById('imask').classList.remove('on');document.getElementById('infosheet').classList.remove('on');}
 
 /* pseudo derived metrics for a day (deterministic by date) */
@@ -1079,9 +1080,11 @@ function drawPnlDailyCal(){
   drawCal(document.getElementById('pnl-daily-cal'),dates,vals);
 }
 /* 每日盈亏·月历:固定完整数据集,不随顶部时间区间变化(柱状图由 drawReport 按区间渲染) */
+// 共享每日盈亏数据集（近365天，固定，不随区间变）——盈亏日历 / 每日柱状 / 盈亏统计累计盈亏 同源
+const REPORT_DAILY=(()=>{const e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.getDate()-364);return genDailyFull(iso(a),e,12,0.6,3517,0);})();
 function drawDailyPnl(){
-  const base=2022.95,e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.getDate()-89);const s=iso(a);
-  const {dates:ddates,vals:daily}=genDailyFull(s,e,12,0.6,3517,0);
+  const base=2022.95;
+  const ddates=REPORT_DAILY.dates,daily=REPORT_DAILY.vals;
   drawCal(document.getElementById('r-daily-cal'),ddates,daily,true,(y,m,tot,has)=>{
     document.getElementById('dm-mon-label').textContent=(m+1)+'月 盈亏额';
     const el=document.getElementById('dm-mon-val');el.textContent=(tot>=0?'+':'-')+abs2(tot)+' ('+fPct(tot/base*100)+')';el.className='vv2 '+(tot>=0?'g':'r');
@@ -1100,8 +1103,9 @@ function drawReport(days,startStr,endStr){
   const avReset=()=>{document.getElementById('av-date').textContent=e.replace(/-/g,'/');document.getElementById('av-val').textContent=Math.round(endV).toLocaleString('en-US')+' USD';};
   avReset();
   areaLine(document.getElementById('rp-asset-line'),asset,up?'#00C566':'#F6465D',true,{start:s,end:e,yLabels:true,markers:true,noTip:true,resetOnRelease:true,onScrub:avBox,onReset:avReset});
-  // 盈亏统计 数据 (随区间变化) —— 每日盈亏卡不随区间变，见 drawDailyPnl()
-  const {dates:ddates,vals:daily}=genDailyFull(s,e,days<=7?7:days<=30?13:22,0.6,seed+41,0);
+  // 盈亏统计/每日柱状 取共享每日数据集的区间切片（与盈亏日历同源，逐日对得上）
+  const si=Math.max(0,REPORT_DAILY.dates.indexOf(s)),ei=REPORT_DAILY.dates.indexOf(e);
+  const ddates=REPORT_DAILY.dates.slice(si,ei+1),daily=REPORT_DAILY.vals.slice(si,ei+1);
   const dn=daily.length;
   // 每日盈亏·柱状图:随顶部时间区间变化(月历为固定数据,见 drawDailyPnl)
   barChart(document.getElementById('r-daily-bar'),daily,ddates.map(d=>d.slice(5)),{noTip:true,onPick:(i,v)=>{
