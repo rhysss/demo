@@ -978,7 +978,10 @@ function calTip(el,key,v,ev){
   const wrap=el.closest('.cal-wrapper'),tip=wrap.querySelector('.cal-tip');
   const sgn=x=>(x>=0?'+':'')+fSigned(x);
   const row=(k,val,cls)=>'<div class="row"><span class="k">'+k+'</span><span class="'+(cls||'')+'">'+val+'</span></div>';
-  tip.innerHTML='<div class="dd">'+key+'</div>'+row('当日盈亏',sgn(v)+' USDT',v>=0?'g':'r');
+  const calHost=el.closest('.cal'),openMap=calHost?CAL_OPEN[calHost.id]:null;
+  let rateRow='';
+  if(openMap&&openMap[key]){const rate=v/openMap[key]*100;rateRow=row('单日盈亏率',fPct(rate),v>=0?'g':'r');}
+  tip.innerHTML='<div class="dd">'+key+'</div>'+row('当日盈亏',sgn(v)+' USDT',v>=0?'g':'r')+rateRow;
   let cx=el.offsetLeft+el.offsetWidth/2;
   tip.style.left=Math.max(90,Math.min(wrap.offsetWidth-90,cx))+'px';
   tip.style.top=el.offsetTop+'px';tip.style.display='block';
@@ -1082,6 +1085,9 @@ function drawPnlDailyCal(){
 /* 每日盈亏·月历:固定完整数据集,不随顶部时间区间变化(柱状图由 drawReport 按区间渲染) */
 // 共享每日盈亏数据集（近365天，固定，不随区间变）——盈亏日历 / 每日柱状 / 盈亏统计累计盈亏 同源
 const REPORT_DAILY=(()=>{const e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.getDate()-364);return genDailyFull(iso(a),e,12,0.6,3517,0);})();
+// 每日「期初资产」序列（由每日盈亏反推：末日期末 = 当前总资产 2022.95），用于计算单日盈亏率
+const CAL_OPEN={};
+(function(){const vals=REPORT_DAILY.vals,dates=REPORT_DAILY.dates,total=vals.reduce((a,b)=>a+b,0);let acc=2022.95-total;const m={};for(let i=0;i<vals.length;i++){m[dates[i]]=acc;acc+=vals[i];}CAL_OPEN['r-daily-cal']=m;})();
 function drawDailyPnl(){
   const base=2022.95;
   const ddates=REPORT_DAILY.dates,daily=REPORT_DAILY.vals;
