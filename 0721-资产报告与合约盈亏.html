@@ -1262,10 +1262,14 @@ function pnlStat(m){PNLSTAT.mode=m;
     const series=[{name:'累计盈亏率',color:'#00C566',vals:d.own},{name:'BTC累计涨跌率',color:'#2B6CF0',vals:d.btc}];
     const rbox=(i,date)=>{box.innerHTML='<div style="color:var(--muted2)">'+date+' · 对比 BTC</div>'
       +series.map(se=>'<div class="row"><span class="lgd"><span class="dot" style="background:'+se.color+'"></span>'+se.name+'</span><span class="'+(se.vals[i]>=0?'g':'r')+'" style="font-weight:700">'+fPct(se.vals[i])+'</span></div>').join('');};
-    el._active=null;rateChart(el,series,d.s,d.e,{noTip:true,onScrub:rbox});
+    const rReset=()=>rbox(d.own.length-1,d.e.replace(/-/g,'/'));
+    rReset();
+    el._active=null;rateChart(el,series,d.s,d.e,{noTip:true,resetOnRelease:true,onScrub:rbox,onReset:rReset});
   }else{
     const cbox=(i,v,date)=>{box.innerHTML='<div class="row"><span style="color:var(--muted2)">'+date+' 累计盈亏</span><span class="vv2 '+(v>=0?'g':'r')+'">'+fUSDword(v)+'</span></div>';};
-    el._active=null;areaLine(el,d.cum,d.cumEnd>=0?'#00C566':'#F6465D',true,{start:d.s,end:d.e,fmt:fUSDword,noTip:true,active:d.cum.length-1,onScrub:cbox});
+    const cReset=()=>cbox(d.cum.length-1,d.cumEnd,d.e.replace(/-/g,'/'));
+    cReset();
+    el._active=null;areaLine(el,d.cum,d.cumEnd>=0?'#00C566':'#F6465D',true,{start:d.s,end:d.e,fmt:fUSDword,noTip:true,resetOnRelease:true,onScrub:cbox,onReset:cReset});
   }
 }
 function drawTrade(days,daily,seed){
