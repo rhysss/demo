@@ -951,7 +951,7 @@ function bindBar(el){
     ev.stopPropagation();
   });
 }
-function donut(el,segs,size,center,sel){size=size||140;const stroke=22,r=(size-stroke)/2,c=size/2,circ=2*Math.PI*r;let off=0,p='';const hasSel=sel!=null&&sel>=0;segs.forEach((s,i)=>{const len=s.pct/100*circ;const op=(!hasSel||i===sel)?1:0.22;p+='<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="'+stroke+'" stroke-opacity="'+op+'" stroke-dasharray="'+len+' '+(circ-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+c+' '+c+')" style="transition:stroke-opacity .18s;"/>';off+=len;});
+function donut(el,segs,size,center,sel){size=size||140;const hasSel=sel!=null&&sel>=0;const base=22,selW=28,dimW=14;const maxW=hasSel?selW:base;const r=(size-maxW)/2,c=size/2,circ=2*Math.PI*r;let off=0,p='';segs.forEach((s,i)=>{const len=s.pct/100*circ;const w=hasSel?(i===sel?selW:dimW):base;const op=hasSel&&i!==sel?0.9:1;p+='<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="'+w+'" stroke-opacity="'+op+'" stroke-dasharray="'+len+' '+(circ-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+c+' '+c+')" style="transition:stroke-width .18s,stroke-opacity .18s;"/>';off+=len;});
   let ctr='';if(center){ctr='<text x="'+c+'" y="'+(c-9)+'" text-anchor="middle" font-size="11" fill="#848E9C">'+center.top+'</text>'
     +'<text x="'+c+'" y="'+(c+9)+'" text-anchor="middle" font-size="21" font-weight="700" fill="#1E2329">'+center.mid+'</text>'
     +'<text x="'+c+'" y="'+(c+25)+'" text-anchor="middle" font-size="11" fill="#848E9C">'+center.bot+'</text>';}
