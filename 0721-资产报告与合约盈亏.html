@@ -439,7 +439,7 @@ section{padding:0 16px;}
       <span class="ov-label">总资产估值 <svg class="eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
       <div class="ov-total">510.45 <span class="unit">USDT</span></div>
       <div class="pnl-row" onclick="go('screen-pnl')">
-        <span class="lab">今日已实现盈亏</span><span class="neg">-$0.83 (-0.16%)</span>
+        <span class="lab click-i" onclick="event.stopPropagation();openInfo('ctoday')" style="border-bottom:1px dashed var(--muted2);">今日已实现盈亏</span><span class="neg">-$0.83 (-0.16%)</span>
         <svg class="arrow-r" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
       </div>
     </section>
@@ -735,6 +735,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-toast]');
 /* ===== 指标口径说明弹窗 ===== */
 const INFO={
  today:['今日盈亏','<div class="fx">今日盈亏 = 当前钱包余额 − 今日初钱包余额 − 今日资金净转入</div><div class="fx">今日资金净转入 = 今日划入 − 今日划出</div><div class="fx">盈亏率 = 今日盈亏 ÷ 今日初钱包余额 × 100%</div>','*今日初钱包余额为当日 00:00(UTC+8) 的钱包余额；每小时更新一次。'],
+ ctoday:['今日已实现盈亏','<div class="fx">今日已实现盈亏 = 当前钱包余额 − 今日初钱包余额 − 今日资金净转入</div><div class="fx">今日资金净转入 = 今日划入 − 今日划出</div><div class="fx">盈亏率 = 今日已实现盈亏 ÷ 今日初钱包余额 × 100%</div>','*今日初钱包余额为当日 00:00(UTC+8) 的钱包余额；每小时更新一次。'],
  daily:['每日盈亏','每日盈亏 = 每日 23:59:59(UTC+8) 钱包余额 − 每日 00:00 钱包余额 − 每日资金净转入','*合约为钱包口径。'],
  cum:['累计盈亏','<div class="fx">累计盈亏 = 期末钱包余额 − 期初钱包余额 − 期间资金净转入</div><div class="fx">盈亏率 = 累计盈亏 ÷ (期初钱包余额 + 期间资金净转入) × 100%</div>','*钱包口径。'],
  rate:['累计盈亏率','累计盈亏率 = 累计盈亏 ÷ (期初钱包余额 + 期间日均资金总转入)','*特殊情境下计算结果可能为 N/A；对比线为 BTC 累计涨跌幅。'],
