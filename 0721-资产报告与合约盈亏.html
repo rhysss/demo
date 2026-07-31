@@ -612,10 +612,14 @@ section{padding:0 16px;}
           <button id="dp-tab-bar" onclick="dpView('bar')" title="柱状图"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></button>
         </div>
       </div>
-      <div style="font-size:12px;color:var(--muted2);margin-top:2px;">点击柱状图/日历查看当日盈亏</div>
-      <div style="display:flex;align-items:baseline;gap:10px;margin-top:8px;"><span class="r" id="dp-today" style="font-size:22px;font-weight:700;">-0.83 USD</span><span style="font-size:13px;color:var(--muted2);" id="dp-date">2026-07-21</span></div>
-      <div class="view" id="dp-view-bar"><div id="pnl-daily-bar"></div></div>
-      <div class="view on" id="dp-view-cal"><div class="date-lab">每日营收</div><div class="cal" id="pnl-daily-cal"></div></div>
+      <div class="view on" id="dp-view-cal">
+        <div class="val-box"><span id="pnl-mon-label">7月 盈亏额</span><span class="vv2 g" id="pnl-mon-val">+0.00 (+0.00%)</span></div>
+        <div class="cal" id="pnl-daily-cal"></div>
+      </div>
+      <div class="view" id="dp-view-bar">
+        <div class="val-box"><span><span id="pnl-bar-date">2026/07/21</span> 当日盈亏</span><span class="vv2 g" id="pnl-bar-val">+0.00</span></div>
+        <div id="pnl-daily-bar"></div>
+      </div>
     </div>
 
     <div class="footnote">*此页面上的所有数据均按照 UTC+8 时区计算，自定义时间控件和图表中显示的也是 UTC+8 时区的日期。</div>
@@ -1089,7 +1093,10 @@ function drawAssetHead(){
 /* 每日盈亏：独立完整数据集(近90天),不随顶部时间区间变化;月历可翻月查看 */
 /* 合约盈亏·每日盈亏月历:固定完整数据(热力图),不随区间变化;柱状图仍随区间(见 drawPnl) */
 function drawPnlDailyCal(){
-  drawCal(document.getElementById('pnl-daily-cal'),PNL_DAILY.dates,PNL_DAILY.vals);
+  drawCal(document.getElementById('pnl-daily-cal'),PNL_DAILY.dates,PNL_DAILY.vals,true,(y,m,tot,has)=>{
+    document.getElementById('pnl-mon-label').textContent=(m+1)+'月 盈亏额';
+    const el=document.getElementById('pnl-mon-val');el.textContent=(tot>=0?'+':'-')+abs2(tot)+' ('+fPct(tot/510.45*100)+')';el.className='vv2 '+(tot>=0?'g':'r');
+  });
 }
 /* 每日盈亏·月历:固定完整数据集,不随顶部时间区间变化(柱状图由 drawReport 按区间渲染) */
 // 共享每日盈亏数据集（近365天，固定，不随区间变）——盈亏日历 / 每日柱状 / 盈亏统计累计盈亏 同源
@@ -1099,6 +1106,8 @@ const CAL_OPEN={};
 (function(){const vals=REPORT_DAILY.vals,dates=REPORT_DAILY.dates,total=vals.reduce((a,b)=>a+b,0);let acc=2022.95-total;const m={};for(let i=0;i<vals.length;i++){m[dates[i]]=acc;acc+=vals[i];}CAL_OPEN['r-daily-cal']=m;})();
 // 合约·共享每日盈亏数据集（近365天，固定）——合约月历 / 每日柱状 / 盈亏统计累计盈亏 同源
 const PNL_DAILY=(()=>{const e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.getDate()-364);return genDailyFull(iso(a),e,3.5,0.12,4243,0.12);})();
+// 合约每日「期初钱包余额」序列（由每日盈亏反推：末日期末 = 当前钱包余额 510.45），用于单日盈亏率
+(function(){const vals=PNL_DAILY.vals,dates=PNL_DAILY.dates,total=vals.reduce((a,b)=>a+b,0);let acc=510.45-total;const m={};for(let i=0;i<vals.length;i++){m[dates[i]]=acc;acc+=vals[i];}CAL_OPEN['pnl-daily-cal']=m;})();
 function drawDailyPnl(){
   const base=2022.95;
   const ddates=REPORT_DAILY.dates,daily=REPORT_DAILY.vals;
@@ -1229,8 +1238,8 @@ function drawPnl(days,startStr,endStr){
   const ddates=PNL_DAILY.dates.slice(si,ei+1),daily=PNL_DAILY.vals.slice(si,ei+1);
   const dn=daily.length;
   barChart(document.getElementById('pnl-daily-bar'),daily,ddates.map(d=>d.slice(5)),{noTip:true,onPick:(i,v)=>{
-    document.getElementById('dp-today').textContent=fUSDword(v);document.getElementById('dp-today').className=v>=0?'g':'r';
-    document.getElementById('dp-date').textContent=ddates[i];
+    document.getElementById('pnl-bar-date').textContent=ddates[i].replace(/-/g,'/');
+    const pbv=document.getElementById('pnl-bar-val');pbv.textContent=(v>=0?'+':'-')+abs2(v)+' ('+fPct(v/510.45*100)+')';pbv.className='vv2 '+(v>=0?'g':'r');
   }});
   // 月历为固定完整数据,不随区间变化,见 drawPnlDailyCal()
   const cum=cumsum(daily),cumEnd=cum[dn-1];
