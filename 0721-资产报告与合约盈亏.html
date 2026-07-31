@@ -565,7 +565,7 @@ section{padding:0 16px;}
     <!-- 盈亏概览 (固定头部块，与总资产分析同款) -->
     <section class="asset-head">
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span class="ov-label click-i" onclick="openInfo('balance')">合约账户估值 <svg class="eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+        <span class="ov-label click-i" onclick="openInfo('cequity')">合约账户估值 <svg class="eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
         <div style="font-size:12px;color:var(--muted2);background:#F4F5F7;border-radius:6px;padding:3px 8px;cursor:pointer;" onclick="switchPnlTab('ca')">交易额</div>
       </div>
       <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
@@ -735,7 +735,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-toast]');
 
 /* ===== 指标口径说明弹窗 ===== */
 const INFO={
- today:['今日盈亏','<div class="fx">今日盈亏 = 当前资产 − 今日初始资产 − 今日净转入</div><div class="fx">今日净转入 = 今日划入 − 今日划出</div><div class="fx">盈亏率 = 今日盈亏 ÷ 今日初始资产 × 100%</div>','*今日初始资产为当日 00:00(UTC+8) 的资产；含未实现盈亏；每小时更新一次。'],
+ today:['今日盈亏','<div class="fx">今日盈亏 = 当前钱包余额 − 今日初钱包余额 − 今日资金净转入</div><div class="fx">今日资金净转入 = 今日划入 − 今日划出</div><div class="fx">盈亏率 = 今日盈亏 ÷ 今日初钱包余额 × 100%</div>','*今日初钱包余额为当日 00:00(UTC+8) 的钱包余额；钱包口径，不含未实现盈亏（已实现）；每小时更新一次。'],
  daily:['每日盈亏','每日盈亏 = 每日 24:00(UTC+8) 钱包余额 − 每日 00:00 钱包余额 − 每日资金净转入','*合约为钱包口径，不包含未实现盈亏。'],
  cum:['累计盈亏','<div class="fx">累计盈亏 = 期末钱包余额 − 期初钱包余额 − 期间资金净转入</div><div class="fx">盈亏率 = 累计盈亏 ÷ (期初钱包余额 + 期间资金净转入) × 100%</div>','*钱包口径，不含未实现盈亏。'],
  rate:['累计盈亏率','累计盈亏率 = 累计盈亏 ÷ (期初钱包余额 + 期间日均资金总转入)','*特殊情境下计算结果可能为 N/A；对比线为 BTC 累计涨跌幅。'],
@@ -764,6 +764,7 @@ const INFO={
  ov180:['近180天盈亏','近180天盈亏 = 当前资产 − 180天前初始资产 − 期间净转入；期间净转入 = 期间划入 − 期间划出；盈亏率 = 近180天盈亏 ÷ 180天前初始资产 × 100%','*起点为 180 天前当日 00:00(UTC+8) 的资产；含未实现盈亏。'],
  ov360:['近360天盈亏','近360天盈亏 = 当前资产 − 360天前初始资产 − 期间净转入；期间净转入 = 期间划入 − 期间划出；盈亏率 = 近360天盈亏 ÷ 360天前初始资产 × 100%','*起点为 360 天前当日 00:00(UTC+8) 的资产；含未实现盈亏。'],
  balance:['余额','合约账户中持有的加密货币总值(钱包余额)。',''],
+ cequity:['合约账户估值','<div class="fx">合约账户估值（权益）= 钱包余额 + 未实现盈亏</div>','*账户权益快照，含未实现盈亏，随标记价格实时变化；与下方今日/本月/累计盈亏（已实现口径）不同。'],
  avail:['可用','可用于开仓的保证金 = 余额 − 持仓保证金 − 委托保证金 + 未实现盈亏。',''],
  posmargin:['持仓保证金','当前所有持仓已占用的保证金。',''],
  ordmargin:['委托保证金','当前挂单(未成交委托)冻结的保证金。',''],
