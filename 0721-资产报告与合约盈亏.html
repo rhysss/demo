@@ -393,7 +393,6 @@ section{padding:0 16px;}
             <div id="ov-donut" style="flex-shrink:0;"></div>
             <div class="legend" style="flex:1;" id="ov-legend"></div>
           </div>
-          <div class="pie-note">* 资产饼状图不含负债。</div>
         </div>
       </div>
     </section>
@@ -952,7 +951,7 @@ function bindBar(el){
     ev.stopPropagation();
   });
 }
-function donut(el,segs,size,center){size=size||140;const stroke=22,r=(size-stroke)/2,c=size/2,circ=2*Math.PI*r;let off=0,p='';segs.forEach(s=>{const len=s.pct/100*circ;p+='<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="'+stroke+'" stroke-dasharray="'+len+' '+(circ-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+c+' '+c+')"/>';off+=len;});
+function donut(el,segs,size,center,sel){size=size||140;const stroke=22,r=(size-stroke)/2,c=size/2,circ=2*Math.PI*r;let off=0,p='';const hasSel=sel!=null&&sel>=0;segs.forEach((s,i)=>{const len=s.pct/100*circ;const op=(!hasSel||i===sel)?1:0.22;p+='<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="'+stroke+'" stroke-opacity="'+op+'" stroke-dasharray="'+len+' '+(circ-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+c+' '+c+')" style="transition:stroke-opacity .18s;"/>';off+=len;});
   let ctr='';if(center){ctr='<text x="'+c+'" y="'+(c-9)+'" text-anchor="middle" font-size="11" fill="#848E9C">'+center.top+'</text>'
     +'<text x="'+c+'" y="'+(c+9)+'" text-anchor="middle" font-size="21" font-weight="700" fill="#1E2329">'+center.mid+'</text>'
     +'<text x="'+c+'" y="'+(c+25)+'" text-anchor="middle" font-size="11" fill="#848E9C">'+center.bot+'</text>';}
@@ -1583,11 +1582,14 @@ function confirmDate(){
 }
 
 /* ===== init ===== */
-function renderLegend(el,segs,hl){el.innerHTML=segs.map((s,i)=>'<div class="lg'+(hl&&i===3?' hl':'')+'"><div class="l"><span class="dot" style="background:'+s.color+'"></span><div><div>'+s.name+' <b>'+s.pct+'%</b></div><div style="font-size:12px;color:var(--muted2);">'+s.usd+'</div></div></div></div>').join('');}
+function renderLegend(el,segs,sel){el.innerHTML=segs.map((s,i)=>'<div class="lg'+(i===sel?' hl':'')+'" onclick="ovAllocPick('+i+')" style="cursor:pointer;"><div class="l"><span class="dot" style="background:'+s.color+'"></span><div><div>'+s.name+' <b>'+s.pct+'%</b></div><div style="font-size:12px;color:var(--muted2);">'+s.usd+'</div></div></div></div>').join('');}
+let OV_ALLOC_SEL=3;
+function renderOvAlloc(){donut(document.getElementById('ov-donut'),SEG_OV,140,null,OV_ALLOC_SEL);renderLegend(document.getElementById('ov-legend'),SEG_OV,OV_ALLOC_SEL);}
+function ovAllocPick(i){OV_ALLOC_SEL=(OV_ALLOC_SEL===i?-1:i);renderOvAlloc();}
 function renderCoinLegend(el,segs){el.innerHTML=segs.map(s=>'<div style="padding:6px 4px;"><div style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:5px;border-radius:3px;background:'+s.color+';display:inline-block;"></span><span style="font-size:13px;font-weight:600;">'+s.name+' '+s.pct+'%</span></div><div style="font-size:12px;color:var(--muted2);margin-left:20px;">'+s.usd+'</div></div>').join('');}
 function initCharts(){
   drawOverview('7天');
-  donut(document.getElementById('ov-donut'),SEG_OV,140);renderLegend(document.getElementById('ov-legend'),SEG_OV,true);
+  renderOvAlloc();
   drawAssetHead();
   drawDailyPnl();
   rAllocMode('coin');
