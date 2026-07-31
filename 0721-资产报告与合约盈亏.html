@@ -1089,9 +1089,7 @@ function drawAssetHead(){
 /* 每日盈亏：独立完整数据集(近90天),不随顶部时间区间变化;月历可翻月查看 */
 /* 合约盈亏·每日盈亏月历:固定完整数据(热力图),不随区间变化;柱状图仍随区间(见 drawPnl) */
 function drawPnlDailyCal(){
-  const e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.getDate()-89);const s=iso(a);
-  const {dates,vals}=genDailyFull(s,e,9,1.8,4243,0.15);
-  drawCal(document.getElementById('pnl-daily-cal'),dates,vals);
+  drawCal(document.getElementById('pnl-daily-cal'),PNL_DAILY.dates,PNL_DAILY.vals);
 }
 /* 每日盈亏·月历:固定完整数据集,不随顶部时间区间变化(柱状图由 drawReport 按区间渲染) */
 // 共享每日盈亏数据集（近365天，固定，不随区间变）——盈亏日历 / 每日柱状 / 盈亏统计累计盈亏 同源
@@ -1099,6 +1097,8 @@ const REPORT_DAILY=(()=>{const e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.get
 // 每日「期初资产」序列（由每日盈亏反推：末日期末 = 当前总资产 2022.95），用于计算单日盈亏率
 const CAL_OPEN={};
 (function(){const vals=REPORT_DAILY.vals,dates=REPORT_DAILY.dates,total=vals.reduce((a,b)=>a+b,0);let acc=2022.95-total;const m={};for(let i=0;i<vals.length;i++){m[dates[i]]=acc;acc+=vals[i];}CAL_OPEN['r-daily-cal']=m;})();
+// 合约·共享每日盈亏数据集（近365天，固定）——合约月历 / 每日柱状 / 盈亏统计累计盈亏 同源
+const PNL_DAILY=(()=>{const e=TODAY,a=new Date(e+'T00:00:00');a.setDate(a.getDate()-364);return genDailyFull(iso(a),e,3.5,0.12,4243,0.12);})();
 function drawDailyPnl(){
   const base=2022.95;
   const ddates=REPORT_DAILY.dates,daily=REPORT_DAILY.vals;
@@ -1224,8 +1224,9 @@ function bindMScrub(el){
 }
 function drawPnl(days,startStr,endStr){
   const s=startStr||rangeStart(days),e=endStr||TODAY,n=npts(days),seed=days*11+5,dts=spread(s,e,n);
-  // daily pnl — one value per calendar day (some 0)
-  const {dates:ddates,vals:daily}=genDailyFull(s,e,days<=7?4:days<=30?9:16,days<=7?-0.3:1.8,seed,0.15);
+  // 每日柱状/累计盈亏 取共享每日数据集的区间切片（与合约盈亏月历同源，逐日对得上）
+  const si=Math.max(0,PNL_DAILY.dates.indexOf(s)),ei=PNL_DAILY.dates.indexOf(e);
+  const ddates=PNL_DAILY.dates.slice(si,ei+1),daily=PNL_DAILY.vals.slice(si,ei+1);
   const dn=daily.length;
   barChart(document.getElementById('pnl-daily-bar'),daily,ddates.map(d=>d.slice(5)),{noTip:true,onPick:(i,v)=>{
     document.getElementById('dp-today').textContent=fUSDword(v);document.getElementById('dp-today').className=v>=0?'g':'r';
