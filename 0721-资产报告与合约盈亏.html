@@ -560,18 +560,26 @@ section{padding:0 16px;}
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><circle cx="6" cy="12" r="2"/><circle cx="17" cy="6" r="2"/><circle cx="17" cy="18" r="2"/><path d="M8 11l7-4M8 13l7 4"/></svg>
   </div>
   <div class="scroll paged">
-    <!-- 盈亏概览 -->
-    <div class="card">
+    <!-- 盈亏概览 (固定头部块，与总资产分析同款) -->
+    <section class="asset-head">
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div class="big-pnl">今日盈亏 <svg class="info-i click-i" onclick="openInfo('today')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <span class="ov-label click-i" onclick="openInfo('balance')">合约账户估值 <svg class="eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
         <div style="font-size:12px;color:var(--muted2);background:#F4F5F7;border-radius:6px;padding:3px 8px;cursor:pointer;" onclick="switchPnlTab('ca')">交易额</div>
       </div>
-      <div style="display:flex;align-items:baseline;gap:8px;"><div class="big-num r" id="pnl-today" style="margin:6px 0;">-0.16%</div><span class="r" id="pnl-today-usd" style="font-size:15px;">-0.83 USD</span></div>
-      <div class="trip" style="border-top:1px solid var(--border);margin-top:14px;padding-top:16px;">
-        <div class="c"><div class="kk click-i" onclick="openInfo('month')">本月盈亏 ⓘ</div><div class="vv g" id="pnl-month">+0.00</div><div class="sub g" id="pnl-month-sub">+0.00%</div></div>
-        <div class="c"><div class="kk click-i" onclick="openInfo('cum')">累计盈亏 ⓘ</div><div class="vv g" id="pnl-cum3">+142.06</div><div class="sub g" id="pnl-cum3-pct">+0.00%</div></div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
+        <span class="big-num" id="pnl-equity" style="font-size:34px;color:var(--text);">510.45</span>
+        <span class="unit" onclick="toast('计价单位（原型未展开）')" style="font-size:15px;font-weight:600;color:var(--muted);cursor:pointer;">USDT ▾</span>
       </div>
-    </div>
+      <div class="pnl-row" style="margin-top:10px;cursor:default;">
+        <span class="lab click-i" onclick="openInfo('today')" style="border-bottom:1px dashed var(--muted2);">今日盈亏</span>
+        <span id="pnl-today" class="r">-0.83 USD (-0.16%)</span>
+      </div>
+      <div style="display:flex;margin-top:16px;">
+        <div style="flex:1;"><div class="kk click-i" onclick="openInfo('month')" style="font-size:13px;color:var(--muted);">本月盈亏 ⓘ</div><div class="g" id="pnl-month" style="font-size:20px;font-weight:700;margin-top:5px;">+0.00</div><div class="g" id="pnl-month-sub" style="font-size:12px;margin-top:1px;">+0.00%</div></div>
+        <div style="flex:1;"><div class="kk click-i" onclick="openInfo('cum')" style="font-size:13px;color:var(--muted);">累计盈亏 ⓘ</div><div class="g" id="pnl-cum3" style="font-size:20px;font-weight:700;margin-top:5px;">+142.06</div><div class="g" id="pnl-cum3-pct" style="font-size:12px;margin-top:1px;">+0.00%</div></div>
+      </div>
+    </section>
+    <div class="hgap"></div>
 
     <!-- 总览 / 合约分析 tab bar -->
     <div class="subtabs" style="padding:0 16px;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:7;">
