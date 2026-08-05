@@ -267,6 +267,28 @@ section{padding:0 16px;}
 .scroll.paged .card:first-of-type{margin-top:14px;}
 .ls-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
 .ls-col{background:#F7F8FA;border-radius:12px;padding:12px 14px;}
+/* 分享海报弹窗 */
+.share-poster{background:linear-gradient(155deg,#12A974,#0A7A54);border-radius:16px;padding:20px 18px 16px;color:#fff;}
+.share-poster .sp-title{font-size:20px;font-weight:800;}
+.share-poster .sp-lab{font-size:13px;opacity:.9;margin-top:16px;}
+.share-poster .sp-period{font-size:11px;opacity:.72;margin-top:2px;}
+.share-poster .sp-big{font-size:38px;font-weight:800;margin:6px 0 14px;line-height:1;}
+.share-poster .sp-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden;}
+.share-poster .sp-bar>div{height:100%;background:#fff;border-radius:3px;}
+.share-poster .sp-kv{display:flex;gap:44px;margin-top:16px;}
+.share-poster .sp-kv .off{display:none;}
+.share-poster .sp-k{font-size:12px;opacity:.82;}
+.share-poster .sp-v{font-size:20px;font-weight:800;margin-top:3px;}
+.share-poster .sp-foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:20px;border-top:1px solid rgba(255,255,255,.2);padding-top:14px;}
+.share-poster .sp-brand{font-size:15px;font-weight:800;letter-spacing:.3px;}
+.share-poster .sp-uid{font-size:11px;opacity:.78;margin-top:3px;}
+.share-poster .sp-qr{width:52px;height:52px;border-radius:6px;background:#fff;padding:4px;}
+.sp-choose{font-size:13px;color:var(--muted2);text-align:center;margin:18px 0 10px;}
+.sp-chips{display:flex;gap:10px;}
+.sp-chip{flex:1;border:1px solid var(--border);border-radius:10px;padding:13px 8px 11px;text-align:center;font-size:13px;color:var(--muted);cursor:pointer;position:relative;}
+.sp-chip .ic{font-size:17px;display:block;margin-bottom:4px;}
+.sp-chip.on{border-color:var(--green);color:var(--text);background:#F3FBF7;}
+.sp-chip.on::after{content:'✓';position:absolute;top:5px;right:8px;color:#fff;background:var(--green);width:15px;height:15px;border-radius:50%;font-size:10px;line-height:15px;}
 .ls-col .h{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
 .ls-col .h .tag{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:600;}
 .ls-col .h .tag.long{background:#E3F9EF;color:var(--green-d);} .ls-col .h .tag.short{background:#FEECEE;color:var(--red);}
@@ -558,7 +580,7 @@ section{padding:0 16px;}
   <div class="pghead">
     <div class="back" onclick="go('screen-contract')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div>
     <div class="title" id="pnl-title" onclick="openMenu('pnl')">合约盈亏 <svg class="caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><circle cx="6" cy="12" r="2"/><circle cx="17" cy="6" r="2"/><circle cx="17" cy="18" r="2"/><path d="M8 11l7-4M8 13l7 4"/></svg>
+    <svg onclick="openShare()" style="cursor:pointer;" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="1.6"><circle cx="6" cy="12" r="2"/><circle cx="17" cy="6" r="2"/><circle cx="17" cy="18" r="2"/><path d="M8 11l7-4M8 13l7 4"/></svg>
   </div>
   <div class="scroll paged">
     <!-- 盈亏概览 (固定头部块，与总资产分析同款) -->
@@ -677,6 +699,34 @@ section{padding:0 16px;}
   </div>
 </div>
 
+<div class="mask" id="smask" onclick="closeShare()"></div>
+<div class="sheet" id="sharesheet">
+  <div class="grip"></div>
+  <div style="padding:0 18px 6px;">
+    <div class="share-poster">
+      <div class="sp-title">我的合约盈亏</div>
+      <div class="sp-lab">累计盈亏率 %</div>
+      <div class="sp-period" id="sp-period">期间：2026/06/22 ~ 2026/07/21</div>
+      <div class="sp-big" id="sp-rate">+0.00%</div>
+      <div class="sp-bar"><div id="sp-barfill" style="width:50%;"></div></div>
+      <div class="sp-kv">
+        <div id="sp-kv-cum"><div class="sp-k">累计盈亏(USD)</div><div class="sp-v" id="sp-cum">+0.00</div></div>
+        <div id="sp-kv-win"><div class="sp-k">胜率</div><div class="sp-v" id="sp-win">0.00%</div></div>
+      </div>
+      <div class="sp-foot">
+        <div><div class="sp-brand">GreenEx Futures</div><div class="sp-uid">UID 107870110</div></div>
+        <svg class="sp-qr" viewBox="0 0 7 7" shape-rendering="crispEdges"><path fill="#0A7A54" d="M0 0h3v1H0zM4 0h1v1H4zM6 0h1v1H6zM0 1h1v1H0zM2 1h1v1H2zM5 1h2v1H5zM0 2h1v1H0zM2 2h1v1H2zM4 2h1v1H4zM0 3h3v1H0zM4 3h1v1H4zM6 3h1v1H6zM1 4h1v1H1zM3 4h2v1H3zM6 4h1v1H6zM0 5h1v1H0zM2 5h3v1H2zM6 5h1v1H6zM0 6h1v1H0zM2 6h1v1H2zM4 6h3v1H4z"/></svg>
+      </div>
+    </div>
+    <div class="sp-choose">可选择是否分享信息</div>
+    <div class="sp-chips">
+      <div class="sp-chip on" id="sp-chip-cum" onclick="toggleShareChip('cum')"><span class="ic">📈</span>累计盈亏(USD)</div>
+      <div class="sp-chip on" id="sp-chip-win" onclick="toggleShareChip('win')"><span class="ic">％</span>胜率 %</div>
+    </div>
+    <div class="date-actions"><button class="cancel" onclick="toast('海报已保存到相册（原型示意）')">下载</button><button class="confirm" onclick="toast('已调起系统分享（原型示意）')">分享</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 </div>
 
@@ -751,6 +801,23 @@ const INFO={
 };
 function openInfo(k){const i=INFO[k];if(!i)return;document.getElementById('info-title').textContent=i[0];document.getElementById('info-def').innerHTML=i[1];const n=document.getElementById('info-note');n.innerHTML=i[2]||'';n.style.display=i[2]?'block':'none';document.getElementById('imask').classList.add('on');document.getElementById('infosheet').classList.add('on');}
 function closeInfo(){document.getElementById('imask').classList.remove('on');document.getElementById('infosheet').classList.remove('on');}
+/* ===== 分享海报 ===== */
+function openShare(){
+  const d=PNLSTAT.data;
+  if(d){
+    document.getElementById('sp-rate').textContent=fPct(d.ownEnd);
+    document.getElementById('sp-cum').textContent=(d.cumEnd>=0?'+':'')+fSigned(d.cumEnd);
+    document.getElementById('sp-period').textContent='期间：'+d.s.replace(/-/g,'/')+' ~ '+d.e.replace(/-/g,'/');
+    document.getElementById('sp-barfill').style.width=Math.max(6,Math.min(100,Math.abs(d.ownEnd)*10+30))+'%';
+  }
+  if(window.SHARE_WIN!=null)document.getElementById('sp-win').textContent=window.SHARE_WIN.toFixed(2)+'%';
+  document.getElementById('smask').classList.add('on');document.getElementById('sharesheet').classList.add('on');
+}
+function closeShare(){document.getElementById('smask').classList.remove('on');document.getElementById('sharesheet').classList.remove('on');}
+function toggleShareChip(k){
+  const chip=document.getElementById('sp-chip-'+k),kv=document.getElementById('sp-kv-'+k);
+  const on=!chip.classList.contains('on');chip.classList.toggle('on',on);kv.classList.toggle('off',!on);
+}
 
 /* pseudo derived metrics for a day (deterministic by date) */
 function dayDerived(key,v){const r=rng(key.split('-').join('')*1+7);const unreal=Math.trunc((r()-0.5)*4*100)/100;const vol=Math.trunc((Math.abs(v)*30+r()*50)*100)/100;return{realized:v,unreal:unreal,other:0,flow:0,vol:vol};}
@@ -1247,7 +1314,7 @@ function pnlStat(m){PNLSTAT.mode=m;
 function drawTrade(days,daily,seed){
   const trades=daily.filter(v=>v!==0),wins=trades.filter(v=>v>0),losses=trades.filter(v=>v<0);
   const gain=wins.reduce((a,b)=>a+b,0),loss=Math.abs(losses.reduce((a,b)=>a+b,0));
-  const winRate=trades.length?wins.length/trades.length*100:0;
+  const winRate=trades.length?wins.length/trades.length*100:0;window.SHARE_WIN=winRate;
   const avgWin=wins.length?gain/wins.length:0,avgLoss=losses.length?loss/losses.length:0;
   const maxWin=trades.length?Math.max(...trades):0,maxLoss=trades.length?Math.min(...trades):0;
   const r=rng(seed+987);
