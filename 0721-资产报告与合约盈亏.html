@@ -635,8 +635,8 @@ section{padding:0 16px;}
       <!-- 盈亏排行 -->
       <div class="card">
         <div style="font-size:18px;font-weight:700;">盈亏排行 <svg class="info-i click-i" onclick="openInfo('rank')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-        <div style="font-size:12px;color:var(--muted2);margin-top:2px;">按合约 · 前 5</div>
-        <div class="rk" id="rk-list"></div>
+        <div class="seg-tabs" style="margin-top:10px;"><button class="on" id="rk-tab-win" onclick="rankTab('win')">盈利</button><button id="rk-tab-loss" onclick="rankTab('loss')">亏损</button></div>
+        <div class="rk" id="rk-list" style="margin-top:12px;"></div>
       </div>
     </div><!-- /pnl-tab-ca -->
 
@@ -710,7 +710,7 @@ const INFO={
  loss:['总亏损','期间所有已实现亏损加总。',''],
  net:['净盈利/亏损','净盈利/亏损 = 总盈利 − 总亏损。',''],
  trade:['交易分析','仅统计 USDT 本位永续；基于已完全平仓仓位，仓位全部平仓后 1 小时计入；平仓总盈亏含开平仓手续费与资金费用。','*交易机器人与跟单产生的交易量不纳入统计。'],
- rank:['盈亏排名','所选时间段内平仓产生的盈亏排名，按绝对值从大到小排序。','按合约(如 BTCUSDT)聚合。'],
+ rank:['盈亏排行','所选时间段内平仓产生的盈亏，分「盈利 / 亏损」两个 Tab：盈利按盈亏额从大到小、亏损按亏损额从大到小，各取 Top 5。','按合约(如 BTCUSDT)聚合。'],
  // ===== 资产报告 =====
  ranalysis:['资产分析','资产变动% = 资产净值(最后一天 − 初始日) ÷ 初始日；资产PNL = 所选时间内所有钱包的资产净盈亏。','*每日基于每天 0:00 (UTC+8)；法币按 App 设置折算。'],
  tanalysis:['交易分析','含现货/理财/杠杆/合约四类钱包盈亏，基于四类历史记录汇总。','*交易次数与 PNL 仅供参考。'],
@@ -1288,17 +1288,24 @@ function drawTrade(days,daily,seed){
     barRow('多空比','多 '+longs,'空 '+shorts,longs,shorts)+
     barRow('平均盈亏',(winAvg>=0?'+':'')+fSigned(winAvg)+' USDT',fSigned(lossAvg)+' USDT',winAvg,lossAvg);
 }
-let RANK={mode:'amt',list:[]};
+let RANK={side:'win',list:[]};
 function drawRanking(days,seed){
-  const r=rng(seed+321),syms=['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT'];
-  RANK.list=syms.map(sym=>({sym,v:Math.trunc((r()-0.45)*40*100)/100,win:Math.round(35+r()*55)}));
+  const r=rng(seed+321),syms=['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','DOGEUSDT','ADAUSDT','LINKUSDT'];
+  RANK.list=syms.map(sym=>({sym,v:Math.trunc((r()-0.45)*40*100)/100}));
+  renderRankList();
+}
+function rankTab(side){RANK.side=side;
+  document.getElementById('rk-tab-win').classList.toggle('on',side==='win');
+  document.getElementById('rk-tab-loss').classList.toggle('on',side==='loss');
   renderRankList();
 }
 function renderRankList(){
-  const byWin=RANK.mode==='win';
-  let list=RANK.list.slice().sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
+  const win=RANK.side==='win';
+  const list=RANK.list.filter(x=>win?x.v>0:x.v<0).sort((a,b)=>win?b.v-a.v:a.v-b.v).slice(0,5);
+  const el=document.getElementById('rk-list');
+  if(!list.length){el.innerHTML='<div style="color:var(--muted2);font-size:13px;padding:16px 0;text-align:center;">暂无'+(win?'盈利':'亏损')+'合约</div>';return;}
   const maxA=Math.max(...list.map(x=>Math.abs(x.v)),1);
-  document.getElementById('rk-list').innerHTML=list.map(x=>{
+  el.innerHTML=list.map(x=>{
     const w=Math.abs(x.v)/maxA*100,col=x.v>=0?'#00C566':'#F6465D';
     return '<div class="row"><span class="nm">'+x.sym+'</span><div class="track"><div class="fill" style="width:'+w.toFixed(0)+'%;background:'+col+'"></div></div><span class="amt '+(x.v>=0?'g':'r')+'">'+(x.v>=0?'+':'')+fSigned(x.v)+'</span></div>';}).join('');
 }
