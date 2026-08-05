@@ -563,10 +563,7 @@ section{padding:0 16px;}
   <div class="scroll paged">
     <!-- 盈亏概览 (固定头部块，与总资产分析同款) -->
     <section class="asset-head">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span class="ov-label click-i" onclick="openInfo('cequity')">合约账户估值 <svg class="eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
-        <div style="font-size:12px;color:var(--muted2);background:#F4F5F7;border-radius:6px;padding:3px 8px;cursor:pointer;" onclick="switchPnlTab('ca')">交易额</div>
-      </div>
+      <span class="ov-label click-i" onclick="openInfo('cequity')">合约账户估值 <svg class="eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#848E9C" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
       <div style="display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;">
         <span class="big-num" id="pnl-equity" style="font-size:34px;color:var(--text);">510.45</span>
         <span class="unit" onclick="toast('计价单位（原型未展开）')" style="font-size:15px;font-weight:600;color:var(--muted);cursor:pointer;">USDT ▾</span>
@@ -630,11 +627,10 @@ section{padding:0 16px;}
       <!-- 交易分析 -->
       <div class="card">
         <div style="font-size:18px;font-weight:700;">交易分析 <svg class="info-i click-i" onclick="openInfo('trade')" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-        <div style="font-size:12px;color:var(--muted2);margin-top:2px;">仅 USDT 本位永续 · 仓位全部平仓后 1 小时计入</div>
-        <div class="tm-grid" id="tm-grid"></div>
+        <div class="tm-grid" id="tm-grid" style="margin-top:12px;"></div>
         <div class="pl-cap" id="pl-cap" style="margin-top:16px;"></div>
         <div class="pl-bar" id="pl-bar" style="margin-top:6px;"></div>
-        <div class="ls-grid" id="tm-grid2" style="margin-top:14px;"></div>
+        <div id="tm-grid2" style="margin-top:6px;"></div>
       </div>
       <!-- 盈亏排行 -->
       <div class="card">
@@ -642,42 +638,8 @@ section{padding:0 16px;}
         <div style="font-size:12px;color:var(--muted2);margin-top:2px;">按合约 · 前 5</div>
         <div class="rk" id="rk-list"></div>
       </div>
-      <!-- 平仓明细 -->
-      <div class="card">
-        <div style="font-size:18px;font-weight:700;margin-bottom:12px;">订单明细</div>
-        <div class="mini-tabs"><span class="on" id="cd-tab-ord" onclick="cdTab('ord')">订单历史</span><span id="cd-tab-trade" onclick="cdTab('trade')">交易历史</span><span id="cd-tab-pos" onclick="cdTab('pos')">仓位历史</span></div>
-        <div id="cd-list"></div>
-      </div>
     </div><!-- /pnl-tab-ca -->
 
-  </div>
-</div>
-
-<!-- 订单详情 (图3) -->
-<div class="screen" id="screen-order-detail">
-  <div class="statusbar"><span>17:41</span><span class="dots">
-    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/></svg>
-    <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2C5 2 2.5 4 1 6l7.5 6L16 6c-1.5-2-4-4-7.5-4z" fill="none" stroke="#1E2329" stroke-width="1.3"/></svg>
-    <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="#1E2329" stroke-width="1"/><rect x="3" y="3" width="13" height="7" rx="1.5"/><rect x="23" y="4.5" width="2" height="4" rx="1"/></svg>
-  </span></div>
-  <div class="pghead">
-    <div class="back" onclick="go('screen-pnl')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E2329" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
-    <div class="title">订单详情</div>
-    <div style="width:24px;"></div>
-  </div>
-  <div class="scroll paged">
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span class="sym" id="od-sym" style="font-size:16px;font-weight:700;">BTCUSDT 永续</span>
-        <span id="od-status" style="font-size:14px;font-weight:600;">已成交</span>
-      </div>
-      <div class="od-badges" id="od-badges"></div>
-      <div id="od-kv" style="margin-top:6px;"></div>
-    </div>
-    <div class="card">
-      <div style="font-size:16px;font-weight:700;margin-bottom:4px;">成交明细</div>
-      <div id="od-fill"></div>
-    </div>
   </div>
 </div>
 
@@ -747,7 +709,7 @@ const INFO={
  gain:['总盈利','期间所有已实现获利加总。',''],
  loss:['总亏损','期间所有已实现亏损加总。',''],
  net:['净盈利/亏损','净盈利/亏损 = 总盈利 − 总亏损。',''],
- trade:['交易分析','基于已完全平仓仓位统计；平仓总盈亏含开平仓手续费与资金费用。','*交易机器人与跟单产生的交易量不纳入统计。'],
+ trade:['交易分析','仅统计 USDT 本位永续；基于已完全平仓仓位，仓位全部平仓后 1 小时计入；平仓总盈亏含开平仓手续费与资金费用。','*交易机器人与跟单产生的交易量不纳入统计。'],
  rank:['盈亏排名','所选时间段内平仓产生的盈亏排名，按绝对值从大到小排序。','按合约(如 BTCUSDT)聚合。'],
  // ===== 资产报告 =====
  ranalysis:['资产分析','资产变动% = 资产净值(最后一天 − 初始日) ÷ 初始日；资产PNL = 所选时间内所有钱包的资产净盈亏。','*每日基于每天 0:00 (UTC+8)；法币按 App 设置折算。'],
@@ -1258,7 +1220,7 @@ function drawPnl(days,startStr,endStr){
   PNLSTAT.data={own,btc,ownEnd:own[n-1],btcEnd:btc[n-1],cum,cumEnd,base:510.45,s,e};
   document.getElementById('pnl-stat-line')._active=null;
   pnlStat(PNLSTAT.mode);
-  drawTrade(days,daily,seed);drawRanking(days,seed);drawCloseOrders(seed);
+  drawTrade(days,daily,seed);drawRanking(days,seed);
 }
 /* 统一设置数值+涨跌色 */
 function setStat(id,txt,pos,base){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className=(base||'vv')+' '+(pos?'g':'r');}
@@ -1306,24 +1268,25 @@ function drawTrade(days,daily,seed){
     '<div style="text-align:right"><div class="k" style="font-size:13px;">总亏损</div><div class="r" style="font-size:17px;font-weight:700;margin-top:3px;">-'+loss.toFixed(2)+' USDT</div></div>';
   const plBar=document.getElementById('pl-bar');
   if(plBar) plBar.innerHTML='<div style="width:'+(gain/tot*100).toFixed(0)+'%;background:var(--green)"></div><div style="width:'+(loss/tot*100).toFixed(0)+'%;background:var(--red)"></div>';
-  // 盈利/亏损 双列 4行（与顶部 总盈利/总亏损 对应：左盈利、右亏损，平均盈亏符号一致）
+  // 盈利/亏损 4项，均用进度条表达两边（左绿=盈利侧、右红=亏损侧；多空比左多右空）
   const longs=Math.round(trades.length*(0.4+r()*0.3)),shorts=Math.max(0,trades.length-longs);
-  const lsRatio=longs+':'+shorts;                       // 全局多空比（两列同一值）
   const winHold=Math.round(2+r()*70),lossHold=Math.round(2+r()*70);
   const winAvg=wins.length?gain/wins.length:0;          // 盈利均值(+)
   const lossAvg=losses.length?-loss/losses.length:0;    // 亏损均值(−)
-  const mkSide=(cnt,hold,avg,right)=>{
-    const s=right?'text-align:right':'';
-    const vStyle='font-size:16px;font-weight:700;margin:3px 0 14px;';
-    return '<div style="'+s+'">'+
-      '<div class="k">平均持仓时间</div><div style="'+vStyle+'">'+hold+' 小时</div>'+
-      '<div class="k">仓位数</div><div style="'+vStyle+'">'+cnt+'</div>'+
-      '<div class="k">多空比</div><div style="'+vStyle+'">'+lsRatio+'</div>'+
-      '<div class="k">平均盈亏</div><div class="'+(avg>=0?'g':'r')+'" style="'+vStyle+'">'+(avg>=0?'+':'')+fSigned(avg)+' USDT</div>'+
+  const barRow=(label,lTxt,rTxt,lVal,rVal)=>{
+    const tot=Math.abs(lVal)+Math.abs(rVal)||1,lp=Math.round(Math.abs(lVal)/tot*100);
+    return '<div style="margin-top:16px;">'+
+      '<div class="k" style="font-size:13px;">'+label+'</div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;margin:4px 0 6px;"><span class="g">'+lTxt+'</span><span class="r">'+rTxt+'</span></div>'+
+      '<div class="pl-bar" style="margin:0;"><div style="width:'+lp+'%;background:var(--green)"></div><div style="width:'+(100-lp)+'%;background:var(--red)"></div></div>'+
     '</div>';
   };
   const grid2=document.getElementById('tm-grid2');
-  if(grid2) grid2.innerHTML=mkSide(wins.length,winHold,winAvg,false)+mkSide(losses.length,lossHold,lossAvg,true);
+  if(grid2) grid2.innerHTML=
+    barRow('平均持仓时间',winHold+' 小时',lossHold+' 小时',winHold,lossHold)+
+    barRow('仓位数',wins.length,losses.length,wins.length,losses.length)+
+    barRow('多空比','多 '+longs,'空 '+shorts,longs,shorts)+
+    barRow('平均盈亏',(winAvg>=0?'+':'')+fSigned(winAvg)+' USDT',fSigned(lossAvg)+' USDT',winAvg,lossAvg);
 }
 let RANK={mode:'amt',list:[]};
 function drawRanking(days,seed){
