@@ -1341,7 +1341,7 @@ function drawTrade(days,daily,seed){
   const barRow=(label,lTxt,rTxt,lVal,rVal)=>{
     const tot=Math.abs(lVal)+Math.abs(rVal)||1,lp=Math.round(Math.abs(lVal)/tot*100);
     return '<div style="margin-top:16px;">'+
-      '<div class="k" style="font-size:13px;">'+label+'</div>'+
+      '<div class="k" style="font-size:13px;display:flex;justify-content:space-between;"><span>'+label+'</span><span>'+label+'</span></div>'+
       '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;margin:4px 0 6px;"><span class="g">'+lTxt+'</span><span class="r">'+rTxt+'</span></div>'+
       '<div class="pl-bar" style="margin:0;"><div style="width:'+lp+'%;background:var(--green)"></div><div style="width:'+(100-lp)+'%;background:var(--red)"></div></div>'+
     '</div>';
