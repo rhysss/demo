@@ -122,6 +122,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 .demo label{display:flex;align-items:center;gap:6px;color:#cfd6df;cursor:pointer;margin-bottom:6px;}
 .demo .note{color:#5e6673;font-size:10px;max-width:180px;line-height:1.5;margin-top:4px;}
 
+/* active filter chip */
+.fchip.active{border-color:var(--green);color:var(--green);background:rgba(14,203,129,.10);}
+.fchip.active .c{color:var(--green);}
+.empty{text-align:center;color:var(--muted2);font-size:13px;padding:40px 0;}
+
+/* bottom sheet */
+.sheetmask{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.22s;z-index:60;}
+.sheetmask.on{opacity:1;pointer-events:auto;}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:20px 20px 0 0;padding:8px 0 26px;transform:translateY(100%);transition:.26s cubic-bezier(.2,.8,.2,1);border-top:1px solid var(--line);}
+.sheetmask.on .sheet{transform:translateY(0);}
+.sheet .grip{width:38px;height:4px;border-radius:3px;background:#39424e;margin:8px auto 6px;}
+.sheet .st{font-size:14px;font-weight:700;text-align:center;padding:6px 0 10px;color:var(--muted);}
+.sheet .opt{display:flex;align-items:center;justify-content:space-between;padding:15px 22px;font-size:16px;cursor:pointer;}
+.sheet .opt:active{background:var(--card2);}
+.sheet .opt.sel{color:var(--green);font-weight:700;}
+.sheet .opt .tick{color:var(--green);font-weight:800;opacity:0;}
+.sheet .opt.sel .tick{opacity:1;}
+
 /* toast */
 .toast{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);background:rgba(0,0,0,.86);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:50;}
 .toast.on{opacity:1;}
@@ -280,12 +298,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
         <!-- ==== 历史持仓 ==== -->
         <div id="pane-his">
           <div class="filters">
-            <div class="fchip">2026-07-08 → 2026-08-07 <span class="c">▾</span></div>
-            <div class="fchip">全部币种 <span class="c">▾</span></div>
-            <div class="fchip">全部方向 <span class="c">▾</span></div>
+            <div class="fchip" id="chip-date" onclick="openSheet('date')"><span id="lab-date">2026-07-08 → 2026-08-07</span> <span class="c">▾</span></div>
+            <div class="fchip" id="chip-sym" onclick="openSheet('sym')"><span id="lab-sym">全部币种</span> <span class="c">▾</span></div>
+            <div class="fchip" id="chip-dir" onclick="openSheet('dir')"><span id="lab-dir">全部方向</span> <span class="c">▾</span></div>
           </div>
+          <div class="empty" id="his-empty" style="display:none;">该筛选条件下暂无历史持仓</div>
 
-          <div class="pcard">
+          <div class="pcard hcard" data-sym="BTCUSDT" data-dir="多">
             <div class="ph"><div class="coin b">B</div><div class="name">BTCUSDT</div>
               <span class="badge">永续</span><span class="badge">全仓</span><span class="stat">部分平仓</span></div>
             <div class="grid2">
@@ -301,7 +320,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
             </div>
           </div>
 
-          <div class="pcard">
+          <div class="pcard hcard" data-sym="ETHUSDT" data-dir="空">
             <div class="ph"><div class="coin s">E</div><div class="name">ETHUSDT</div>
               <span class="badge">永续</span><span class="badge">全仓</span><span class="stat">全部平仓</span></div>
             <div class="grid2">
@@ -317,7 +336,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
             </div>
           </div>
 
-          <div class="pcard">
+          <div class="pcard hcard" data-sym="SPCXUSDT" data-dir="多">
             <div class="ph"><div class="coin b">S</div><div class="name">SPCXUSDT</div>
               <span class="badge">永续</span><span class="badge">逐仓</span><span class="stat">全部平仓</span></div>
             <div class="grid2">
@@ -338,6 +357,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     </div>
 
   </div>
+
+  <!-- filter bottom sheet -->
+  <div class="sheetmask" id="sheetmask" onclick="closeSheet()">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="grip"></div>
+      <div class="st" id="sheet-title"></div>
+      <div id="sheet-opts"></div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
@@ -403,6 +432,58 @@ function setHold(v){
 }
 
 function goBuy(){ toast('跳转「购买 100TX」页面…'); }
+
+/* ===== history filters ===== */
+const FILT = {date:'近1个月', sym:'全部币种', dir:'全部方向'};
+const SHEET = {
+  date:{title:'时间范围', def:'近1个月', items:['近7天','近1个月','近3个月','全部']},
+  sym:{title:'币种', def:'全部币种', items:['全部币种','BTCUSDT','ETHUSDT','SPCXUSDT']},
+  dir:{title:'方向', def:'全部方向', items:['全部方向','多','空']},
+};
+let curSheet=null;
+
+function openSheet(type){
+  curSheet=type;
+  const cfg=SHEET[type];
+  document.getElementById('sheet-title').textContent=cfg.title;
+  const box=document.getElementById('sheet-opts');
+  box.innerHTML='';
+  cfg.items.forEach(it=>{
+    const d=document.createElement('div');
+    d.className='opt'+(FILT[type]===it?' sel':'');
+    d.innerHTML='<span>'+it+'</span><span class="tick">✓</span>';
+    d.onclick=()=>pickOpt(type,it);
+    box.appendChild(d);
+  });
+  document.getElementById('sheetmask').classList.add('on');
+}
+function closeSheet(){ document.getElementById('sheetmask').classList.remove('on'); }
+
+function pickOpt(type,val){
+  FILT[type]=val;
+  const cfg=SHEET[type];
+  const isDef=(val===cfg.def);
+  // chip label: date keeps range text when default, others show value
+  const lab=document.getElementById('lab-'+type);
+  const chip=document.getElementById('chip-'+type);
+  if(type==='date'){ lab.textContent = isDef ? '2026-07-08 → 2026-08-07' : val; }
+  else{ lab.textContent = val; }
+  chip.classList.toggle('active', !isDef);
+  closeSheet();
+  applyFilter();
+}
+
+function applyFilter(){
+  let shown=0;
+  document.querySelectorAll('.hcard').forEach(c=>{
+    const okSym = FILT.sym==='全部币种' || c.dataset.sym===FILT.sym;
+    const okDir = FILT.dir==='全部方向' || c.dataset.dir===FILT.dir;
+    const ok = okSym && okDir;
+    c.style.display = ok?'block':'none';
+    if(ok) shown++;
+  });
+  document.getElementById('his-empty').style.display = shown?'none':'block';
+}
 
 let tt;
 function toast(msg){
