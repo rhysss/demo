@@ -250,7 +250,7 @@ h1{font-size:22px;font-weight:700;margin-bottom:6px}
 </div>
 
 <div class="fixnote">
-  <b>注：</b>原型中已应用此前评审的修正 —— ① "Conform" 拼写更正为 <b>Confirm</b>；② 金额口径统一：Actual（实际扣除）= Quantity + Fee；到账金额全链路统一命名 <b>Receive</b>（卖币页/确认弹窗/订单卡片/详情页，= Price × Quantity，显示 CNY），Buy 侧对称位置用 Pay；③ "Error Network." 更正为 "Network error."；④ 删除收款方式成功后<b>返回列表页</b>，删除确认弹窗展示被删卡片信息；⑤ 金额为 0 / 无效时 Preview 置灰；⑥ <b>方案A</b>：收款方式添加/修改均不做操作时验证，验证闸门收敛到下单环节（不可豁免），新添加/变更的账户<b>首次使用强制验证</b>（验证弹窗顶部橙色提示），订单创建时快照账户信息。如需还原原稿请告知。
+  <b>注：</b>原型中已应用此前评审的修正 —— ① "Conform" 拼写更正为 <b>Confirm</b>；② 金额口径（手续费从卖出数量中扣除）：<b>Net Amount</b>（扣手续费的数量）= Quantity − Fee；<b>Receive</b>（实际到账法币）= Net Amount × Price，显示 CNY。字段顺序 Price → Quantity → Fee → Net Amount → Receive → Order ID，全链路一致（卖币页/确认弹窗/卡片/详情页），Buy 侧对称位置用 Pay；③ "Error Network." 更正为 "Network error."；④ 删除收款方式成功后<b>返回列表页</b>，删除确认弹窗展示被删卡片信息；⑤ 金额为 0 / 无效时 Preview 置灰；⑥ <b>方案A</b>：收款方式添加/修改均不做操作时验证，验证闸门收敛到下单环节（不可豁免），新添加/变更的账户<b>首次使用强制验证</b>（验证弹窗顶部橙色提示），订单创建时快照账户信息。如需还原原稿请告知。
 </div>
 
 <div class="wrap">
@@ -472,8 +472,8 @@ h1{font-size:22px;font-weight:700;margin-bottom:6px}
           <div class="sheet-title"><span class="sell-w">Sell</span><span id="usdtIc2"></span>USDT</div>
           <div class="srow"><span class="k">Quantity</span><span class="v" id="cQty">-</span></div>
           <div class="srow"><span class="k">Fee</span><span class="v" id="cFee">8 USDT</span></div>
+          <div class="srow"><span class="k">Net Amount</span><span class="v" id="cNet">-</span></div>
           <div class="srow"><span class="k">Receive</span><span class="v" id="cAmt">-</span></div>
-          <div class="srow"><span class="k">Actual</span><span class="v" id="cAct">-</span></div>
           <div class="sheet-btns">
             <button class="btn dark" onclick="closeSheets()">Cancel</button>
             <button class="btn green" id="btnConfirm" onclick="confirmMain()">Confirm(30s)</button>
@@ -597,7 +597,8 @@ var seedOrders = function(){ return {
 var orders = seedOrders();
 
 function mkOrder(st, qty){
-  return { st: st, qty: qty, fee: FEE, actual: qty + FEE, cny: (qty * RATE),
+  var net = qty - FEE;                       // 扣手续费后的数量
+  return { st: st, qty: qty, fee: FEE, net: net, cny: (net * RATE),   // 实际到账 = 扣费后数量 × 汇率
     id: '348576349234', time: '2025-03-04 14:25:25' };
 }
 var stMap = {
@@ -702,14 +703,14 @@ function onAmt(){
   var btn = document.getElementById('btnPreview');
   var ok = false, msg = '';
   if(el.value === '' || isNaN(v) || v === 0){ msg = ''; }
-  else if(v + FEE > BAL && v <= MAX){ msg = 'Insufficient balance. Please add funds.'; }
+  else if(v > BAL && v <= MAX){ msg = 'Insufficient balance. Please add funds.'; }
   else if(v < MIN){ msg = 'Amount too low. Minimum ' + MIN + ' USDT.'; }
   else if(v > MAX){ msg = 'Amount exceeds the maximum limit of ' + fmt(MAX,0) + ' USDT.'; }
   else ok = true;
   box.classList.toggle('err', msg !== '');
   err.textContent = msg;
   err.classList.toggle('on', msg !== '');
-  document.getElementById('recvInput').value = (isNaN(v) || v<=0) ? '' : fmt(v * RATE);
+  document.getElementById('recvInput').value = (isNaN(v) || v<=0) ? '' : fmt(Math.max(0, v - FEE) * RATE);
   document.getElementById('feeTxt').textContent = (ok || msg) ? (FEE + ' USDT') : '-';
   var can = ok && !!pm;
   btn.classList.toggle('disabled', !can);
@@ -717,7 +718,7 @@ function onAmt(){
 }
 function fillAll(){
   var el = document.getElementById('amtInput');
-  el.value = Math.min(BAL - FEE, MAX).toFixed(2);
+  el.value = Math.min(BAL, MAX).toFixed(2);
   onAmt();
 }
 /* quote refresh indicator */
@@ -738,8 +739,8 @@ function openConfirm(){
   pendingQty = parseFloat(document.getElementById('amtInput').value);
   document.getElementById('cQty').textContent = fmt(pendingQty) + ' USDT';
   document.getElementById('cFee').textContent = FEE + ' USDT';
-  document.getElementById('cAmt').textContent = '≈' + fmt(pendingQty * RATE) + ' CNY';
-  document.getElementById('cAct').textContent = fmt(pendingQty + FEE) + ' USDT';
+  document.getElementById('cNet').textContent = fmt(pendingQty - FEE) + ' USDT';
+  document.getElementById('cAmt').textContent = '≈' + fmt((pendingQty - FEE) * RATE) + ' CNY';
   document.getElementById('dim').classList.add('on');
   document.getElementById('shConfirm').classList.add('on');
   startCountdown();
@@ -832,10 +833,10 @@ function renderHist(){
       + '<div class="okv">'
       + '<span class="k">Price</span><span class="v">≈'+RATE+' CNY</span>'
       + '<span class="k">Quantity</span><span class="v">'+fmt(o.qty)+' USDT</span>'
-      + '<span class="k">Receive</span><span class="v recv'+(o.st==='cancel'?' cancel':'')+'">≈'+fmt(o.cny)+' CNY</span>'
-      + '<span class="div"></span>'
       + '<span class="k">Fee</span><span class="v">'+o.fee+' USDT</span>'
-      + '<span class="k">Actual</span><span class="v">'+fmt(o.actual)+' USDT</span>'
+      + '<span class="k">Net Amount</span><span class="v">'+fmt(o.net)+' USDT</span>'
+      + '<span class="div"></span>'
+      + '<span class="k">Receive</span><span class="v recv'+(o.st==='cancel'?' cancel':'')+'">≈'+fmt(o.cny)+' CNY</span>'
       + '<span class="div"></span>'
       + '<span class="k">Order ID</span><span class="v">'+o.id+' '+svgIco('copy')+'</span>'
       + '</div>'
@@ -855,11 +856,11 @@ function renderDetail(o){
     '<div class="d-status '+st.cls+'">'+st.label+'</div>'
     + '<div class="d-side"><span class="sw">Sell</span>'+fmt(o.qty)+' USDT</div>'
     + '<div class="d-card">'
-    + drow('Receive', '≈'+fmt(o.cny)+' CNY')
     + drow('Price', '≈'+RATE+' CNY')
     + drow('Quantity', fmt(o.qty)+' USDT')
     + drow('Fee', o.fee+' USDT')
-    + drow('Actual', fmt(o.actual)+' USDT')
+    + drow('Net Amount', fmt(o.net)+' USDT')
+    + drow('Receive', '≈'+fmt(o.cny)+' CNY')
     + drow('Payment Method', 'Bank Transfer')
     + drow('Account Information', '中国银行(*1234)')
     + drow('Order ID', o.id + ' ' + svgIco('copy'))
