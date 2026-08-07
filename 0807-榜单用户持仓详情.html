@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>榜单用户持仓详情 · 原型</title>
+<style>
+:root{
+  --bg:#0B0E11; --card:#151A1F; --card2:#1B2128; --line:#232A32;
+  --text:#EAECEF; --muted:#8A94A6; --muted2:#5E6673;
+  --green:#0ECB81; --green-d:#0AAE6E; --red:#F6465D; --gold:#F5C542;
+  --glow:rgba(14,203,129,.25);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#05070a;color:var(--text);display:flex;justify-content:center;gap:28px;padding:24px 12px;flex-wrap:wrap;}
+.phone{width:390px;height:844px;background:var(--bg);border-radius:44px;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;overflow:hidden;border:10px solid #111;flex-shrink:0;}
+.screens{position:absolute;inset:0;overflow:hidden;}
+.screen{position:absolute;inset:0;background:var(--bg);display:none;flex-direction:column;overflow:hidden;}
+.screen.active{display:flex;}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scroll::-webkit-scrollbar{display:none;}
+
+.statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-weight:600;font-size:15px;flex-shrink:0;color:var(--text);}
+.statusbar .r{display:flex;gap:6px;align-items:center;font-size:12px;}
+
+/* header */
+.pghead{display:flex;align-items:center;padding:8px 16px 12px;flex-shrink:0;position:relative;}
+.pghead .back{width:34px;height:34px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.pghead .title{position:absolute;left:0;right:0;text-align:center;font-size:18px;font-weight:700;pointer-events:none;}
+.pghead .info{margin-left:auto;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;}
+
+/* ===== Leaderboard entry (simplified) ===== */
+.lb-tabs{display:flex;background:var(--card);margin:4px 16px 12px;border-radius:14px;padding:5px;}
+.lb-tabs .t{flex:1;text-align:center;padding:11px 0;border-radius:10px;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;}
+.lb-tabs .t.on{background:linear-gradient(180deg,#123a2b,#0d2a1f);color:var(--green);box-shadow:0 0 0 1px rgba(14,203,129,.15) inset;}
+.lb-sub{color:var(--muted2);font-size:12px;padding:0 18px 10px;}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;padding:8px 12px 4px;}
+.pod{flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;}
+.pod .medal{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:6px;position:relative;}
+.pod .uid{font-size:11px;color:var(--muted);}
+.pod .sym{font-size:14px;font-weight:700;margin-top:3px;}
+.pod .pnl{font-size:15px;font-weight:800;color:var(--green);margin-top:4px;}
+.pod .rate{font-size:11px;color:var(--green);}
+.pod .bar{width:100%;margin-top:8px;border-radius:10px 10px 0 0;background:linear-gradient(180deg,#0ECB81,#0a5c3c);display:flex;align-items:flex-start;justify-content:center;font-size:34px;font-weight:800;color:rgba(255,255,255,.35);padding-top:10px;}
+.pod .bar.h1{height:120px;} .pod .bar.h2{height:88px;} .pod .bar.h3{height:70px;}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(14,203,129,.14);color:var(--green);vertical-align:middle;}
+.lb-row{display:flex;align-items:center;gap:12px;margin:10px 16px;padding:14px 14px;background:var(--card);border-radius:14px;cursor:pointer;}
+.lb-row .rank{width:22px;text-align:center;color:var(--muted2);font-weight:700;font-size:13px;}
+.lb-row .av{width:38px;height:38px;border-radius:50%;background:#2a323c;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.lb-row .mid .u{font-size:14px;font-weight:700;}
+.lb-row .mid .s{font-size:12px;color:var(--muted);margin-top:3px;}
+.lb-row .rt{margin-left:auto;text-align:right;}
+.lb-row .rt .p{font-size:15px;font-weight:800;color:var(--green);}
+.lb-row .rt .r{font-size:12px;color:var(--green);}
+.entry-hint{text-align:center;color:var(--muted2);font-size:12px;padding:6px 0 20px;}
+
+/* ===== Detail user summary ===== */
+.usum{margin:2px 16px 4px;padding:16px;background:linear-gradient(135deg,#14231c,#111820);border-radius:16px;border:1px solid rgba(14,203,129,.12);}
+.usum .top{display:flex;align-items:center;gap:12px;}
+.usum .av{width:46px;height:46px;border-radius:50%;background:#22303a;display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;}
+.usum .av .rk{position:absolute;-bottom:4px;bottom:-4px;right:-4px;width:20px;height:20px;border-radius:50%;background:var(--gold);color:#0B0E11;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #14231c;}
+.usum .uid{font-size:15px;font-weight:700;}
+.usum .meta{font-size:12px;color:var(--muted);margin-top:2px;}
+.usum .kpis{display:flex;gap:18px;margin-top:14px;}
+.usum .kpi .k{font-size:11px;color:var(--muted);}
+.usum .kpi .v{font-size:16px;font-weight:800;color:var(--green);margin-top:2px;}
+
+/* detail tabs */
+.dtabs{display:flex;margin:14px 16px 0;border-bottom:1px solid var(--line);}
+.dtabs .dt{padding:12px 4px;margin-right:24px;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;position:relative;}
+.dtabs .dt.on{color:var(--text);}
+.dtabs .dt.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:3px;background:var(--gold);}
+.lockmini{font-size:9px;margin-left:4px;}
+
+/* filter row (history) */
+.filters{display:flex;gap:8px;padding:14px 16px 4px;flex-wrap:nowrap;overflow-x:auto;}
+.filters::-webkit-scrollbar{display:none;}
+.filters .fchip{flex-shrink:0;display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--text);cursor:pointer;white-space:nowrap;}
+.filters .fchip .c{color:var(--muted2);font-size:10px;}
+
+/* position card */
+.pcard{margin:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;}
+.pcard .ph{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.pcard .coin{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#0B0E11;}
+.coin.b{background:var(--gold);} .coin.s{background:var(--red);color:#fff;}
+.pcard .name{font-size:16px;font-weight:800;}
+.badge{font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;background:var(--card2);color:var(--muted);}
+.badge.long{background:rgba(14,203,129,.14);color:var(--green);}
+.badge.short{background:rgba(246,70,93,.14);color:var(--red);}
+.ph .stat{margin-left:auto;font-size:12px;color:var(--muted);}
+
+.hero{display:flex;justify-content:space-between;margin-bottom:16px;}
+.hero .h{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.hero .v{font-size:22px;font-weight:800;}
+.hero .v.pos{color:var(--green);} .hero .v.neg{color:var(--red);}
+.hero .right{text-align:right;}
+
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 8px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 8px;}
+.cell .k{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.cell .v{font-size:14px;font-weight:600;}
+.cell .v.pos{color:var(--green);} .cell .v.neg{color:var(--red);}
+.cell.right{text-align:right;}
+.divider{height:1px;background:var(--line);margin:14px 0;}
+
+/* ===== Lock / blur gate ===== */
+.gatewrap{position:relative;}
+.blurred{filter:blur(7px);pointer-events:none;user-select:none;}
+.gate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 30px;}
+.gate .lockic{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1e2a22,#141c17);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 0 0 1px rgba(14,203,129,.18),0 0 40px var(--glow);margin-bottom:16px;}
+.gate .gt{font-size:17px;font-weight:800;margin-bottom:8px;}
+.gate .gd{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:6px;}
+.gate .req{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px;margin:8px 0 20px;}
+.gate .req b{color:var(--green);}
+.gate .req .have{color:var(--red);font-weight:700;}
+.gate .buybtn{background:linear-gradient(90deg,#0ECB81,#0AAE6E);color:#05100a;font-size:15px;font-weight:800;border:none;border-radius:14px;padding:14px 40px;cursor:pointer;box-shadow:0 8px 24px var(--glow);}
+.gate .sub{font-size:11px;color:var(--muted2);margin-top:14px;}
+
+/* demo control */
+.demo{position:fixed;top:14px;right:14px;background:#0f1620;border:1px solid #263140;border-radius:12px;padding:10px 12px;font-size:12px;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.demo .dh{color:#7d8798;margin-bottom:8px;font-weight:700;}
+.demo label{display:flex;align-items:center;gap:6px;color:#cfd6df;cursor:pointer;margin-bottom:6px;}
+.demo .note{color:#5e6673;font-size:10px;max-width:180px;line-height:1.5;margin-top:4px;}
+
+/* toast */
+.toast{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);background:rgba(0,0,0,.86);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:50;}
+.toast.on{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- ============ PHONE 1 : 榜单入口 ============ -->
+<div class="phone">
+  <div class="screens">
+    <!-- Leaderboard -->
+    <div class="screen active" id="s-lb">
+      <div class="statusbar"><span>15:42</span><span class="r">📶 🔋70</span></div>
+      <div class="pghead">
+        <div class="back">‹</div>
+        <div class="title">合约盈利榜</div>
+        <div class="info">ⓘ</div>
+      </div>
+      <div class="scroll">
+        <div class="lb-tabs">
+          <div class="t on">未实现盈亏榜</div>
+          <div class="t">已实现盈亏榜·7日</div>
+        </div>
+        <div class="lb-sub">更新于 15:40 · 榜单每 5 分钟更新</div>
+
+        <div class="podium">
+          <div class="pod" onclick="openUser(2)">
+            <div class="medal" style="background:radial-gradient(circle,#c8d0dc,#8b95a5)">🥈</div>
+            <div class="uid">UID 10****31</div>
+            <div class="sym">ETHUSDT <span class="tag">多 200x</span></div>
+            <div class="pnl">+903.39</div><div class="rate">+486.15%</div>
+            <div class="bar h2">2</div>
+          </div>
+          <div class="pod" onclick="openUser(1)">
+            <div class="medal" style="background:radial-gradient(circle,#ffe07a,#e0a400)">👑</div>
+            <div class="uid">UID 10****60</div>
+            <div class="sym">TSLAUSDT <span class="tag">多 100x</span></div>
+            <div class="pnl">+1,743.79</div><div class="rate">+1833.36%</div>
+            <div class="bar h1">1</div>
+          </div>
+          <div class="pod" onclick="openUser(3)">
+            <div class="medal" style="background:radial-gradient(circle,#f0a878,#c26a34)">🥉</div>
+            <div class="uid">UID 10****77</div>
+            <div class="sym">BTCUSDT <span class="tag">多 200x</span></div>
+            <div class="pnl">+149.31</div><div class="rate">+747.88%</div>
+            <div class="bar h3">3</div>
+          </div>
+        </div>
+
+        <div class="lb-row" onclick="openUser(4)">
+          <div class="rank">04</div><div class="av">👤</div>
+          <div class="mid"><div class="u">UID 10****44</div><div class="s">BTCUSDT <span class="tag">多 200x</span></div></div>
+          <div class="rt"><div class="p">+147.16</div><div class="r">+522.82%</div></div>
+        </div>
+        <div class="lb-row" onclick="openUser(5)">
+          <div class="rank">05</div><div class="av">👤</div>
+          <div class="mid"><div class="u">UID 10****60</div><div class="s">BTCUSDT <span class="tag">多 114x</span></div></div>
+          <div class="rt"><div class="p">+15.14</div><div class="r">+264.80%</div></div>
+        </div>
+        <div class="lb-row" onclick="openUser(6)">
+          <div class="rank">06</div><div class="av">👤</div>
+          <div class="mid"><div class="u">UID 10****27</div><div class="s">TSLAUSDT <span class="tag">多 100x</span></div></div>
+          <div class="rt"><div class="p">+7.92</div><div class="r">+41.67%</div></div>
+        </div>
+        <div class="entry-hint">点击任意榜单用户 → 查看其持仓详情</div>
+      </div>
+    </div>
+
+    <!-- Detail -->
+    <div class="screen" id="s-detail">
+      <div class="statusbar"><span>15:42</span><span class="r">📶 🔋70</span></div>
+      <div class="pghead">
+        <div class="back" onclick="go('s-lb')">‹</div>
+        <div class="title">持仓详情</div>
+        <div class="info">ⓘ</div>
+      </div>
+
+      <div class="usum">
+        <div class="top">
+          <div class="av">👤<span class="rk" id="d-rk">1</span></div>
+          <div>
+            <div class="uid" id="d-uid">UID 10****60</div>
+            <div class="meta">合约盈利榜 · 未实现盈亏榜</div>
+          </div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="k">未实现盈亏 (USDT)</div><div class="v" id="d-pnl">+1,743.79</div></div>
+          <div class="kpi"><div class="k">收益率</div><div class="v" id="d-rate">+1833.36%</div></div>
+        </div>
+      </div>
+
+      <div class="dtabs">
+        <div class="dt" id="tab-cur" onclick="switchTab('cur')">当前持仓<span class="lockmini" id="cur-lock">🔒</span></div>
+        <div class="dt on" id="tab-his" onclick="switchTab('his')">历史持仓</div>
+      </div>
+
+      <div class="scroll">
+        <!-- ==== 当前持仓 ==== -->
+        <div id="pane-cur" style="display:none;">
+          <div class="gatewrap">
+            <div id="cur-content">
+              <div class="pcard">
+                <div class="ph">
+                  <div class="coin b">B</div><div class="name">BTCUSDT</div>
+                  <span class="badge">永续</span><span class="badge">全仓</span>
+                  <span class="badge long">多 30x</span>
+                </div>
+                <div class="hero">
+                  <div><div class="h">未实现盈亏 (USDT)</div><div class="v pos">+11,383.12</div></div>
+                  <div class="right"><div class="h">收益率</div><div class="v pos">+66.34%</div></div>
+                </div>
+                <div class="grid3">
+                  <div class="cell"><div class="k">开仓价格</div><div class="v">62,914.04</div></div>
+                  <div class="cell"><div class="k">标记价格</div><div class="v">64,336.93</div></div>
+                  <div class="cell"><div class="k">强平价格</div><div class="v">62,855.31</div></div>
+                  <div class="cell"><div class="k">保证金比率</div><div class="v">16.14%</div></div>
+                  <div class="cell"><div class="k">杠杆</div><div class="v">30x</div></div>
+                  <div class="cell"><div class="k">保证金模式</div><div class="v">全仓</div></div>
+                </div>
+              </div>
+
+              <div class="pcard">
+                <div class="ph">
+                  <div class="coin s">E</div><div class="name">ETHUSDT</div>
+                  <span class="badge">永续</span><span class="badge">逐仓</span>
+                  <span class="badge short">空 20x</span>
+                </div>
+                <div class="hero">
+                  <div><div class="h">未实现盈亏 (USDT)</div><div class="v neg">−842.60</div></div>
+                  <div class="right"><div class="h">收益率</div><div class="v neg">−12.08%</div></div>
+                </div>
+                <div class="grid3">
+                  <div class="cell"><div class="k">开仓价格</div><div class="v">3,410.20</div></div>
+                  <div class="cell"><div class="k">标记价格</div><div class="v">3,452.88</div></div>
+                  <div class="cell"><div class="k">强平价格</div><div class="v">3,690.15</div></div>
+                  <div class="cell"><div class="k">保证金比率</div><div class="v">22.70%</div></div>
+                  <div class="cell"><div class="k">杠杆</div><div class="v">20x</div></div>
+                  <div class="cell"><div class="k">保证金模式</div><div class="v">逐仓</div></div>
+                </div>
+              </div>
+              <div style="height:20px;"></div>
+            </div>
+
+            <!-- Gate overlay (shown when not holding enough 100TX) -->
+            <div class="gate" id="cur-gate">
+              <div class="lockic">🔒</div>
+              <div class="gt">当前持仓 · 需持仓解锁</div>
+              <div class="gd">持有 <b style="color:var(--green)">100 个 100TX</b> 即可实时查看<br>该用户的当前持仓明细</div>
+              <div class="req">持仓要求 <b>100 100TX</b> · 你当前持有 <span class="have" id="gate-have">0</span></div>
+              <button class="buybtn" onclick="goBuy()">去购买 100TX</button>
+              <div class="sub">历史持仓无需持仓即可查看</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==== 历史持仓 ==== -->
+        <div id="pane-his">
+          <div class="filters">
+            <div class="fchip">2026-07-08 → 2026-08-07 <span class="c">▾</span></div>
+            <div class="fchip">全部币种 <span class="c">▾</span></div>
+            <div class="fchip">全部方向 <span class="c">▾</span></div>
+          </div>
+
+          <div class="pcard">
+            <div class="ph"><div class="coin b">B</div><div class="name">BTCUSDT</div>
+              <span class="badge">永续</span><span class="badge">全仓</span><span class="stat">部分平仓</span></div>
+            <div class="grid2">
+              <div class="cell"><div class="k">开仓价格</div><div class="v">62,859.64</div></div>
+              <div class="cell right"><div class="k">已实现盈亏 (USDT)</div><div class="v pos">+5,541.40</div></div>
+              <div class="cell"><div class="k">平仓均价</div><div class="v">64,236.71</div></div>
+              <div class="cell right"><div class="k">方向 / 杠杆</div><div class="v">多 · 全仓</div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="grid2">
+              <div class="cell"><div class="k">开仓时间</div><div class="v" style="font-size:12px;color:var(--muted)">2026-08-03 15:59:26</div></div>
+              <div class="cell right"><div class="k">最后平仓时间</div><div class="v" style="font-size:12px;color:var(--muted)">—</div></div>
+            </div>
+          </div>
+
+          <div class="pcard">
+            <div class="ph"><div class="coin s">E</div><div class="name">ETHUSDT</div>
+              <span class="badge">永续</span><span class="badge">全仓</span><span class="stat">全部平仓</span></div>
+            <div class="grid2">
+              <div class="cell"><div class="k">开仓价格</div><div class="v">1,910.81</div></div>
+              <div class="cell right"><div class="k">已实现盈亏 (USDT)</div><div class="v pos">+23,209.85</div></div>
+              <div class="cell"><div class="k">平仓均价</div><div class="v">1,861.80</div></div>
+              <div class="cell right"><div class="k">方向 / 杠杆</div><div class="v">空 · 全仓</div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="grid2">
+              <div class="cell"><div class="k">开仓时间</div><div class="v" style="font-size:12px;color:var(--muted)">2026-07-30 09:46:08</div></div>
+              <div class="cell right"><div class="k">最后平仓时间</div><div class="v" style="font-size:12px;color:var(--muted)">2026-08-03 15:58:56</div></div>
+            </div>
+          </div>
+
+          <div class="pcard">
+            <div class="ph"><div class="coin b">S</div><div class="name">SPCXUSDT</div>
+              <span class="badge">永续</span><span class="badge">逐仓</span><span class="stat">全部平仓</span></div>
+            <div class="grid2">
+              <div class="cell"><div class="k">开仓价格</div><div class="v">109.00000</div></div>
+              <div class="cell right"><div class="k">已实现盈亏 (USDT)</div><div class="v neg">−592.68</div></div>
+              <div class="cell"><div class="k">平仓均价</div><div class="v">108.87073</div></div>
+              <div class="cell right"><div class="k">方向 / 杠杆</div><div class="v">多 · 逐仓</div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="grid2">
+              <div class="cell"><div class="k">开仓时间</div><div class="v" style="font-size:12px;color:var(--muted)">2026-08-01 01:48:09</div></div>
+              <div class="cell right"><div class="k">最后平仓时间</div><div class="v" style="font-size:12px;color:var(--muted)">2026-08-02 10:59:33</div></div>
+            </div>
+          </div>
+          <div style="height:20px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- demo control -->
+<div class="demo">
+  <div class="dh">🧪 演示开关</div>
+  <label><input type="checkbox" id="holdChk" onchange="setHold(this.checked)"> 已持有 100 个 100TX</label>
+  <div class="note">勾选=解锁当前持仓；取消=模糊+引导购买。历史持仓始终可见。</div>
+</div>
+
+<script>
+let hasToken = false;
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+const USERS = {
+  1:{uid:'UID 10****60',pnl:'+1,743.79',rate:'+1833.36%',rk:'1'},
+  2:{uid:'UID 10****31',pnl:'+903.39',rate:'+486.15%',rk:'2'},
+  3:{uid:'UID 10****77',pnl:'+149.31',rate:'+747.88%',rk:'3'},
+  4:{uid:'UID 10****44',pnl:'+147.16',rate:'+522.82%',rk:'4'},
+  5:{uid:'UID 10****60',pnl:'+15.14',rate:'+264.80%',rk:'5'},
+  6:{uid:'UID 10****27',pnl:'+7.92',rate:'+41.67%',rk:'6'},
+};
+function openUser(n){
+  const u=USERS[n];
+  document.getElementById('d-uid').textContent=u.uid;
+  document.getElementById('d-pnl').textContent=u.pnl;
+  document.getElementById('d-rate').textContent=u.rate;
+  document.getElementById('d-rk').textContent=u.rk;
+  switchTab('his'); // default land on history (open to all)
+  go('s-detail');
+}
+
+function switchTab(t){
+  document.getElementById('tab-cur').classList.toggle('on',t==='cur');
+  document.getElementById('tab-his').classList.toggle('on',t==='his');
+  document.getElementById('pane-cur').style.display = t==='cur'?'block':'none';
+  document.getElementById('pane-his').style.display = t==='his'?'block':'none';
+  if(t==='cur') applyGate();
+}
+
+function applyGate(){
+  const content=document.getElementById('cur-content');
+  const gate=document.getElementById('cur-gate');
+  if(hasToken){
+    content.classList.remove('blurred');
+    gate.style.display='none';
+  }else{
+    content.classList.add('blurred');
+    gate.style.display='flex';
+    document.getElementById('gate-have').textContent='0';
+  }
+}
+
+function setHold(v){
+  hasToken=v;
+  document.getElementById('cur-lock').style.display = v?'none':'inline';
+  applyGate();
+  toast(v?'已持有 100TX，当前持仓已解锁':'未持有，当前持仓已模糊');
+}
+
+function goBuy(){ toast('跳转「购买 100TX」页面…'); }
+
+let tt;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('on');
+  clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('on'),1600);
+}
+</script>
+</body>
+</html>
