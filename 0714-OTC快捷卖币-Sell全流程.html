@@ -153,11 +153,12 @@ h1{font-size:22px;font-weight:700;margin-bottom:6px}
 .ohead .coin{display:flex;align-items:center;gap:6px;font-size:14.5px;font-weight:700;color:#fff}
 .ostat{margin-left:auto;font-size:13px;color:var(--txt-sub);display:flex;align-items:center;gap:3px}
 .otime{font-size:11.5px;color:var(--txt-dim);margin:7px 0 10px}
-.ogrid{display:flex;justify-content:space-between}
-.ocol .r{font-size:12px;margin-bottom:6px;color:var(--txt-sub)}
-.ocol .r b{color:#e6e6e6;font-weight:500;margin-left:4px}
-.ocol .r b.recv{color:#fff;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums}
-.ocol .r b.recv.cancel{color:#6b7076;text-decoration:line-through}
+.okv{display:grid;grid-template-columns:auto 1fr;column-gap:16px;row-gap:9px;align-items:baseline}
+.okv .k{font-size:12.5px;color:var(--txt-sub)}
+.okv .v{font-size:13px;color:#e6e6e6;font-weight:500;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:5px}
+.okv .v.recv{color:#fff;font-weight:700}
+.okv .v.recv.cancel{color:#6b7076;text-decoration:line-through}
+.okv .div{grid-column:1/-1;height:1px;background:#232325;margin:2px 0}
 .oid{display:flex;align-items:center;gap:5px}
 
 /* ============ order detail ============ */
@@ -828,14 +829,16 @@ function renderHist(){
       + '<div class="ohead"><span class="side-tag">Sell</span><span class="coin">'+usdt(18)+'USDT</span>'
       + '<span class="ostat"><span class="'+st.cls+'">'+st.label+'</span><span class="chev">›</span></span></div>'
       + '<div class="otime">'+o.time+'</div>'
-      + '<div class="ogrid"><div class="ocol">'
-      + '<div class="r">Price<b>≈'+RATE+' CNY</b></div>'
-      + '<div class="r">Quantity<b>'+fmt(o.qty)+' USDT</b></div>'
-      + '<div class="r">Receive<b class="recv'+(o.st==='cancel'?' cancel':'')+'">≈'+fmt(o.cny)+' CNY</b></div>'
-      + '<div class="r">Fee<b>'+o.fee+' USDT</b></div>'
-      + '<div class="r">Actual<b>'+fmt(o.actual)+' USDT</b></div>'
-      + '<div class="r oid">Order ID<b>'+o.id+'</b>'+svgIco('copy')+'</div>'
-      + '</div></div>'
+      + '<div class="okv">'
+      + '<span class="k">Price</span><span class="v">≈'+RATE+' CNY</span>'
+      + '<span class="k">Quantity</span><span class="v">'+fmt(o.qty)+' USDT</span>'
+      + '<span class="k">Receive</span><span class="v recv'+(o.st==='cancel'?' cancel':'')+'">≈'+fmt(o.cny)+' CNY</span>'
+      + '<span class="div"></span>'
+      + '<span class="k">Fee</span><span class="v">'+o.fee+' USDT</span>'
+      + '<span class="k">Actual</span><span class="v">'+fmt(o.actual)+' USDT</span>'
+      + '<span class="div"></span>'
+      + '<span class="k">Order ID</span><span class="v">'+o.id+' '+svgIco('copy')+'</span>'
+      + '</div>'
       + '</div>';
   }).join('');
 }
