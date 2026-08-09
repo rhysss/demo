@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>榜单用户持仓详情 PRD V1.0</title>
+<style>
+  :root{
+    --green:#0ECB81; --green-deep:#0a9c63; --green-soft:#e6faf1;
+    --dark:#0f2f22; --gray:#6b7280; --line:#e7ece9; --bg:#f4f7f5; --code:#f2f5f3;
+    --red:#e5484d;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:#22302b;
+    font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
+    line-height:1.75;font-size:15px;}
+  .wrap{max-width:940px;margin:0 auto;padding:0 0 80px;}
+  .doc{background:#fff;margin:24px;border-radius:14px;box-shadow:0 4px 24px rgba(20,60,45,.07);padding:48px 54px;}
+
+  .cover{border-left:5px solid var(--green);padding:6px 0 6px 18px;margin-bottom:14px;}
+  .cover h1{font-size:28px;margin:0 0 6px;font-weight:800;color:var(--dark);letter-spacing:-.5px;}
+  .cover .ver{color:var(--green-deep);font-weight:700;font-size:14px;}
+  .cover .sub{color:var(--gray);font-size:13px;margin-top:6px;}
+  .cover .sub a{color:var(--green-deep);}
+
+  h2{font-size:21px;font-weight:800;color:var(--dark);margin:40px 0 8px;padding-bottom:8px;border-bottom:2px solid var(--green);}
+  h3{font-size:17px;font-weight:700;color:var(--dark);margin:26px 0 4px;}
+  h4{font-size:15px;font-weight:700;color:#33463e;margin:18px 0 4px;}
+  h2:first-of-type{margin-top:12px;}
+
+  p{margin:8px 0;}
+  strong{color:#11201a;font-weight:700;}
+  a{color:var(--green-deep);}
+  hr{border:none;border-top:1px dashed var(--line);margin:30px 0;}
+  ul,ol{padding-left:22px;margin:8px 0;}
+  li{margin:4px 0;}
+
+  blockquote{margin:14px 0;padding:12px 16px;background:#fff8e6;border-left:4px solid #f0b429;border-radius:0 8px 8px 0;color:#7a5b00;font-size:14px;}
+  blockquote p{margin:4px 0;}
+
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px;display:block;overflow-x:auto;}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top;}
+  th{background:var(--green-soft);color:var(--dark);font-weight:700;white-space:nowrap;}
+  tr:nth-child(even) td{background:#fafefb;}
+
+  code{background:var(--code);padding:2px 6px;border-radius:5px;font-size:13px;font-family:'SF Mono',Menlo,Consolas,monospace;color:var(--green-deep);}
+  pre{background:var(--code);padding:14px 16px;border-radius:8px;overflow-x:auto;}
+  pre code{background:none;padding:0;color:#374151;}
+
+  .mermaid{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;margin:16px 0;text-align:center;}
+
+  /* callouts for 待确认/假设 */
+  .tag-td{display:inline-block;background:#fdecec;color:var(--red);font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;}
+  .tag-as{display:inline-block;background:#eef2ff;color:#4f46e5;font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;}
+  .strong-req{background:#fdecec;color:#b42318;padding:1px 6px;border-radius:4px;font-weight:700;}
+
+  .verlog{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 4px;}
+
+  /* confirm-list blocks */
+  .clist{border-radius:10px;padding:4px 18px;margin:12px 0;}
+  .clist.block{background:#fdecec;border:1px solid #f7c9c9;}
+  .clist.mid{background:#fff6e6;border:1px solid #f3d9a0;}
+  .clist.late{background:#eef7f2;border:1px solid #cfe8dc;}
+  .clist h4{margin:12px 0 6px;}
+
+  .toc{background:var(--green-soft);border-radius:10px;padding:16px 22px;margin:18px 0 8px;font-size:14px;}
+  .toc b{color:var(--dark);}
+  .toc a{display:inline-block;margin:2px 14px 2px 0;color:var(--green-deep);text-decoration:none;}
+  .toc a:hover{text-decoration:underline;}
+  del{color:#b0b0b0;}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="doc">
+
+<div class="cover">
+  <h1>合约盈利榜 · 榜单用户持仓详情 PRD</h1>
+  <div class="ver">版本 V1.0 · 2026-08-09 · 修订人 Rhys</div>
+  <div class="sub">配套原型：<a href="0807-榜单用户持仓详情.html">0807-榜单用户持仓详情.html</a></div>
+</div>
+
+<table class="verlog">
+  <tr><th>版本</th><th>日期</th><th>修订人</th><th>备注</th></tr>
+  <tr><td>V1.0</td><td>2026-08-09</td><td>Rhys</td><td>首版，含未实现/已实现双榜入口、持仓详情、100TX 持仓门禁</td></tr>
+</table>
+
+<div class="toc">
+  <b>目录：</b>
+  <a href="#s1">一、概述</a>
+  <a href="#s2">二、产品描述</a>
+  <a href="#s3">三、功能需求</a>
+  <a href="#s4">四、非功能需求</a>
+  <a href="#s5">五、附录</a>
+  <a href="#s6">待确认项清单</a>
+</div>
+
+<h2 id="s1">一、概述</h2>
+
+<h3>1.1 产品概述及目标</h3>
+
+<h4>1.1.1 背景介绍</h4>
+<p>合约盈利榜（未实现盈亏榜 / 已实现盈亏榜·7日）已上线，用户可看到榜单上高盈利交易者的 UID、币种、方向、杠杆与盈亏。但榜单是"结果展示"，用户无法进一步查看<strong>上榜者的持仓明细</strong>（开仓价、标记价、强平价等），缺少从"看到榜"到"研究策略/跟随交易"的承接路径，榜单价值未被充分释放。</p>
+<p>同时，平台希望以持仓明细作为 <strong>100TX 代币的核心权益场景</strong>——通过"查看他人实时当前持仓需持有 100 个 100TX"来驱动代币需求与持仓沉淀。</p>
+
+<h4>1.1.2 产品概述</h4>
+<p>在合约盈利榜基础上，为每个榜单用户增加<strong>持仓详情页</strong>，分「当前持仓」与「历史持仓」两个 Tab：</p>
+<ul>
+  <li><strong>历史持仓</strong>：所有用户免费可看；</li>
+  <li><strong>当前持仓</strong>：需持有 <strong>100 个 100TX</strong> 解锁；未达标时明细模糊处理并引导购买 100TX。</li>
+</ul>
+<p>持仓明细中，<strong>保证金、数量（及数量类字段）不展示</strong>，以保护上榜者的仓位规模与资金体量，降低被反向狙击/抄底风险。</p>
+
+<h4>1.1.3 产品目标</h4>
+<p><strong>业务目标</strong></p>
+<ul>
+  <li>100TX 代币新增持仓地址数 / 人均持仓量提升（核心）；<span class="tag-td">待确认</span> 具体目标值</li>
+  <li>榜单页 → 持仓详情页点击转化率 ≥ <span class="tag-td">待确认</span>%；</li>
+  <li>持仓详情页 → 100TX 购买页点击转化率 ≥ <span class="tag-td">待确认</span>%。</li>
+</ul>
+<p><strong>用户目标</strong></p>
+<ul>
+  <li>快速查看高盈利交易者的开/平仓价位、方向、杠杆等可参考信息；</li>
+  <li>通过历史持仓评估交易者的稳定性与风格。</li>
+</ul>
+
+<h4>1.1.4 目标用户</h4>
+<ul>
+  <li><strong>浏览型用户</strong>：想研究高手策略、寻找跟单/交易参考的合约用户；</li>
+  <li><strong>潜在 100TX 持有者</strong>：对"解锁实时当前持仓"有付费/持币意愿的用户；</li>
+  <li><strong>上榜用户（被展示方）</strong>：其持仓被匿名展示（UID 脱敏）。</li>
+</ul>
+
+<h3>1.2 名词说明</h3>
+<table>
+  <tr><th>名词</th><th>说明</th></tr>
+  <tr><td>未实现盈亏榜</td><td>基于当前持有仓位的浮动盈亏排名，每 5 分钟刷新</td></tr>
+  <tr><td>已实现盈亏榜·7日</td><td>基于近 7 日已平仓交易的已实现盈亏排名</td></tr>
+  <tr><td>当前持仓</td><td>用户当前持有中（未平仓）的仓位</td></tr>
+  <tr><td>历史持仓</td><td>用户已平仓 / 部分平仓的历史仓位记录</td></tr>
+  <tr><td>100TX</td><td>平台代币，本功能中作为解锁"当前持仓"的持仓门槛资产</td></tr>
+  <tr><td>持仓门禁</td><td>需持有指定数量 100TX 才能查看当前持仓的准入机制</td></tr>
+  <tr><td>数量类字段</td><td>暴露仓位规模的字段：数量、保证金、最大持仓量、已平仓量等</td></tr>
+</table>
+
+<h3>1.3 角色及权限</h3>
+<table>
+  <tr><th>角色</th><th>历史持仓</th><th>当前持仓</th><th>数量/保证金字段</th></tr>
+  <tr><td>未持有 100TX 的登录用户</td><td>✅ 可看</td><td>❌ 模糊+引导购买</td><td>❌ 全隐藏</td></tr>
+  <tr><td>持有 ≥100 个 100TX 的登录用户</td><td>✅ 可看</td><td>✅ 可看</td><td>❌ 仍隐藏</td></tr>
+  <tr><td>未登录游客</td><td><span class="tag-td">待确认</span> 是否允许浏览</td><td>❌</td><td>❌</td></tr>
+  <tr><td>上榜用户本人</td><td colspan="2"><span class="tag-td">待确认</span> 是否可见自己完整数据 / 是否可关闭被展示</td><td>—</td></tr>
+</table>
+<blockquote><p>注：数量与保证金对<strong>所有角色</strong>均不展示，与是否持有 100TX 无关。100TX 仅控制"当前持仓"整体的可见性。</p></blockquote>
+
+<h3>1.4 文档阅读对象</h3>
+<p>产品、前端、后端、测试、UED、运营（100TX 增长）。</p>
+
+<hr>
+<h2 id="s2">二、产品描述</h2>
+
+<h3>2.1 产品需求描述</h3>
+<ol>
+  <li>合约盈利榜两个子榜单（未实现 / 已实现）均支持点击任一榜单用户进入其<strong>持仓详情页</strong>。</li>
+  <li>持仓详情页含「当前持仓」「历史持仓」两个 Tab，及顶部用户盈亏摘要。</li>
+  <li>持仓明细字段展示遵循"<strong>除保证金、数量外全部展示</strong>"规则。</li>
+  <li>「历史持仓」全员可看，支持时间 / 币种 / 方向筛选。</li>
+  <li>「当前持仓」需持有 100 个 100TX 才可查看；未达标时明细高斯模糊 + 覆盖引导购买。</li>
+  <li>详情页顶部摘要与默认落地 Tab 依据<strong>来源榜单</strong>动态适配。</li>
+</ol>
+
+<h3>2.2 产品整体流程</h3>
+<h4>主流程</h4>
+<div class="mermaid">flowchart TD
+    A[合约盈利榜] --> B{选择子榜单}
+    B -->|未实现盈亏榜| C[领奖台+列表]
+    B -->|已实现盈亏榜·7日| D[单笔平仓卡片列表]
+    C -->|点击用户| E[持仓详情 · 默认落地『当前持仓』]
+    D -->|点击用户| F[持仓详情 · 默认落地『历史持仓』]
+    E --> G{是否持有 ≥100 个 100TX?}
+    G -->|是| H[清晰展示当前持仓明细]
+    G -->|否| I[明细模糊 + 引导购买 100TX]
+    I -->|点击去购买| J[100TX 购买页]
+    E -.切换Tab.-> K[历史持仓 · 全员可看]
+    F -.切换Tab.-> E
+    K --> L[按 时间/币种/方向 筛选]
+</div>
+
+<h4>状态转换图 · 当前持仓门禁</h4>
+<div class="mermaid">stateDiagram-v2
+    [*] --> 校验持仓
+    校验持仓 --> 已解锁: 持有100TX≥100
+    校验持仓 --> 已锁定: 持有100TX&lt;100
+    已锁定 --> 校验持仓: 购买100TX后返回/刷新
+    已解锁 --> [*]
+    已锁定 --> [*]
+</div>
+
+<h3>2.3 全局说明</h3>
+<p><strong>异常处理</strong></p>
+<ul>
+  <li>数据加载失败：Tab 内展示"加载失败，点击重试"占位。</li>
+  <li>无数据：当前/历史持仓为空时展示空状态文案（如"该用户暂无持仓"/"该筛选条件下暂无历史持仓"）。</li>
+  <li>持仓校验接口失败：默认按<strong>未解锁</strong>处理（从严），避免越权展示。<span class="tag-as">假设</span></li>
+</ul>
+<p><strong>列表规则</strong></p>
+<ul>
+  <li>历史持仓默认按最后平仓时间倒序；<span class="tag-as">假设</span></li>
+  <li>历史持仓默认时间范围为近 1 个月；<span class="tag-as">假设</span></li>
+  <li>分页/滚动加载策略 <span class="tag-td">待确认</span>（建议每页 20 条，触底加载）。</li>
+</ul>
+<p><strong>全局交互</strong></p>
+<ul>
+  <li>盈亏为正绿色、为负红色；方向多=绿、空=红。</li>
+  <li>UID 全程脱敏展示（如 <code>UID 10****60</code>）。</li>
+</ul>
+
+<h3>2.4 产品版本规划</h3>
+<ul>
+  <li><strong>V1.0（本期）</strong>：双榜入口点击、持仓详情双 Tab、字段隐藏规则、100TX 持仓门禁、历史筛选。</li>
+  <li><strong>V1.1（规划）</strong>：已实现榜进入时在历史列表高亮/置顶"上榜的那笔交易"；当前持仓实时刷新（WebSocket）；一键跟单/关注入口。<span class="tag-td">待确认</span></li>
+</ul>
+
+<h3>2.5 产品框架</h3>
+<pre><code>合约盈利榜
+├── 未实现盈亏榜（领奖台样式）
+├── 已实现盈亏榜·7日（单笔平仓卡片）
+└── 持仓详情页
+    ├── 顶部用户盈亏摘要（随来源适配）
+    ├── Tab：当前持仓（100TX 门禁）
+    └── Tab：历史持仓（全员可看 + 筛选器）</code></pre>
+
+<h3>2.6 功能清单</h3>
+<table>
+  <tr><th>编号</th><th>功能模块</th><th>说明</th><th>优先级</th></tr>
+  <tr><td>F1</td><td>榜单入口与点击绑定</td><td>双榜单可切换，卡片可点击进入详情</td><td>P0</td></tr>
+  <tr><td>F2</td><td>持仓详情 - 顶部摘要</td><td>随来源适配盈亏口径与标签</td><td>P0</td></tr>
+  <tr><td>F3</td><td>当前持仓 Tab</td><td>字段展示 + 100TX 门禁模糊/引导</td><td>P0</td></tr>
+  <tr><td>F4</td><td>历史持仓 Tab</td><td>字段展示 + 时间/币种/方向筛选</td><td>P0</td></tr>
+  <tr><td>F5</td><td>100TX 持仓校验与购买跳转</td><td>校验持仓、跳转购买页</td><td>P0</td></tr>
+</table>
+
+<hr>
+<h2 id="s3">三、功能需求</h2>
+
+<h3>F1 榜单入口与点击绑定</h3>
+<p><strong>描述</strong>：合约盈利榜含两个子榜单，可切换；任一榜单用户卡片可点击进入其持仓详情。</p>
+<p><strong>用户故事</strong>：作为浏览用户，我希望点击榜单上的高手，以便查看他的持仓明细。</p>
+<p><strong>前置条件</strong>：已进入合约盈利榜页面。<br><strong>后置条件</strong>：进入对应用户的持仓详情页。</p>
+<p><strong>界面及交互</strong></p>
+<ul>
+  <li>顶部两个 Tab：<code>未实现盈亏榜</code> / <code>已实现盈亏榜·7日</code>，点击切换，选中态高亮。</li>
+  <li>未实现盈亏榜：前 3 名领奖台 + 4 名起列表；卡片展示 UID、币种、方向、杠杆、未实现盈亏、收益率。</li>
+  <li>已实现盈亏榜：单笔平仓卡片列表；卡片展示排名奖牌、UID、币种、方向、杠杆、开仓价、平仓价、已实现盈亏、收益率。</li>
+  <li>点击任一卡片 → 进入持仓详情。</li>
+</ul>
+<p><strong>跳转规则（关键）</strong></p>
+<table>
+  <tr><th>来源榜单</th><th>默认落地 Tab</th><th>说明</th></tr>
+  <tr><td>未实现盈亏榜</td><td>当前持仓</td><td>未实现盈亏对应持有中仓位，落地当前持仓，命中 100TX 转化点</td></tr>
+  <tr><td>已实现盈亏榜·7日</td><td>历史持仓</td><td>已实现盈亏对应已平仓交易，落地历史持仓（全员可看）</td></tr>
+</table>
+<p><strong>异常/分支流程</strong></p>
+<ul>
+  <li>榜单数据为空：展示空榜占位。</li>
+  <li>该用户账号异常/已注销：进入后展示"用户数据不可用"。<span class="tag-as">假设</span></li>
+</ul>
+
+<h3>F2 持仓详情 - 顶部用户盈亏摘要</h3>
+<p><strong>描述</strong>：详情页顶部展示被查看用户的身份与盈亏摘要，随来源榜单动态切换口径。</p>
+<p><strong>界面及交互</strong></p>
+<table>
+  <tr><th>来源</th><th>来源标签</th><th>盈亏标签</th><th>数值</th></tr>
+  <tr><td>未实现榜</td><td>合约盈利榜 · 未实现盈亏榜</td><td>未实现盈亏 (USDT)</td><td>该用户未实现盈亏 / 收益率</td></tr>
+  <tr><td>已实现榜</td><td>合约盈利榜 · 已实现盈亏榜·7日</td><td>已实现盈亏 · 7日 (USDT)</td><td>该用户 7 日已实现盈亏 / 收益率</td></tr>
+</table>
+<ul><li>展示脱敏 UID、排名奖牌；盈亏正绿负红。</li></ul>
+
+<h3>F3 当前持仓 Tab（100TX 门禁）</h3>
+<p><strong>描述</strong>：展示用户当前持有中的仓位明细，需持有 100 个 100TX 解锁。</p>
+<p><strong>用户故事</strong>：作为持有 100TX 的用户，我希望查看高手当前的开仓/标记/强平价与保证金比率，以便研究其实时仓位。</p>
+<p><strong>前置条件</strong>：进入持仓详情页并切至/落地"当前持仓"。<br><strong>后置条件</strong>：达标→清晰展示；未达标→模糊+引导。</p>
+<p><strong>展示字段（每个持仓卡片）</strong></p>
+<table>
+  <tr><th>字段</th><th>是否展示</th><th>说明</th></tr>
+  <tr><td>币种 / 合约类型（永续）/ 保证金模式（全仓/逐仓）/ 杠杆</td><td>✅</td><td>卡片头部标签</td></tr>
+  <tr><td>方向（多/空）</td><td>✅</td><td></td></tr>
+  <tr><td>未实现盈亏 (USDT)</td><td>✅</td><td></td></tr>
+  <tr><td>收益率</td><td>✅</td><td></td></tr>
+  <tr><td>开仓价格</td><td>✅</td><td></td></tr>
+  <tr><td>标记价格</td><td>✅</td><td></td></tr>
+  <tr><td>强平价格</td><td>✅</td><td></td></tr>
+  <tr><td>保证金比率</td><td>✅</td><td>百分比，不暴露本金</td></tr>
+  <tr><td><strong>数量</strong></td><td>❌ 隐藏</td><td>数量类字段</td></tr>
+  <tr><td><strong>保证金 (USDT)</strong></td><td>❌ 隐藏</td><td>资金体量</td></tr>
+</table>
+<p><strong>门禁交互</strong></p>
+<ul>
+  <li>达标（持有 ≥100 个 100TX）：正常清晰展示，Tab 标题不带锁标。</li>
+  <li>未达标：
+    <ul>
+      <li>当前持仓明细整体<strong>高斯模糊</strong>（不可选中、不可复制）；</li>
+      <li>上层覆盖引导层：锁 icon + 文案"持有 100 个 100TX 即可实时查看该用户的当前持仓明细" + "持仓要求 100 100TX · 你当前持有 X" + <strong>【去购买 100TX】</strong> 按钮；</li>
+      <li>Tab 标题带 🔒 标记；文案提示"历史持仓无需持仓即可查看"。</li>
+    </ul>
+  </li>
+</ul>
+<p><strong>异常/分支流程</strong></p>
+<ul>
+  <li>该用户当前无持仓：展示空状态"该用户暂无当前持仓"（达标用户才可见此结论；未达标仍展示门禁）。<span class="tag-as">假设</span></li>
+  <li>持仓校验接口超时/失败：按未解锁处理并可重试。</li>
+  <li>用户购买 100TX 后返回：需<strong>重新校验持仓并自动解除模糊</strong>（返回即刷新或下拉刷新）。<span class="tag-td">待确认</span> 刷新时机</li>
+</ul>
+
+<h3>F4 历史持仓 Tab（全员可看）</h3>
+<p><strong>描述</strong>：展示用户已平仓/部分平仓的历史仓位，所有用户免费可看，支持筛选。</p>
+<p><strong>前置条件</strong>：进入持仓详情页。<br><strong>后置条件</strong>：展示筛选后的历史持仓列表。</p>
+<p><strong>展示字段（每个历史卡片）</strong></p>
+<table>
+  <tr><th>字段</th><th>是否展示</th><th>说明</th></tr>
+  <tr><td>币种 / 合约类型 / 保证金模式</td><td>✅</td><td></td></tr>
+  <tr><td>平仓状态（部分平仓/全部平仓）</td><td>✅</td><td></td></tr>
+  <tr><td>开仓价格</td><td>✅</td><td></td></tr>
+  <tr><td>平仓均价</td><td>✅</td><td></td></tr>
+  <tr><td>已实现盈亏 (USDT)</td><td>✅</td><td>正绿负红</td></tr>
+  <tr><td>方向 / 杠杆</td><td>✅</td><td></td></tr>
+  <tr><td>开仓时间 / 最后平仓时间</td><td>✅</td><td></td></tr>
+  <tr><td><strong>最大持仓量</strong></td><td>❌ 隐藏</td><td>数量类字段 <span class="tag-td">待确认</span> 是否保留</td></tr>
+  <tr><td><strong>已平仓量</strong></td><td>❌ 隐藏</td><td>数量类字段 <span class="tag-td">待确认</span> 是否保留</td></tr>
+</table>
+<p><strong>筛选器交互</strong></p>
+<ul>
+  <li>三个筛选器：<code>时间范围</code> / <code>币种</code> / <code>方向</code>，点击弹出底部选择面板（bottom sheet）。</li>
+  <li>时间范围：近7天 / 近1个月 / 近3个月 / 全部；<span class="tag-as">假设</span> 预设值</li>
+  <li>币种：全部 + 该用户历史出现过的币种；方向：全部 / 多 / 空；</li>
+  <li>选中非"全部"值时筛选器高亮；实时筛选列表；无结果展示空状态。</li>
+</ul>
+<p><strong>异常/分支流程</strong></p>
+<ul>
+  <li>无历史持仓：空状态"该用户暂无历史持仓"。</li>
+  <li>筛选无匹配：空状态"该筛选条件下暂无历史持仓"。</li>
+</ul>
+
+<h3>F5 100TX 持仓校验与购买跳转</h3>
+<p><strong>描述</strong>：校验当前登录用户 100TX 持仓量，并提供购买入口。</p>
+<p><strong>业务规则</strong></p>
+<ul>
+  <li>校验口径：当前钱包可用 + <span class="tag-td">待确认</span>（是否含锁仓/理财/质押中的 100TX）。</li>
+  <li>阈值：≥100 个即解锁；<span class="tag-td">待确认</span> 是否需要"持续持有"而非"当前快照"。</li>
+  <li>校验时机：进入当前持仓 Tab 时；购买返回时；下拉刷新时。</li>
+  <li>【去购买 100TX】跳转目标：<span class="tag-td">待确认</span> 100TX 现货/兑换购买页 URL。</li>
+</ul>
+<p><strong>异常/分支流程</strong></p>
+<ul>
+  <li>未登录点击"去购买"：先走登录流程。<span class="tag-as">假设</span></li>
+  <li>校验接口失败：按未解锁处理。</li>
+</ul>
+
+<hr>
+<h2 id="s4">四、非功能需求</h2>
+
+<h3>4.1 安全与合规</h3>
+<ul>
+  <li>所有被展示用户 UID 必须脱敏（<code>10****60</code> 形式）。</li>
+  <li>数量、保证金等资金体量字段服务端即不下发给前端（而非仅前端隐藏），避免抓包越权。<span class="strong-req">强约束</span></li>
+  <li>未解锁当前持仓时，服务端不下发当前持仓明细数据，前端模糊仅为视觉占位。<span class="strong-req">强约束·防抓包</span></li>
+  <li><span class="tag-td">待确认</span> 展示他人持仓是否需被展示方授权/提供关闭开关（隐私合规）。</li>
+</ul>
+
+<h3>4.2 统计需求（埋点）</h3>
+<table>
+  <tr><th>事件名</th><th>触发时机</th><th>关键属性</th></tr>
+  <tr><td>leaderboard_tab_switch</td><td>切换未实现/已实现榜</td><td>tab_type</td></tr>
+  <tr><td>leaderboard_user_click</td><td>点击榜单用户</td><td>source(unreal/real), rank, uid_masked, symbol</td></tr>
+  <tr><td>position_detail_view</td><td>进入持仓详情</td><td>source, landing_tab</td></tr>
+  <tr><td>position_tab_switch</td><td>切换当前/历史 Tab</td><td>tab, has_token</td></tr>
+  <tr><td>current_position_locked_view</td><td>当前持仓门禁曝光</td><td>uid_masked, hold_amount</td></tr>
+  <tr><td>buy_100tx_click</td><td>点击去购买 100TX</td><td>from=position_detail</td></tr>
+  <tr><td>history_filter_apply</td><td>应用历史筛选</td><td>filter_type, filter_value</td></tr>
+  <tr><td>position_load_error</td><td>数据加载失败</td><td>tab, error_code</td></tr>
+</table>
+
+<h3>4.3 性能需求</h3>
+<ul>
+  <li>详情页首屏加载 ≤ <span class="tag-td">待确认</span>（建议 1.5s）。</li>
+  <li>100TX 持仓校验接口响应 ≤ <span class="tag-td">待确认</span>（建议 500ms）。</li>
+  <li>当前持仓标记价格/未实现盈亏刷新频率 <span class="tag-td">待确认</span>（建议与榜单一致或 WebSocket 实时）。</li>
+</ul>
+
+<h3>4.4 数据字典（前端展示模型）</h3>
+<h4>当前持仓 CurrentPosition</h4>
+<table>
+  <tr><th>字段</th><th>类型</th><th>必填</th><th>说明</th><th>示例</th></tr>
+  <tr><td>symbol</td><td>string</td><td>是</td><td>币种</td><td>BTCUSDT</td></tr>
+  <tr><td>contractType</td><td>string</td><td>是</td><td>合约类型</td><td>永续</td></tr>
+  <tr><td>marginMode</td><td>string</td><td>是</td><td>保证金模式</td><td>全仓/逐仓</td></tr>
+  <tr><td>leverage</td><td>int</td><td>是</td><td>杠杆</td><td>30</td></tr>
+  <tr><td>side</td><td>enum</td><td>是</td><td>方向</td><td>long/short</td></tr>
+  <tr><td>unrealizedPnl</td><td>decimal</td><td>是</td><td>未实现盈亏</td><td>11383.12</td></tr>
+  <tr><td>roe</td><td>decimal</td><td>是</td><td>收益率%</td><td>66.34</td></tr>
+  <tr><td>entryPrice</td><td>decimal</td><td>是</td><td>开仓价</td><td>62914.04</td></tr>
+  <tr><td>markPrice</td><td>decimal</td><td>是</td><td>标记价</td><td>64336.93</td></tr>
+  <tr><td>liqPrice</td><td>decimal</td><td>是</td><td>强平价</td><td>62855.31</td></tr>
+  <tr><td>marginRatio</td><td>decimal</td><td>是</td><td>保证金比率%</td><td>16.14</td></tr>
+  <tr><td><del>quantity</del></td><td>—</td><td>—</td><td><strong>不下发</strong></td><td>—</td></tr>
+  <tr><td><del>margin</del></td><td>—</td><td>—</td><td><strong>不下发</strong></td><td>—</td></tr>
+</table>
+<h4>历史持仓 HistoryPosition</h4>
+<table>
+  <tr><th>字段</th><th>类型</th><th>必填</th><th>说明</th><th>示例</th></tr>
+  <tr><td>symbol / contractType / marginMode</td><td>string</td><td>是</td><td>同上</td><td>ETHUSDT</td></tr>
+  <tr><td>closeStatus</td><td>enum</td><td>是</td><td>平仓状态</td><td>partial/all</td></tr>
+  <tr><td>entryPrice</td><td>decimal</td><td>是</td><td>开仓价</td><td>1910.81</td></tr>
+  <tr><td>avgClosePrice</td><td>decimal</td><td>是</td><td>平仓均价</td><td>1861.80</td></tr>
+  <tr><td>realizedPnl</td><td>decimal</td><td>是</td><td>已实现盈亏</td><td>23209.85</td></tr>
+  <tr><td>side / leverage</td><td>—</td><td>是</td><td>方向/杠杆</td><td>short/全仓</td></tr>
+  <tr><td>openTime / lastCloseTime</td><td>datetime</td><td>是</td><td>开仓/最后平仓时间</td><td>2026-07-30 09:46:08</td></tr>
+  <tr><td><del>maxPositionSize / closedQty</del></td><td>—</td><td>—</td><td><strong>不下发</strong> <span class="tag-td">待确认</span></td><td>—</td></tr>
+</table>
+<h4>持仓校验 TokenGateCheck</h4>
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明</th></tr>
+  <tr><td>holdAmount</td><td>decimal</td><td>用户当前 100TX 持仓量</td></tr>
+  <tr><td>threshold</td><td>int</td><td>门槛，=100</td></tr>
+  <tr><td>unlocked</td><td>bool</td><td>是否解锁当前持仓</td></tr>
+</table>
+
+<h3>4.5 系统集成</h3>
+<ul>
+  <li>合约持仓服务：提供当前/历史持仓明细（按可见性裁剪字段）。</li>
+  <li>代币资产服务：提供 100TX 持仓量。</li>
+  <li>100TX 购买页：跳转承接。</li>
+  <li>埋点系统：上报上述事件。</li>
+</ul>
+
+<hr>
+<h2 id="s5">五、附录</h2>
+<h3>5.1 验收标准与测试要点</h3>
+<table>
+  <tr><th>#</th><th>验收条件</th></tr>
+  <tr><td>1</td><td>两个子榜单可切换，选中态正确；各自卡片布局符合设计</td></tr>
+  <tr><td>2</td><td>点击未实现榜用户 → 进入详情且默认落地"当前持仓"；顶部显示"未实现盈亏"</td></tr>
+  <tr><td>3</td><td>点击已实现榜用户 → 进入详情且默认落地"历史持仓"；顶部显示"已实现盈亏·7日"</td></tr>
+  <tr><td>4</td><td>任何角色在任何 Tab 下均看不到数量、保证金字段（且接口不下发）</td></tr>
+  <tr><td>5</td><td>未持有 100 个 100TX：当前持仓明细模糊、不可复制、展示引导层与"去购买"按钮</td></tr>
+  <tr><td>6</td><td>持有 ≥100 个 100TX：当前持仓清晰展示，Tab 无锁标</td></tr>
+  <tr><td>7</td><td>历史持仓对所有登录用户可见，无需持仓</td></tr>
+  <tr><td>8</td><td>历史筛选（时间/币种/方向）实时生效，选中态高亮，无结果显示空状态</td></tr>
+  <tr><td>9</td><td>购买 100TX 返回后当前持仓自动解锁（无需手动重进）</td></tr>
+  <tr><td>10</td><td>抓包验证：未解锁时接口不返回当前持仓明细数据</td></tr>
+</table>
+
+<hr>
+<h2 id="s6">待确认项清单</h2>
+
+<div class="clist block">
+<h4>🔴 必须确认（阻塞开发）</h4>
+<ol>
+  <li>100TX 持仓校验口径：是否含锁仓/理财/质押中的？"当前快照"还是"持续持有"？ → F5</li>
+  <li>未解锁时服务端是否完全不下发当前持仓明细（防抓包） → 4.1（建议：是）</li>
+  <li>数量/保证金以外，历史的"最大持仓量/已平仓量"是否也隐藏 → F4 / 4.4（原型已隐藏，需业务拍板）</li>
+  <li>未登录游客是否允许浏览历史持仓 → 1.3</li>
+  <li>【去购买 100TX】跳转目标页 URL → F5</li>
+  <li>持仓校验失败时按"未解锁"从严处理 → 2.3 / F5</li>
+</ol>
+</div>
+
+<div class="clist mid">
+<h4>🟡 建议确认（影响完整度）</h4>
+<ol start="7">
+  <li>上榜用户（被展示方）隐私：是否需授权/关闭开关 → 4.1</li>
+  <li>当前持仓刷新频率（实时 WebSocket / 5 分钟 / 静态快照） → 4.3</li>
+  <li>购买 100TX 返回后的刷新时机（自动/下拉） → F3</li>
+  <li>历史持仓默认排序（最后平仓时间倒序）与默认时间范围（近 1 个月） → 2.3</li>
+</ol>
+</div>
+
+<div class="clist late">
+<h4>🟢 可后续补充</h4>
+<ol start="11">
+  <li>V1.1 是否做"已实现榜进入时高亮/置顶上榜那笔交易" → 2.4</li>
+  <li>历史持仓分页策略（建议每页 20 触底加载） → 2.3</li>
+  <li>各项性能指标目标值 → 4.3</li>
+</ol>
+</div>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({startOnLoad:true, theme:'base', themeVariables:{
+    primaryColor:'#e6faf1', primaryBorderColor:'#0ECB81', primaryTextColor:'#0f2f22',
+    lineColor:'#0a9c63', fontSize:'14px'
+  }});
+</script>
+</body>
+</html>
