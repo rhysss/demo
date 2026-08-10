@@ -108,6 +108,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 .badge{font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;background:var(--card2);color:var(--muted);}
 .badge.long{background:rgba(14,203,129,.14);color:var(--green);}
 .badge.short{background:rgba(246,70,93,.14);color:var(--red);}
+.dirtag{font-size:12px;font-weight:800;padding:4px 9px;border-radius:6px;flex-shrink:0;}
+.dirtag.long{background:rgba(14,203,129,.16);color:var(--green);}
+.dirtag.short{background:rgba(246,70,93,.16);color:var(--red);}
 .ph .stat{margin-left:auto;font-size:12px;color:var(--muted);}
 
 .hero{display:flex;justify-content:space-between;margin-bottom:16px;}
@@ -131,11 +134,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 .gate .lockic{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1e2a22,#141c17);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 0 0 1px rgba(14,203,129,.18),0 0 40px var(--glow);margin-bottom:16px;}
 .gate .gt{font-size:17px;font-weight:800;margin-bottom:8px;}
 .gate .gd{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:6px;}
-.gate .req{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px;margin:8px 0 20px;}
+.gate .req{font-size:13px;color:var(--text);text-align:center;margin:2px 0 18px;line-height:1.75;padding:0 22px;}
 .gate .req b{color:var(--green);}
 .gate .req .have{color:var(--red);font-weight:700;}
-.gate .buybtn{background:linear-gradient(90deg,#0ECB81,#0AAE6E);color:#05100a;font-size:15px;font-weight:800;border:none;border-radius:14px;padding:14px 40px;cursor:pointer;box-shadow:0 8px 24px var(--glow);}
-.gate .sub{font-size:11px;color:var(--muted2);margin-top:14px;}
+.gate .req .sub2{font-size:12px;color:var(--muted);}
+.gate .gate-actions{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;padding:0 40px;}
+.gate .buybtn{width:100%;max-width:240px;background:linear-gradient(90deg,#0ECB81,#0AAE6E);color:#05100a;font-size:15px;font-weight:800;border:none;border-radius:14px;padding:14px 0;cursor:pointer;box-shadow:0 8px 24px var(--glow);}
+.gate .btn2{width:100%;max-width:240px;background:transparent;color:var(--green);font-size:15px;font-weight:800;border:1px solid var(--green);border-radius:14px;padding:13px 0;cursor:pointer;}
 
 /* demo control */
 .demo{position:fixed;top:14px;right:14px;background:#0f1620;border:1px solid #263140;border-radius:12px;padding:10px 12px;font-size:12px;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.4);}
@@ -363,8 +368,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
             <!-- Gate overlay (shown when not holding enough 100TX) -->
             <div class="gate" id="cur-gate">
               <div class="lockic">🔒</div>
-              <div class="req" id="gate-req">现货账户持仓要求 <b>100 100TX</b> · 你当前持有 <span class="have">0</span></div>
-              <button class="buybtn" id="gate-btn" onclick="goBuy()">去购买 100TX</button>
+              <div class="req" id="gate-req"></div>
+              <div class="gate-actions" id="gate-actions"></div>
             </div>
           </div>
         </div>
@@ -379,8 +384,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
           <div class="empty" id="his-empty" style="display:none;">该筛选条件下暂无历史持仓</div>
 
           <div class="pcard hcard" data-sym="BTCUSDT" data-dir="多">
-            <div class="ph"><div class="coin b">B</div><div class="name">BTCUSDT</div>
-              <span class="badge">永续</span><span class="badge">全仓</span><span class="badge long">多</span><span class="stat">部分平仓</span></div>
+            <div class="ph"><span class="dirtag long">多</span><div class="name">BTCUSDT</div>
+              <span class="badge">永续</span><span class="badge">全仓</span><span class="stat">部分平仓</span></div>
             <div class="grid2">
               <div class="cell"><div class="k">开仓价格</div><div class="v">62,859.64</div></div>
               <div class="cell right"><div class="k">已实现盈亏 (USDT)</div><div class="v pos">+5,541.40</div></div>
@@ -394,8 +399,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
           </div>
 
           <div class="pcard hcard" data-sym="ETHUSDT" data-dir="空">
-            <div class="ph"><div class="coin s">E</div><div class="name">ETHUSDT</div>
-              <span class="badge">永续</span><span class="badge">全仓</span><span class="badge short">空</span><span class="stat">全部平仓</span></div>
+            <div class="ph"><span class="dirtag short">空</span><div class="name">ETHUSDT</div>
+              <span class="badge">永续</span><span class="badge">全仓</span><span class="stat">全部平仓</span></div>
             <div class="grid2">
               <div class="cell"><div class="k">开仓价格</div><div class="v">1,910.81</div></div>
               <div class="cell right"><div class="k">已实现盈亏 (USDT)</div><div class="v pos">+23,209.85</div></div>
@@ -409,8 +414,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
           </div>
 
           <div class="pcard hcard" data-sym="SPCXUSDT" data-dir="多">
-            <div class="ph"><div class="coin b">S</div><div class="name">SPCXUSDT</div>
-              <span class="badge">永续</span><span class="badge">逐仓</span><span class="badge long">多</span><span class="stat">全部平仓</span></div>
+            <div class="ph"><span class="dirtag long">多</span><div class="name">SPCXUSDT</div>
+              <span class="badge">永续</span><span class="badge">逐仓</span><span class="stat">全部平仓</span></div>
             <div class="grid2">
               <div class="cell"><div class="k">开仓价格</div><div class="v">109.00000</div></div>
               <div class="cell right"><div class="k">已实现盈亏 (USDT)</div><div class="v neg">−592.68</div></div>
@@ -444,15 +449,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 <!-- demo control -->
 <div class="demo">
   <div class="dh">🧪 演示：100TX 持仓状态</div>
-  <label><input type="radio" name="gs" checked onchange="setGate('none')"> 完全未持有 → 去购买</label>
-  <label><input type="radio" name="gs" onchange="setGate('elsewhere')"> 有但在其他账户 → 去划转</label>
-  <label><input type="radio" name="gs" onchange="setGate('ok')"> 现货账户已达标 → 解锁</label>
+  <label><input type="radio" name="gs" checked onchange="setGate(0,0)"> 完全未持有 → 去购买</label>
+  <label><input type="radio" name="gs" onchange="setGate(0,120)"> 其他账户充足(120) → 去划转</label>
+  <label><input type="radio" name="gs" onchange="setGate(0,60)"> 有但不足(其他60) → 划转+购买</label>
+  <label><input type="radio" name="gs" onchange="setGate(100,0)"> 现货账户已达标(100) → 解锁</label>
   <div class="note">方案B：当前持仓需「现货账户」持有 100 个 100TX。历史持仓始终可见。</div>
 </div>
 
 <script>
-let gateState = 'none'; // none(未持有) | elsewhere(其他账户有) | ok(现货账户达标)
-const OTHER_ACC_AMT = 120; // 演示：其他账户持有量
+const REQ_ACC = '现货账户';   // 校验账户（方案B，具体账户待确认）
+const REQ_AMT = 100;          // 门槛数量
+let gateSpot = 0, gateOther = 0; // 现货账户 / 其他账户合计 持有量
 
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -506,14 +513,19 @@ function switchTab(t){
   if(t==='cur') applyGate();
 }
 
+const BUY_BTN = '<button class="buybtn" onclick="goBuy()">去购买 100TX</button>';
+const TR_BTN  = '<button class="btn2" onclick="goTransfer()">去划转 100TX</button>';
+
 function applyGate(){
   const content=document.getElementById('cur-content');
   const gate=document.getElementById('cur-gate');
   const lock=document.getElementById('cur-lock');
   const req=document.getElementById('gate-req');
-  const btn=document.getElementById('gate-btn');
+  const acts=document.getElementById('gate-actions');
+  const total=gateSpot+gateOther;
 
-  if(gateState==='ok'){
+  // 现货账户已达标 → 解锁
+  if(gateSpot>=REQ_AMT){
     content.classList.remove('blurred');
     gate.style.display='none';
     lock.style.display='none';
@@ -523,24 +535,31 @@ function applyGate(){
   gate.style.display='flex';
   lock.style.display='inline';
 
-  if(gateState==='elsewhere'){
-    // 有 100TX 但不在校验账户 → 引导划转
-    req.innerHTML='现货账户持仓要求 <b>100 100TX</b> · 现货账户 <span class="have">0</span>，其他账户 <b style="color:var(--green)">'+OTHER_ACC_AMT+'</b>';
-    btn.textContent='去划转 100TX';
-    btn.onclick=goTransfer;
+  if(total>=REQ_AMT){
+    // 总数足够，划转即可满足
+    req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100TX</b><br>'
+      +'<span class="sub2">现货账户 <span class="have">'+gateSpot+'</span> · 其他账户 <b style="color:var(--green)">'+gateOther+'</b>，划转 '+(REQ_AMT-gateSpot)+' 个即可解锁</span>';
+    acts.innerHTML=TR_BTN;
+  }else if(gateOther>0){
+    // 有但总数不足：先划转已有，再购买缺口
+    req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100TX</b><br>'
+      +'<span class="sub2">现货 <span class="have">'+gateSpot+'</span> · 其他账户 '+gateOther+' · 共 '+total+'，还需购买 <b style="color:var(--green)">'+(REQ_AMT-total)+'</b> 个</span>';
+    acts.innerHTML=TR_BTN+BUY_BTN;   // 先划转，后购买
   }else{
-    // 完全未持有 → 引导购买
-    req.innerHTML='现货账户持仓要求 <b>100 100TX</b> · 你当前持有 <span class="have">0</span>';
-    btn.textContent='去购买 100TX';
-    btn.onclick=goBuy;
+    // 完全无可划转 → 购买
+    req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100TX</b><br>'
+      +'<span class="sub2">你当前持有 <span class="have">'+gateSpot+'</span></span>';
+    acts.innerHTML=BUY_BTN;
   }
 }
 
-function setGate(s){
-  gateState=s;
+function setGate(spot,other){
+  gateSpot=spot; gateOther=other;
   applyGate();
-  toast(s==='ok'?'现货账户已达标，当前持仓已解锁'
-      :s==='elsewhere'?'现货账户不足，引导划转 100TX'
+  const total=spot+other;
+  toast(spot>=REQ_AMT?'现货账户已达标，当前持仓已解锁'
+      :total>=REQ_AMT?'现货不足，划转即可解锁'
+      :other>0?'总数不足，先划转再购买缺口'
       :'未持有，引导购买 100TX');
 }
 
