@@ -294,15 +294,13 @@
   <tr><td><strong>保证金 (USDT)</strong></td><td>❌ 隐藏</td><td>资金体量</td></tr>
 </table>
 <p><strong>门禁交互（方案 B：指定账户校验）</strong></p>
-<p>设 <code>现货账户持仓=spot</code>、<code>其他账户合计=other</code>、<code>total=spot+other</code>，门槛 <code>REQ=100</code>。仅当 <strong>spot ≥ REQ（100TX 在指定校验账户）</strong> 才解锁。未达标时明细整体<strong>高斯模糊</strong>（不可选中/复制），Tab 标题带 🔒，覆盖引导层含锁 icon + 持仓要求 + 智能按钮：</p>
+<p>设 <code>现货账户持仓=spot</code>，门槛 <code>REQ=100</code>。仅当 <strong>spot ≥ REQ（100TX 在指定校验账户）</strong> 才解锁。</p>
 <table>
-  <tr><th>状态</th><th>条件</th><th>提示</th><th>按钮</th></tr>
-  <tr><td>解锁</td><td>spot ≥ 100</td><td>—</td><td>无（清晰展示，Tab 无锁标）</td></tr>
-  <tr><td>划转即可</td><td>spot &lt; 100 且 total ≥ 100</td><td>现货账户 spot · 其他账户 other，划转 (100−spot) 个即可解锁</td><td><strong>【去划转 100TX】</strong></td></tr>
-  <tr><td>划转+购买</td><td>spot &lt; 100 且 total &lt; 100 且 other &gt; 0</td><td>现货 spot · 其他账户 other · 共 total，还需购买 (100−total) 个</td><td><strong>【去划转】</strong>（次）+ <strong>【去购买】</strong>（主）</td></tr>
-  <tr><td>购买</td><td>spot &lt; 100 且 other = 0</td><td>你当前持有 spot</td><td><strong>【去购买 100TX】</strong></td></tr>
+  <tr><th>状态</th><th>条件</th><th>展示</th></tr>
+  <tr><td>解锁</td><td>spot ≥ 100</td><td>清晰展示，Tab 无锁标</td></tr>
+  <tr><td>未达标</td><td>spot &lt; 100</td><td>明细整体<strong>高斯模糊</strong>（不可选中/复制），Tab 带 🔒；覆盖引导层含锁 icon + 文案「现货账户需持有 <b>100 100TX</b> · 你当前持有 <b>{spot}</b>」+ <strong>固定两个按钮：【去购买 100TX】（主）/【去划转 100TX】（次）</strong></td></tr>
 </table>
-<blockquote><p>逻辑要点：门槛锁定"指定账户持仓"，只要 total &lt; 100 划转无法满足、必须购买缺口 → 同时给"划转+购买"两个按钮。</p></blockquote>
+<blockquote><p>说明：未达标时不做条件分支，统一同时提供"购买 / 划转"两个入口，由用户自行选择（没有 100TX 就购买，其他账户有就划转）。</p></blockquote>
 <p><strong>异常/分支流程</strong></p>
 <ul>
   <li>该用户当前无持仓：展示空状态"该用户暂无当前持仓"（达标用户才可见此结论；未达标仍展示门禁）。<span class="tag-as">假设</span></li>
@@ -341,12 +339,12 @@
 
 <h3>F5 100TX 持仓校验与购买跳转</h3>
 <p><strong>描述</strong>：校验当前登录用户 100TX 持仓量，并提供购买入口。</p>
-<p>按<strong>方案 B（指定账户校验）</strong>校验用户在指定账户的 100TX 持仓量，并按状态提供购买 / 划转入口。</p>
+<p>按<strong>方案 B（指定账户校验）</strong>校验用户在指定账户的 100TX 持仓量，未达标时统一提供购买 / 划转两个入口。</p>
 <p><strong>业务规则</strong></p>
 <ul>
-  <li>校验账户：仅校验<strong>指定账户</strong>（原型示例为「现货账户」）的 100TX 持仓；其他账户不计入解锁判定，但用于判断是否可划转。<span class="tag-td">待确认</span> 具体锁定哪个账户</li>
+  <li>校验账户：仅校验<strong>指定账户</strong>（原型示例为「现货账户」）的 100TX 持仓；其他账户不计入解锁判定。<span class="tag-td">待确认</span> 具体锁定哪个账户</li>
   <li>阈值：指定账户 <code>spot ≥ 100</code> 即解锁；<span class="tag-td">待确认</span> "当前快照"还是"持续持有"。</li>
-  <li>智能按钮逻辑（见 F3 门禁交互四态表）：total ≥ 100 且 spot &lt; 100 → 去划转；total &lt; 100 且 other &gt; 0 → 去划转 + 去购买（先划转再买缺口）；other = 0 且 spot &lt; 100 → 去购买。</li>
+  <li>未达标按钮：固定同时展示 <strong>【去购买 100TX】（主）/【去划转 100TX】（次）</strong>，不做条件分支，由用户自行选择。</li>
   <li>校验时机：进入当前持仓 Tab 时；购买/划转返回时；下拉刷新时。</li>
   <li>【去购买 100TX】跳转目标：<span class="tag-td">待确认</span> 100TX 现货/兑换购买页 URL。</li>
   <li>【去划转 100TX】跳转目标：账户划转页，默认「转出=其他账户、转入=指定账户、币种=100TX、数量=建议补足额」。<span class="tag-td">待确认</span> 是否预填数量</li>

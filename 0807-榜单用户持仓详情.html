@@ -449,17 +449,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 <!-- demo control -->
 <div class="demo">
   <div class="dh">🧪 演示：100TX 持仓状态</div>
-  <label><input type="radio" name="gs" checked onchange="setGate(0,0)"> 完全未持有 → 去购买</label>
-  <label><input type="radio" name="gs" onchange="setGate(0,120)"> 其他账户充足(120) → 去划转</label>
-  <label><input type="radio" name="gs" onchange="setGate(0,60)"> 有但不足(其他60) → 划转+购买</label>
-  <label><input type="radio" name="gs" onchange="setGate(100,0)"> 现货账户已达标(100) → 解锁</label>
+  <label><input type="radio" name="gs" checked onchange="setGate(0)"> 现货未持有(0) → 购买/划转</label>
+  <label><input type="radio" name="gs" onchange="setGate(60)"> 现货持有60(未达标) → 购买/划转</label>
+  <label><input type="radio" name="gs" onchange="setGate(100)"> 现货账户已达标(100) → 解锁</label>
   <div class="note">方案B：当前持仓需「现货账户」持有 100 个 100TX。历史持仓始终可见。</div>
 </div>
 
 <script>
 const REQ_ACC = '现货账户';   // 校验账户（方案B，具体账户待确认）
 const REQ_AMT = 100;          // 门槛数量
-let gateSpot = 0, gateOther = 0; // 现货账户 / 其他账户合计 持有量
+let gateSpot = 0;             // 现货账户(校验账户) 100TX 持有量
 
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -522,7 +521,6 @@ function applyGate(){
   const lock=document.getElementById('cur-lock');
   const req=document.getElementById('gate-req');
   const acts=document.getElementById('gate-actions');
-  const total=gateSpot+gateOther;
 
   // 现货账户已达标 → 解锁
   if(gateSpot>=REQ_AMT){
@@ -531,36 +529,18 @@ function applyGate(){
     lock.style.display='none';
     return;
   }
+  // 未达标 → 模糊 + 需要/已有文案 + 购买/划转双按钮
   content.classList.add('blurred');
   gate.style.display='flex';
   lock.style.display='inline';
-
-  if(total>=REQ_AMT){
-    // 总数足够，划转即可满足
-    req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100TX</b><br>'
-      +'<span class="sub2">现货账户 <span class="have">'+gateSpot+'</span> · 其他账户 <b style="color:var(--green)">'+gateOther+'</b>，划转 '+(REQ_AMT-gateSpot)+' 个即可解锁</span>';
-    acts.innerHTML=TR_BTN;
-  }else if(gateOther>0){
-    // 有但总数不足：先划转已有，再购买缺口
-    req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100TX</b><br>'
-      +'<span class="sub2">现货 <span class="have">'+gateSpot+'</span> · 其他账户 '+gateOther+' · 共 '+total+'，还需购买 <b style="color:var(--green)">'+(REQ_AMT-total)+'</b> 个</span>';
-    acts.innerHTML=TR_BTN+BUY_BTN;   // 先划转，后购买
-  }else{
-    // 完全无可划转 → 购买
-    req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100TX</b><br>'
-      +'<span class="sub2">你当前持有 <span class="have">'+gateSpot+'</span></span>';
-    acts.innerHTML=BUY_BTN;
-  }
+  req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100TX</b> · 你当前持有 <span class="have">'+gateSpot+'</span>';
+  acts.innerHTML=BUY_BTN+TR_BTN;
 }
 
-function setGate(spot,other){
-  gateSpot=spot; gateOther=other;
+function setGate(spot){
+  gateSpot=spot;
   applyGate();
-  const total=spot+other;
-  toast(spot>=REQ_AMT?'现货账户已达标，当前持仓已解锁'
-      :total>=REQ_AMT?'现货不足，划转即可解锁'
-      :other>0?'总数不足，先划转再购买缺口'
-      :'未持有，引导购买 100TX');
+  toast(spot>=REQ_AMT?'现货账户已达标，当前持仓已解锁':'未达标，可购买或划转 100TX');
 }
 
 function goBuy(){ toast('跳转「购买 100TX」页面…'); }
