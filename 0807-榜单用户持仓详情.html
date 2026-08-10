@@ -166,6 +166,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 .sheet .opt .tick{color:var(--green);font-weight:800;opacity:0;}
 .sheet .opt.sel .tick{opacity:1;}
 
+/* leaderboard gate: pin near top so lock+buttons stay visible over the tall board */
+#lb-gate{justify-content:flex-start;padding-top:140px;}
+
 /* toast */
 .toast{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);background:rgba(0,0,0,.86);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:50;}
 .toast.on{opacity:1;}
@@ -192,6 +195,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 
         <!-- 未实现盈亏榜 -->
         <div id="lb-unreal">
+        <div class="gatewrap">
+        <div id="lb-unreal-content">
         <div class="podium">
           <div class="pod" onclick="openUser(2)">
             <div class="medal" style="background:radial-gradient(circle,#c8d0dc,#8b95a5)">🥈</div>
@@ -232,6 +237,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
           <div class="rt"><div class="p">+7.92</div><div class="r">+41.67%</div></div>
         </div>
         <div class="entry-hint">点击任意榜单用户 → 查看其当前持仓</div>
+        </div><!-- /lb-unreal-content -->
+        <div class="gate" id="lb-gate">
+          <div class="lockic">🔒</div>
+          <div class="req" id="lb-gate-req"></div>
+          <div class="gate-actions" id="lb-gate-actions"></div>
+        </div>
+        </div><!-- /gatewrap -->
         </div><!-- /lb-unreal -->
 
         <!-- 已实现盈亏榜·7日 -->
@@ -515,26 +527,34 @@ function switchTab(t){
 const BUY_BTN = '<button class="buybtn" onclick="goBuy()">去购买 100TX</button>';
 const TR_BTN  = '<button class="btn2" onclick="goTransfer()">去划转 100TX</button>';
 
-function applyGate(){
-  const content=document.getElementById('cur-content');
-  const gate=document.getElementById('cur-gate');
-  const lock=document.getElementById('cur-lock');
-  const req=document.getElementById('gate-req');
-  const acts=document.getElementById('gate-actions');
+function fillGate(req, acts){
+  req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100TX</b> · 你当前持有 <span class="have">'+gateSpot+'</span>';
+  acts.innerHTML=BUY_BTN+TR_BTN;
+}
 
-  // 资金账户已达标 → 解锁
+// 通用门禁：达标解锁、未达标模糊+双按钮
+function toggleGate(contentId, gateId, reqId, actsId, lockId){
+  const content=document.getElementById(contentId);
+  const gate=document.getElementById(gateId);
+  if(!content||!gate) return;
+  const lock=lockId?document.getElementById(lockId):null;
   if(gateSpot>=REQ_AMT){
     content.classList.remove('blurred');
     gate.style.display='none';
-    lock.style.display='none';
-    return;
+    if(lock) lock.style.display='none';
+  }else{
+    content.classList.add('blurred');
+    gate.style.display='flex';
+    if(lock) lock.style.display='inline';
+    fillGate(document.getElementById(reqId), document.getElementById(actsId));
   }
-  // 未达标 → 模糊 + 需要/已有文案 + 购买/划转双按钮
-  content.classList.add('blurred');
-  gate.style.display='flex';
-  lock.style.display='inline';
-  req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100TX</b> · 你当前持有 <span class="have">'+gateSpot+'</span>';
-  acts.innerHTML=BUY_BTN+TR_BTN;
+}
+
+function applyGate(){
+  // 详情页 · 当前持仓
+  toggleGate('cur-content','cur-gate','gate-req','gate-actions','cur-lock');
+  // 榜单页 · 未实现盈亏榜（同样是"当前持仓"数据，需 100TX 解锁；已实现榜免费）
+  toggleGate('lb-unreal-content','lb-gate','lb-gate-req','lb-gate-actions',null);
 }
 
 function setGate(spot){
@@ -604,6 +624,9 @@ function toast(msg){
   el.textContent=msg; el.classList.add('on');
   clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('on'),1600);
 }
+
+// 初始化：默认未达标 → 榜单未实现榜即带遮罩
+applyGate();
 </script>
 </body>
 </html>
