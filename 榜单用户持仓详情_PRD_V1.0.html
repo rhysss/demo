@@ -144,13 +144,13 @@
 
 <h3>1.3 角色及权限</h3>
 <table>
-  <tr><th>角色</th><th>历史持仓</th><th>当前持仓</th><th>数量/保证金字段</th></tr>
-  <tr><td>未持有 100TX 的登录用户</td><td>✅ 可看</td><td>❌ 模糊+引导购买</td><td>❌ 全隐藏</td></tr>
+  <tr><th>角色</th><th>已实现榜 / 历史持仓</th><th>未实现榜 / 当前持仓</th><th>数量/保证金字段</th></tr>
+  <tr><td>未持有 100TX 的登录用户</td><td>✅ 可看</td><td>❌ 模糊(遮罩)+引导购买/划转</td><td>❌ 全隐藏</td></tr>
   <tr><td>持有 ≥100 个 100TX 的登录用户</td><td>✅ 可看</td><td>✅ 可看</td><td>❌ 仍隐藏</td></tr>
   <tr><td>未登录游客</td><td><span class="tag-td">待确认</span> 是否允许浏览</td><td>❌</td><td>❌</td></tr>
   <tr><td>上榜用户本人</td><td colspan="2"><span class="tag-td">待确认</span> 是否可见自己完整数据 / 是否可关闭被展示</td><td>—</td></tr>
 </table>
-<blockquote><p>注：数量与保证金对<strong>所有角色</strong>均不展示，与是否持有 100TX 无关。100TX 仅控制"当前持仓"整体的可见性。</p></blockquote>
+<blockquote><p>注 1：数量与保证金对<strong>所有角色</strong>均不展示，与是否持有 100TX 无关。<br>注 2：100TX 门禁按"当前持仓口径"统一生效——<strong>未实现盈亏榜</strong>与<strong>详情页当前持仓</strong>同权限（需资金账户 ≥100 个）；<strong>已实现盈亏榜</strong>与<strong>历史持仓</strong>为历史口径，全员免费。</p></blockquote>
 
 <h3>1.4 文档阅读对象</h3>
 <p>产品、前端、后端、测试、UED、运营（100TX 增长）。</p>
@@ -252,6 +252,7 @@
   <li>未实现盈亏榜：前 3 名领奖台 + 4 名起列表；卡片展示 UID、币种、方向、杠杆、未实现盈亏、收益率。</li>
   <li>已实现盈亏榜：单笔平仓卡片列表；卡片展示排名奖牌、UID、币种、方向、杠杆、开仓价、平仓价、已实现盈亏、收益率。</li>
   <li>点击任一卡片 → 进入持仓详情。</li>
+  <li><strong>榜单级持仓门禁</strong>：未实现盈亏榜展示"当前持仓"口径数据，<strong>与详情页当前持仓同权限</strong>——未达标（资金账户 100TX &lt; 100）时整个未实现榜内容<strong>高斯模糊（遮罩）+ 锁 icon + 需要/已有文案 + 去购买/去划转双按钮</strong>，解锁后正常展示并可点击进入详情；<strong>已实现盈亏榜（历史口径）对所有人免费</strong>，无遮罩。Tab 切换不受门禁影响。</li>
 </ul>
 <p><strong>跳转规则（关键）</strong></p>
 <table>
