@@ -173,6 +173,27 @@ h1{font-size:22px;font-weight:700;margin-bottom:6px}
 .st-cancel{color:#9a9fa6}
 .st-done{color:var(--green)}
 .st-dispute{color:var(--red)}
+/* dispute info card */
+.dsp{background:var(--bg-card);border-radius:12px;padding:2px 14px 12px;margin-top:14px;border:1px solid rgba(240,66,78,.3)}
+.dsp-h{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #232325;margin-bottom:2px}
+.dsp-h .t{font-size:13.5px;font-weight:700;color:#fff}
+.dsp-h .tm{font-size:11.5px;color:var(--txt-dim)}
+.dsp-tag{display:inline-block;background:var(--red-bg);color:var(--red);font-size:12px;font-weight:600;padding:2px 9px;border-radius:5px}
+.dsp-cmp{background:#141416;border-radius:8px;padding:8px 12px;margin:4px 0 2px}
+.dsp-cmp .r{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0}
+.dsp-cmp .r .k{color:var(--txt-sub)}
+.dsp-cmp .r .v{color:#e6e6e6;font-variant-numeric:tabular-nums}
+.dsp-cmp .r.claim .v{color:var(--red);font-weight:700}
+.dsp-delta{color:var(--red);font-size:11px;margin-left:7px;font-weight:600}
+.dsp-lbl{font-size:12.5px;color:var(--txt-sub);padding:12px 0 5px}
+.dsp-desc{font-size:12.5px;color:#cfd2d6;line-height:1.7;padding-bottom:2px}
+.btn.outline{background:transparent;border:1.5px solid var(--green);color:var(--green)}
+/* appeal sheet */
+.ap-lbl{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--txt-sub);margin-bottom:8px}
+.ap-count{color:var(--txt-dim);font-size:12px;font-variant-numeric:tabular-nums}
+.ap-area{width:100%;height:118px;background:var(--bg-input);border:1px solid transparent;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.6}
+.ap-area::placeholder{color:#54585e}
+.ap-area:focus{border-color:#3a3d42}
 
 /* ============ payment method pages ============ */
 .sec-label{font-size:13px;color:var(--txt-sub);margin:16px 0 10px}
@@ -501,6 +522,19 @@ h1{font-size:22px;font-weight:700;margin-bottom:6px}
           <div class="home-ind"></div>
         </div>
 
+        <!-- appeal sheet -->
+        <div class="sheet" id="shAppeal">
+          <div class="grab"></div>
+          <div class="sheet-title" style="justify-content:flex-start">申诉</div>
+          <div class="ap-lbl"><span>申诉理由</span><span class="ap-count" id="apCount">0/200</span></div>
+          <textarea id="apText" class="ap-area" maxlength="200" placeholder="请输入申诉理由" oninput="onAppealInput()"></textarea>
+          <div class="sheet-btns" style="margin-top:14px">
+            <button class="btn dark" onclick="closeSheets()">取消</button>
+            <button class="btn green disabled" id="btnAppealSubmit" onclick="submitAppeal()">提交</button>
+          </div>
+          <div class="home-ind"></div>
+        </div>
+
         <!-- delete dialog -->
         <div class="dialog" id="dlgDelete">
           <div class="mask" onclick="closeDelete()"></div>
@@ -583,6 +617,7 @@ var verifyCtx = 'sell';     // sell | pm
 var tipsState = 'none';
 var cdTimer = null, codeTimer = null;
 var pendingQty = 0;
+var curDetailOrder = null;
 
 var seedOrders = function(){ return {
   ongoing: [
@@ -807,6 +842,28 @@ function closeSheets(silent){
   document.getElementById('dim').classList.remove('on');
   document.getElementById('shConfirm').classList.remove('on');
   document.getElementById('shVerify').classList.remove('on');
+  document.getElementById('shAppeal').classList.remove('on');
+}
+
+/* ================= appeal ================= */
+function openAppeal(){
+  document.getElementById('apText').value = '';
+  onAppealInput();
+  document.getElementById('dim').classList.add('on');
+  document.getElementById('shAppeal').classList.add('on');
+}
+function onAppealInput(){
+  var t = document.getElementById('apText').value;
+  document.getElementById('apCount').textContent = t.length + '/200';
+  document.getElementById('btnAppealSubmit').classList.toggle('disabled', t.trim().length === 0);
+}
+function submitAppeal(){
+  var t = document.getElementById('apText').value.trim();
+  if(!t) return;
+  closeSheets();
+  toast('申诉已提交');
+  if(curDetailOrder){ curDetailOrder.st = 'dispute'; curDetailOrder.reason = t; }
+  setTimeout(function(){ if(curDetailOrder) renderDetail(curDetailOrder); }, 1000);
 }
 
 /* ================= history ================= */
@@ -851,6 +908,7 @@ function openDetail(tab, i){
   go('pg-detail');
 }
 function renderDetail(o){
+  curDetailOrder = o;
   var st = stMap[o.st];
   document.getElementById('detBody').innerHTML =
     '<div class="d-status '+st.cls+'">'+st.label+'</div>'
@@ -865,13 +923,26 @@ function renderDetail(o){
     + drow('Account Information', '中国银行(*1234)')
     + drow('Order ID', o.id + ' ' + svgIco('copy'))
     + drow('Order Time', o.time)
-    + '</div>';
+    + '</div>'
+    + (o.st === 'dispute' ? disputeCard(o) : '');
   var foot = document.getElementById('detFoot');
-  foot.innerHTML = (o.st === 'progress' || o.st === 'dispute')
-    ? '<button class="btn green" onclick="toast(\'联系客服（演示）\')">Contact</button><div class="home-ind"></div>'
-    : '<div class="home-ind"></div>';
+  if(o.st === 'progress' || o.st === 'dispute'){
+    foot.innerHTML = '<button class="btn green" onclick="toast(\'联系客服（演示）\')">Contact</button><div class="home-ind"></div>';
+  } else if(o.st === 'done'){
+    foot.innerHTML = '<button class="btn dark" onclick="openAppeal()">申诉</button><div class="home-ind"></div>';
+  } else {
+    foot.innerHTML = '<div class="home-ind"></div>';
+  }
 }
 function drow(k, v){ return '<div class="d-row"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>'; }
+function disputeCard(o){
+  var reason = (o && o.reason) ? o.reason : '实际成交价与订单记录不一致，申请复核最终金额。';
+  return '<div class="dsp">'
+    + '<div class="dsp-h"><span class="t">申诉信息</span><span class="tm">2025-03-04 15:02:10</span></div>'
+    + '<div class="dsp-lbl">申诉理由</div>'
+    + '<div class="dsp-desc">'+reason+'</div>'
+    + '</div>';
+}
 
 /* ================= payment methods ================= */
 function renderPMS(){
