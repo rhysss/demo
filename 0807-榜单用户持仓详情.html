@@ -365,7 +365,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
               <div style="height:20px;"></div>
             </div>
 
-            <!-- Gate overlay (shown when not holding enough 100TX) -->
+            <!-- Gate overlay (shown when not holding enough 100XT) -->
             <div class="gate" id="cur-gate">
               <div class="lockic">🔒</div>
               <div class="req" id="gate-req"></div>
@@ -448,17 +448,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 
 <!-- demo control -->
 <div class="demo">
-  <div class="dh">🧪 演示：100TX 持仓状态</div>
+  <div class="dh">🧪 演示：100XT 持仓状态</div>
   <label><input type="radio" name="gs" checked onchange="setGate(0)"> 资金账户未持有(0) → 购买/划转</label>
   <label><input type="radio" name="gs" onchange="setGate(60)"> 资金账户持有60(未达标) → 购买/划转</label>
   <label><input type="radio" name="gs" onchange="setGate(100)"> 资金账户已达标(100) → 解锁</label>
-  <div class="note">方案B：当前持仓需「资金账户」持有 100 个 100TX。历史持仓始终可见。</div>
+  <div class="note">方案B：当前持仓需「资金账户」持有 100 个 100XT。历史持仓始终可见。</div>
 </div>
 
 <script>
 const REQ_ACC = '资金账户';   // 校验账户（方案B，具体账户待确认）
 const REQ_AMT = 100;          // 门槛数量
-let gateSpot = 0;             // 资金账户(校验账户) 100TX 持有量
+let gateSpot = 0;             // 资金账户(校验账户) 100XT 持有量
 
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -512,11 +512,11 @@ function switchTab(t){
   if(t==='cur') applyGate();
 }
 
-const BUY_BTN = '<button class="buybtn" onclick="goBuy()">去购买 100TX</button>';
-const TR_BTN  = '<button class="btn2" onclick="goTransfer()">去划转 100TX</button>';
+const BUY_BTN = '<button class="buybtn" onclick="goBuy()">去购买 100XT</button>';
+const TR_BTN  = '<button class="btn2" onclick="goTransfer()">去划转 100XT</button>';
 
 function fillGate(req, acts){
-  req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100TX</b> · 你当前持有 <span class="have">'+gateSpot+'</span>';
+  req.innerHTML=REQ_ACC+'需持有 <b>'+REQ_AMT+' 100XT</b> · 你当前持有 <span class="have">'+gateSpot+'</span>';
   acts.innerHTML=BUY_BTN+TR_BTN;
 }
 
@@ -546,11 +546,11 @@ function applyGate(){
 function setGate(spot){
   gateSpot=spot;
   applyGate();
-  toast(spot>=REQ_AMT?'资金账户已达标，当前持仓已解锁':'未达标，可购买或划转 100TX');
+  toast(spot>=REQ_AMT?'资金账户已达标，当前持仓已解锁':'未达标，可购买或划转 100XT');
 }
 
-function goBuy(){ toast('跳转「购买 100TX」页面…'); }
-function goTransfer(){ toast('跳转「划转 100TX 到资金账户」…'); }
+function goBuy(){ toast('跳转「购买 100XT」页面…'); }
+function goTransfer(){ toast('跳转「划转 100XT 到资金账户」…'); }
 
 /* ===== history filters ===== */
 const FILT = {date:'近1个月', sym:'全部币种', dir:'全部方向'};

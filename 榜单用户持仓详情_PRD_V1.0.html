@@ -81,7 +81,7 @@
 
 <table class="verlog">
   <tr><th>版本</th><th>日期</th><th>修订人</th><th>备注</th></tr>
-  <tr><td>V1.0</td><td>2026-08-09</td><td>Rhys</td><td>首版，含未实现/已实现双榜入口、持仓详情、100TX 持仓门禁</td></tr>
+  <tr><td>V1.0</td><td>2026-08-09</td><td>Rhys</td><td>首版，含未实现/已实现双榜入口、持仓详情、100XT 持仓门禁</td></tr>
 </table>
 
 <div class="toc">
@@ -100,22 +100,22 @@
 
 <h4>1.1.1 背景介绍</h4>
 <p>合约盈利榜（未实现盈亏榜 / 已实现盈亏榜·7日）已上线，用户可看到榜单上高盈利交易者的 UID、币种、方向、杠杆与盈亏。但榜单是"结果展示"，用户无法进一步查看<strong>上榜者的持仓明细</strong>（开仓价、标记价、强平价等），缺少从"看到榜"到"研究策略/跟随交易"的承接路径，榜单价值未被充分释放。</p>
-<p>同时，平台希望以持仓明细作为 <strong>100TX 代币的核心权益场景</strong>——通过"查看他人实时当前持仓需持有 100 个 100TX"来驱动代币需求与持仓沉淀。</p>
+<p>同时，平台希望以持仓明细作为 <strong>100XT 代币的核心权益场景</strong>——通过"查看他人实时当前持仓需持有 100 个 100XT"来驱动代币需求与持仓沉淀。</p>
 
 <h4>1.1.2 产品概述</h4>
 <p>在合约盈利榜基础上，为每个榜单用户增加<strong>持仓详情页</strong>，分「当前持仓」与「历史持仓」两个 Tab：</p>
 <ul>
   <li><strong>历史持仓</strong>：所有用户免费可看；</li>
-  <li><strong>当前持仓</strong>：需持有 <strong>100 个 100TX</strong> 解锁；未达标时明细模糊处理并引导购买 100TX。</li>
+  <li><strong>当前持仓</strong>：需持有 <strong>100 个 100XT</strong> 解锁；未达标时明细模糊处理并引导购买 100XT。</li>
 </ul>
 <p>持仓明细中，<strong>保证金、数量（及数量类字段）不展示</strong>，以保护上榜者的仓位规模与资金体量，降低被反向狙击/抄底风险。</p>
 
 <h4>1.1.3 产品目标</h4>
 <p><strong>业务目标</strong></p>
 <ul>
-  <li>100TX 代币新增持仓地址数 / 人均持仓量提升（核心）；<span class="tag-td">待确认</span> 具体目标值</li>
+  <li>100XT 代币新增持仓地址数 / 人均持仓量提升（核心）；<span class="tag-td">待确认</span> 具体目标值</li>
   <li>榜单页 → 持仓详情页点击转化率 ≥ <span class="tag-td">待确认</span>%；</li>
-  <li>持仓详情页 → 100TX 购买页点击转化率 ≥ <span class="tag-td">待确认</span>%。</li>
+  <li>持仓详情页 → 100XT 购买页点击转化率 ≥ <span class="tag-td">待确认</span>%。</li>
 </ul>
 <p><strong>用户目标</strong></p>
 <ul>
@@ -126,7 +126,7 @@
 <h4>1.1.4 目标用户</h4>
 <ul>
   <li><strong>浏览型用户</strong>：想研究高手策略、寻找跟单/交易参考的合约用户；</li>
-  <li><strong>潜在 100TX 持有者</strong>：对"解锁实时当前持仓"有付费/持币意愿的用户；</li>
+  <li><strong>潜在 100XT 持有者</strong>：对"解锁实时当前持仓"有付费/持币意愿的用户；</li>
   <li><strong>上榜用户（被展示方）</strong>：其持仓被匿名展示（UID 脱敏）。</li>
 </ul>
 
@@ -137,23 +137,23 @@
   <tr><td>已实现盈亏榜·7日</td><td>基于近 7 日已平仓交易的已实现盈亏排名</td></tr>
   <tr><td>当前持仓</td><td>用户当前持有中（未平仓）的仓位</td></tr>
   <tr><td>历史持仓</td><td>用户已平仓 / 部分平仓的历史仓位记录</td></tr>
-  <tr><td>100TX</td><td>平台代币，本功能中作为解锁"当前持仓"的持仓门槛资产</td></tr>
-  <tr><td>持仓门禁</td><td>需持有指定数量 100TX 才能查看当前持仓的准入机制</td></tr>
+  <tr><td>100XT</td><td>平台代币，本功能中作为解锁"当前持仓"的持仓门槛资产</td></tr>
+  <tr><td>持仓门禁</td><td>需持有指定数量 100XT 才能查看当前持仓的准入机制</td></tr>
   <tr><td>数量类字段</td><td>暴露仓位规模的字段：数量、保证金、最大持仓量、已平仓量等</td></tr>
 </table>
 
 <h3>1.3 角色及权限</h3>
 <table>
   <tr><th>角色</th><th>榜单（两个榜）</th><th>详情·历史持仓</th><th>详情·当前持仓</th><th>数量/保证金字段</th></tr>
-  <tr><td>未持有 100TX 的登录用户</td><td>✅ 免费可见</td><td>✅ 可看</td><td>❌ 模糊(遮罩)+引导购买/划转</td><td>❌ 全隐藏</td></tr>
-  <tr><td>持有 ≥100 个 100TX 的登录用户</td><td>✅ 免费可见</td><td>✅ 可看</td><td>✅ 可看</td><td>❌ 仍隐藏</td></tr>
+  <tr><td>未持有 100XT 的登录用户</td><td>✅ 免费可见</td><td>✅ 可看</td><td>❌ 模糊(遮罩)+引导购买/划转</td><td>❌ 全隐藏</td></tr>
+  <tr><td>持有 ≥100 个 100XT 的登录用户</td><td>✅ 免费可见</td><td>✅ 可看</td><td>✅ 可看</td><td>❌ 仍隐藏</td></tr>
   <tr><td>未登录游客</td><td><span class="tag-td">待确认</span> 是否允许浏览</td><td><span class="tag-td">待确认</span></td><td>❌</td><td>❌</td></tr>
   <tr><td>上榜用户本人</td><td>✅</td><td colspan="2"><span class="tag-td">待确认</span> 是否可见自己完整数据 / 是否可关闭被展示</td><td>—</td></tr>
 </table>
-<blockquote><p>注 1：数量与保证金对<strong>所有角色</strong>均不展示，与是否持有 100TX 无关。<br>注 2：<strong>榜单页（含未实现/已实现两榜）本身免费无门禁</strong>；100TX 门禁仅作用于<strong>详情页「当前持仓」</strong>（需资金账户 ≥100 个）。历史持仓免费。</p></blockquote>
+<blockquote><p>注 1：数量与保证金对<strong>所有角色</strong>均不展示，与是否持有 100XT 无关。<br>注 2：<strong>榜单页（含未实现/已实现两榜）本身免费无门禁</strong>；100XT 门禁仅作用于<strong>详情页「当前持仓」</strong>（需资金账户 ≥100 个）。历史持仓免费。</p></blockquote>
 
 <h3>1.4 文档阅读对象</h3>
-<p>产品、前端、后端、测试、UED、运营（100TX 增长）。</p>
+<p>产品、前端、后端、测试、UED、运营（100XT 增长）。</p>
 
 <hr>
 <h2 id="s2">二、产品描述</h2>
@@ -164,7 +164,7 @@
   <li>持仓详情页含「当前持仓」「历史持仓」两个 Tab，及顶部用户盈亏摘要。</li>
   <li>持仓明细字段展示遵循"<strong>除保证金、数量外全部展示</strong>"规则。</li>
   <li>「历史持仓」全员可看，支持时间 / 币种 / 方向筛选。</li>
-  <li>「当前持仓」需持有 100 个 100TX 才可查看；未达标时明细高斯模糊 + 覆盖引导购买。</li>
+  <li>「当前持仓」需持有 100 个 100XT 才可查看；未达标时明细高斯模糊 + 覆盖引导购买。</li>
   <li>详情页顶部摘要与默认落地 Tab 依据<strong>来源榜单</strong>动态适配。</li>
 </ol>
 
@@ -176,10 +176,10 @@
     B -->|已实现盈亏榜·7日| D[单笔平仓卡片列表]
     C -->|点击用户| E[持仓详情 · 默认落地『当前持仓』]
     D -->|点击用户| F[持仓详情 · 默认落地『历史持仓』]
-    E --> G{是否持有 ≥100 个 100TX?}
+    E --> G{是否持有 ≥100 个 100XT?}
     G -->|是| H[清晰展示当前持仓明细]
-    G -->|否| I[明细模糊 + 引导购买 100TX]
-    I -->|点击去购买| J[100TX 购买页]
+    G -->|否| I[明细模糊 + 引导购买 100XT]
+    I -->|点击去购买| J[100XT 购买页]
     E -.切换Tab.-> K[历史持仓 · 全员可看]
     F -.切换Tab.-> E
     K --> L[按 时间/币种/方向 筛选]
@@ -188,9 +188,9 @@
 <h4>状态转换图 · 当前持仓门禁</h4>
 <div class="mermaid">stateDiagram-v2
     [*] --> 校验持仓
-    校验持仓 --> 已解锁: 持有100TX≥100
-    校验持仓 --> 已锁定: 持有100TX&lt;100
-    已锁定 --> 校验持仓: 购买100TX后返回/刷新
+    校验持仓 --> 已解锁: 持有100XT≥100
+    校验持仓 --> 已锁定: 持有100XT&lt;100
+    已锁定 --> 校验持仓: 购买100XT后返回/刷新
     已解锁 --> [*]
     已锁定 --> [*]
 </div>
@@ -216,7 +216,7 @@
 
 <h3>2.4 产品版本规划</h3>
 <ul>
-  <li><strong>V1.0（本期）</strong>：双榜入口点击、持仓详情双 Tab、字段隐藏规则、100TX 持仓门禁、历史筛选。</li>
+  <li><strong>V1.0（本期）</strong>：双榜入口点击、持仓详情双 Tab、字段隐藏规则、100XT 持仓门禁、历史筛选。</li>
   <li><strong>V1.1（规划）</strong>：已实现榜进入时在历史列表高亮/置顶"上榜的那笔交易"；当前持仓实时刷新（WebSocket）；一键跟单/关注入口。<span class="tag-td">待确认</span></li>
 </ul>
 
@@ -226,7 +226,7 @@
 ├── 已实现盈亏榜·7日（单笔平仓卡片）
 └── 持仓详情页
     ├── 顶部用户盈亏摘要（随来源适配）
-    ├── Tab：当前持仓（100TX 门禁）
+    ├── Tab：当前持仓（100XT 门禁）
     └── Tab：历史持仓（全员可看 + 筛选器）</code></pre>
 
 <h3>2.6 功能清单</h3>
@@ -234,9 +234,9 @@
   <tr><th>编号</th><th>功能模块</th><th>说明</th><th>优先级</th></tr>
   <tr><td>F1</td><td>榜单入口与点击绑定</td><td>双榜单可切换，卡片可点击进入详情</td><td>P0</td></tr>
   <tr><td>F2</td><td>持仓详情 - 顶部摘要</td><td>随来源适配盈亏口径与标签</td><td>P0</td></tr>
-  <tr><td>F3</td><td>当前持仓 Tab</td><td>字段展示 + 100TX 门禁模糊/引导</td><td>P0</td></tr>
+  <tr><td>F3</td><td>当前持仓 Tab</td><td>字段展示 + 100XT 门禁模糊/引导</td><td>P0</td></tr>
   <tr><td>F4</td><td>历史持仓 Tab</td><td>字段展示 + 时间/币种/方向筛选</td><td>P0</td></tr>
-  <tr><td>F5</td><td>100TX 持仓校验与购买跳转</td><td>校验持仓、跳转购买页</td><td>P0</td></tr>
+  <tr><td>F5</td><td>100XT 持仓校验与购买跳转</td><td>校验持仓、跳转购买页</td><td>P0</td></tr>
 </table>
 
 <hr>
@@ -252,12 +252,12 @@
   <li>未实现盈亏榜：前 3 名领奖台 + 4 名起列表；卡片展示 UID、币种、方向、杠杆、未实现盈亏、收益率。</li>
   <li>已实现盈亏榜：单笔平仓卡片列表；卡片展示排名奖牌、UID、币种、方向、杠杆、开仓价、平仓价、已实现盈亏、收益率。</li>
   <li>点击任一卡片 → 进入持仓详情。</li>
-  <li><strong>两个榜单本身均免费可见、无门禁</strong>；100TX 持仓门禁仅在<strong>点击 UID 进入详情页的「当前持仓」Tab</strong> 时触发（见 F3）。</li>
+  <li><strong>两个榜单本身均免费可见、无门禁</strong>；100XT 持仓门禁仅在<strong>点击 UID 进入详情页的「当前持仓」Tab</strong> 时触发（见 F3）。</li>
 </ul>
 <p><strong>跳转规则（关键）</strong></p>
 <table>
   <tr><th>来源榜单</th><th>默认落地 Tab</th><th>说明</th></tr>
-  <tr><td>未实现盈亏榜</td><td>当前持仓</td><td>未实现盈亏对应持有中仓位，落地当前持仓，命中 100TX 转化点</td></tr>
+  <tr><td>未实现盈亏榜</td><td>当前持仓</td><td>未实现盈亏对应持有中仓位，落地当前持仓，命中 100XT 转化点</td></tr>
   <tr><td>已实现盈亏榜·7日</td><td>历史持仓</td><td>已实现盈亏对应已平仓交易，落地历史持仓（全员可看）</td></tr>
 </table>
 <p><strong>异常/分支流程</strong></p>
@@ -276,9 +276,9 @@
 </table>
 <ul><li>展示脱敏 UID、排名奖牌；盈亏正绿负红。</li></ul>
 
-<h3>F3 当前持仓 Tab（100TX 门禁）</h3>
-<p><strong>描述</strong>：展示用户当前持有中的仓位明细，需持有 100 个 100TX 解锁。</p>
-<p><strong>用户故事</strong>：作为持有 100TX 的用户，我希望查看高手当前的开仓/标记/强平价与保证金比率，以便研究其实时仓位。</p>
+<h3>F3 当前持仓 Tab（100XT 门禁）</h3>
+<p><strong>描述</strong>：展示用户当前持有中的仓位明细，需持有 100 个 100XT 解锁。</p>
+<p><strong>用户故事</strong>：作为持有 100XT 的用户，我希望查看高手当前的开仓/标记/强平价与保证金比率，以便研究其实时仓位。</p>
 <p><strong>前置条件</strong>：进入持仓详情页并切至/落地"当前持仓"。<br><strong>后置条件</strong>：达标→清晰展示；未达标→模糊+引导。</p>
 <p><strong>展示字段（每个持仓卡片）</strong></p>
 <table>
@@ -295,18 +295,18 @@
   <tr><td><strong>保证金 (USDT)</strong></td><td>❌ 隐藏</td><td>资金体量</td></tr>
 </table>
 <p><strong>门禁交互（方案 B：指定账户校验）</strong></p>
-<p>设 <code>资金账户持仓=spot</code>，门槛 <code>REQ=100</code>。仅当 <strong>spot ≥ REQ（100TX 在指定校验账户）</strong> 才解锁。</p>
+<p>设 <code>资金账户持仓=spot</code>，门槛 <code>REQ=100</code>。仅当 <strong>spot ≥ REQ（100XT 在指定校验账户）</strong> 才解锁。</p>
 <table>
   <tr><th>状态</th><th>条件</th><th>展示</th></tr>
   <tr><td>解锁</td><td>spot ≥ 100</td><td>清晰展示，Tab 无锁标</td></tr>
-  <tr><td>未达标</td><td>spot &lt; 100</td><td>明细整体<strong>高斯模糊</strong>（不可选中/复制），Tab 带 🔒；覆盖引导层含锁 icon + 文案「资金账户需持有 <b>100 100TX</b> · 你当前持有 <b>{spot}</b>」+ <strong>固定两个按钮：【去购买 100TX】（主）/【去划转 100TX】（次）</strong></td></tr>
+  <tr><td>未达标</td><td>spot &lt; 100</td><td>明细整体<strong>高斯模糊</strong>（不可选中/复制），Tab 带 🔒；覆盖引导层含锁 icon + 文案「资金账户需持有 <b>100 100XT</b> · 你当前持有 <b>{spot}</b>」+ <strong>固定两个按钮：【去购买 100XT】（主）/【去划转 100XT】（次）</strong></td></tr>
 </table>
-<blockquote><p>说明：未达标时不做条件分支，统一同时提供"购买 / 划转"两个入口，由用户自行选择（没有 100TX 就购买，其他账户有就划转）。</p></blockquote>
+<blockquote><p>说明：未达标时不做条件分支，统一同时提供"购买 / 划转"两个入口，由用户自行选择（没有 100XT 就购买，其他账户有就划转）。</p></blockquote>
 <p><strong>异常/分支流程</strong></p>
 <ul>
   <li>该用户当前无持仓：展示空状态"该用户暂无当前持仓"（达标用户才可见此结论；未达标仍展示门禁）。<span class="tag-as">假设</span></li>
   <li>持仓校验接口超时/失败：按未解锁处理并可重试。</li>
-  <li>用户购买 100TX 后返回：需<strong>重新校验持仓并自动解除模糊</strong>（返回即刷新或下拉刷新）。<span class="tag-td">待确认</span> 刷新时机</li>
+  <li>用户购买 100XT 后返回：需<strong>重新校验持仓并自动解除模糊</strong>（返回即刷新或下拉刷新）。<span class="tag-td">待确认</span> 刷新时机</li>
 </ul>
 
 <h3>F4 历史持仓 Tab（全员可看）</h3>
@@ -338,17 +338,17 @@
   <li>筛选无匹配：空状态"该筛选条件下暂无历史持仓"。</li>
 </ul>
 
-<h3>F5 100TX 持仓校验与购买跳转</h3>
-<p><strong>描述</strong>：校验当前登录用户 100TX 持仓量，并提供购买入口。</p>
-<p>按<strong>方案 B（指定账户校验）</strong>校验用户在指定账户的 100TX 持仓量，未达标时统一提供购买 / 划转两个入口。</p>
+<h3>F5 100XT 持仓校验与购买跳转</h3>
+<p><strong>描述</strong>：校验当前登录用户 100XT 持仓量，并提供购买入口。</p>
+<p>按<strong>方案 B（指定账户校验）</strong>校验用户在指定账户的 100XT 持仓量，未达标时统一提供购买 / 划转两个入口。</p>
 <p><strong>业务规则</strong></p>
 <ul>
-  <li>校验账户：仅校验<strong>资金账户</strong>的 100TX 持仓；其他账户（现货/合约/理财等）不计入解锁判定。</li>
+  <li>校验账户：仅校验<strong>资金账户</strong>的 100XT 持仓；其他账户（现货/合约/理财等）不计入解锁判定。</li>
   <li>阈值：指定账户 <code>spot ≥ 100</code> 即解锁；<span class="tag-td">待确认</span> "当前快照"还是"持续持有"。</li>
-  <li>未达标按钮：固定同时展示 <strong>【去购买 100TX】（主）/【去划转 100TX】（次）</strong>，不做条件分支，由用户自行选择。</li>
+  <li>未达标按钮：固定同时展示 <strong>【去购买 100XT】（主）/【去划转 100XT】（次）</strong>，不做条件分支，由用户自行选择。</li>
   <li>校验时机：进入当前持仓 Tab 时；购买/划转返回时；下拉刷新时。</li>
-  <li>【去购买 100TX】跳转目标：<span class="tag-td">待确认</span> 100TX 现货/兑换购买页 URL。</li>
-  <li>【去划转 100TX】跳转目标：账户划转页，默认「转出=其他账户、转入=指定账户、币种=100TX、数量=建议补足额」。<span class="tag-td">待确认</span> 是否预填数量</li>
+  <li>【去购买 100XT】跳转目标：<span class="tag-td">待确认</span> 100XT 现货/兑换购买页 URL。</li>
+  <li>【去划转 100XT】跳转目标：账户划转页，默认「转出=其他账户、转入=指定账户、币种=100XT、数量=建议补足额」。<span class="tag-td">待确认</span> 是否预填数量</li>
 </ul>
 <p><strong>异常/分支流程</strong></p>
 <ul>
@@ -376,7 +376,7 @@
   <tr><td>position_detail_view</td><td>进入持仓详情</td><td>source, landing_tab</td></tr>
   <tr><td>position_tab_switch</td><td>切换当前/历史 Tab</td><td>tab, has_token</td></tr>
   <tr><td>current_position_locked_view</td><td>当前持仓门禁曝光</td><td>uid_masked, hold_amount</td></tr>
-  <tr><td>buy_100tx_click</td><td>点击去购买 100TX</td><td>from=position_detail</td></tr>
+  <tr><td>buy_100tx_click</td><td>点击去购买 100XT</td><td>from=position_detail</td></tr>
   <tr><td>history_filter_apply</td><td>应用历史筛选</td><td>filter_type, filter_value</td></tr>
   <tr><td>position_load_error</td><td>数据加载失败</td><td>tab, error_code</td></tr>
 </table>
@@ -384,7 +384,7 @@
 <h3>4.3 性能需求</h3>
 <ul>
   <li>详情页首屏加载 ≤ <span class="tag-td">待确认</span>（建议 1.5s）。</li>
-  <li>100TX 持仓校验接口响应 ≤ <span class="tag-td">待确认</span>（建议 500ms）。</li>
+  <li>100XT 持仓校验接口响应 ≤ <span class="tag-td">待确认</span>（建议 500ms）。</li>
   <li>当前持仓标记价格/未实现盈亏刷新频率 <span class="tag-td">待确认</span>（建议与榜单一致或 WebSocket 实时）。</li>
 </ul>
 
@@ -422,8 +422,8 @@
 <table>
   <tr><th>字段</th><th>类型</th><th>说明</th></tr>
   <tr><td>requiredAccount</td><td>string</td><td>校验账户，固定为 funding（资金账户）</td></tr>
-  <tr><td>fundingAmount</td><td>decimal</td><td>资金账户的 100TX 持仓量（= 解锁判定依据）</td></tr>
-  <tr><td>otherAmount</td><td>decimal</td><td>其他账户合计 100TX 持仓量（供用户判断可否划转）</td></tr>
+  <tr><td>fundingAmount</td><td>decimal</td><td>资金账户的 100XT 持仓量（= 解锁判定依据）</td></tr>
+  <tr><td>otherAmount</td><td>decimal</td><td>其他账户合计 100XT 持仓量（供用户判断可否划转）</td></tr>
   <tr><td>threshold</td><td>int</td><td>门槛，=100</td></tr>
   <tr><td>unlocked</td><td>bool</td><td>是否解锁（= spotAmount ≥ threshold）</td></tr>
 </table>
@@ -431,8 +431,8 @@
 <h3>4.5 系统集成</h3>
 <ul>
   <li>合约持仓服务：提供当前/历史持仓明细（按可见性裁剪字段）。</li>
-  <li>代币资产服务：提供 100TX 持仓量。</li>
-  <li>100TX 购买页：跳转承接。</li>
+  <li>代币资产服务：提供 100XT 持仓量。</li>
+  <li>100XT 购买页：跳转承接。</li>
   <li>埋点系统：上报上述事件。</li>
 </ul>
 
@@ -445,11 +445,11 @@
   <tr><td>2</td><td>点击未实现榜用户 → 进入详情且默认落地"当前持仓"；顶部显示"未实现盈亏"</td></tr>
   <tr><td>3</td><td>点击已实现榜用户 → 进入详情且默认落地"历史持仓"；顶部显示"已实现盈亏·7日"</td></tr>
   <tr><td>4</td><td>任何角色在任何 Tab 下均看不到数量、保证金字段（且接口不下发）</td></tr>
-  <tr><td>5</td><td>未持有 100 个 100TX：当前持仓明细模糊、不可复制、展示引导层与"去购买"按钮</td></tr>
-  <tr><td>6</td><td>持有 ≥100 个 100TX：当前持仓清晰展示，Tab 无锁标</td></tr>
+  <tr><td>5</td><td>未持有 100 个 100XT：当前持仓明细模糊、不可复制、展示引导层与"去购买"按钮</td></tr>
+  <tr><td>6</td><td>持有 ≥100 个 100XT：当前持仓清晰展示，Tab 无锁标</td></tr>
   <tr><td>7</td><td>历史持仓对所有登录用户可见，无需持仓</td></tr>
   <tr><td>8</td><td>历史筛选（时间/币种/方向）实时生效，选中态高亮，无结果显示空状态</td></tr>
-  <tr><td>9</td><td>购买 100TX 返回后当前持仓自动解锁（无需手动重进）</td></tr>
+  <tr><td>9</td><td>购买 100XT 返回后当前持仓自动解锁（无需手动重进）</td></tr>
   <tr><td>10</td><td>抓包验证：未解锁时接口不返回当前持仓明细数据</td></tr>
 </table>
 
@@ -463,7 +463,7 @@
   <li>未解锁时服务端是否完全不下发当前持仓明细（防抓包） → 4.1（建议：是）</li>
   <li>数量/保证金以外，历史的"最大持仓量/已平仓量"是否也隐藏 → F4 / 4.4（原型已隐藏，需业务拍板）</li>
   <li>未登录游客是否允许浏览历史持仓 → 1.3</li>
-  <li>【去购买 100TX】跳转目标页 URL → F5</li>
+  <li>【去购买 100XT】跳转目标页 URL → F5</li>
   <li>持仓校验失败时按"未解锁"从严处理 → 2.3 / F5</li>
 </ol>
 </div>
@@ -473,7 +473,7 @@
 <ol start="7">
   <li>上榜用户（被展示方）隐私：是否需授权/关闭开关 → 4.1</li>
   <li>当前持仓刷新频率（实时 WebSocket / 5 分钟 / 静态快照） → 4.3</li>
-  <li>购买 100TX 返回后的刷新时机（自动/下拉） → F3</li>
+  <li>购买 100XT 返回后的刷新时机（自动/下拉） → F3</li>
   <li>历史持仓默认排序（最后平仓时间倒序）与默认时间范围（近 1 个月） → 2.3</li>
 </ol>
 </div>
