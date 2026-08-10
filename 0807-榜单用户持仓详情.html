@@ -363,8 +363,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
             <!-- Gate overlay (shown when not holding enough 100TX) -->
             <div class="gate" id="cur-gate">
               <div class="lockic">🔒</div>
-              <div class="req">持仓要求 <b>100 100TX</b> · 你当前持有 <span class="have" id="gate-have">0</span></div>
-              <button class="buybtn" onclick="goBuy()">去购买 100TX</button>
+              <div class="req" id="gate-req">现货账户持仓要求 <b>100 100TX</b> · 你当前持有 <span class="have">0</span></div>
+              <button class="buybtn" id="gate-btn" onclick="goBuy()">去购买 100TX</button>
             </div>
           </div>
         </div>
@@ -443,13 +443,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 
 <!-- demo control -->
 <div class="demo">
-  <div class="dh">🧪 演示开关</div>
-  <label><input type="checkbox" id="holdChk" onchange="setHold(this.checked)"> 已持有 100 个 100TX</label>
-  <div class="note">勾选=解锁当前持仓；取消=模糊+引导购买。历史持仓始终可见。</div>
+  <div class="dh">🧪 演示：100TX 持仓状态</div>
+  <label><input type="radio" name="gs" checked onchange="setGate('none')"> 完全未持有 → 去购买</label>
+  <label><input type="radio" name="gs" onchange="setGate('elsewhere')"> 有但在其他账户 → 去划转</label>
+  <label><input type="radio" name="gs" onchange="setGate('ok')"> 现货账户已达标 → 解锁</label>
+  <div class="note">方案B：当前持仓需「现货账户」持有 100 个 100TX。历史持仓始终可见。</div>
 </div>
 
 <script>
-let hasToken = false;
+let gateState = 'none'; // none(未持有) | elsewhere(其他账户有) | ok(现货账户达标)
+const OTHER_ACC_AMT = 120; // 演示：其他账户持有量
 
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -506,24 +509,43 @@ function switchTab(t){
 function applyGate(){
   const content=document.getElementById('cur-content');
   const gate=document.getElementById('cur-gate');
-  if(hasToken){
+  const lock=document.getElementById('cur-lock');
+  const req=document.getElementById('gate-req');
+  const btn=document.getElementById('gate-btn');
+
+  if(gateState==='ok'){
     content.classList.remove('blurred');
     gate.style.display='none';
+    lock.style.display='none';
+    return;
+  }
+  content.classList.add('blurred');
+  gate.style.display='flex';
+  lock.style.display='inline';
+
+  if(gateState==='elsewhere'){
+    // 有 100TX 但不在校验账户 → 引导划转
+    req.innerHTML='现货账户持仓要求 <b>100 100TX</b> · 现货账户 <span class="have">0</span>，其他账户 <b style="color:var(--green)">'+OTHER_ACC_AMT+'</b>';
+    btn.textContent='去划转 100TX';
+    btn.onclick=goTransfer;
   }else{
-    content.classList.add('blurred');
-    gate.style.display='flex';
-    document.getElementById('gate-have').textContent='0';
+    // 完全未持有 → 引导购买
+    req.innerHTML='现货账户持仓要求 <b>100 100TX</b> · 你当前持有 <span class="have">0</span>';
+    btn.textContent='去购买 100TX';
+    btn.onclick=goBuy;
   }
 }
 
-function setHold(v){
-  hasToken=v;
-  document.getElementById('cur-lock').style.display = v?'none':'inline';
+function setGate(s){
+  gateState=s;
   applyGate();
-  toast(v?'已持有 100TX，当前持仓已解锁':'未持有，当前持仓已模糊');
+  toast(s==='ok'?'现货账户已达标，当前持仓已解锁'
+      :s==='elsewhere'?'现货账户不足，引导划转 100TX'
+      :'未持有，引导购买 100TX');
 }
 
 function goBuy(){ toast('跳转「购买 100TX」页面…'); }
+function goTransfer(){ toast('跳转「划转 100TX 到现货账户」…'); }
 
 /* ===== history filters ===== */
 const FILT = {date:'近1个月', sym:'全部币种', dir:'全部方向'};
