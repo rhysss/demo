@@ -148,7 +148,7 @@ tbody tr:last-child td{border-bottom:none}
     ② <b>接住前端的「申诉理由」</b>：前端 App 提交的申诉理由自由文本，会在后台<b>订单详情</b>与<b>申诉裁决弹窗</b>中原样展示，运营无需再去 IM 翻记录。
     ③ 表格优化：数字列右对齐+等宽、状态/申诉改为语义色标签、买方 0 显示为「—」、订单号等宽+可复制、行悬浮、「申诉裁决」仅在申诉中订单出现且标红。
     ④ 裁决弹窗：裁决结果<b>仅当处理方式=裁决完成时可选</b>，「申诉撤销」自动置灰；未选完必填项时「提交裁决」置灰。
-    ⑤ <b>订单状态 / 申诉状态两维度分离</b>：从「订单状态」下拉移除「申诉中」（它属于申诉维度，非订单生命周期）；申诉相关只保留在「申诉状态」（未申诉 / 申诉中 / 申诉完成 / 申诉撤销，与裁决处理方式对齐）。两维度独立可组合，方可筛出「已完成 + 申诉中」高优队列。
+    ⑤ <b>订单状态 / 申诉维度分离</b>：从「订单状态」下拉移除「申诉中」（它属于申诉维度，非订单生命周期）。列表按<b>「是否申诉」（是 / 否）</b>快速标记与筛选；完整申诉状态（申诉中 / 申诉完成 / 申诉撤销，与裁决处理方式对齐）在订单详情中展示。
   </div>
 
   <div class="page-h">
@@ -171,13 +171,11 @@ tbody tr:last-child td{border-bottom:none}
         <option value="void">已作废</option>
       </select>
     </div>
-    <div class="fitem"><label>申诉状态</label>
+    <div class="fitem"><label>是否申诉</label>
       <select id="fAppeal" onchange="applyFilter()">
         <option value="">全部</option>
-        <option value="none">未申诉</option>
-        <option value="ongoing">申诉中</option>
-        <option value="done">申诉完成</option>
-        <option value="withdrawn">申诉撤销</option>
+        <option value="yes">是</option>
+        <option value="no">否</option>
       </select>
     </div>
     <div class="fitem"><label>商户</label>
@@ -204,7 +202,7 @@ tbody tr:last-child td{border-bottom:none}
             <th>订单编号</th>
             <th>方向</th>
             <th>状态</th>
-            <th>申诉</th>
+            <th>是否申诉</th>
             <th>买方</th>
             <th>卖方</th>
             <th>币种</th>
@@ -312,7 +310,7 @@ function render(list){
   document.getElementById('cnt').textContent = list.length;
   document.getElementById('tbody').innerHTML = list.map(function(o){
     var s = statusMap[o.status];
-    var ap = appealMap[o.appeal] ? '<span class="tag '+appealMap[o.appeal].c+'">'+appealMap[o.appeal].t+'</span>' : '<span class="muted">—</span>';
+    var ap = o.appeal!=='none' ? '<span class="tag appeal">是</span>' : '<span class="muted">否</span>';
     var op = '<a onclick="openDetail(\''+o.id+'\')">详情</a>' + (o.appeal==='ongoing' ? '<a class="judge" onclick="openJudge(\''+o.id+'\')">申诉裁决</a>' : '');
     return '<tr>'
       + '<td><span class="oid">'+o.id+'</span>'+copyIco()+'</td>'
@@ -343,7 +341,8 @@ function applyFilter(){
   render(ORDERS.filter(function(o){
     if(id && o.id.toLowerCase().indexOf(id)<0) return false;
     if(st && o.status!==st) return false;
-    if(ap && o.appeal!==ap) return false;
+    if(ap==='yes' && o.appeal==='none') return false;
+    if(ap==='no' && o.appeal!=='none') return false;
     if(mc && o.merchant!==mc) return false;
     return true;
   }));
