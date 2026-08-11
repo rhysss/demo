@@ -61,6 +61,8 @@ tbody tr:last-child td{border-bottom:none}
 .copy:hover{color:var(--blue)}
 .fiat{font-weight:600}
 .merchant{color:var(--txt2)}
+.coin{display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.coin .ic{width:18px;height:18px;border-radius:50%;background:#26a17b;color:#fff;font-size:11px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
 
 /* tags */
 .tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:4px;font-size:12px;font-weight:500;line-height:1}
@@ -205,6 +207,7 @@ tbody tr:last-child td{border-bottom:none}
             <th>申诉</th>
             <th>买方</th>
             <th>卖方</th>
+            <th>币种</th>
             <th class="num">数量</th>
             <th class="num">手续费</th>
             <th class="num">交易数量</th>
@@ -274,7 +277,7 @@ function mk(id, status, appeal, seller, qty, price, time, extra){
   var net = Math.round((qty - fee) * 100) / 100;
   var fiat = Math.round(net * price * 100) / 100;
   var o = { id:id, dir:'sell', status:status, appeal:appeal, buyer:0, seller:seller,
-    qty:qty, fee:fee, net:net, price:price, fiat:fiat, merchant:'chippay', time:time,
+    symbol:'USDT', qty:qty, fee:fee, net:net, price:price, fiat:fiat, merchant:'chippay', time:time,
     bizId:'4703523783562241_17863452337481', token:'#55',
     payType:'银行卡 · 长沙银行', account:'6214467873199074995（测试一下）',
     update: time, appealBy:seller, appealTime:'2026/8/10 19:29:42',
@@ -318,6 +321,7 @@ function render(list){
       + '<td>'+ap+'</td>'
       + '<td class="muted">—</td>'
       + '<td class="mono">'+o.seller+'</td>'
+      + '<td><span class="coin"><span class="ic">₮</span>'+o.symbol+'</span></td>'
       + '<td class="num mono">'+fmt(o.qty)+'</td>'
       + '<td class="num mono muted">'+fmt(o.fee)+'</td>'
       + '<td class="num mono">'+fmt(o.net)+'</td>'
