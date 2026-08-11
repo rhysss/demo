@@ -146,6 +146,7 @@ tbody tr:last-child td{border-bottom:none}
     ② <b>接住前端的「申诉理由」</b>：前端 App 提交的申诉理由自由文本，会在后台<b>订单详情</b>与<b>申诉裁决弹窗</b>中原样展示，运营无需再去 IM 翻记录。
     ③ 表格优化：数字列右对齐+等宽、状态/申诉改为语义色标签、买方 0 显示为「—」、订单号等宽+可复制、行悬浮、「申诉裁决」仅在申诉中订单出现且标红。
     ④ 裁决弹窗：裁决结果<b>仅当处理方式=裁决完成时可选</b>，「申诉撤销」自动置灰；未选完必填项时「提交裁决」置灰。
+    ⑤ <b>订单状态 / 申诉状态两维度分离</b>：从「订单状态」下拉移除「申诉中」（它属于申诉维度，非订单生命周期）；申诉相关只保留在「申诉状态」（未申诉 / 申诉中 / 申诉完成 / 申诉撤销，与裁决处理方式对齐）。两维度独立可组合，方可筛出「已完成 + 申诉中」高优队列。
   </div>
 
   <div class="page-h">
@@ -158,20 +159,23 @@ tbody tr:last-child td{border-bottom:none}
   <!-- filters -->
   <div class="filters">
     <div class="fitem"><label>订单编号</label><input id="fId" placeholder="输入订单编号搜索" oninput="applyFilter()"></div>
-    <div class="fitem"><label>状态</label>
+    <div class="fitem"><label>订单状态</label>
       <select id="fStatus" onchange="applyFilter()">
         <option value="">全部</option>
         <option value="pending">待支付</option>
+        <option value="paid" disabled>已支付待放行</option>
         <option value="done">已完成</option>
+        <option value="canceled" disabled>已取消</option>
         <option value="void">已作废</option>
       </select>
     </div>
-    <div class="fitem"><label>申诉</label>
+    <div class="fitem"><label>申诉状态</label>
       <select id="fAppeal" onchange="applyFilter()">
         <option value="">全部</option>
-        <option value="none">无申诉</option>
+        <option value="none">未申诉</option>
         <option value="ongoing">申诉中</option>
-        <option value="resolved">已裁决</option>
+        <option value="done">申诉完成</option>
+        <option value="withdrawn">申诉撤销</option>
       </select>
     </div>
     <div class="fitem"><label>商户</label>
@@ -295,7 +299,7 @@ var ORDERS = [
 ];
 
 var statusMap = { pending:{t:'待支付',c:'pending'}, done:{t:'已完成',c:'done'}, void:{t:'已作废',c:'void'} };
-var appealMap = { ongoing:{t:'申诉中',c:'appeal'}, resolved:{t:'已裁决',c:'resolved'} };
+var appealMap = { ongoing:{t:'申诉中',c:'appeal'}, done:{t:'申诉完成',c:'resolved'}, withdrawn:{t:'申诉撤销',c:'void'} };
 
 function fmt(n){ return Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function copyIco(){ return '<svg class="copy" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="event.stopPropagation();copy(this)"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>'; }
@@ -432,7 +436,7 @@ function submitJudge(){
   var o = find(judgeId);
   var way = document.querySelector('input[name=mWay]:checked').value;
   var res = (document.querySelector('input[name=mRes]:checked')||{}).value;
-  o.appeal = 'resolved';
+  o.appeal = way==='withdraw' ? 'withdrawn' : 'done';
   o.appealResult = way==='withdraw' ? '申诉撤销' : (res==='buyer' ? '买家胜诉' : '卖家胜诉');
   o.appealNote = document.getElementById('mNote').value.trim() || '';
   closeModal();
