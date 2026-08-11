@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OTC 后台 · 订单管理与申诉裁决（优化）</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#2b5cff;--blue-dim:#1e4bd8;
+  --green:#00b42a;--green-bg:#e8faec;
+  --orange:#ff7d00;--orange-bg:#fff3e6;
+  --red:#f53f3f;--red-bg:#ffece8;
+  --gray:#86909c;--gray-bg:#f2f3f5;
+  --txt:#1d2129;--txt2:#4e5969;--txt3:#86909c;--txt4:#a9aeb8;
+  --border:#e5e6eb;--border2:#f0f1f3;
+  --bg:#f2f3f5;--card:#fff;
+}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;font-size:13px;line-height:1.5}
+.wrap{max-width:1400px;margin:0 auto;padding:20px 24px 60px}
+
+/* optimize note */
+.note{background:#f0f6ff;border:1px solid #c6dbff;border-radius:8px;padding:12px 16px;font-size:12.5px;color:#33507a;line-height:1.85;margin-bottom:18px}
+.note b{color:var(--blue)}
+.note .ttl{font-weight:700;color:#1d3a66;margin-bottom:2px;display:block}
+
+.page-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.page-h h1{font-size:19px;font-weight:600}
+.page-h .sub{font-size:12.5px;color:var(--txt3);margin-top:3px}
+
+/* filter bar */
+.filters{background:var(--card);border-radius:10px;padding:16px 18px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:14px 18px;align-items:flex-end}
+.fitem{display:flex;flex-direction:column;gap:6px}
+.fitem label{font-size:12px;color:var(--txt3)}
+.fitem input,.fitem select{height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;color:var(--txt);background:#fff;outline:none;font-family:inherit;min-width:160px}
+.fitem input:focus,.fitem select:focus{border-color:var(--blue)}
+.fitem select{cursor:pointer;min-width:120px}
+.fbtns{display:flex;gap:10px;margin-left:auto}
+.btn{height:32px;padding:0 16px;border-radius:6px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--txt2);font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:#c9cdd4}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:var(--blue-dim);border-color:var(--blue-dim)}
+.btn.primary.disabled{background:#a7b8ff;border-color:#a7b8ff;cursor:not-allowed}
+
+/* table */
+.tcard{background:var(--card);border-radius:10px;overflow:hidden}
+.tbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2)}
+.tbar .cnt{font-size:13px;color:var(--txt2)}
+.tbar .cnt b{color:var(--txt);font-weight:600}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;white-space:nowrap;font-variant-numeric:tabular-nums}
+thead th{background:#f7f8fa;color:var(--txt2);font-weight:500;font-size:12.5px;text-align:left;padding:11px 14px;position:sticky;top:0;border-bottom:1px solid var(--border)}
+th.num,td.num{text-align:right}
+tbody td{padding:13px 14px;border-bottom:1px solid var(--border2);color:var(--txt);vertical-align:middle}
+tbody tr:hover{background:#f7f9ff}
+tbody tr:last-child td{border-bottom:none}
+.oid{font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--txt);letter-spacing:-.2px}
+.mono{font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+.muted{color:var(--txt4)}
+.copy{cursor:pointer;color:var(--txt4);vertical-align:middle;margin-left:5px}
+.copy:hover{color:var(--blue)}
+.fiat{font-weight:600}
+.merchant{color:var(--txt2)}
+
+/* tags */
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:4px;font-size:12px;font-weight:500;line-height:1}
+.tag.dir{background:#eef0ff;color:#3d55d8}
+.tag.done{background:var(--green-bg);color:var(--green)}
+.tag.pending{background:var(--orange-bg);color:var(--orange)}
+.tag.void{background:var(--gray-bg);color:var(--gray)}
+.tag.appeal{background:var(--red-bg);color:var(--red)}
+.tag.resolved{background:#eaf0fb;color:#3a6bd8}
+
+/* op links */
+.op{display:inline-flex;gap:14px}
+.op a{color:var(--blue);cursor:pointer}
+.op a:hover{text-decoration:underline}
+.op a.judge{color:var(--red)}
+
+/* drawer */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:.22s;z-index:40}
+.mask.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:520px;max-width:92vw;background:#fff;box-shadow:-8px 0 30px rgba(0,0,0,.12);transform:translateX(100%);transition:.26s cubic-bezier(.3,.9,.4,1);z-index:50;display:flex;flex-direction:column}
+.drawer.on{transform:translateX(0)}
+.dw-h{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border2);flex-shrink:0}
+.dw-h .t{font-size:16px;font-weight:600}
+.dw-x{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt3)}
+.dw-x:hover{background:var(--gray-bg);color:var(--txt)}
+.dw-body{flex:1;overflow-y:auto;padding:8px 22px 28px}
+.sec-t{font-size:13px;font-weight:600;color:var(--txt);margin:20px 0 6px;display:flex;align-items:center;gap:8px}
+.sec-t::before{content:'';width:3px;height:13px;border-radius:2px;background:var(--blue)}
+.sec-t.appeal::before{background:var(--red)}
+.drow{display:flex;padding:9px 0;border-bottom:1px solid var(--border2);font-size:13px;align-items:baseline}
+.drow .k{width:96px;flex-shrink:0;color:var(--txt3)}
+.drow .v{flex:1;color:var(--txt);word-break:break-all;font-variant-numeric:tabular-nums}
+.drow .v.strong{font-weight:600}
+.drow .v .u{color:var(--txt3);font-weight:400;margin-left:3px;font-size:12px}
+/* amount calc box */
+.calc{background:#f7f8fa;border-radius:8px;padding:12px 14px;margin:8px 0 4px;font-size:12.5px;color:var(--txt2);line-height:1.9}
+.calc .row{display:flex;justify-content:space-between}
+.calc .row.total{border-top:1px dashed #dcdfe6;margin-top:6px;padding-top:8px;color:var(--txt)}
+.calc .row.total b{color:var(--red);font-size:14px}
+.calc .op-sign{color:var(--txt4);margin:0 4px}
+.reason-box{background:#fff8f7;border:1px solid #ffd8d3;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#7a3a35;line-height:1.7;margin-top:4px}
+
+/* modal */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60}
+.modal.on{display:flex}
+.modal .mmask{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.mcard{position:relative;width:520px;max-width:94vw;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.mc-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border2)}
+.mc-h .t{font-size:16px;font-weight:600}
+.mc-body{padding:18px 20px;max-height:70vh;overflow-y:auto}
+.warn{background:var(--orange-bg);border:1px solid #ffd8a8;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#9c5a00;line-height:1.7;margin-bottom:16px;display:flex;gap:8px}
+.warn svg{flex-shrink:0;margin-top:1px}
+.mrow{display:flex;align-items:center;padding:9px 0;font-size:13px}
+.mrow .k{width:82px;flex-shrink:0;color:var(--txt3)}
+.mrow .v{flex:1;color:var(--txt);font-variant-numeric:tabular-nums}
+.mrow.top{align-items:flex-start}
+.radios{display:flex;gap:20px}
+.radio{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:var(--txt)}
+.radio input{display:none}
+.radio .dot{width:16px;height:16px;border:1.5px solid #c9cdd4;border-radius:50%;position:relative;transition:.15s}
+.radio input:checked+.dot{border-color:var(--blue)}
+.radio input:checked+.dot::after{content:'';position:absolute;inset:3px;background:var(--blue);border-radius:50%}
+.radio.dis{cursor:not-allowed;color:var(--txt4)}
+.radio.dis .dot{background:#f2f3f5;border-color:#e5e6eb}
+.mtext{width:100%;height:84px;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;resize:none;outline:none;color:var(--txt);line-height:1.6}
+.mtext:focus{border-color:var(--blue)}
+.reason-ro{background:#f7f8fa;border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--txt2);line-height:1.7;border:1px solid var(--border2)}
+.mc-f{display:flex;justify-content:flex-end;gap:12px;padding:14px 20px;border-top:1px solid var(--border2)}
+.req{color:var(--red);margin-right:2px}
+.hint{font-size:11.5px;color:var(--txt4);margin-top:6px}
+
+/* toast */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-16px);background:#1d2129;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:.22s;z-index:99}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="note">
+    <span class="ttl">优化说明（对齐前端 · 供研发/UI参考）</span>
+    ① <b>金额口径与前端一致</b>：数量 − 手续费 = 交易数量，法币金额 = 交易数量 × 单价（详情页用计算框显式展示推导）。
+    ② <b>接住前端的「申诉理由」</b>：前端 App 提交的申诉理由自由文本，会在后台<b>订单详情</b>与<b>申诉裁决弹窗</b>中原样展示，运营无需再去 IM 翻记录。
+    ③ 表格优化：数字列右对齐+等宽、状态/申诉改为语义色标签、买方 0 显示为「—」、订单号等宽+可复制、行悬浮、「申诉裁决」仅在申诉中订单出现且标红。
+    ④ 裁决弹窗：裁决结果<b>仅当处理方式=裁决完成时可选</b>，「申诉撤销」自动置灰；未选完必填项时「提交裁决」置灰。
+  </div>
+
+  <div class="page-h">
+    <div>
+      <h1>现货订单管理</h1>
+      <div class="sub">OTC / Quick Buy 卖出订单 · 申诉裁决</div>
+    </div>
+  </div>
+
+  <!-- filters -->
+  <div class="filters">
+    <div class="fitem"><label>订单编号</label><input id="fId" placeholder="输入订单编号搜索" oninput="applyFilter()"></div>
+    <div class="fitem"><label>状态</label>
+      <select id="fStatus" onchange="applyFilter()">
+        <option value="">全部</option>
+        <option value="pending">待支付</option>
+        <option value="done">已完成</option>
+        <option value="void">已作废</option>
+      </select>
+    </div>
+    <div class="fitem"><label>申诉</label>
+      <select id="fAppeal" onchange="applyFilter()">
+        <option value="">全部</option>
+        <option value="none">无申诉</option>
+        <option value="ongoing">申诉中</option>
+        <option value="resolved">已裁决</option>
+      </select>
+    </div>
+    <div class="fitem"><label>商户</label>
+      <select id="fMerchant" onchange="applyFilter()">
+        <option value="">全部</option>
+        <option value="chippay">chippay</option>
+      </select>
+    </div>
+    <div class="fbtns">
+      <button class="btn" onclick="resetFilter()">重置</button>
+      <button class="btn primary" onclick="applyFilter()">查询</button>
+    </div>
+  </div>
+
+  <!-- table -->
+  <div class="tcard">
+    <div class="tbar">
+      <div class="cnt">共 <b id="cnt">0</b> 条订单</div>
+    </div>
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr>
+            <th>订单编号</th>
+            <th>方向</th>
+            <th>状态</th>
+            <th>申诉</th>
+            <th>买方</th>
+            <th>卖方</th>
+            <th class="num">数量</th>
+            <th class="num">手续费</th>
+            <th class="num">交易数量</th>
+            <th class="num">法币金额</th>
+            <th class="num">单价</th>
+            <th>商户</th>
+            <th>创建时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- drawer: order detail -->
+<div class="mask" id="mask" onclick="closeAll()"></div>
+<div class="drawer" id="drawer">
+  <div class="dw-h"><span class="t">订单详情</span><span class="dw-x" onclick="closeAll()">✕</span></div>
+  <div class="dw-body" id="dwBody"></div>
+</div>
+
+<!-- modal: adjudication -->
+<div class="modal" id="modal">
+  <div class="mmask" onclick="closeModal()"></div>
+  <div class="mcard">
+    <div class="mc-h"><span class="t">申诉裁决</span><span class="dw-x" onclick="closeModal()">✕</span></div>
+    <div class="mc-body">
+      <div class="warn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ff7d00"/><path d="M12 7v6" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1.2" fill="#fff"/></svg>
+        <span>裁决只更新申诉标记，不改订单状态、不动资金；资金以支付网关回调 / 对账为准。</span>
+      </div>
+      <div class="mrow"><span class="k">订单编号</span><span class="v mono" id="mId">-</span></div>
+      <div class="mrow"><span class="k">发起方</span><span class="v" id="mBy">-</span></div>
+      <div class="mrow"><span class="k">订单摘要</span><span class="v" id="mSummary">-</span></div>
+      <div class="mrow top"><span class="k">申诉理由</span><span class="v"><div class="reason-ro" id="mReason">-</div></span></div>
+      <div class="mrow top" style="margin-top:6px"><span class="k"><span class="req">*</span>处理方式</span>
+        <span class="v"><div class="radios">
+          <label class="radio"><input type="radio" name="mWay" value="done" onchange="onWay()"><span class="dot"></span>裁决完成</label>
+          <label class="radio"><input type="radio" name="mWay" value="withdraw" onchange="onWay()"><span class="dot"></span>申诉撤销</label>
+        </div></span>
+      </div>
+      <div class="mrow top"><span class="k"><span class="req" id="resReq" style="visibility:hidden">*</span>裁决结果</span>
+        <span class="v"><div class="radios" id="resRadios">
+          <label class="radio dis"><input type="radio" name="mRes" value="buyer" disabled onchange="onValid()"><span class="dot"></span>买家胜诉</label>
+          <label class="radio dis"><input type="radio" name="mRes" value="seller" disabled onchange="onValid()"><span class="dot"></span>卖家胜诉</label>
+        </div>
+        <div class="hint" id="resHint">选择「裁决完成」后需指定胜诉方；「申诉撤销」无需裁决结果。</div></span>
+      </div>
+      <div class="mrow top"><span class="k">备注</span><span class="v"><textarea class="mtext" id="mNote" placeholder="裁决依据 / 沟通记录"></textarea></span></div>
+    </div>
+    <div class="mc-f">
+      <button class="btn" onclick="closeModal()">取消</button>
+      <button class="btn primary disabled" id="mSubmit" onclick="submitJudge()">提交裁决</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ data ============ */
+var FEE_RATE = 0.01; // 手续费 = 数量 × 1%
+function mk(id, status, appeal, seller, qty, price, time, extra){
+  var fee = Math.round(qty * FEE_RATE * 100) / 100;
+  var net = Math.round((qty - fee) * 100) / 100;
+  var fiat = Math.round(net * price * 100) / 100;
+  var o = { id:id, dir:'sell', status:status, appeal:appeal, buyer:0, seller:seller,
+    qty:qty, fee:fee, net:net, price:price, fiat:fiat, merchant:'chippay', time:time,
+    bizId:'4703523783562241_17863452337481', token:'#55',
+    payType:'银行卡 · 长沙银行', account:'6214467873199074995（测试一下）',
+    update: time, appealBy:seller, appealTime:'2026/8/10 19:29:42',
+    appealReason:'买家实际支付金额与订单记录不一致，申请客服复核最终到账金额。',
+    appealResult:'', appealNote:'' };
+  if(extra) for(var k in extra) o[k]=extra[k];
+  return o;
+}
+var ORDERS = [
+  mk('BI566092215060630140143','pending','none',1002431,30,6.89,'2026/8/11 10:13:43'),
+  mk('BI566078178711117113358','void','none',1002431,10,6.89,'2026/8/10 21:55:29'),
+  mk('BI566075426890322091335','void','none',1002431,100,6.89,'2026/8/10 19:30:45'),
+  mk('BI566071042491119031352','void','none',1000260,101,6.89,'2026/8/10 15:40:09'),
+  mk('BI566070914040703064125','void','none',1000260,101,6.89,'2026/8/10 15:33:24'),
+  mk('BI566070902050621141701','void','none',1000260,101,6.89,'2026/8/10 15:32:46'),
+  mk('BI566070249280103163451','done','ongoing',1002431,30,6.9,'2026/8/10 14:58:26',{update:'2026/8/10 16:57:00'}),
+  mk('BI566069884540113170317','done','ongoing',1002431,20,6.9,'2026/8/10 14:39:15'),
+  mk('BI566069814660223163229','void','none',1002431,10,6.9,'2026/8/10 14:35:34'),
+  mk('BI566069560140710033231','done','ongoing',1002431,100,6.9,'2026/8/10 14:22:11'),
+  mk('BI566068146060529054435','void','none',1002431,100,6.9,'2026/8/10 13:07:49'),
+  mk('BI566066771870628040824','void','none',1002431,10,6.9,'2026/8/10 11:55:32')
+];
+
+var statusMap = { pending:{t:'待支付',c:'pending'}, done:{t:'已完成',c:'done'}, void:{t:'已作废',c:'void'} };
+var appealMap = { ongoing:{t:'申诉中',c:'appeal'}, resolved:{t:'已裁决',c:'resolved'} };
+
+function fmt(n){ return Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function copyIco(){ return '<svg class="copy" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="event.stopPropagation();copy(this)"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>'; }
+
+/* ============ table render ============ */
+function render(list){
+  document.getElementById('cnt').textContent = list.length;
+  document.getElementById('tbody').innerHTML = list.map(function(o){
+    var s = statusMap[o.status];
+    var ap = appealMap[o.appeal] ? '<span class="tag '+appealMap[o.appeal].c+'">'+appealMap[o.appeal].t+'</span>' : '<span class="muted">—</span>';
+    var op = '<a onclick="openDetail(\''+o.id+'\')">详情</a>' + (o.appeal==='ongoing' ? '<a class="judge" onclick="openJudge(\''+o.id+'\')">申诉裁决</a>' : '');
+    return '<tr>'
+      + '<td><span class="oid">'+o.id+'</span>'+copyIco()+'</td>'
+      + '<td><span class="tag dir">出售</span></td>'
+      + '<td><span class="tag '+s.c+'">'+s.t+'</span></td>'
+      + '<td>'+ap+'</td>'
+      + '<td class="muted">—</td>'
+      + '<td class="mono">'+o.seller+'</td>'
+      + '<td class="num mono">'+fmt(o.qty)+'</td>'
+      + '<td class="num mono muted">'+fmt(o.fee)+'</td>'
+      + '<td class="num mono">'+fmt(o.net)+'</td>'
+      + '<td class="num fiat">'+fmt(o.fiat)+' <span class="muted" style="font-weight:400">CNY</span></td>'
+      + '<td class="num mono">'+o.price+'</td>'
+      + '<td class="merchant">'+o.merchant+'</td>'
+      + '<td class="muted">'+o.time+'</td>'
+      + '<td><span class="op">'+op+'</span></td>'
+      + '</tr>';
+  }).join('');
+}
+
+/* ============ filter ============ */
+function applyFilter(){
+  var id = document.getElementById('fId').value.trim().toLowerCase();
+  var st = document.getElementById('fStatus').value;
+  var ap = document.getElementById('fAppeal').value;
+  var mc = document.getElementById('fMerchant').value;
+  render(ORDERS.filter(function(o){
+    if(id && o.id.toLowerCase().indexOf(id)<0) return false;
+    if(st && o.status!==st) return false;
+    if(ap && o.appeal!==ap) return false;
+    if(mc && o.merchant!==mc) return false;
+    return true;
+  }));
+}
+function resetFilter(){
+  document.getElementById('fId').value='';
+  document.getElementById('fStatus').value='';
+  document.getElementById('fAppeal').value='';
+  document.getElementById('fMerchant').value='';
+  render(ORDERS);
+}
+
+/* ============ detail drawer ============ */
+function find(id){ return ORDERS.filter(function(o){return o.id===id})[0]; }
+function drow(k,v){ return '<div class="drow"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>'; }
+function openDetail(id){
+  var o = find(id); var s = statusMap[o.status];
+  var apStat = appealMap[o.appeal] ? appealMap[o.appeal].t : '无';
+  var h = ''
+    + '<div class="sec-t">基础信息</div>'
+    + drow('订单编号','<span class="mono">'+o.id+'</span>'+copyIco())
+    + drow('商家订单号','<span class="mono">'+o.bizId+'</span>')
+    + drow('方向','<span class="tag dir">出售</span>')
+    + drow('状态','<span class="tag '+s.c+'">'+s.t+'</span>')
+    + drow('买方用户','<span class="muted">— （平台撮合）</span>')
+    + drow('卖方用户','<span class="mono">'+o.seller+'</span>')
+    + drow('商户',o.merchant)
+    + drow('创建 / 更新',o.time+' / '+o.update)
+    + '<div class="sec-t">金额明细</div>'
+    + drow('币种数量','<span class="strong">'+fmt(o.qty)+'</span><span class="u">USDT（token '+o.token+'）</span>')
+    + drow('手续费',fmt(o.fee)+'<span class="u">USDT</span>')
+    + drow('交易数量','<span class="strong">'+fmt(o.net)+'</span><span class="u">USDT</span>')
+    + drow('单价',o.price+'<span class="u">CNY / USDT</span>')
+    + '<div class="calc">'
+    +   '<div class="row"><span>币种数量 '+fmt(o.qty)+'<span class="op-sign">−</span>手续费 '+fmt(o.fee)+'</span><span>= 交易数量 '+fmt(o.net)+'</span></div>'
+    +   '<div class="row"><span>交易数量 '+fmt(o.net)+'<span class="op-sign">×</span>单价 '+o.price+'</span><span>= 法币金额</span></div>'
+    +   '<div class="row total"><span>实际到账法币金额</span><b>'+fmt(o.fiat)+' CNY</b></div>'
+    + '</div>'
+    + '<div class="sec-t">收款信息</div>'
+    + drow('支付方式',o.payType)
+    + drow('收款账号','<span class="mono">'+o.account+'</span>');
+  if(o.appeal!=='none'){
+    h += '<div class="sec-t appeal">申诉信息</div>'
+      + drow('申诉状态','<span class="tag '+(appealMap[o.appeal].c)+'">'+apStat+'</span>')
+      + drow('申诉发起方','<span class="mono">'+o.appealBy+'</span>')
+      + drow('申诉时间',o.appealTime)
+      + '<div class="drow" style="flex-direction:column;gap:6px;align-items:stretch"><span class="k">申诉理由</span><div class="reason-box">'+o.appealReason+'</div></div>'
+      + drow('裁决结果', o.appealResult ? o.appealResult : '<span class="muted">待裁决</span>')
+      + drow('裁决备注', o.appealNote ? o.appealNote : '<span class="muted">—</span>');
+  }
+  document.getElementById('dwBody').innerHTML = h;
+  document.getElementById('mask').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+}
+
+/* ============ adjudication modal ============ */
+var judgeId = null;
+function openJudge(id){
+  judgeId = id; var o = find(id);
+  document.getElementById('mId').textContent = o.id;
+  document.getElementById('mBy').textContent = '用户 '+o.appealBy;
+  document.getElementById('mSummary').textContent = fmt(o.qty)+' USDT · '+fmt(o.fiat)+' CNY · 单价 '+o.price;
+  document.getElementById('mReason').textContent = o.appealReason;
+  // reset
+  [].forEach.call(document.getElementsByName('mWay'), function(r){ r.checked=false; });
+  [].forEach.call(document.getElementsByName('mRes'), function(r){ r.checked=false; });
+  document.getElementById('mNote').value='';
+  onWay();
+  document.getElementById('modal').classList.add('on');
+}
+function onWay(){
+  var way = (document.querySelector('input[name=mWay]:checked')||{}).value;
+  var done = way==='done';
+  // toggle 裁决结果 availability
+  var radios = document.querySelectorAll('#resRadios .radio');
+  radios.forEach(function(lab){
+    var inp = lab.querySelector('input');
+    inp.disabled = !done;
+    lab.classList.toggle('dis', !done);
+    if(!done) inp.checked=false;
+  });
+  document.getElementById('resReq').style.visibility = done ? 'visible' : 'hidden';
+  document.getElementById('resHint').style.display = done ? 'none' : 'block';
+  onValid();
+}
+function onValid(){
+  var way = (document.querySelector('input[name=mWay]:checked')||{}).value;
+  var res = (document.querySelector('input[name=mRes]:checked')||{}).value;
+  var ok = way==='withdraw' || (way==='done' && !!res);
+  document.getElementById('mSubmit').classList.toggle('disabled', !ok);
+}
+function submitJudge(){
+  if(document.getElementById('mSubmit').classList.contains('disabled')) return;
+  var o = find(judgeId);
+  var way = document.querySelector('input[name=mWay]:checked').value;
+  var res = (document.querySelector('input[name=mRes]:checked')||{}).value;
+  o.appeal = 'resolved';
+  o.appealResult = way==='withdraw' ? '申诉撤销' : (res==='buyer' ? '买家胜诉' : '卖家胜诉');
+  o.appealNote = document.getElementById('mNote').value.trim() || '';
+  closeModal();
+  applyFilter();
+  toast('裁决已提交（仅更新申诉标记）');
+}
+
+/* ============ util ============ */
+function closeAll(){ document.getElementById('mask').classList.remove('on'); document.getElementById('drawer').classList.remove('on'); }
+function closeModal(){ document.getElementById('modal').classList.remove('on'); }
+function copy(el){ toast('已复制'); }
+var toastT=null;
+function toast(msg){
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove('on'); },1600);
+}
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closeAll(); closeModal(); } });
+
+render(ORDERS);
+</script>
+</body>
+</html>
