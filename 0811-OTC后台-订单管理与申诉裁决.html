@@ -208,8 +208,8 @@ tbody tr:last-child td{border-bottom:none}
             <th class="num">数量</th>
             <th class="num">手续费</th>
             <th class="num">交易数量</th>
-            <th class="num">法币金额</th>
             <th class="num">单价</th>
+            <th class="num">法币金额</th>
             <th>商户</th>
             <th>创建时间</th>
             <th>操作</th>
@@ -321,8 +321,8 @@ function render(list){
       + '<td class="num mono">'+fmt(o.qty)+'</td>'
       + '<td class="num mono muted">'+fmt(o.fee)+'</td>'
       + '<td class="num mono">'+fmt(o.net)+'</td>'
-      + '<td class="num fiat">'+fmt(o.fiat)+' <span class="muted" style="font-weight:400">CNY</span></td>'
       + '<td class="num mono">'+o.price+'</td>'
+      + '<td class="num fiat">'+fmt(o.fiat)+' <span class="muted" style="font-weight:400">CNY</span></td>'
       + '<td class="merchant">'+o.merchant+'</td>'
       + '<td class="muted">'+o.time+'</td>'
       + '<td><span class="op">'+op+'</span></td>'
