@@ -97,6 +97,8 @@
   .pair .lev{font-size:10px;color:var(--sub);background:#f2f4f7;border-radius:3px;padding:0 4px;margin-left:5px;font-weight:600}
   .sub2{font-size:12px;color:var(--sub);margin-top:1px;min-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .sub2 .fb{color:var(--warn)}
+  .vsep{color:var(--sub2)}
+  .webname .sub .vsep{color:var(--sub2)}
   .r-px{text-align:right}
   .r-px .px{font-size:15px;font-weight:700}
   .r-px .chg{font-size:12px;font-weight:600}
@@ -189,19 +191,19 @@
             aucIn:o.ai, aucOut:o.ao, aucRate:o.ar, minT:o.mn, maxT:o.mx, sort:o.st};
   }
   var coins=[
-    {sym:"BTC",quote:"USDT",type:"crypto",lev:"10x",icon:"₿",color:"#f7931a",full:"Bitcoin",px:"63,412.2",chg:+0.42,
+    {sym:"BTC",quote:"USDT",type:"crypto",lev:"10x",icon:"₿",color:"#f7931a",full:"Bitcoin",px:"63,412.2",vol:"10.73亿",chg:+0.42,
      names:{"zh-CN":"比特币","zh-TW":"比特幣"},
      cfg:cfg({p:8,d:8,si:"允许",so:"允许",ci:"允许",co:"允许",ai:"禁止",ao:"禁止",ar:1,mn:0,mx:100000000,st:1})},
-    {sym:"ETH",quote:"USDT",type:"crypto",lev:"10x",icon:"Ξ",color:"#627eea",full:"Ethereum",px:"1,892.45",chg:+0.44,
+    {sym:"ETH",quote:"USDT",type:"crypto",lev:"10x",icon:"Ξ",color:"#627eea",full:"Ethereum",px:"1,892.45",vol:"5.09亿",chg:+0.44,
      names:{"zh-CN":"以太坊","zh-TW":"以太坊"},
      cfg:cfg({p:18,d:8,si:"允许",so:"允许",ci:"允许",co:"允许",ai:"禁止",ao:"禁止",ar:1,mn:0,mx:100000000,st:2})},
-    {sym:"GOOGLX",quote:"USDT",type:"stock",lev:"",icon:"G",color:"#4285f4",full:"Alphabet",px:"347.78",chg:+0.71,
+    {sym:"GOOGLX",quote:"USDT",type:"stock",lev:"",icon:"G",color:"#4285f4",full:"Alphabet",px:"347.78",vol:"797.19万",chg:+0.71,
      names:{"zh-CN":"谷歌","zh-TW":"谷歌"},
      cfg:cfg({p:18,d:8,si:"允许",so:"允许",ci:"禁止",co:"禁止",ai:"禁止",ao:"禁止",ar:1,mn:0,mx:100000000,st:99})},
-    {sym:"INTCX",quote:"USDT",type:"stock",lev:"",icon:"in",color:"#0071c5",full:"Intel",px:"105.46",chg:+1.01,
+    {sym:"INTCX",quote:"USDT",type:"stock",lev:"",icon:"in",color:"#0071c5",full:"Intel",px:"105.46",vol:"816.84万",chg:+1.01,
      names:{"zh-CN":"英特尔","zh-TW":"英特爾"},
      cfg:cfg({p:18,d:8,si:"允许",so:"允许",ci:"禁止",co:"禁止",ai:"禁止",ao:"禁止",ar:1,mn:0,mx:100000000,st:98})},
-    {sym:"SPCX",quote:"USDT",type:"stock",lev:"",icon:"X",color:"#111",full:"SpaceX",px:"142.52",chg:+1.85,
+    {sym:"SPCX",quote:"USDT",type:"stock",lev:"",icon:"X",color:"#111",full:"SpaceX",px:"142.52",vol:"760.25万",chg:+1.85,
      names:{},
      cfg:cfg({p:18,d:8,si:"允许",so:"允许",ci:"禁止",co:"禁止",ai:"禁止",ao:"禁止",ar:1,mn:0,mx:100000000,st:97})}
   ];
@@ -302,7 +304,7 @@
   /* --- app --- */
   function appRow(c){
     var nm=nameOf(c);
-    var sub=nm.hide?'<div class="sub2"></div>':'<div class="sub2">'+esc(nm.text)+'</div>';
+    var sub='<div class="sub2">'+esc(nm.text)+'<span class="vsep"> | </span>'+c.vol+'</div>';
     var lev=c.lev?'<span class="lev">'+c.lev+'</span>':'';
     var fl=state.flash===c.sym?' flash':'';
     return '<div class="row'+fl+'"><div class="ic" style="background:'+c.color+'">'+c.icon+'</div>'
@@ -313,17 +315,17 @@
     var v=document.getElementById("appView");
     if(state.appTab==="list"){ v.innerHTML='<div class="list">'+coins.map(appRow).join("")+'</div>'; return; }
     var c=findCoin(state.editing),nm=nameOf(c);
-    var l2=nm.hide?'':esc(nm.text);
+    var l2=esc(nm.text)+'<span class="vsep"> | </span>'+c.vol;
     v.innerHTML='<div class="trade'+(state.flash===c.sym?" flash":"")+'"><div class="thead"><div>'
       +'<div class="tp">'+c.sym+'<span class="q">/'+c.quote+'</span></div><div class="tname">'+l2+'</div></div></div>'
       +'<div class="buybtn">买入 '+c.sym+'</div>'
-      +'<div class="buybox">交易页第二行同样取多语言名称（当前：'+LANGNAME[state.lang]+'）</div></div>';
+      +'<div class="buybox">第二行格式：名称 | 成交额（名称按当前语言，当前：'+LANGNAME[state.lang]+'）</div></div>';
   }
   /* --- web --- */
   function renderWeb(){
     document.getElementById("webBody").innerHTML=coins.map(function(c){
       var nm=nameOf(c);
-      var sub=nm.hide?'':esc(nm.text);
+      var sub=esc(nm.text)+'<span class="vsep"> | </span>'+c.vol;
       var fl=state.flash===c.sym?"flash":"";
       return '<tr class="'+fl+'"><td><div class="webname">'
         +'<div class="ic" style="background:'+c.color+';width:28px;height:28px;font-size:11px">'+c.icon+'</div>'
