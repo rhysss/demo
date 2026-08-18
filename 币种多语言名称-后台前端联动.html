@@ -99,6 +99,13 @@
   .sub2 .fb{color:var(--warn)}
   .vsep{color:var(--sub2)}
   .webname .sub .vsep{color:var(--sub2)}
+  .srch{padding:12px 16px 6px}
+  .srchbox{width:100%;height:36px;border:1px solid var(--line2);border-radius:9px;padding:0 12px;font-size:14px;outline:none;background:#f5f6f8}
+  .srchbox:focus{border-color:var(--primary);background:#fff}
+  .srchhint{font-size:11px;color:var(--sub);margin-top:8px;line-height:1.55}
+  .srchempty{padding:26px 16px;text-align:center;color:var(--sub2);font-size:12px}
+  .alias{font-size:11px;color:var(--sub);margin-top:2px}
+  .alias mark{background:#fff3bf;color:#7a5405;border-radius:2px;padding:0 2px}
   .r-px{text-align:right}
   .r-px .px{font-size:15px;font-weight:700}
   .r-px .chg{font-size:12px;font-weight:600}
@@ -160,6 +167,7 @@
         <div class="apptabs" id="appTabs">
           <button class="on" data-v="list" onclick="setAppTab('list')">现货列表</button>
           <button data-v="trade" onclick="setAppTab('trade')">交易页</button>
+          <button data-v="search" onclick="setAppTab('search')">搜索</button>
         </div>
       </div>
       <div class="phone"><div class="status"><span>16:22</span><span>≡ ⋯</span></div><div id="appView"></div></div>
@@ -208,7 +216,7 @@
      cfg:cfg({p:18,d:8,si:"允许",so:"允许",ci:"禁止",co:"禁止",ai:"禁止",ao:"禁止",ar:1,mn:0,mx:100000000,st:97})}
   ];
 
-  var state={lang:"zh-CN",editing:"BTC",appTab:"list",flash:null};
+  var state={lang:"zh-CN",editing:"BTC",appTab:"list",flash:null,query:""};
 
   function nameOf(c){
     // 英文全称为必填项，故未配置的语言一律回退英文；第二行始终有值，不存在隐藏
@@ -313,6 +321,7 @@
   }
   function renderApp(){
     var v=document.getElementById("appView");
+    if(state.appTab==="search"){ renderSearch(); return; }
     if(state.appTab==="list"){ v.innerHTML='<div class="list">'+coins.map(appRow).join("")+'</div>'; return; }
     var c=findCoin(state.editing),nm=nameOf(c);
     var l2=esc(nm.text)+'<span class="vsep"> | </span>'+c.vol;
@@ -333,6 +342,40 @@
         +'</div></td><td class="num">'+c.px+'</td><td class="num">'+chgHtml(c.chg)+'</td></tr>';
     }).join("");
   }
+  /* --- search（跨语言匹配：代码 / 英文全称 / 全部多语言名称）--- */
+  function matchInfo(c,q){
+    q=q.toLowerCase(); var disp=nameOf(c).text, fs=[c.sym,c.full], hit=null;
+    for(var k in c.names){ fs.push(c.names[k]); }
+    for(var i=0;i<fs.length;i++){ if(fs[i] && fs[i].toLowerCase().indexOf(q)>=0){ hit=fs[i]; break; } }
+    if(hit===null) return {matched:false};
+    return {matched:true, alias:(hit!==disp && hit!==c.sym)?hit:null};
+  }
+  function hl(t,q){ var i=t.toLowerCase().indexOf(q.toLowerCase()); if(i<0) return esc(t);
+    return esc(t.slice(0,i))+'<mark>'+esc(t.slice(i,i+q.length))+'</mark>'+esc(t.slice(i+q.length)); }
+  function renderSearch(){
+    document.getElementById("appView").innerHTML=
+      '<div class="srch"><input class="srchbox" id="srchbox" placeholder="搜索代币 / 名称" value="'+esc(state.query||"")+'" oninput="onSearch(this.value)">'
+      +'<div class="srchhint">当前界面语言：<b>'+LANGNAME[state.lang]+'</b> · 跨语言搜索：英文界面下输入「比特币」「英特尔」也能命中</div></div>'
+      +'<div id="srchResults"></div>';
+    renderResults();
+    var b=document.getElementById("srchbox"); if(b&&state.query){ b.focus(); var n=b.value.length; try{b.setSelectionRange(n,n);}catch(e){} }
+  }
+  function renderResults(){
+    var q=(state.query||"").trim(), el=document.getElementById("srchResults"); if(!el) return;
+    if(!q){ el.innerHTML='<div class="srchempty">输入关键词，跨语言匹配 代码 / 英文 / 各语言名称</div>'; return; }
+    var rs=[]; coins.forEach(function(c){ var m=matchInfo(c,q); if(m.matched) rs.push({c:c,m:m}); });
+    if(!rs.length){ el.innerHTML='<div class="srchempty">无匹配结果</div>'; return; }
+    el.innerHTML='<div class="list">'+rs.map(function(r){
+      var c=r.c, nm=nameOf(c), lev=c.lev?'<span class="lev">'+c.lev+'</span>':'';
+      var alias=r.m.alias?'<div class="alias">匹配名称：'+hl(r.m.alias,q)+'</div>':'';
+      return '<div class="row"><div class="ic" style="background:'+c.color+'">'+c.icon+'</div>'
+        +'<div class="r-main"><div class="pair">'+c.sym+'<span class="q">/'+c.quote+'</span>'+lev+'</div>'
+        +'<div class="sub2">'+esc(nm.text)+'<span class="vsep"> | </span>'+c.vol+'</div>'+alias+'</div>'
+        +'<div class="r-px"><div class="px">'+c.px+'</div>'+chgHtml(c.chg)+'</div></div>';
+    }).join("")+'</div>';
+  }
+  function onSearch(v){ state.query=v; renderResults(); }
+
   function renderFront(){
     renderApp();renderWeb();
     if(state.flash){var f=state.flash;setTimeout(function(){if(state.flash===f){state.flash=null;}},1100);}
