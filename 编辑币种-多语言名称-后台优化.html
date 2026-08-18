@@ -1,0 +1,225 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>编辑币种 · 多语言名称（后台优化）</title>
+<style>
+  :root{
+    --bg:#f0f2f5; --card:#fff; --line:#e5e7eb; --line2:#d9dde3;
+    --txt:#1f2329; --sub:#8a9099; --sub2:#b0b6bd;
+    --primary:#2b5cff; --primary-d:#1d47d6; --req:#f5222d;
+    --ok:#16a34a; --okbg:#f0fdf4; --warn:#d97706; --warnbg:#fffbeb;
+    --field:#fff; --fieldb:#d9dde3; --chipbg:#f2f4f7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font:14px/1.5 -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+  .stage{padding:28px;min-height:100vh;display:flex;align-items:flex-start;justify-content:center}
+  .modal{background:var(--card);width:1120px;max-width:100%;border-radius:8px;
+    box-shadow:0 12px 40px rgba(0,0,0,.14);overflow:hidden}
+  .mhead{display:flex;align-items:center;justify-content:space-between;
+    padding:16px 22px;border-bottom:1px solid var(--line)}
+  .mhead h1{font-size:16px;margin:0;font-weight:600}
+  .x{border:0;background:none;font-size:20px;color:var(--sub);cursor:pointer;line-height:1}
+  .mbody{padding:22px 24px;max-height:74vh;overflow:auto}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 28px}
+  .fld label{display:block;font-size:13px;margin-bottom:6px;color:var(--txt)}
+  .fld label .req{color:var(--req);margin-right:3px}
+  .fld .hint{color:var(--sub);font-weight:400;font-size:12px;margin-left:6px}
+  .inp,.sel{width:100%;height:36px;border:1px solid var(--fieldb);border-radius:6px;
+    padding:0 10px;background:var(--field);color:var(--txt);font-size:14px;outline:none}
+  .inp:focus,.sel:focus{border-color:var(--primary)}
+  .inp[readonly]{background:#f7f8fa;color:#6b7178}
+  .sel{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%238a9099' stroke-width='1.4' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+
+  /* i18n name block */
+  .sec{margin:22px 0 6px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .sec-h{display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px;background:#fafbfc;border-bottom:1px solid var(--line)}
+  .sec-h .t{font-weight:600;font-size:14px}
+  .sec-h .t .tag{display:inline-block;margin-left:8px;font-weight:400;font-size:11px;
+    color:var(--primary);background:#eef3ff;border-radius:4px;padding:1px 7px;vertical-align:1px}
+  .sec-b{padding:14px 16px}
+  .langrow{display:grid;grid-template-columns:190px 1fr 40px;gap:12px;align-items:center;margin-bottom:10px}
+  .langrow .sel{height:36px}
+  .langrow .rm{border:1px solid var(--fieldb);background:#fff;height:36px;border-radius:6px;
+    color:var(--sub);cursor:pointer;font-size:16px}
+  .langrow .rm:hover{border-color:var(--req);color:var(--req)}
+  .langrow.locked .rm{visibility:hidden}
+  .req-badge{font-size:11px;color:var(--req);margin-left:6px}
+  .addbtn{border:1px dashed var(--fieldb);background:#fff;color:var(--primary);
+    height:36px;border-radius:6px;padding:0 14px;cursor:pointer;font-size:13px}
+  .addbtn:hover{border-color:var(--primary);background:#f7f9ff}
+  .rulebar{display:flex;gap:8px;align-items:flex-start;margin-top:10px;padding:9px 12px;
+    background:var(--warnbg);border:1px solid #fde68a;border-radius:6px;color:#92600a;font-size:12px}
+
+  /* preview */
+  .prev{margin-top:16px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .prev-h{padding:10px 16px;background:#fafbfc;border-bottom:1px solid var(--line);
+    font-weight:600;font-size:13px}
+  .prev-b{padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  .pcard{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:#fff}
+  .pcard .lg{font-size:11px;color:var(--sub);margin-bottom:8px}
+  .prow{display:flex;align-items:center;gap:10px}
+  .picon{width:30px;height:30px;border-radius:50%;background:#f2f4f7;display:flex;
+    align-items:center;justify-content:center;font-weight:700;color:#5b636d;font-size:13px}
+  .p-l1{font-weight:600;font-size:15px}
+  .p-l1 .q{color:var(--sub);font-weight:500}
+  .p-l2{font-size:12px;color:var(--sub);margin-top:1px;min-height:16px}
+  .p-l2 .fb{color:var(--warn)}
+  .p-l2 .hide{color:var(--sub2);font-style:italic}
+
+  .mfoot{display:flex;justify-content:flex-end;gap:12px;padding:14px 24px;border-top:1px solid var(--line)}
+  .btn{height:36px;border-radius:6px;padding:0 20px;cursor:pointer;font-size:14px;border:1px solid var(--fieldb);background:#fff;color:var(--txt)}
+  .btn.p{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.p:hover{background:var(--primary-d)}
+  .divider{height:1px;background:var(--line);margin:22px 0}
+  .muted-sec .fld label{color:#6b7178}
+  .note{font-size:12px;color:var(--sub);margin:0 0 14px}
+</style>
+
+<div class="stage">
+  <div class="modal">
+    <div class="mhead"><h1>编辑币种</h1><button class="x">×</button></div>
+    <div class="mbody">
+
+      <p class="note">优化点：明确「名称=交易代码」「全称=英文全称/默认名(兜底)」，新增「多语言名称」配置块与「前端展示预览」。其余字段保持原样。</p>
+
+      <!-- name identity -->
+      <div class="grid">
+        <div class="fld">
+          <label><span class="req">*</span>名称<span class="hint">交易代码 / Symbol，如 BTC、GOOGLX</span></label>
+          <input class="inp" value="GOOGLX">
+        </div>
+        <div class="fld">
+          <label><span class="req">*</span>全称<span class="hint">英文全称 / 默认展示名，如 Alphabet；作多语言未配置时的兜底</span></label>
+          <input class="inp" id="fullname" value="Alphabet (Google)" oninput="renderPreview()">
+        </div>
+      </div>
+
+      <!-- i18n names -->
+      <div class="sec">
+        <div class="sec-h">
+          <div class="t">多语言名称 <span class="tag">前端第二行按用户语言展示</span></div>
+          <button class="addbtn" onclick="addLang()">＋ 添加语言</button>
+        </div>
+        <div class="sec-b">
+          <div id="langlist"></div>
+          <div class="rulebar">
+            <span>⚠️</span>
+            <span><b>兜底链</b>：某语言未配置名称时，按「<b>该语言名称 → 全称(英文全称) → 第二行整行不显示</b>」处理，永不留空白。简体中文建议必填。</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- live preview -->
+      <div class="prev">
+        <div class="prev-h">前端展示预览（列表 / 交易页第二行）</div>
+        <div class="prev-b" id="preview"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- existing fields, unchanged -->
+      <div class="grid muted-sec">
+        <div class="fld"><label><span class="req">*</span>精度</label><input class="inp" value="18"></div>
+        <div class="fld"><label><span class="req">*</span>显示精度</label><input class="inp" value="8"></div>
+        <div class="fld"><label>划转现货</label><select class="sel"><option>允许</option><option>禁止</option></select></div>
+        <div class="fld"><label>转出现货</label><select class="sel"><option>允许</option><option>禁止</option></select></div>
+        <div class="fld"><label>转入合约</label><select class="sel"><option>禁止</option><option>允许</option></select></div>
+        <div class="fld"><label>转出合约</label><select class="sel"><option>禁止</option><option>允许</option></select></div>
+        <div class="fld"><label>转入竞猜</label><select class="sel"><option>禁止</option><option>允许</option></select></div>
+        <div class="fld"><label>转出竞猜</label><select class="sel"><option>禁止</option><option>允许</option></select></div>
+        <div class="fld"><label>竞猜汇率</label><input class="inp" value="1"></div>
+        <div class="fld"><label>最小划转数量</label><input class="inp" value="0"></div>
+        <div class="fld"><label>最大划转数量</label><input class="inp" value="100000000"></div>
+        <div class="fld"><label>排序</label><input class="inp" value="99"></div>
+      </div>
+
+    </div>
+    <div class="mfoot">
+      <button class="btn">取消</button>
+      <button class="btn p">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var LANGS = [
+    {code:"zh-CN", name:"简体中文"},
+    {code:"zh-TW", name:"繁體中文"},
+    {code:"en",    name:"English"},
+    {code:"ja",    name:"日本語"},
+    {code:"ko",    name:"한국어"},
+    {code:"vi",    name:"Tiếng Việt"},
+    {code:"ru",    name:"Русский"},
+    {code:"es",    name:"Español"}
+  ];
+  // seeded rows: zh-CN required + English
+  var rows = [
+    {code:"zh-CN", value:"谷歌", required:true},
+    {code:"en",    value:"Alphabet", required:false}
+  ];
+
+  function langName(code){
+    for (var i=0;i<LANGS.length;i++){ if(LANGS[i].code===code) return LANGS[i].name; }
+    return code;
+  }
+  function optionsHtml(sel){
+    return LANGS.map(function(l){
+      return '<option value="'+l.code+'"'+(l.code===sel?' selected':'')+'>'+l.name+'</option>';
+    }).join("");
+  }
+  function renderRows(){
+    var html = rows.map(function(r, idx){
+      return '<div class="langrow '+(r.required?'locked':'')+'">'
+        + '<select class="sel" onchange="onLangChange('+idx+',this.value)">'+optionsHtml(r.code)+'</select>'
+        + '<input class="inp" placeholder="该语言下的币种名称" value="'+ (r.value||"") +'"'
+        +   ' oninput="onValueChange('+idx+',this.value)">'
+        + '<button class="rm" title="删除" onclick="removeLang('+idx+')">×</button>'
+        + (r.required?'<span class="req-badge">必填</span>':'')
+        + '</div>';
+    }).join("");
+    document.getElementById("langlist").innerHTML = html;
+    renderPreview();
+  }
+  function onLangChange(i,v){ rows[i].code = v; renderPreview(); }
+  function onValueChange(i,v){ rows[i].value = v; renderPreview(); }
+  function addLang(){
+    var used = rows.map(function(r){return r.code;});
+    var next = LANGS.filter(function(l){return used.indexOf(l.code)<0;})[0];
+    rows.push({code: next?next.code:"en", value:"", required:false});
+    renderRows();
+  }
+  function removeLang(i){
+    if(rows[i].required) return;
+    rows.splice(i,1);
+    renderRows();
+  }
+
+  // preview: for each of a demo set of user languages, show fallback result
+  var PREVIEW_LOCALES = ["zh-CN","en","ja"];
+  function nameFor(code){
+    for (var i=0;i<rows.length;i++){ if(rows[i].code===code && rows[i].value) return rows[i].value; }
+    return null;
+  }
+  function renderPreview(){
+    var symbol = "GOOGLX";
+    var full = (document.getElementById("fullname")||{}).value || "";
+    var html = PREVIEW_LOCALES.map(function(loc){
+      var nm = nameFor(loc), line2, cls="";
+      if(nm){ line2 = nm; }
+      else if(full){ line2 = full; cls="fb"; }        // fallback to full name
+      else { line2 = "（第二行不显示）"; cls="hide"; } // hide
+      var badge = cls==="fb" ? ' <span style="color:var(--warn)">·兜底全称</span>' : '';
+      return '<div class="pcard">'
+        + '<div class="lg">用户语言：'+langName(loc)+'</div>'
+        + '<div class="prow"><div class="picon">G</div><div>'
+        + '<div class="p-l1">'+symbol+'<span class="q">/USDT</span></div>'
+        + '<div class="p-l2"><span class="'+cls+'">'+line2+'</span>'+badge+'</div>'
+        + '</div></div></div>';
+    }).join("");
+    document.getElementById("preview").innerHTML = html;
+  }
+
+  renderRows();
+</script>
