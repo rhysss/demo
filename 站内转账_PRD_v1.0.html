@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>站内转账（P2P）PRD V1.0</title>
+<style>
+  :root{
+    --bg:#0b0e11;--panel:#12161b;--panel2:#181d24;--panel3:#1e242c;
+    --border:#252b34;--line:#20262e;
+    --t1:#eaecef;--t2:#98a1ad;--t3:#5e6673;
+    --yellow:#fcd535;--yellow-d:#f0b90b;--green:#0ecb81;--red:#f6465d;--blue:#4a9eff;
+    --warn-bg:#221d0d;--warn-bd:#5c4a10;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--t1);line-height:1.75;font-size:15px;-webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .layout{display:flex;max-width:1200px;margin:0 auto;gap:36px;padding:0 24px}
+
+  /* nav */
+  aside{width:240px;flex:0 0 240px;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 0 40px}
+  aside::-webkit-scrollbar{width:5px}aside::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  aside .brand{font-size:13px;font-weight:700;color:var(--yellow);letter-spacing:.5px;margin-bottom:2px}
+  aside .ver{font-size:11px;color:var(--t3);margin-bottom:18px}
+  aside nav a{display:block;font-size:13px;color:var(--t2);text-decoration:none;padding:6px 12px;border-left:2px solid transparent;transition:.15s;border-radius:0 6px 6px 0}
+  aside nav a:hover{color:var(--t1);background:var(--panel2)}
+  aside nav a.sub{padding-left:26px;font-size:12.5px;color:var(--t3)}
+  aside nav a.h{margin-top:12px;font-weight:600;color:var(--t1)}
+
+  main{flex:1;min-width:0;padding:36px 0 120px;max-width:820px}
+
+  /* cover */
+  .cover{border:1px solid var(--border);border-radius:16px;background:linear-gradient(150deg,#141b22,#0d1116);padding:48px 40px;margin-bottom:40px}
+  .cover h1{font-size:38px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+  .cover .sub{font-size:17px;color:var(--t2);font-weight:600;margin-bottom:26px}
+  .cover .meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--t2)}
+  .cover .meta b{color:var(--t1);font-weight:600}
+  .cover .pills{margin-top:20px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:11.5px;padding:4px 11px;border-radius:20px;background:var(--panel3);border:1px solid var(--border);color:var(--t2)}
+  .pill.y{color:var(--yellow);border-color:var(--warn-bd)}
+
+  h2.sec{font-size:24px;font-weight:700;margin:52px 0 6px;padding-top:14px;scroll-margin-top:20px;display:flex;align-items:baseline;gap:10px}
+  h2.sec .no{color:var(--yellow);font-size:16px;font-weight:800}
+  h2.sec:first-of-type{margin-top:8px}
+  h3{font-size:18px;font-weight:600;margin:30px 0 10px;color:#dfe3e8;scroll-margin-top:20px}
+  h4{font-size:15px;font-weight:600;margin:20px 0 8px;color:#cfd4da}
+  p{margin:10px 0;color:#c6ccd4}
+  .lead{color:var(--t2);font-size:13.5px;margin:6px 0 14px}
+  ul{margin:10px 0 10px 4px;list-style:none}
+  li{position:relative;padding-left:20px;margin:7px 0;color:#c6ccd4}
+  li:before{content:"";position:absolute;left:4px;top:11px;width:5px;height:5px;border-radius:50%;background:var(--yellow-d)}
+  b,strong{color:var(--t1)}
+  hr{border:0;border-top:1px solid var(--line);margin:8px 0}
+
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.5px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  thead th{background:#1a222b;color:#cdd3da;font-weight:600;text-align:left;padding:11px 14px;font-size:12.5px;border-bottom:1px solid var(--border)}
+  tbody td{padding:11px 14px;border-bottom:1px solid var(--line);color:#c2c8d0;vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:nth-child(even){background:rgba(255,255,255,.015)}
+  td .p0{color:var(--red);font-weight:700}td .p1{color:var(--yellow-d);font-weight:700}
+
+  .callout{border-radius:10px;padding:14px 16px 14px 18px;margin:16px 0;font-size:13.5px;border:1px solid var(--border);border-left-width:3px}
+  .callout .ct{font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:7px}
+  .callout.ok{border-left-color:var(--green);background:rgba(14,203,129,.05)}
+  .callout.ok .ct{color:var(--green)}
+  .callout.warn{border-left-color:var(--yellow-d);background:var(--warn-bg)}
+  .callout.warn .ct{color:var(--yellow-d)}
+  .callout ul{margin:6px 0 0}
+  .callout li:before{background:currentColor;opacity:.5}
+
+  .ph{border:1.5px dashed #39424d;border-radius:10px;padding:26px;text-align:center;color:var(--t3);font-size:13px;font-style:italic;margin:14px 0;background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(255,255,255,.012) 10px,rgba(255,255,255,.012) 20px)}
+
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0}
+  .flow .step{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500}
+  .flow .arr{color:var(--t3)}
+
+  code{background:var(--panel3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:12.5px;color:#e6c86a}
+  .foot{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:var(--t3);font-size:12px;text-align:center}
+  @media(max-width:860px){aside{display:none}main{padding:24px 0 80px}.layout{padding:0 16px}.cover{padding:32px 22px}.cover h1{font-size:30px}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <div class="brand">站内转账 · P2P</div>
+    <div class="ver">PRD V1.0 · 2026-08-24</div>
+    <nav>
+      <a class="h" href="#c1">一、需求分析</a>
+      <a class="h" href="#c2">二、产品概述</a>
+      <a class="sub" href="#c2-1">2.1 产品逻辑</a>
+      <a class="sub" href="#c2-3">2.3 术语</a>
+      <a class="sub" href="#c2-4">2.4 Checklist</a>
+      <a class="h" href="#c3">三、需求说明</a>
+      <a class="sub" href="#c3-1">3.1 功能列表</a>
+      <a class="sub" href="#c3-2">3.2 交互流程</a>
+      <a class="sub" href="#c3-3">3.3 原型说明</a>
+      <a class="sub" href="#c3-4">3.4 边界 Case</a>
+      <a class="h" href="#c4">四、数据埋点</a>
+      <a class="h" href="#c5">五、API 调整</a>
+      <a class="h" href="#cv">版本历史</a>
+      <a class="h" href="#cs">PRD 自检</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="cover">
+      <h1>站内转账（P2P）</h1>
+      <div class="sub">产品需求文档 · PRD</div>
+      <div class="meta">
+        <span>版本 <b>V1.0</b></span>
+        <span>日期 <b>2026-08-24</b></span>
+        <span>作者 <b>Rhys</b></span>
+        <span>依据 <b>规则台账 v1.7</b></span>
+      </div>
+      <div class="pills">
+        <span class="pill">需求类型 0→1</span><span class="pill">规模 L</span>
+        <span class="pill y">免手续费</span><span class="pill y">实时到账</span><span class="pill y">仅 UID</span>
+      </div>
+    </div>
+
+    <!-- 1 -->
+    <h2 class="sec" id="c1"><span class="no">01</span>需求分析</h2>
+    <h3>1.1 用户分析</h3>
+    <p><b>目标用户</b>：平台已注册并完成登录的用户。</p>
+    <p><b>核心场景</b>：用户需向平台内其他用户转移资产，典型如朋友间 AA、借还款、社群/团队打款等，且希望免手续费、实时到账、无需填写链上地址。</p>
+    <p><b>用户痛点</b>：</p>
+    <ul>
+      <li>走链上提现需选择网络、填写地址、支付网络手续费、等待区块确认；</li>
+      <li>链上地址一旦填错，资产不可逆丢失，操作门槛与风险较高。</li>
+    </ul>
+    <p><b>产品价值</b>：以「仅凭对方 UID、免费、实时」的方式完成站内资金流转，降低操作成本与出错风险，提升平台内资金流转效率与用户黏性，沉淀站内资金。</p>
+    <h3>1.2 竞品分析</h3>
+    <p class="lead">【待补充】——本次需求未开展竞品调研。后续如需，可补充主流交易所站内转账/支付类产品（如币安 Pay、OKX 内部转账等）的对比分析。</p>
+
+    <!-- 2 -->
+    <h2 class="sec" id="c2"><span class="no">02</span>产品概述</h2>
+    <h3 id="c2-1">2.1 产品逻辑</h3>
+    <h4>2.1.1 主流程</h4>
+    <div class="flow">
+      <span class="step">资产页 · 提现</span><span class="arr">→</span>
+      <span class="step">选内部转账</span><span class="arr">→</span>
+      <span class="step">输 UID / 金额 / 留言</span><span class="arr">→</span>
+      <span class="step">确认并验证</span><span class="arr">→</span>
+      <span class="step">强原子执行</span><span class="arr">→</span>
+      <span class="step">结果 · 记录</span>
+    </div>
+    <table>
+      <thead><tr><th>环节</th><th>用户动作</th><th>系统行为</th></tr></thead>
+      <tbody>
+        <tr><td>入口</td><td>资产页点「提现」→ 选「内部转账」</td><td>App 弹出方式选择弹窗；Web 以 Tab 区分</td></tr>
+        <tr><td>发起</td><td>输入收款人 UID / 数量 / 留言</td><td>实时校验 UID 是否存在、余额是否充足</td></tr>
+        <tr><td>确认验证</td><td>核对摘要 + 输入验证码</td><td>校验邮箱验证码（及 2FA）</td></tr>
+        <tr><td>执行</td><td>点击确认转账</td><td>强原子执行：扣款 + 入账，同成同败</td></tr>
+        <tr><td>结果</td><td>查看结果</td><td>成功即时到账 / 失败整体回滚未扣款</td></tr>
+      </tbody>
+    </table>
+    <h4>2.1.2 订单状态机</h4>
+    <ul>
+      <li><b>前置拦截</b>（余额不足 / UID 不存在）：发起页提交前阻断，<b>不生成订单</b>。</li>
+      <li><b>处理中</b>：原子事务执行中（实时，通常极短暂）。</li>
+      <li><b>成功</b>：扣款腿与入账腿均成功，资产实时到账。</li>
+      <li><b>失败</b>：系统异常/网络超时，整体回滚，用户未扣款。</li>
+    </ul>
+    <p class="lead">说明：因账务强原子，系统不存在「已扣未入」中间态。</p>
+
+    <h3>2.2 功能架构</h3>
+    <ul>
+      <li><b>C 端</b>：提现入口区分 / 内部转账发起 / 安全验证 / 转账结果 / 转账记录 / 收付双视角详情。</li>
+      <li><b>管理后台</b>：转账流水查询 / 状态监控（成功 · 处理中 · 失败），仅查询监控，无人工补账处置。</li>
+    </ul>
+
+    <h3 id="c2-3">2.3 术语解释</h3>
+    <table>
+      <thead><tr><th>术语</th><th>解释</th></tr></thead>
+      <tbody>
+        <tr><td>站内转账</td><td>平台内用户之间的资金划转，不上链、实时到账、免手续费。</td></tr>
+        <tr><td>UID</td><td>平台用户唯一标识，内部转账收款人的唯一识别方式。</td></tr>
+        <tr><td>扣款腿 / 入账腿</td><td>一笔转账中「付款方扣款」与「收款方入账」两个动作。</td></tr>
+        <tr><td>强原子</td><td>扣款腿与入账腿同成同败，绝不出现「已扣未入」。</td></tr>
+        <tr><td>2FA</td><td>身份验证器（如 Google Authenticator）生成的动态验证码。</td></tr>
+        <tr><td>前置拦截</td><td>在发起页提交前即校验并阻断（如余额不足、UID 不存在），不生成订单。</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="c2-4">2.4 重要信息 Checklist</h3>
+    <table>
+      <thead><tr><th>项</th><th>结论</th></tr></thead>
+      <tbody>
+        <tr><td>手续费</td><td>不收取，收款方到账金额 = 付款方转账数量</td></tr>
+        <tr><td>到账时效</td><td>实时到账</td></tr>
+        <tr><td>可否撤销</td><td>不可撤销，无撤销/退回功能</td></tr>
+        <tr><td>收款人识别</td><td>仅支持 UID</td></tr>
+        <tr><td>名称展示</td><td>全流程只显 UID，不展示昵称/实名</td></tr>
+        <tr><td>限额</td><td>不做限额（单笔/单日均不限）</td></tr>
+        <tr><td>KYC</td><td>不做 KYC 验证</td></tr>
+        <tr><td>风控拦截</td><td>当前版本不做</td></tr>
+        <tr><td>地区限制</td><td>不做</td></tr>
+        <tr><td>账务一致性</td><td>强原子（同成同败）</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2.5 上线节奏</h3>
+    <ul>
+      <li>一期：内部转账（本文档范围）。</li>
+      <li>链上提现：入口已与内部转账并列展示，其具体流程不在本次需求范围内。</li>
+    </ul>
+
+    <!-- 3 -->
+    <h2 class="sec" id="c3"><span class="no">03</span>需求说明</h2>
+    <h3 id="c3-1">3.1 功能列表</h3>
+    <table>
+      <thead><tr><th>功能</th><th>说明</th><th style="width:70px">优先级</th></tr></thead>
+      <tbody>
+        <tr><td>提现入口区分</td><td>提现下分「链上提现 / 内部转账」；Web Tab 区分，App 弹窗二选一</td><td><span class="p0">P0</span></td></tr>
+        <tr><td>内部转账发起</td><td>选币种 + 输入收款人 UID + 数量 + 留言</td><td><span class="p0">P0</span></td></tr>
+        <tr><td>UID 前置校验</td><td>实时校验 UID 是否存在，不存在则拦截，仅返回是否有效、不返回名称</td><td><span class="p0">P0</span></td></tr>
+        <tr><td>余额前置拦截</td><td>余额不足在发起页拦截（下一步置灰 + 行内提示），不生成订单</td><td><span class="p0">P0</span></td></tr>
+        <tr><td>安全验证</td><td>已绑 2FA：邮箱验证码 + 2FA 双重；未绑 2FA：仅邮箱验证码</td><td><span class="p0">P0</span></td></tr>
+        <tr><td>实时到账与结果</td><td>强原子执行，成功/失败结果页</td><td><span class="p0">P0</span></td></tr>
+        <tr><td>转账记录</td><td>仅展示成功转账记录</td><td><span class="p0">P0</span></td></tr>
+        <tr><td>收付双视角详情</td><td>转出（付款人视角）/ 转入（收款人视角）详情页</td><td><span class="p0">P0</span></td></tr>
+        <tr><td>留言</td><td>收付双方可见，详情页 + 结果页展示，最多 20 字</td><td><span class="p1">P1</span></td></tr>
+        <tr><td>管理后台流水监控</td><td>流水查询 + 状态监控（仅查询，无人工补账）</td><td><span class="p1">P1</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="c3-2">3.2 页面交互流程</h3>
+    <h4>3.2.1 App 流程</h4>
+    <p>资产页 →（点提现，底部弹窗二选一）→ 内部转账发起页 → 确认并验证页（摘要 + 安全验证合一）→ 结果页 → 转账记录 → 收/付详情页。</p>
+    <p class="lead">App 已取消独立「确认转账」页，发起页「下一步」直达「确认并验证」页，减少一步操作。</p>
+    <h4>3.2.2 Web 流程</h4>
+    <p>提现页（左侧步骤条：① 选择币种 → ② 选择收款人；收款人处以 Tab 区分「链上提现 / 内部转账」）→ 内部转账表单 → 确认弹窗（摘要 + 验证合一）→ 结果页 → 转账记录（表格）→ 收/付详情页。</p>
+    <h4>3.2.3 多端差异</h4>
+    <table>
+      <thead><tr><th>维度</th><th>App</th><th>Web</th></tr></thead>
+      <tbody>
+        <tr><td>提现方式选择</td><td>底部弹窗二选一</td><td>提现页内 Tab 区分</td></tr>
+        <tr><td>发起布局</td><td>分步单列，逐屏推进</td><td>步骤条 + 单列表单</td></tr>
+        <tr><td>确认与验证</td><td>独立「确认并验证」页</td><td>模态弹窗（摘要 + 验证合一）</td></tr>
+        <tr><td>记录呈现</td><td>列表卡片</td><td>表格（多列）</td></tr>
+        <tr><td>核心规则</td><td colspan="2">两端完全一致</td></tr>
+        <tr><td>H5</td><td colspan="2">默认复用 App 交互（窄屏单列）</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="c3-3">3.3 原型及说明</h3>
+    <p class="lead">按 MECE 原则逐页拆解页面逻辑；原型截图由 PM 从原型文件截取后插入对应占位处。</p>
+
+    <div id="pages"></div>
+
+    <h3 id="c3-4">3.4 边界 Case 表格</h3>
+    <table>
+      <thead><tr><th>场景</th><th>触发条件</th><th>系统行为 / 预期</th></tr></thead>
+      <tbody>
+        <tr><td>余额不足</td><td>转账数量 &gt; 可用余额</td><td>发起页前置拦截，行内红字，下一步置灰，不生成订单</td></tr>
+        <tr><td>UID 不存在</td><td>输入的 UID 不存在</td><td>发起页前置拦截；后端提交时二次校验兜底</td></tr>
+        <tr><td>未绑定 2FA</td><td>付款方账户未绑 2FA</td><td>不展示 2FA 输入框，仅需邮箱验证码，不强制绑定</td></tr>
+        <tr><td>邮箱码错误/过期</td><td>验证码不正确或超时</td><td>提示并要求重输/重新获取，转账不执行</td></tr>
+        <tr><td>2FA 验证码错误</td><td>已绑 2FA 用户 2FA 不正确</td><td>提示错误，转账不执行</td></tr>
+        <tr><td>系统异常/网络超时</td><td>提交后执行失败</td><td>整体回滚，未扣款，展示失败结果</td></tr>
+        <tr><td>留言超长</td><td>留言超过 20 字</td><td>限制输入不可超过 20 字</td></tr>
+        <tr><td>转账给自己</td><td>收款人 UID = 自己</td><td><b style="color:var(--yellow-d)">⚠️ 待确认</b>：是否允许（建议拦截）</td></tr>
+        <tr><td>收款方账户异常</td><td>收款方被冻结/限制</td><td><b style="color:var(--yellow-d)">⚠️ 待确认</b>：当前不做风控，是否拦截</td></tr>
+        <tr><td>重复提交</td><td>短时间重复点击确认</td><td>需保证幂等，仅执行一笔（实现层保障）</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 4 -->
+    <h2 class="sec" id="c4"><span class="no">04</span>数据埋点</h2>
+    <p class="lead">穷举关键用户行为事件，上报参数以业务语言描述。</p>
+    <table>
+      <thead><tr><th>事件名</th><th>触发时机</th><th>上报参数（业务语言）</th></tr></thead>
+      <tbody>
+        <tr><td>进入资产页</td><td>资产页曝光</td><td>用户 UID、进入时间</td></tr>
+        <tr><td>点击提现</td><td>点击提现（弹窗曝光）</td><td>用户 UID、来源页</td></tr>
+        <tr><td>选择提现方式</td><td>弹窗/Tab 选择方式</td><td>方式（链上/内部）</td></tr>
+        <tr><td>进入发起页</td><td>发起页曝光</td><td>币种</td></tr>
+        <tr><td>UID 校验结果</td><td>输入 UID 完成校验</td><td>校验结果（有效/不存在）</td></tr>
+        <tr><td>点击下一步</td><td>发起页点击下一步</td><td>币种、金额、是否带留言、拦截结果</td></tr>
+        <tr><td>进入确认并验证页</td><td>确认并验证页/弹窗曝光</td><td>币种、金额</td></tr>
+        <tr><td>获取邮箱验证码</td><td>点击获取验证码</td><td>用户 UID</td></tr>
+        <tr><td>提交安全验证</td><td>点击确认转账</td><td>是否已绑 2FA、验证结果</td></tr>
+        <tr><td>转账结果</td><td>结果页曝光</td><td>结果、失败原因、金额、币种</td></tr>
+        <tr><td>查看转账记录</td><td>记录列表曝光</td><td>记录条数</td></tr>
+        <tr><td>查看转账详情</td><td>详情页曝光</td><td>视角（转出/转入）、订单号</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 5 -->
+    <h2 class="sec" id="c5"><span class="no">05</span>API 相关调整</h2>
+    <p class="lead">本章为唯一涉及实现层的章节，说明接口变动方向（非完整接口定义）。</p>
+    <ul>
+      <li><b>UID 存在性校验接口（新增）</b>：供发起页实时校验收款人 UID 是否存在，仅返回是否有效，不返回名称等敏感信息。</li>
+      <li><b>发起内部转账接口（新增）</b>：以强原子事务完成「扣款 + 入账」，保证同成同败；需支持幂等，防重复提交。</li>
+      <li><b>邮箱验证码发送 / 校验接口（新增或复用）</b>：发送邮箱验证码；提交时校验邮箱码，已绑 2FA 用户同时校验 2FA。</li>
+      <li><b>转账记录列表接口（新增）</b>：仅返回成功记录，区分转出/转入。</li>
+      <li><b>转账详情接口（新增）</b>：按视角返回转出/转入详情。</li>
+      <li><b>管理后台流水查询接口（新增）</b>：支持按订单号、UID、状态、时间查询全部状态流水；返回双腿状态。</li>
+      <li><b>账务一致性保障</b>：扣款与入账须在同一事务/分布式事务内，失败整体回滚，杜绝「已扣未入」。</li>
+    </ul>
+
+    <!-- version -->
+    <h2 class="sec" id="cv"><span class="no">▤</span>版本历史</h2>
+    <table>
+      <thead><tr><th>版本</th><th>日期</th><th>阶段</th><th>变更摘要 / 原因</th></tr></thead>
+      <tbody>
+        <tr><td>V1.0</td><td>2026-08-24</td><td>定稿（原型驱动）</td><td>首版；依据规则台账 v1.7（R-01～R-20）经原型迭代收敛后产出</td></tr>
+      </tbody>
+    </table>
+
+    <!-- self check -->
+    <h2 class="sec" id="cs"><span class="no">✓</span>PRD 自检</h2>
+    <div class="callout ok">
+      <div class="ct">✅ AI 已确认（核查通过项）</div>
+      <ul>
+        <li><b>资产平账</b>：强原子（R-18），扣款/入账同成同败，无「已扣未入」，失败整体回滚未扣款。</li>
+        <li><b>内容口径一致</b>：手续费/到账/不可撤销/仅 UID 等口径在各页一致。</li>
+        <li><b>隐私</b>：全流程只显 UID（R-14），校验仅返回是否存在、不返回名称（R-15）。</li>
+      </ul>
+    </div>
+    <div class="callout warn">
+      <div class="ct">⚠️ 待人工确认（需 PM / 合规 / 风控决策，AI 不得标为通过）</div>
+      <ul>
+        <li><b>风控漏洞</b>：不做风控拦截（R-07），存在盗号后资金被快速转移的风险，需风控/合规评估。</li>
+        <li><b>受限地区</b>：不做地区限制（R-08），需合规确认司法辖区要求。</li>
+        <li><b>KYC 门槛</b>：不做 KYC（R-05），需合规确认 AML 要求。</li>
+        <li><b>内容防污染</b>：留言双方可见，敏感词过滤 / 举报屏蔽机制未定（台账 Q-02 遗留）。</li>
+        <li><b>边界待拍板</b>：「转账给自己」是否拦截、「收款方账户异常」是否处理。</li>
+      </ul>
+    </div>
+
+    <div class="foot">站内转账（P2P）PRD V1.0 · 依据规则台账 v1.7 · 原型驱动产出</div>
+  </main>
+</div>
+
+<script>
+  const PAGES=[
+    ["资产页（App，提现入口）",["顶部展示总资产估值；下方三个操作入口：充值 / 提现 / 划转。","点击【提现】触发提现方式选择弹窗。","币种列表展示各币种余额（USDT/BTC/ETH 等）。"]],
+    ["提现方式选择（App 弹窗 / Web Tab）",["App：底部弹窗，两个选项——「链上提现」（提到外部地址，需选网络、收网络费）、「内部转账」（转给站内用户，实时到账、免手续费）。","Web：提现页收款人区域以 Tab 区分「链上提现 / 内部转账」。","选择「内部转账」进入内部转账发起；「链上提现」流程不在本次范围。"]],
+    ["内部转账发起页",["币种：默认带入所选币种，可切换。","收款人 UID：输入后实时前置校验——有效则提示「✓ 该 UID 有效」；不存在则行内红字提示并置灰下一步。","转账数量：展示可用余额，标注「不限额、免手续费」；余额不足行内红字并置灰下一步。","留言：选填，收付双方可见，最多 20 字。","底部提示：实时到账、不可撤销、免手续费。"]],
+    ["确认并验证页（App）/ 确认弹窗（Web）",["摘要区：收款方（UID）、手续费（免手续费）、实际到账、到账时间（实时 · 不可撤销）。","安全验证区：邮箱验证码（含「获取验证码」与倒计时）；身份验证器（2FA）验证码。","条件展示：已绑 2FA 两项均需填写；未绑 2FA 不展示 2FA 输入框，仅需邮箱验证码。","验证不区分金额（不分级）。"]],
+    ["转账结果页",["成功态：展示到账金额、收款方 UID、留言、到账时间、订单号。","失败态：仅「系统异常 / 网络超时」，明确「未扣款，资金仍在你的账户」（强原子回滚）。","余额不足、UID 不存在已在发起页前置拦截，不进入结果失败态。"]],
+    ["转账记录",["仅展示成功转账记录（失败不入列表）。","区分转出（-）/ 转入（+），展示对方 UID、时间、金额、状态。","点击某条进入对应视角详情页。"]],
+    ["收款人 / 付款人详情页",["转出详情（付款人视角）：展示收款方 UID、手续费（免）、留言、创建时间、订单号。","转入详情（收款人视角）：展示付款方 UID、留言、到账时间、订单号（不展示手续费）。","留言在收付双方详情页均展示。"]],
+    ["管理后台（流水查询 + 监控）",["顶部指标：今日转账 / 成功 / 处理中 / 失败（已回滚·未扣款）。","筛选：订单号、付款方 UID、收款方 UID、状态、日期。","流水表：订单号、双方 UID、币种、金额、状态、扣款/入账双腿、创建时间。","详情抽屉：双腿状态 + 账务一致性（强原子）+ 时间线；仅查询监控，无人工补账。","隐私：后台同样只显 UID，操作留痕。"]],
+  ];
+  document.getElementById('pages').innerHTML=PAGES.map((p,i)=>{
+    return '<h4 id="p'+(i+1)+'">3.3.'+(i+1)+' '+p[0]+'</h4>'+
+      '<div class="ph">【原型截图占位：'+p[0]+'　—　由 PM 从原型截取后插入】</div>'+
+      '<ul>'+p[1].map(s=>'<li>'+s+'</li>').join('')+'</ul>';
+  }).join('');
+</script>
+</body>
+</html>
