@@ -76,7 +76,7 @@
   .acct.expired .avatar{background:#f0f0f2; color:#c2c2c8;}
   .acct .info{flex:1; min-width:0;}
   .acct .nick{font-size:15.5px; font-weight:600; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .acct .id{font-size:13px; color:var(--t2); line-height:1.3; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .acct .id{font-size:13.5px; color:var(--t2); line-height:1.3; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .acct .uid{font-size:12.5px; color:var(--t3); margin-top:2px;}
   .check{width:24px; height:24px; border-radius:50%; background:#0ecb81; display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
   .acct.expired .id, .acct.expired .uid{color:#b0b0b6;}
@@ -270,10 +270,11 @@ function seed(n){
   else {
     accounts=[];
     const types=['email','phone_cn','email','email','phone_uk','phone_us'];
+    const names=['Faker','Trader_01','Alpha','Grid_Bot','Hodler','Scalp_King','Mavis','Neo','Whale_88','Degen','Orion','Nova','Zen','Pulse','Echo','Vertex','Lumen','Rune','Kilo','Sage','Onyx','Flux','Nimbus','Cobalt','Ember'];
     for(let i=0;i<n;i++){
       const t=types[i%types.length];
       const st = i===0?'current':(i%7===3?'expired':'active');
-      accounts.push(mk('a'+i, '4002008'+String(20+(i%4)).padStart(2,'0'), t, st));
+      accounts.push(mk('a'+i, '4002008'+String(20+i).padStart(2,'0'), t, st, names[i%names.length]));
     }
     ensureCurrent();
   }
@@ -308,7 +309,7 @@ function acctNode(a){
     right='<span class="badge expired">Expired</span>';
   }
   el.innerHTML=`<div class="avatar">${avatarText(a)}</div>
-    <div class="info"><div class="nick">${a.nick}</div><div class="id">${label(a)}</div><div class="uid">UID: ${a.uid}</div></div>
+    <div class="info"><div class="nick">${a.nick}</div><div class="id">${label(a)}</div></div>
     ${right}`;
   if(!editMode) el.onclick=()=>tapAccount(a.id);
   return el;
