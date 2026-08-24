@@ -269,7 +269,7 @@ function seed(n){
   else if(n<=4){ accounts=base.slice(0,n); ensureCurrent(); }
   else {
     accounts=[];
-    const types=['email','phone_cn','email','email','phone_uk','phone_us'];
+    const types=['email','phone_cn','email','phone_sg','phone_uk','phone_us'];
     const names=['Faker','Trader_01','Alpha','Grid_Bot','Hodler','Scalp_King','Mavis','Neo','Whale_88','Degen','Orion','Nova','Zen','Pulse','Echo','Vertex','Lumen','Rune','Kilo','Sage','Onyx','Flux','Nimbus','Cobalt','Ember'];
     for(let i=0;i<n;i++){
       const t=types[i%types.length];
@@ -281,14 +281,34 @@ function seed(n){
 }
 function ensureCurrent(){ if(!accounts.some(a=>a.status==='current')){ const f=accounts.find(a=>a.status!=='expired'); if(f) f.status='current'; } }
 
+// 原始样例值（真实产品由后端下发，前端只做展示脱敏）
+const RAW = {
+  email:    'rhysabcd@gmail.com',
+  phone_cn: '+8613400002234',   // 11 位
+  phone_us: '+15160000797',     // 10 位
+  phone_uk: '+447440000103',    // 10 位
+  phone_sg: '+6581234567',      // 8 位短号
+};
+// 已知国家区号（长的在前，避免前缀误判）
+const CC = ['852','971','86','44','65','81','61','49','33','1','7'];
+
+// 邮箱脱敏：前 3 位 + *** + 完整 @尾缀
+function maskEmail(e){
+  const [lp, domain] = e.split('@');
+  const head = lp.slice(0,3);
+  return head + '***@' + domain;
+}
+// 手机脱敏：区号 + 固定3星 + 后3位（全球统一，不泄露总长度）
+function maskPhone(p){
+  const digits = p.replace(/^\+/,'');
+  let cc = '+'+digits.slice(0,2), nat = digits.slice(2);
+  for(const c of CC){ if(digits.startsWith(c)){ cc='+'+c; nat=digits.slice(c.length); break; } }
+  const last = nat.slice(-3);
+  return cc + ' ***' + last;
+}
 function label(a){
-  switch(a.type){
-    case 'email': return 'rhys******abcd@gmail.com';
-    case 'phone_cn': return '+86 134*****234';
-    case 'phone_us': return '+1 516*****797';
-    case 'phone_uk': return '+44 744*****103';
-    default: return 'user******@mail.com';
-  }
+  const raw = RAW[a.type] || 'user@mail.com';
+  return raw.includes('@') ? maskEmail(raw) : maskPhone(raw);
 }
 
 function avatarText(a){ return (a.nick||'?').replace(/[^A-Za-z0-9]/g,'').charAt(0).toUpperCase()||'#'; }
