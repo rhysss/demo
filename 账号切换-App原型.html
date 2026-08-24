@@ -68,13 +68,17 @@
   .btn-row{display:flex; gap:14px;}
 
   /* Account list */
-  .acct{display:flex; align-items:center; padding:16px 18px; background:var(--card); border-bottom:1px solid var(--line); cursor:pointer; gap:14px; position:relative;}
+  .section-hd{font-size:13px; color:var(--t2); padding:18px 18px 8px; background:var(--bg); font-weight:500; letter-spacing:.2px;}
+  .acct{display:flex; align-items:center; padding:14px 18px; background:var(--card); border-bottom:1px solid var(--line); cursor:pointer; gap:13px; position:relative;}
   .acct:active{background:#f6f6f8;}
-  .acct .dot{width:9px; height:9px; border-radius:50%; background:#0b0b0f; flex:0 0 auto;}
-  .acct.expired .dot{background:#c2c2c8;}
+  .avatar{width:40px; height:40px; border-radius:50%; background:#f0f0f2; color:#6d6d72; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:600; flex:0 0 auto; position:relative;}
+  .acct.current .avatar{background:#fdf3d1; color:#a9820a; box-shadow:0 0 0 2px #f0b90b;}
+  .acct.expired .avatar{background:#f0f0f2; color:#c2c2c8;}
   .acct .info{flex:1; min-width:0;}
-  .acct .id{font-size:16px; font-weight:500; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .acct .uid{font-size:13.5px; color:var(--t2); margin-top:3px;}
+  .acct .nick{font-size:15.5px; font-weight:600; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .acct .id{font-size:13px; color:var(--t2); line-height:1.3; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .acct .uid{font-size:12.5px; color:var(--t3); margin-top:2px;}
+  .check{width:24px; height:24px; border-radius:50%; background:#0ecb81; display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
   .acct.expired .id, .acct.expired .uid{color:#b0b0b6;}
   .badge{font-size:12px; font-weight:600; padding:4px 9px; border-radius:5px; flex:0 0 auto;}
   .badge.current{background:var(--green-bg); color:var(--green-t);}
@@ -248,7 +252,8 @@
 const MAX = 25;
 
 // account model
-function mk(id, uid, type, status){ return {id, uid, type, status}; } // status: current|active|expired
+const NICKS=['Faker','Trader_01','Alpha','Grid_Bot','Hodler','Scalp_King','Mavis','Neo','Whale_88','Degen'];
+function mk(id, uid, type, status, nick){ return {id, uid, type, status, nick:nick||NICKS[(+uid)%NICKS.length]}; } // status: current|active|expired
 let accounts = [];
 let editMode = false;
 let pendingDeleteId = null;
@@ -285,33 +290,45 @@ function label(a){
   }
 }
 
+function avatarText(a){ return (a.nick||'?').replace(/[^A-Za-z0-9]/g,'').charAt(0).toUpperCase()||'#'; }
+
+function acctNode(a){
+  const el=document.createElement('div');
+  el.className='acct'+(a.status==='current'?' current':'')+(a.status==='expired'?' expired':'');
+  let right='';
+  if(editMode){
+    right = a.status==='current'
+      ? '<span class="badge current">Current</span>'
+      : `<div class="trash" onclick="event.stopPropagation(); askDelete('${a.id}')">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>`;
+  } else if(a.status==='current'){
+    right='<span class="check"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5l3 3 6-7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+  } else if(a.status==='expired'){
+    right='<span class="badge expired">Expired</span>';
+  }
+  el.innerHTML=`<div class="avatar">${avatarText(a)}</div>
+    <div class="info"><div class="nick">${a.nick}</div><div class="id">${label(a)}</div><div class="uid">UID: ${a.uid}</div></div>
+    ${right}`;
+  if(!editMode) el.onclick=()=>tapAccount(a.id);
+  return el;
+}
+
 function renderList(){
   const wrap = document.getElementById('acctList');
   wrap.innerHTML='';
-  accounts.forEach(a=>{
-    const el=document.createElement('div');
-    el.className='acct'+(a.status==='expired'?' expired':'');
-    let right='';
-    if(editMode){
-      if(a.status==='current'){
-        // 当前登录账号不可删除，仍显示 Current 标识
-        right='<span class="badge current">Current</span>';
-      } else {
-        right=`<div class="trash" onclick="event.stopPropagation(); askDelete('${a.id}')">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>`;
-      }
-    } else if(a.status==='current'){
-      right='<span class="badge current">Current</span>';
-    } else if(a.status==='expired'){
-      right='<span class="badge expired">Expired</span>';
-    }
-    el.innerHTML=`<span class="dot"></span>
-      <div class="info"><div class="id">${label(a)}</div><div class="uid">UID: ${a.uid}</div></div>
-      ${right}`;
-    if(!editMode) el.onclick=()=>tapAccount(a.id);
-    wrap.appendChild(el);
-  });
+  const current = accounts.find(a=>a.status==='current');
+  const others = accounts.filter(a=>a.status!=='current');
+
+  if(current){
+    const h=document.createElement('div'); h.className='section-hd'; h.textContent='Current Account';
+    wrap.appendChild(h); wrap.appendChild(acctNode(current));
+  }
+  if(others.length){
+    const h=document.createElement('div'); h.className='section-hd'; h.textContent='Other Accounts';
+    wrap.appendChild(h);
+    others.forEach(a=>wrap.appendChild(acctNode(a)));
+  }
 
   // count hint + add button state
   const hint=document.getElementById('countHint');
@@ -339,7 +356,7 @@ function tapAccount(id){
 
 function syncAccountScreen(a){
   document.getElementById('acc-uid').textContent=a.uid;
-  document.getElementById('acc-nick').textContent = a.type.startsWith('phone')?'Trader':'Faker';
+  document.getElementById('acc-nick').textContent = a.nick;
   document.getElementById('acc-vip').textContent = 'VIP '+(a.uid.slice(-1)%3);
 }
 
