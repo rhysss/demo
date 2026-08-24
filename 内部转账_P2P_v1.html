@@ -258,15 +258,13 @@
   <div class="rail" id="rail">
     <div class="node on" data-step="0"><span class="n">1</span>发起转账</div>
     <span class="arr">→</span>
-    <div class="node" data-step="1"><span class="n">2</span>确认信息</div>
+    <div class="node" data-step="2"><span class="n">2</span>确认并验证</div>
     <span class="arr">→</span>
-    <div class="node" data-step="2"><span class="n">3</span>安全验证</div>
-    <span class="arr">→</span>
-    <div class="node" data-step="3"><span class="n">4</span>转账结果</div>
+    <div class="node" data-step="3"><span class="n">3</span>转账结果</div>
     <span class="arr">·</span>
-    <div class="node" data-step="4"><span class="n">5</span>转账记录</div>
+    <div class="node" data-step="4"><span class="n">4</span>转账记录</div>
     <span class="arr">·</span>
-    <div class="node" data-step="5"><span class="n">6</span>记录详情</div>
+    <div class="node" data-step="5"><span class="n">5</span>记录详情</div>
   </div>
 
   <!-- 异常态控制器：一键切换发起页前置拦截状态 -->
@@ -358,36 +356,29 @@
               <b>请核对收款方信息</b>，站内转账<b>实时到账</b>、<b>不可撤销</b>、<b>免手续费</b>。
             </div>
           </div>
-          <div class="footer-cta"><button id="appNextBtn" class="btn btn-primary" onclick="go(1)">下一步</button></div>
+          <div class="footer-cta"><button id="appNextBtn" class="btn btn-primary" onclick="go(2)">下一步</button></div>
         </div>
 
-        <!-- APP STEP 1: 确认 -->
-        <div class="app-scr hide" data-scr="1">
-          <div class="navbar"><span class="back" onclick="go(0)">‹</span><span class="title">确认转账</span></div>
+        <!-- APP STEP 2: 安全验证（含摘要） -->
+        <div class="app-scr hide" data-scr="2">
+          <div class="navbar"><span class="back" onclick="go(0)">‹</span><span class="title">确认并验证</span></div>
           <div class="appbody">
-            <div class="center" style="margin:18px 0 6px">
+            <div class="center" style="margin:8px 0 14px">
               <div class="muted">转账数量</div>
-              <div class="mono" style="font-size:34px;font-weight:600;margin-top:6px">200.00 <span style="font-size:16px;color:var(--t2)">USDT</span></div>
+              <div class="mono" style="font-size:30px;font-weight:600;margin-top:4px">200.00 <span style="font-size:15px;color:var(--t2)">USDT</span></div>
             </div>
-            <div class="summary">
+            <div class="summary" style="margin-bottom:18px">
               <div class="srow"><span class="k">收款方</span><span class="v mono">UID 88213507</span></div>
               <div class="srow"><span class="k">手续费</span><span class="v" style="color:var(--green)">免手续费</span></div>
               <div class="srow"><span class="k">实际到账</span><span class="v mono">200.00 USDT</span></div>
-              <div class="srow"><span class="k">到账时间</span><span class="v">实时</span></div>
-              <div class="srow"><span class="k">付款账户</span><span class="v">现货账户</span></div>
+              <div class="srow"><span class="k">到账时间</span><span class="v">实时 · 不可撤销</span></div>
             </div>
-            <div class="notice">转账一经确认<b>立即到账且不可撤销</b>，请确保收款方 UID 无误。</div>
-          </div>
-          <div class="footer-cta"><button class="btn btn-primary" onclick="go(2)">确认并转账</button></div>
-        </div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:12px">安全验证</div>
 
-        <!-- APP STEP 2: 安全验证 -->
-        <div class="app-scr hide" data-scr="2">
-          <div class="navbar"><span class="back" onclick="go(1)">‹</span><span class="title">安全验证</span></div>
-          <div class="appbody">
-            <div class="center" style="margin:8px 0 20px">
-              <div style="font-size:16px;font-weight:600">请完成安全验证</div>
-              <div class="muted" style="margin-top:6px">为完成 200 USDT 转账，请输入以下验证码</div>
+            <div class="idtype" style="margin-bottom:14px">
+              <span class="chip on" onclick="setApp2fa(true,this)">已绑 2FA</span>
+              <span class="chip" onclick="setApp2fa(false,this)">未绑 2FA</span>
+              <span style="font-size:11px;color:var(--t3);align-self:center;margin-left:4px">演示两种账户</span>
             </div>
 
             <div class="field">
@@ -399,13 +390,15 @@
               <div style="margin-top:7px;font-size:12px;color:var(--t2)">验证码已发送至 r***@100xex.com · <span style="color:var(--t3)">重新获取 (58s)</span></div>
             </div>
 
-            <div class="field">
+            <div class="field" id="app2faField">
               <label>身份验证器（2FA）验证码</label>
               <input class="inp mono" type="text" inputmode="numeric" maxlength="6" placeholder="6 位动态码" value="491053" style="letter-spacing:4px">
               <div style="margin-top:7px;font-size:12px;color:var(--t2)">打开 Google / 身份验证器 App 获取 6 位动态码</div>
             </div>
 
-            <div class="notice">站内转账需<b>邮箱验证码 + 2FA 双重验证</b>通过后方可完成，验证不区分金额。</div>
+            <div class="notice hide" id="app2faHint">该账户<b>未绑定 2FA</b>，仅需邮箱验证码即可完成转账；建议前往「安全设置」绑定 2FA 以提升安全。</div>
+
+            <div class="notice" id="appVerifyNote">已绑定 2FA 的账户需<b>邮箱验证码 + 2FA 双重验证</b>；未绑定则仅需邮箱验证码。验证不区分金额。</div>
           </div>
           <div class="footer-cta"><button class="btn btn-primary" onclick="go(3)">确认转账</button></div>
         </div>
@@ -604,7 +597,7 @@
               <div style="margin-top:6px;font-size:12px;color:var(--t2)">已发送至 r***@100xex.com · <span style="color:var(--t3)">重新获取 (58s)</span></div>
             </div>
             <div class="field"><label>身份验证器（2FA）验证码</label><input class="inp mono" type="text" maxlength="6" value="491053" placeholder="6 位动态码" style="letter-spacing:4px"></div>
-            <div class="muted" style="font-size:12px;margin-bottom:16px">站内转账需邮箱验证码 + 2FA 双重验证，验证不区分金额</div>
+            <div class="muted" style="font-size:12px;margin-bottom:16px">已绑 2FA 需邮箱验证码 + 2FA 双重验证；<b>未绑 2FA 仅需邮箱验证码</b>（不展示该项）。验证不区分金额。</div>
             <div style="display:flex;gap:12px">
               <button class="btn btn-ghost" onclick="webGo(0)">取消</button>
               <button class="btn btn-primary" onclick="webGo(3)">确认转账</button>
@@ -690,12 +683,11 @@
       <span class="muted" style="font-size:12px">运营 / 客服 · 转账流水监控与异常排查</span>
     </div>
 
-    <div class="kpi-row">
+    <div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">
       <div class="kpi"><div class="kl">今日转账</div><div class="kv">1,284</div></div>
-      <div class="kpi"><div class="kl">成功</div><div class="kv" style="color:var(--green)">1,271</div></div>
-      <div class="kpi"><div class="kl">处理中</div><div class="kv" style="color:var(--yellow-d)">6</div></div>
-      <div class="kpi warn"><div class="kl">⚠ 异常 · 账务不平</div><div class="kv">2</div></div>
-      <div class="kpi"><div class="kl">失败（未扣款）</div><div class="kv" style="color:var(--t2)">5</div></div>
+      <div class="kpi"><div class="kl">成功</div><div class="kv" style="color:var(--green)">1,278</div></div>
+      <div class="kpi"><div class="kl">处理中</div><div class="kv" style="color:var(--yellow-d)">1</div></div>
+      <div class="kpi"><div class="kl">失败（已回滚·未扣款）</div><div class="kv" style="color:var(--t2)">5</div></div>
     </div>
 
     <div class="filterbar">
@@ -706,8 +698,7 @@
         <option value="all">全部状态</option>
         <option value="success">成功</option>
         <option value="pending">处理中</option>
-        <option value="abn">异常 · 账务不平</option>
-        <option value="failed">失败</option>
+        <option value="failed">失败（已回滚）</option>
       </select>
       <input type="date" value="2026-08-19">
       <button class="btn btn-primary" style="width:auto;padding:8px 20px">查询</button>
@@ -723,7 +714,7 @@
         <tbody id="atbody"></tbody>
       </table>
     </div>
-    <div class="muted" style="font-size:12px;margin-top:12px">点击任意行查看<b style="color:var(--t1)">双腿状态（扣款腿 / 入账腿）+ 账务平衡校验 + 时间线</b>；异常行已红底高亮。</div>
+    <div class="muted" style="font-size:12px;margin-top:12px">点击任意行查看<b style="color:var(--t1)">双腿状态（扣款腿 / 入账腿）+ 时间线</b>。转账<b>强原子</b>：要么双腿都成功，要么整体回滚（未扣款），无「已扣未入」中间态，故后台<b>仅查询监控、无人工补账</b>。</div>
   </div>
 
   <div class="drawer-mask hide" id="drawerMask" onclick="closeDetail()"></div>
@@ -791,6 +782,13 @@
     const val={'邮箱':'88213507@100xex.com','手机':'+1 650****213','UID':'88213507'}[t];
     const inp=document.getElementById('appAcctInput'); if(inp){inp.placeholder=ph;inp.value=val;}
   }
+  // 安全验证：已绑 / 未绑 2FA（未绑不展示 2FA 输入框）
+  function setApp2fa(bound,el){
+    el.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');
+    document.getElementById('app2faField').classList.toggle('hide',!bound);
+    document.getElementById('app2faHint').classList.toggle('hide',bound);
+    document.getElementById('appVerifyNote').classList.toggle('hide',!bound);
+  }
 
   // app step nav
   const rail=document.getElementById('rail');
@@ -824,18 +822,17 @@
   // ===== 管理后台：流水 + 异常状态 =====
   const ADMIN_ORDERS=[
     {id:'TR20260819094123882',from:'66001234',to:'88213507',coin:'USDT',amt:'200.00',status:'success',msg:'上次的车费，收一下 🙏',ct:'2026-08-19 09:41:23',ft:'2026-08-19 09:41:23',debit:'success',credit:'success',balance:'ok'},
-    {id:'TR20260819101502400',from:'40012988',to:'66001234',coin:'USDT',amt:'50.00',status:'pending',msg:'请你喝奶茶 🧋',ct:'2026-08-19 10:15:02',ft:'—',debit:'success',credit:'pending',balance:'checking'},
-    {id:'TR20260819102233551',from:'55009911',to:'77320145',coin:'USDT',amt:'15.00',status:'abn',msg:'',ct:'2026-08-19 10:22:33',ft:'—',debit:'success',credit:'failed',balance:'broken'},
+    {id:'TR20260819101502400',from:'40012988',to:'66001234',coin:'USDT',amt:'50.00',status:'pending',msg:'请你喝奶茶 🧋',ct:'2026-08-19 10:15:02',ft:'—',debit:'processing',credit:'processing',balance:'checking'},
     {id:'TR20260819103801660',from:'88213507',to:'99887766',coin:'USDT',amt:'1000.00',status:'failed',msg:'',ct:'2026-08-19 10:38:01',ft:'2026-08-19 10:38:02',debit:'failed',credit:'none',balance:'ok'},
     {id:'TR20260819104120770',from:'66001234',to:'40012988',coin:'BTC',amt:'0.00500000',status:'success',msg:'',ct:'2026-08-19 10:41:20',ft:'2026-08-19 10:41:20',debit:'success',credit:'success',balance:'ok'}
   ];
-  const STAT={success:{cls:'s-success',label:'成功'},pending:{cls:'s-pending',label:'处理中'},abn:{cls:'s-abn',label:'异常·账务不平'},failed:{cls:'s-failed',label:'失败'}};
-  function legMeta(s){return {success:{ic:'✓',color:'var(--green)',t:'成功'},pending:{ic:'⏳',color:'var(--yellow-d)',t:'处理中'},failed:{ic:'✕',color:'var(--red)',t:'失败'},none:{ic:'—',color:'var(--t3)',t:'未发生'}}[s];}
+  const STAT={success:{cls:'s-success',label:'成功'},pending:{cls:'s-pending',label:'处理中'},failed:{cls:'s-failed',label:'失败·已回滚'}};
+  function legMeta(s){return {success:{ic:'✓',color:'var(--green)',t:'成功'},processing:{ic:'⏳',color:'var(--yellow-d)',t:'处理中'},pending:{ic:'⏳',color:'var(--yellow-d)',t:'处理中'},failed:{ic:'✕',color:'var(--red)',t:'已回滚'},none:{ic:'—',color:'var(--t3)',t:'未发生'}}[s];}
   function renderRows(f){
     const rows=ADMIN_ORDERS.filter(o=>f==='all'||o.status===f).map(o=>{
       const st=STAT[o.status];
       const legs=legMeta(o.debit).ic+' / '+legMeta(o.credit).ic;
-      return '<tr class="arow '+(o.status==='abn'?'abn':'')+'" onclick="openDetail(\''+o.id+'\')">'+
+      return '<tr class="arow" onclick="openDetail(\''+o.id+'\')">'+
         '<td class="mono">'+o.id+'</td><td class="mono">'+o.from+'</td><td class="mono">'+o.to+'</td>'+
         '<td>'+o.coin+'</td><td class="mono" style="text-align:right">'+o.amt+'</td>'+
         '<td><span class="stat '+st.cls+'"><span class="d"></span>'+st.label+'</span></td>'+
@@ -849,15 +846,10 @@
   function openDetail(id){
     const o=ADMIN_ORDERS.find(x=>x.id===id); if(!o)return;
     const st=STAT[o.status], dm=legMeta(o.debit), cm=legMeta(o.credit);
-    const bal={ok:{ic:'✓',c:'var(--green)',t:'账务平衡'},checking:{ic:'⏳',c:'var(--yellow-d)',t:'校验中'},broken:{ic:'⚠',c:'var(--red)',t:'账务不平 · 已扣未入'}}[o.balance];
-    const abn=(o.status==='abn'||o.status==='pending')?
-      '<div style="background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:8px;padding:12px 14px;margin:14px 0">'+
-      '<div style="color:var(--warn-tx);font-weight:600;font-size:13px;margin-bottom:8px">⚠ 异常处理</div>'+
-      '<div class="muted" style="font-size:12px;line-height:1.7">'+(o.status==='abn'?'付款方已扣款、收款方入账失败，资金处于中间态，需人工核查并补入账或原路退回。':'入账处理中，超时未完成将转异常，请持续观察。')+'</div>'+
-      '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
-      '<button class="btn btn-primary" style="width:auto;padding:8px 14px;font-size:13px">重试入账 <span class="warn-badge">⚠️待确认</span></button>'+
-      '<button class="btn btn-ghost" style="width:auto;padding:8px 14px;font-size:13px">原路退回 <span class="warn-badge">⚠️待确认</span></button>'+
-      '<button class="btn btn-ghost" style="width:auto;padding:8px 14px;font-size:13px">标记已处理</button></div></div>':'';
+    const bal={ok:(o.status==='failed'?{ic:'✓',c:'var(--green)',t:'已整体回滚 · 未扣款'}:{ic:'✓',c:'var(--green)',t:'强原子 · 双腿一致'}),checking:{ic:'⏳',c:'var(--yellow-d)',t:'原子事务处理中'}}[o.balance];
+    const abn=(o.status==='pending')?
+      '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin:14px 0">'+
+      '<div class="muted" style="font-size:12px;line-height:1.7">原子事务处理中，稍后将<b style="color:var(--t1)">整体提交（成功）或整体回滚（未扣款）</b>，无需人工干预。</div></div>':'';
     document.getElementById('drawer').innerHTML=
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'+
       '<div style="font-size:15px;font-weight:600">转账详情</div>'+
@@ -868,7 +860,7 @@
       '<div style="margin-top:8px"><span class="stat '+st.cls+'"><span class="d"></span>'+st.label+'</span></div></div>'+
       '<div class="leg"><div class="lic" style="color:'+dm.color+'">'+dm.ic+'</div><div><div style="font-size:13px;font-weight:600">① 付款方扣款</div><div class="muted" style="font-size:12px">UID '+o.from+' · '+dm.t+'</div></div></div>'+
       '<div class="leg"><div class="lic" style="color:'+cm.color+'">'+cm.ic+'</div><div><div style="font-size:13px;font-weight:600">② 收款方入账</div><div class="muted" style="font-size:12px">UID '+o.to+' · '+cm.t+'</div></div></div>'+
-      '<div class="leg" style="border-color:'+(o.balance==='broken'?'var(--red)':'var(--border)')+'"><div class="lic" style="color:'+bal.c+'">'+bal.ic+'</div><div><div style="font-size:13px;font-weight:600">③ 账务平衡校验</div><div style="font-size:12px;color:'+bal.c+'">'+bal.t+'</div></div></div>'+
+      '<div class="leg"><div class="lic" style="color:'+bal.c+'">'+bal.ic+'</div><div><div style="font-size:13px;font-weight:600">③ 账务一致性（强原子）</div><div style="font-size:12px;color:'+bal.c+'">'+bal.t+'</div></div></div>'+
       abn+
       '<div class="summary" style="margin-top:14px">'+
       '<div class="srow"><span class="k">付款方</span><span class="v mono">UID '+o.from+'</span></div>'+
