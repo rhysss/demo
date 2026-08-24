@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>站内转账 P2P · App/Web 交互原型 v1</title>
+<style>
+  :root{
+    --bg:#0b0e11; --panel:#181a20; --panel2:#1e2329; --panel3:#22262e;
+    --border:#2b3139; --line:#2b3139;
+    --t1:#eaecef; --t2:#848e9c; --t3:#5e6673;
+    --yellow:#fcd535; --yellow-d:#f0b90b;
+    --green:#0ecb81; --red:#f6465d; --blue:#3b8eff;
+    --warn-bg:#2a2410; --warn-bd:#5c4a10; --warn-tx:#f0b90b;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg); color:var(--t1); line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"SF Mono",ui-monospace,"Roboto Mono",Menlo,monospace;font-variant-numeric:tabular-nums}
+  /* ---------- top shell ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;background:#0d1117;border-bottom:1px solid var(--border);
+    display:flex;align-items:center;gap:16px;padding:12px 20px;
+  }
+  .topbar h1{font-size:15px;font-weight:600;letter-spacing:.2px}
+  .topbar .tag{font-size:11px;color:var(--t2);border:1px solid var(--border);padding:2px 8px;border-radius:20px}
+  .seg{display:inline-flex;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:3px}
+  .seg button{
+    background:transparent;border:0;color:var(--t2);font-size:13px;font-weight:600;
+    padding:6px 18px;border-radius:6px;cursor:pointer;transition:.15s;
+  }
+  .seg button.on{background:var(--yellow);color:#12161c}
+  .spacer{flex:1}
+  .legend{display:flex;gap:14px;align-items:center;font-size:11px;color:var(--t2)}
+  .legend .dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .warn-badge{
+    display:inline-flex;align-items:center;gap:4px;background:var(--warn-bg);color:var(--warn-tx);
+    border:1px solid var(--warn-bd);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600;white-space:nowrap
+  }
+
+  .stage{max-width:1320px;margin:0 auto;padding:26px 20px 80px}
+
+  /* ---------- flow rail ---------- */
+  .rail{display:flex;align-items:center;gap:0;margin:0 auto 26px;flex-wrap:wrap;justify-content:center}
+  .rail .node{
+    display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);
+    border-radius:20px;padding:6px 14px;cursor:pointer;color:var(--t2);font-size:12.5px;transition:.15s
+  }
+  .rail .node .n{width:18px;height:18px;border-radius:50%;background:var(--panel3);color:var(--t2);
+    display:grid;place-items:center;font-size:11px;font-weight:700}
+  .rail .node.on{border-color:var(--yellow);color:var(--t1)}
+  .rail .node.on .n{background:var(--yellow);color:#12161c}
+  .rail .arr{color:var(--t3);padding:0 6px;font-size:12px}
+
+  /* ---------- App phone ---------- */
+  .appwrap{display:flex;gap:40px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+  .phone{
+    width:390px;flex:0 0 390px;background:#000;border-radius:44px;padding:11px;
+    box-shadow:0 0 0 2px #23282f,0 30px 60px rgba(0,0,0,.6);position:relative
+  }
+  .phone .notch{position:absolute;top:20px;left:50%;transform:translateX(-50%);width:120px;height:28px;background:#000;border-radius:16px;z-index:5}
+  .screen{background:var(--bg);border-radius:34px;overflow:hidden;height:812px;display:flex;flex-direction:column;position:relative}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:14px 26px 6px;font-size:12px;color:var(--t1);font-weight:600}
+  .navbar{display:flex;align-items:center;padding:8px 16px 12px;gap:12px;border-bottom:1px solid var(--line)}
+  .navbar .back{color:var(--t1);font-size:20px;cursor:pointer;width:24px}
+  .navbar .title{font-size:16px;font-weight:600;flex:1}
+  .navbar .act{color:var(--t2);font-size:13px;cursor:pointer}
+  .appbody{flex:1;overflow-y:auto;padding:16px}
+  .appbody::-webkit-scrollbar{width:0}
+
+  /* ---------- web frame ---------- */
+  .webframe{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .webtop{display:flex;align-items:center;gap:14px;padding:11px 18px;background:#0d1117;border-bottom:1px solid var(--border)}
+  .webtop .brand{font-weight:700;color:var(--yellow);font-size:16px;letter-spacing:.3px}
+  .webtop .navlink{color:var(--t2);font-size:13px}
+  .webtop .navlink.on{color:var(--t1);font-weight:600}
+  .webbody{padding:32px 40px;min-height:560px;background:var(--bg)}
+  .web-grid{display:grid;grid-template-columns:1fr 380px;gap:32px;max-width:1040px;margin:0 auto}
+  @media(max-width:900px){.web-grid{grid-template-columns:1fr}}
+
+  /* ---------- shared UI atoms ---------- */
+  h2.sec{font-size:20px;font-weight:600;margin-bottom:4px}
+  .muted{color:var(--t2);font-size:13px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:12.5px;color:var(--t2);margin-bottom:7px;font-weight:500}
+  .inp{
+    width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);
+    color:var(--t1);font-size:15px;padding:13px 14px;outline:none;transition:.15s
+  }
+  .inp:focus{border-color:var(--yellow)}
+  .inp::placeholder{color:var(--t3)}
+  .inp-group{display:flex;background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);align-items:center;overflow:hidden}
+  .inp-group:focus-within{border-color:var(--yellow)}
+  .inp-group input{flex:1;background:transparent;border:0;color:var(--t1);font-size:15px;padding:13px 14px;outline:none}
+  .inp-group .suffix{padding:0 14px;color:var(--t2);font-size:13px;display:flex;align-items:center;gap:10px}
+  .inp-group .suffix .max{color:var(--yellow);font-weight:600;cursor:pointer}
+  .idtype{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .idtype .chip{border:1px solid var(--border);background:var(--panel2);color:var(--t2);font-size:12.5px;
+    padding:6px 12px;border-radius:6px;cursor:pointer;position:relative}
+  .idtype .chip.on{border-color:var(--yellow);color:var(--yellow)}
+  .idtype .chip.pending{opacity:.55}
+
+  .coinrow{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);
+    border-radius:var(--radius);padding:11px 14px;cursor:pointer}
+  .coin-ic{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#26a17b,#1a7d5c);display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff}
+  .coinrow .bal{margin-left:auto;text-align:right}
+  .coinrow .bal .b1{font-size:14px}.coinrow .bal .b2{font-size:11px;color:var(--t2)}
+
+  .payee-card{background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px}
+  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3b8eff,#7c4dff);display:grid;place-items:center;font-weight:700;color:#fff;font-size:15px}
+  .payee-card .who .n1{font-size:14px;font-weight:600}
+  .payee-card .who .n2{font-size:12px;color:var(--t2)}
+  .payee-card .ok{margin-left:auto;color:var(--green);font-size:12px;display:flex;align-items:center;gap:4px}
+
+  .summary{background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);padding:4px 14px;margin:14px 0}
+  .srow{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .srow:last-child{border-bottom:0}
+  .srow .k{color:var(--t2)}
+  .srow .v{text-align:right}
+  .srow .v.big{font-size:17px;font-weight:600}
+
+  .notice{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--yellow-d);border-radius:6px;padding:11px 13px;font-size:12px;color:var(--t2);margin:14px 0;line-height:1.7}
+  .notice b{color:var(--t1)}
+
+  .btn{width:100%;border:0;border-radius:var(--radius);padding:14px;font-size:15px;font-weight:600;cursor:pointer;transition:.15s}
+  .btn-primary{background:var(--yellow);color:#12161c}
+  .btn-primary:hover{background:var(--yellow-d)}
+  .btn-primary:disabled{background:#3a3a22;color:#6b6b52;cursor:not-allowed}
+  .btn-ghost{background:var(--panel3);color:var(--t1)}
+  .footer-cta{padding:14px 16px;border-top:1px solid var(--line)}
+
+  /* pin */
+  .pinbox{display:flex;gap:12px;justify-content:center;margin:24px 0}
+  .pinbox .cell{width:44px;height:52px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);display:grid;place-items:center;font-size:22px}
+  .pinbox .cell.filled{border-color:var(--yellow)}
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:auto}
+  .keypad .key{background:var(--bg);color:var(--t1);font-size:22px;padding:18px;text-align:center;cursor:pointer;font-weight:500}
+  .keypad .key:active{background:var(--panel2)}
+
+  /* result */
+  .result-ic{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;font-size:38px;margin:30px auto 18px}
+  .result-ic.ok{background:rgba(14,203,129,.12);color:var(--green)}
+  .result-ic.fail{background:rgba(246,70,93,.12);color:var(--red)}
+  .center{text-align:center}
+
+  /* records */
+  .rec{display:flex;align-items:center;gap:12px;padding:14px 2px;border-bottom:1px solid var(--line);cursor:pointer}
+  .rec .ric{width:36px;height:36px;border-radius:50%;background:var(--panel3);display:grid;place-items:center;font-size:16px}
+  .rec .info{flex:1}
+  .rec .info .r1{font-size:14px;font-weight:500}
+  .rec .info .r2{font-size:12px;color:var(--t2);margin-top:2px}
+  .rec .amt{text-align:right;font-size:14px;font-weight:600}
+  .rec .amt.out{color:var(--t1)}.rec .amt.in{color:var(--green)}
+  .rec .amt .st{font-size:11px;font-weight:400;color:var(--t2);margin-top:2px}
+
+  .empty{text-align:center;padding:70px 20px;color:var(--t3)}
+  .empty .e-ic{font-size:44px;opacity:.4;margin-bottom:12px}
+
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .tabs .tb{flex:1;text-align:center;padding:11px;font-size:13px;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent}
+  .tabs .tb.on{color:var(--t1);border-bottom-color:var(--yellow);font-weight:600}
+
+  .hide{display:none!important}
+
+  /* ---------- admin console ---------- */
+  .admin-wrap{max-width:1280px;margin:0 auto}
+  .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+  @media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:15px 18px}
+  .kpi .kl{font-size:12px;color:var(--t2)}
+  .kpi .kv{font-size:26px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums}
+  .kpi.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+  .kpi.warn .kv{color:var(--red)}
+  .filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+  .filterbar input,.filterbar select{background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--t1);font-size:13px;padding:8px 10px;outline:none}
+  .filterbar input:focus,.filterbar select:focus{border-color:var(--yellow)}
+  .atable{width:100%;border-collapse:collapse;font-size:13px;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .atable th{background:#0d1117;color:var(--t2);font-weight:500;text-align:left;padding:12px 14px;font-size:12px;white-space:nowrap}
+  .atable td{padding:13px 14px;border-top:1px solid var(--line);white-space:nowrap}
+  .atable tr.arow{cursor:pointer}
+  .atable tr.arow:hover{background:var(--panel2)}
+  .atable tr.abn{background:rgba(246,70,93,.06)}
+  .stat{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px}
+  .stat.s-success{background:rgba(14,203,129,.12);color:var(--green)}
+  .stat.s-pending{background:rgba(240,185,11,.14);color:var(--yellow-d)}
+  .stat.s-abn{background:rgba(246,70,93,.16);color:var(--red)}
+  .stat.s-failed{background:rgba(132,142,156,.16);color:var(--t2)}
+  .stat .d{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:460px;max-width:92vw;background:var(--panel);border-left:1px solid var(--border);z-index:81;overflow-y:auto;padding:22px 24px}
+  .leg{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;background:var(--panel2)}
+  .leg .lic{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;flex:0 0 28px;background:rgba(0,0,0,.25)}
+
+  /* ---------- 异常态控制器 ---------- */
+  .exctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin:-6px auto 24px;max-width:1040px;background:var(--panel);border:1px dashed var(--border);border-radius:10px;padding:10px 16px}
+  .exctrl .lbl{font-size:12.5px;color:var(--t2);font-weight:600}
+  .exctrl .ec{background:var(--panel2);border:1px solid var(--border);color:var(--t2);font-size:12.5px;padding:6px 14px;border-radius:20px;cursor:pointer;transition:.15s}
+  .exctrl .ec:hover{color:var(--t1)}
+  .exctrl .ec.on{border-color:var(--yellow);color:var(--yellow)}
+  .exctrl .sep{width:1px;height:16px;background:var(--border)}
+
+  /* ---------- 提现页 stepper（Web） ---------- */
+  .wd-flow{max-width:900px}
+  .wd-step{display:flex;gap:16px;position:relative;padding-bottom:28px}
+  .wd-step:not(:last-child):before{content:"";position:absolute;left:13px;top:28px;bottom:0;width:1px;background:var(--border)}
+  .wd-mark{width:27px;height:27px;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;font-size:12px;color:var(--t2);flex:0 0 27px;background:var(--panel);z-index:1}
+  .wd-mark.done{background:var(--t1);color:#000;border-color:var(--t1)}
+  .wd-body{flex:1;min-width:0}
+  .wd-title{font-size:15px;font-weight:600}
+
+  /* ---------- App 提现入口底部弹窗 ---------- */
+  .wd-sheet-mask{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:20}
+  .wd-sheet{position:absolute;left:0;right:0;bottom:0;background:var(--panel);border-radius:20px 20px 0 0;z-index:21;padding:6px 16px 22px;border-top:1px solid var(--border)}
+  .wd-sheet-h{text-align:center;font-size:13px;color:var(--t2);padding:14px 0 10px}
+  .wd-opt{display:flex;align-items:center;gap:14px;padding:15px 14px;border-radius:12px;background:var(--panel2);margin-bottom:10px;cursor:pointer;border:1px solid transparent}
+  .wd-opt:hover{border-color:var(--yellow)}
+  .wd-opt .wo-ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:19px;flex:0 0 40px;background:var(--panel3)}
+  .wd-opt .wo-t{font-size:14px;font-weight:600}
+  .wd-opt .wo-d{font-size:12px;color:var(--t2);margin-top:2px}
+  .wd-cancel{text-align:center;padding:12px;color:var(--t2);cursor:pointer;font-size:14px}
+
+  /* annotation callouts */
+  .annot{max-width:1040px;margin:22px auto 0;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+  .annot h3{font-size:13px;color:var(--yellow);margin-bottom:10px;letter-spacing:.3px}
+  .annot ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px 26px}
+  @media(max-width:760px){.annot ul{grid-template-columns:1fr}}
+  .annot li{font-size:12.5px;color:var(--t2);padding-left:16px;position:relative;line-height:1.6}
+  .annot li:before{content:"›";position:absolute;left:0;color:var(--t3)}
+  .annot li b{color:var(--t1)}
+
+  .web-only,.app-only{}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>站内转账 · P2P</h1>
+  <span class="tag">交互原型 v1</span>
+  <div class="seg" id="platSeg">
+    <button class="on" data-plat="app">📱 App 端</button>
+    <button data-plat="web">💻 Web 端</button>
+    <button data-plat="admin">🖥️ 管理后台</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="legend">
+    <span class="warn-badge">⚠️ 待确认</span>
+    <span>= 数值/规则未拍板，原型未填假设值</span>
+  </div>
+</div>
+
+<div class="stage">
+
+  <!-- flow rail -->
+  <div class="rail" id="rail">
+    <div class="node on" data-step="0"><span class="n">1</span>发起转账</div>
+    <span class="arr">→</span>
+    <div class="node" data-step="1"><span class="n">2</span>确认信息</div>
+    <span class="arr">→</span>
+    <div class="node" data-step="2"><span class="n">3</span>安全验证</div>
+    <span class="arr">→</span>
+    <div class="node" data-step="3"><span class="n">4</span>转账结果</div>
+    <span class="arr">·</span>
+    <div class="node" data-step="4"><span class="n">5</span>转账记录</div>
+    <span class="arr">·</span>
+    <div class="node" data-step="5"><span class="n">6</span>记录详情</div>
+  </div>
+
+  <!-- 异常态控制器：一键切换发起页前置拦截状态 -->
+  <div class="exctrl" id="exctrl">
+    <span class="lbl">🎛️ 异常态预览：</span>
+    <button class="ec on" data-st="normal" onclick="setState('normal')">正常</button>
+    <button class="ec" data-st="insufficient" onclick="setState('insufficient')">余额不足</button>
+    <button class="ec" data-st="uid_invalid" onclick="setState('uid_invalid')">UID 不存在</button>
+    <span class="sep"></span>
+    <button class="ec" onclick="showFail()">系统异常（结果态）</button>
+    <span class="lbl" style="color:var(--t3);font-weight:400">前 3 项为发起页前置拦截（下一步置灰）</span>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div class="appwrap" id="appView">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>5G　100% 🔋</span></div>
+
+        <!-- APP 资产页（提现入口，默认屏） -->
+        <div class="app-scr" data-scr="asset">
+          <div class="navbar"><span class="title">资产</span><span class="act">明细</span></div>
+          <div class="appbody">
+            <div style="background:linear-gradient(135deg,#1e2329,#12161b);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px">
+              <div class="muted" style="font-size:12px">总资产估值</div>
+              <div class="mono" style="font-size:28px;font-weight:700;margin:6px 0">1,280.50 <span style="font-size:14px;color:var(--t2)">USDT</span></div>
+              <div class="muted" style="font-size:12px">≈ $1,280.50</div>
+            </div>
+            <div style="display:flex;gap:10px;margin-bottom:22px">
+              <button class="btn btn-ghost" style="flex:1;padding:11px">充值</button>
+              <button class="btn btn-primary" style="flex:1;padding:11px" onclick="openWdSheet()">提现</button>
+              <button class="btn btn-ghost" style="flex:1;padding:11px">划转</button>
+            </div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:6px">我的币种</div>
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 2px;border-bottom:1px solid var(--line)">
+              <div class="coin-ic">$</div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:500">USDT</div><div style="font-size:12px;color:var(--t2)">TetherUS</div></div>
+              <div style="text-align:right"><div class="mono" style="font-size:14px;font-weight:600">1,280.50</div><div style="font-size:11px;color:var(--t2)">≈ $1,280.50</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 2px;border-bottom:1px solid var(--line)">
+              <div class="coin-ic" style="background:linear-gradient(135deg,#f7931a,#b86e12)">₿</div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:500">BTC</div><div style="font-size:12px;color:var(--t2)">Bitcoin</div></div>
+              <div style="text-align:right"><div class="mono" style="font-size:14px;font-weight:600">0.0152</div><div style="font-size:11px;color:var(--t2)">≈ $980.20</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 2px;border-bottom:1px solid var(--line)">
+              <div class="coin-ic" style="background:linear-gradient(135deg,#627eea,#3c5bd0)">Ξ</div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:500">ETH</div><div style="font-size:12px;color:var(--t2)">Ethereum</div></div>
+              <div style="text-align:right"><div class="mono" style="font-size:14px;font-weight:600">0.85</div><div style="font-size:11px;color:var(--t2)">≈ $2,720.00</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- APP STEP 0: 发起 -->
+        <div class="app-scr hide" data-scr="0">
+          <div class="navbar"><span class="back" onclick="go('asset')">‹</span><span class="title">内部转账</span><span class="act">记录</span></div>
+          <div class="appbody">
+            <div class="field">
+              <label>转账币种</label>
+              <div class="coinrow">
+                <div class="coin-ic">$</div>
+                <div><div style="font-size:14px;font-weight:600">USDT</div><div style="font-size:11px;color:var(--t2)">TetherUS</div></div>
+                <div class="bal"><div class="b1 mono">1,280.50</div><div class="b2">可用余额</div></div>
+                <span style="color:var(--t3);margin-left:8px">›</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>收款人 UID</label>
+              <input class="inp" id="appAcctInput" placeholder="输入对方 UID" value="88213507">
+              <div id="appUidCheck" style="margin-top:8px;font-size:12px"><span style="color:var(--green)">✓ 该 UID 有效，可接收转账</span> <span style="color:var(--t3)">（仅校验存在，不展示对方名称）</span></div>
+            </div>
+
+            <div class="field">
+              <label>转账数量</label>
+              <div class="inp-group">
+                <input id="appAmtInput" type="text" value="200" inputmode="decimal">
+                <span class="suffix">USDT <span class="max">全部</span></span>
+              </div>
+              <div id="appAmtHint" style="margin-top:7px;font-size:12px;color:var(--t2)">可用 1,280.50 USDT · <span style="color:var(--t1)">不限额、免手续费</span></div>
+            </div>
+
+            <div class="field">
+              <label>留言（选填，收付款双方可见，限 50 字 <span class="warn-badge">⚠️ 字数上限待定</span>）</label>
+              <input class="inp" maxlength="50" placeholder="给对方留个言（简短）" value="上次的车费，收一下 🙏">
+            </div>
+
+            <div class="notice">
+              <b>请核对收款方信息</b>，站内转账<b>实时到账</b>、<b>不可撤销</b>、<b>免手续费</b>。
+            </div>
+          </div>
+          <div class="footer-cta"><button id="appNextBtn" class="btn btn-primary" onclick="go(1)">下一步</button></div>
+        </div>
+
+        <!-- APP STEP 1: 确认 -->
+        <div class="app-scr hide" data-scr="1">
+          <div class="navbar"><span class="back" onclick="go(0)">‹</span><span class="title">确认转账</span></div>
+          <div class="appbody">
+            <div class="center" style="margin:18px 0 6px">
+              <div class="muted">转账数量</div>
+              <div class="mono" style="font-size:34px;font-weight:600;margin-top:6px">200.00 <span style="font-size:16px;color:var(--t2)">USDT</span></div>
+            </div>
+            <div class="summary">
+              <div class="srow"><span class="k">收款方</span><span class="v mono">UID 88213507</span></div>
+              <div class="srow"><span class="k">手续费</span><span class="v" style="color:var(--green)">免手续费</span></div>
+              <div class="srow"><span class="k">实际到账</span><span class="v mono">200.00 USDT</span></div>
+              <div class="srow"><span class="k">到账时间</span><span class="v">实时</span></div>
+              <div class="srow"><span class="k">付款账户</span><span class="v">现货账户</span></div>
+            </div>
+            <div class="notice">转账一经确认<b>立即到账且不可撤销</b>，请确保收款方 UID 无误。</div>
+          </div>
+          <div class="footer-cta"><button class="btn btn-primary" onclick="go(2)">确认并转账</button></div>
+        </div>
+
+        <!-- APP STEP 2: 安全验证 -->
+        <div class="app-scr hide" data-scr="2">
+          <div class="navbar"><span class="back" onclick="go(1)">‹</span><span class="title">安全验证</span></div>
+          <div class="appbody">
+            <div class="center" style="margin:8px 0 20px">
+              <div style="font-size:16px;font-weight:600">请完成安全验证</div>
+              <div class="muted" style="margin-top:6px">为完成 200 USDT 转账，请输入以下验证码</div>
+            </div>
+
+            <div class="field">
+              <label>邮箱验证码</label>
+              <div class="inp-group">
+                <input type="text" inputmode="numeric" maxlength="6" placeholder="6 位验证码" value="836247">
+                <span class="suffix"><span class="max" style="cursor:pointer">获取验证码</span></span>
+              </div>
+              <div style="margin-top:7px;font-size:12px;color:var(--t2)">验证码已发送至 r***@100xex.com · <span style="color:var(--t3)">重新获取 (58s)</span></div>
+            </div>
+
+            <div class="field">
+              <label>身份验证器（2FA）验证码</label>
+              <input class="inp mono" type="text" inputmode="numeric" maxlength="6" placeholder="6 位动态码" value="491053" style="letter-spacing:4px">
+              <div style="margin-top:7px;font-size:12px;color:var(--t2)">打开 Google / 身份验证器 App 获取 6 位动态码</div>
+            </div>
+
+            <div class="notice">站内转账需<b>邮箱验证码 + 2FA 双重验证</b>通过后方可完成，验证不区分金额。</div>
+          </div>
+          <div class="footer-cta"><button class="btn btn-primary" onclick="go(3)">确认转账</button></div>
+        </div>
+
+        <!-- APP STEP 3: 结果 -->
+        <div class="app-scr hide" data-scr="3">
+          <div class="navbar"><span class="title" style="text-align:center">转账结果</span></div>
+          <div class="appbody">
+            <div class="result-ic ok">✓</div>
+            <div class="center"><div style="font-size:19px;font-weight:600">转账成功</div>
+              <div class="mono" style="font-size:15px;margin-top:8px;color:var(--t2)">200.00 USDT 已到账</div></div>
+            <div class="summary" style="margin-top:22px">
+              <div class="srow"><span class="k">收款方</span><span class="v mono">UID 88213507</span></div>
+              <div class="srow"><span class="k">留言</span><span class="v">上次的车费，收一下 🙏</span></div>
+              <div class="srow"><span class="k">到账时间</span><span class="v mono">2026-08-19 09:41:23</span></div>
+              <div class="srow"><span class="k">订单号</span><span class="v mono" style="font-size:12px">TR20260819094123882</span></div>
+            </div>
+          </div>
+          <div class="footer-cta" style="display:flex;gap:10px">
+            <button class="btn btn-ghost" onclick="go(4)">查看记录</button>
+            <button class="btn btn-primary" onclick="go(0)">完成</button>
+          </div>
+        </div>
+
+        <!-- APP STEP 3b: 失败 -->
+        <div class="app-scr hide" data-scr="3b">
+          <div class="navbar"><span class="back" onclick="go(3)">‹</span><span class="title" style="text-align:center">转账结果</span></div>
+          <div class="appbody">
+            <div class="result-ic fail">✕</div>
+            <div class="center"><div style="font-size:19px;font-weight:600">转账未成功</div>
+              <div style="font-size:13px;margin-top:8px;color:var(--red)">系统异常，请稍后重试</div></div>
+            <div class="notice" style="margin-top:22px">本次转账<b>未扣款</b>，资金仍在你的账户。<br>提交后失败兜底：<b>系统异常 / 网络超时</b>。<br><span style="color:var(--t3)">（余额不足、UID 不存在均在发起页前置拦截，不进入结果失败态）</span></div>
+          </div>
+          <div class="footer-cta"><button class="btn btn-primary" onclick="go(0)">返回重试</button></div>
+        </div>
+
+        <!-- APP STEP 4: 记录列表 -->
+        <div class="app-scr hide" data-scr="4">
+          <div class="navbar"><span class="back" onclick="go(0)">‹</span><span class="title">转账记录</span></div>
+          <div class="tabs"><div class="tb on">全部</div><div class="tb">转出</div><div class="tb">转入</div></div>
+          <div class="appbody" style="padding-top:4px">
+            <div class="rec" onclick="go(5)">
+              <div class="ric">↑</div>
+              <div class="info"><div class="r1 mono">转账给 UID 88213507</div><div class="r2 mono">08-19 09:41</div></div>
+              <div class="amt out">-200.00<div class="st" style="color:var(--green)">成功</div></div>
+            </div>
+            <div class="rec" onclick="go('5b')">
+              <div class="ric">↓</div>
+              <div class="info"><div class="r1 mono">来自 UID 40012988</div><div class="r2 mono">08-18 21:03</div></div>
+              <div class="amt in">+50.00<div class="st" style="color:var(--green)">成功</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- APP STEP 5: 详情 -->
+        <div class="app-scr hide" data-scr="5">
+          <div class="navbar"><span class="back" onclick="go(4)">‹</span><span class="title">转账详情</span></div>
+          <div class="appbody">
+            <div class="center" style="margin:14px 0">
+              <div class="mono" style="font-size:30px;font-weight:600">-200.00 <span style="font-size:15px;color:var(--t2)">USDT</span></div>
+              <div style="color:var(--green);font-size:13px;margin-top:6px">● 转账成功</div>
+            </div>
+            <div class="summary">
+              <div class="srow"><span class="k">类型</span><span class="v">站内转账 · 转出（付款人视角）</span></div>
+              <div class="srow"><span class="k">收款方</span><span class="v mono">UID 88213507</span></div>
+              <div class="srow"><span class="k">手续费</span><span class="v" style="color:var(--green)">免手续费</span></div>
+              <div class="srow"><span class="k">留言</span><span class="v">上次的车费，收一下 🙏<br><span class="muted" style="font-size:11px">付款方与收款方详情页均展示</span></span></div>
+              <div class="srow"><span class="k">创建时间</span><span class="v mono">2026-08-19 09:41:23</span></div>
+              <div class="srow"><span class="k">订单号</span><span class="v mono" style="font-size:12px">TR20260819094123882 📋</span></div>
+            </div>
+          </div>
+          <div class="footer-cta"><button class="btn btn-ghost" onclick="go(0)">再转一笔</button></div>
+        </div>
+
+        <!-- APP STEP 5b: 转入(收款)详情 -->
+        <div class="app-scr hide" data-scr="5b">
+          <div class="navbar"><span class="back" onclick="go(4)">‹</span><span class="title">转账详情</span></div>
+          <div class="appbody">
+            <div class="center" style="margin:14px 0">
+              <div class="mono" style="font-size:30px;font-weight:600;color:var(--green)">+50.00 <span style="font-size:15px;color:var(--t2)">USDT</span></div>
+              <div style="color:var(--green);font-size:13px;margin-top:6px">● 已到账</div>
+            </div>
+            <div class="summary">
+              <div class="srow"><span class="k">类型</span><span class="v">站内转账 · 转入（收款人视角）</span></div>
+              <div class="srow"><span class="k">付款方</span><span class="v mono">UID 40012988</span></div>
+              <div class="srow"><span class="k">留言</span><span class="v">请你喝奶茶 🧋<br><span class="muted" style="font-size:11px">付款方与收款方详情页均展示</span></span></div>
+              <div class="srow"><span class="k">到账时间</span><span class="v mono">2026-08-18 21:03:11</span></div>
+              <div class="srow"><span class="k">订单号</span><span class="v mono" style="font-size:12px">TR20260818210311400 📋</span></div>
+            </div>
+          </div>
+          <div class="footer-cta"><button class="btn btn-primary" onclick="go(0)">转账给 TA</button></div>
+        </div>
+
+        <!-- App 提现入口弹窗（点提现 → 选链上 / 内转） -->
+        <div class="wd-sheet-mask hide" id="wdMask" onclick="closeWdSheet()"></div>
+        <div class="wd-sheet hide" id="wdSheet">
+          <div class="wd-sheet-h">选择提现方式</div>
+          <div class="wd-opt" onclick="pickChain()">
+            <div class="wo-ic">🔗</div>
+            <div><div class="wo-t">链上提现</div><div class="wo-d">提到外部钱包地址，需选网络、收网络费</div></div>
+            <span style="margin-left:auto;color:var(--t3)">›</span>
+          </div>
+          <div class="wd-opt" onclick="pickInternal()">
+            <div class="wo-ic">⚡</div>
+            <div><div class="wo-t">内部转账</div><div class="wo-d">转给站内用户，实时到账、免手续费</div></div>
+            <span style="margin-left:auto;color:var(--t3)">›</span>
+          </div>
+          <div class="wd-cancel" onclick="closeWdSheet()">取消</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ WEB ============ -->
+  <div class="appwrap hide" id="webView" style="display:block">
+    <div class="webframe">
+      <div class="webtop">
+        <span class="brand">EXCHANGE</span>
+        <span class="navlink">行情</span><span class="navlink">交易</span>
+        <span class="navlink">资产</span><span class="navlink on">提现</span>
+        <div class="spacer" style="flex:1"></div>
+        <span class="navlink mono">UID 66001234</span>
+      </div>
+      <div class="webbody">
+
+        <!-- WEB STEP 0: 提现（链上 / 内部 区分） -->
+        <div class="web-scr" data-scr="0">
+          <h2 class="sec" style="font-size:26px;margin-bottom:26px">提现</h2>
+          <div class="wd-flow">
+
+            <!-- ① 选择币种 -->
+            <div class="wd-step">
+              <div class="wd-mark done">◆</div>
+              <div class="wd-body">
+                <div class="wd-title">选择币种</div>
+                <div class="coinrow" style="max-width:560px;margin-top:12px"><div class="coin-ic">$</div>
+                  <div><div style="font-size:14px;font-weight:600">USDT</div><div style="font-size:11px;color:var(--t2)">可用 1,280.50</div></div>
+                  <span style="margin-left:auto;color:var(--t3)">切换 ›</span></div>
+              </div>
+            </div>
+
+            <!-- ② 选择收款人 -->
+            <div class="wd-step">
+              <div class="wd-mark">2</div>
+              <div class="wd-body">
+                <div class="wd-title">选择收款人</div>
+
+                <div class="tabs" style="max-width:560px;margin-top:14px">
+                  <div class="tb on" id="wtabChain" onclick="webWdTab('chain')">链上提现</div>
+                  <div class="tb" id="wtabInternal" onclick="webWdTab('internal')">内部转账</div>
+                </div>
+
+                <!-- 链上提现 -->
+                <div id="wpaneChain" style="max-width:560px">
+                  <div class="field" style="margin-top:18px"><label>提现网络</label>
+                    <div class="inp" style="color:var(--t3);display:flex;justify-content:space-between;align-items:center;cursor:pointer">选择网络 <span>›</span></div></div>
+                  <div class="field"><label>提现地址</label><input class="inp" placeholder="提现地址"></div>
+                  <div class="field"><label>提现数量</label><div class="inp-group"><input placeholder="最小提现量 ⚠️"><span class="suffix">USDT <span class="max">全部</span></span></div></div>
+                  <div class="notice">链上提现需选网络并核对地址，<b>上链后不可撤销</b>，到账受网络确认数影响，<b>收取网络手续费</b>。<span class="warn-badge">本次 PRD 聚焦内部转账，链上流程为占位</span></div>
+                  <button class="btn btn-primary" style="margin-top:4px">下一步</button>
+                </div>
+
+                <!-- 内部转账 -->
+                <div id="wpaneInternal" class="hide" style="max-width:560px">
+                  <div class="field" style="margin-top:18px"><label>收款人 UID</label><input class="inp" id="webAcctInput" value="88213507" placeholder="输入对方 UID"></div>
+                  <div id="webUidCheck" style="margin-top:-6px;margin-bottom:16px;font-size:12px"><span style="color:var(--green)">✓ 该 UID 有效，可接收转账</span> <span style="color:var(--t3)">（仅校验存在，不展示对方名称）</span></div>
+                  <div class="field"><label>提现数量</label><div class="inp-group"><input id="webAmtInput" value="200"><span class="suffix">USDT <span class="max">全部</span></span></div>
+                    <div id="webAmtHint" style="margin-top:7px;font-size:12px;color:var(--t2)">可用 1,280.50 USDT · <span style="color:var(--t1)">不限额、免手续费</span></div></div>
+                  <div class="field"><label>留言（选填，收付款双方可见，限 50 字 <span class="warn-badge">⚠️ 字数上限待定</span>）</label>
+                    <input class="inp" maxlength="50" placeholder="给对方留个言（简短）" value="上次的车费，收一下 🙏"></div>
+                  <div class="notice">站内转账<b>实时到账、不可撤销、免手续费</b>，请核对收款账户。</div>
+                  <button id="webNextBtn" class="btn btn-primary" style="margin-top:4px" onclick="webGo(1)">下一步</button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WEB STEP 1: 弹窗确认 -->
+        <div class="web-scr hide" data-scr="1">
+          <div style="max-width:440px;margin:20px auto;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:26px">
+            <div style="font-size:17px;font-weight:600;margin-bottom:4px">确认转账</div>
+            <p class="muted" style="margin-bottom:18px">请核对以下信息，确认后立即到账</p>
+            <div class="center" style="margin:10px 0"><div class="mono" style="font-size:30px;font-weight:600">200.00 <span style="font-size:15px;color:var(--t2)">USDT</span></div></div>
+            <div class="summary">
+              <div class="srow"><span class="k">收款方</span><span class="v mono">UID 88213507</span></div>
+              <div class="srow"><span class="k">手续费</span><span class="v" style="color:var(--green)">免手续费</span></div>
+              <div class="srow"><span class="k">实际到账</span><span class="v mono">200.00 USDT</span></div>
+              <div class="srow"><span class="k">到账时间</span><span class="v">实时 · 不可撤销</span></div>
+            </div>
+            <div class="field" style="margin-top:16px"><label>邮箱验证码</label>
+              <div class="inp-group"><input type="text" maxlength="6" value="836247" placeholder="6 位验证码"><span class="suffix"><span class="max" style="cursor:pointer">获取验证码</span></span></div>
+              <div style="margin-top:6px;font-size:12px;color:var(--t2)">已发送至 r***@100xex.com · <span style="color:var(--t3)">重新获取 (58s)</span></div>
+            </div>
+            <div class="field"><label>身份验证器（2FA）验证码</label><input class="inp mono" type="text" maxlength="6" value="491053" placeholder="6 位动态码" style="letter-spacing:4px"></div>
+            <div class="muted" style="font-size:12px;margin-bottom:16px">站内转账需邮箱验证码 + 2FA 双重验证，验证不区分金额</div>
+            <div style="display:flex;gap:12px">
+              <button class="btn btn-ghost" onclick="webGo(0)">取消</button>
+              <button class="btn btn-primary" onclick="webGo(3)">确认转账</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- WEB STEP 3: 结果 -->
+        <div class="web-scr hide" data-scr="3">
+          <div style="max-width:440px;margin:30px auto;text-align:center">
+            <div class="result-ic ok">✓</div>
+            <div style="font-size:20px;font-weight:600">转账成功</div>
+            <div class="mono muted" style="margin-top:8px">200.00 USDT 已到账 UID 88213507</div>
+            <div class="summary" style="text-align:left;margin-top:24px">
+              <div class="srow"><span class="k">收款方</span><span class="v mono">UID 88213507</span></div>
+              <div class="srow"><span class="k">留言</span><span class="v">上次的车费，收一下 🙏</span></div>
+              <div class="srow"><span class="k">订单号</span><span class="v mono" style="font-size:12px">TR20260819094123882</span></div>
+              <div class="srow"><span class="k">到账时间</span><span class="v mono">2026-08-19 09:41:23</span></div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:22px">
+              <button class="btn btn-ghost" onclick="webGo(4)">转账记录</button>
+              <button class="btn btn-primary" onclick="webGo(0)">再转一笔</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- WEB STEP 4: 记录表格 -->
+        <div class="web-scr hide" data-scr="4">
+          <h2 class="sec" style="margin-bottom:18px">转账记录</h2>
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead><tr style="color:var(--t2);text-align:left;border-bottom:1px solid var(--border)">
+              <th style="padding:12px 8px;font-weight:500">时间</th><th style="font-weight:500">方向</th>
+              <th style="font-weight:500">对方</th><th style="font-weight:500;text-align:right">数量</th>
+              <th style="font-weight:500;text-align:right">手续费</th><th style="font-weight:500;text-align:right">状态</th><th></th></tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--line)"><td class="mono" style="padding:14px 8px">08-19 09:41</td><td style="color:var(--red)">转出</td><td class="mono">88213507</td><td class="mono" style="text-align:right">200.00 USDT</td><td class="mono" style="text-align:right;color:var(--green)">免</td><td style="text-align:right;color:var(--green)">成功</td><td style="text-align:right"><span style="color:var(--blue);cursor:pointer" onclick="webGo(5)">详情</span></td></tr>
+              <tr style="border-bottom:1px solid var(--line)"><td class="mono" style="padding:14px 8px">08-18 21:03</td><td style="color:var(--green)">转入</td><td class="mono">40012988</td><td class="mono" style="text-align:right">50.00 USDT</td><td class="mono" style="text-align:right">—</td><td style="text-align:right;color:var(--green)">成功</td><td style="text-align:right"><span style="color:var(--blue);cursor:pointer" onclick="webGo(6)">详情</span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:20px"><button class="btn btn-ghost" style="width:auto;padding:10px 22px" onclick="webGo(0)">← 返回转账</button></div>
+        </div>
+
+        <!-- WEB STEP 5: 转出(付款)详情 -->
+        <div class="web-scr hide" data-scr="5">
+          <div style="max-width:520px;margin:6px auto">
+            <button class="btn btn-ghost" style="width:auto;padding:8px 16px;margin-bottom:18px" onclick="webGo(4)">← 返回记录</button>
+            <h2 class="sec" style="margin-bottom:6px">转账详情</h2>
+            <div class="center" style="margin:16px 0"><div class="mono" style="font-size:30px;font-weight:600">-200.00 <span style="font-size:15px;color:var(--t2)">USDT</span></div><div style="color:var(--green);font-size:13px;margin-top:6px">● 转账成功 · 转出</div></div>
+            <div class="summary">
+              <div class="srow"><span class="k">收款方</span><span class="v mono">UID 88213507</span></div>
+              <div class="srow"><span class="k">手续费</span><span class="v" style="color:var(--green)">免手续费</span></div>
+              <div class="srow"><span class="k">留言</span><span class="v">上次的车费，收一下 🙏<br><span class="muted" style="font-size:11px">收付款双方均可见</span></span></div>
+              <div class="srow"><span class="k">到账时间</span><span class="v mono">2026-08-19 09:41:23</span></div>
+              <div class="srow"><span class="k">订单号</span><span class="v mono" style="font-size:12px">TR20260819094123882 📋</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WEB STEP 6: 转入(收款)详情 -->
+        <div class="web-scr hide" data-scr="6">
+          <div style="max-width:520px;margin:6px auto">
+            <button class="btn btn-ghost" style="width:auto;padding:8px 16px;margin-bottom:18px" onclick="webGo(4)">← 返回记录</button>
+            <h2 class="sec" style="margin-bottom:6px">转账详情</h2>
+            <div class="center" style="margin:16px 0"><div class="mono" style="font-size:30px;font-weight:600;color:var(--green)">+50.00 <span style="font-size:15px;color:var(--t2)">USDT</span></div><div style="color:var(--green);font-size:13px;margin-top:6px">● 已到账 · 转入</div></div>
+            <div class="summary">
+              <div class="srow"><span class="k">付款方</span><span class="v mono">UID 40012988</span></div>
+              <div class="srow"><span class="k">留言</span><span class="v">请你喝奶茶 🧋<br><span class="muted" style="font-size:11px">收付款双方均可见</span></span></div>
+              <div class="srow"><span class="k">到账时间</span><span class="v mono">2026-08-18 21:03:11</span></div>
+              <div class="srow"><span class="k">订单号</span><span class="v mono" style="font-size:12px">TR20260818210311400 📋</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ ADMIN 管理后台 ============ -->
+  <div class="admin-wrap hide" id="adminView">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <h2 class="sec" style="font-size:18px">站内转账管理</h2>
+      <span class="muted" style="font-size:12px">运营 / 客服 · 转账流水监控与异常排查</span>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kl">今日转账</div><div class="kv">1,284</div></div>
+      <div class="kpi"><div class="kl">成功</div><div class="kv" style="color:var(--green)">1,271</div></div>
+      <div class="kpi"><div class="kl">处理中</div><div class="kv" style="color:var(--yellow-d)">6</div></div>
+      <div class="kpi warn"><div class="kl">⚠ 异常 · 账务不平</div><div class="kv">2</div></div>
+      <div class="kpi"><div class="kl">失败（未扣款）</div><div class="kv" style="color:var(--t2)">5</div></div>
+    </div>
+
+    <div class="filterbar">
+      <input placeholder="订单号" style="width:210px">
+      <input placeholder="付款方 UID" style="width:120px">
+      <input placeholder="收款方 UID" style="width:120px">
+      <select id="fStatus" onchange="filterStatus(this.value)">
+        <option value="all">全部状态</option>
+        <option value="success">成功</option>
+        <option value="pending">处理中</option>
+        <option value="abn">异常 · 账务不平</option>
+        <option value="failed">失败</option>
+      </select>
+      <input type="date" value="2026-08-19">
+      <button class="btn btn-primary" style="width:auto;padding:8px 20px">查询</button>
+      <span class="muted" style="font-size:12px;margin-left:auto">仅展示 UID；如需用户身份请至用户管理系统核验</span>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table class="atable">
+        <thead><tr>
+          <th>订单号</th><th>付款方 UID</th><th>收款方 UID</th><th>币种</th><th style="text-align:right">金额</th>
+          <th>状态</th><th>扣款 / 入账</th><th>创建时间</th><th></th>
+        </tr></thead>
+        <tbody id="atbody"></tbody>
+      </table>
+    </div>
+    <div class="muted" style="font-size:12px;margin-top:12px">点击任意行查看<b style="color:var(--t1)">双腿状态（扣款腿 / 入账腿）+ 账务平衡校验 + 时间线</b>；异常行已红底高亮。</div>
+  </div>
+
+  <div class="drawer-mask hide" id="drawerMask" onclick="closeDetail()"></div>
+  <div class="drawer hide" id="drawer"></div>
+
+</div>
+
+<script>
+  // platform switch
+  const platSeg=document.getElementById('platSeg');
+  platSeg.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    [...platSeg.children].forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    const p=b.dataset.plat;
+    document.getElementById('appView').classList.toggle('hide',p!=='app');
+    document.getElementById('webView').classList.toggle('hide',p!=='web');
+    document.getElementById('adminView').classList.toggle('hide',p!=='admin');
+    document.getElementById('rail').classList.toggle('hide',p==='admin');
+    document.getElementById('exctrl').classList.toggle('hide',p==='admin');
+  });
+
+  // 异常态控制器：切换发起页前置拦截状态（App/Web 同步）
+  function setState(s){
+    const V={
+      normal:{uid:'<span style="color:var(--green)">✓ 该 UID 有效，可接收转账</span> <span style="color:var(--t3)">（仅校验存在，不展示对方名称）</span>',amt:'可用 1,280.50 USDT · <span style="color:var(--t1)">不限额、免手续费</span>',val:'200',dis:false},
+      insufficient:{uid:'<span style="color:var(--green)">✓ 该 UID 有效，可接收转账</span>',amt:'<span style="color:var(--red)">✕ 余额不足，当前可用 1,280.50 USDT</span>',val:'5000',dis:true},
+      uid_invalid:{uid:'<span style="color:var(--red)">✕ 该 UID 不存在，请核对后重试</span>',amt:'可用 1,280.50 USDT · <span style="color:var(--t1)">不限额、免手续费</span>',val:'200',dis:true}
+    }[s];
+    ['app','web'].forEach(p=>{
+      const u=document.getElementById(p+'UidCheck'); if(u)u.innerHTML=V.uid;
+      const a=document.getElementById(p+'AmtHint'); if(a)a.innerHTML=V.amt;
+      const i=document.getElementById(p+'AmtInput'); if(i)i.value=V.val;
+      const b=document.getElementById(p+'NextBtn'); if(b)b.disabled=V.dis;
+    });
+    document.querySelectorAll('#exctrl .ec[data-st]').forEach(c=>c.classList.toggle('on',c.dataset.st===s));
+    if(!document.getElementById('appView').classList.contains('hide')) go(0);
+    else if(!document.getElementById('webView').classList.contains('hide')){webGo(0);webWdTab('internal');}
+  }
+
+  // Web 提现：链上 / 内部 Tab
+  function webWdTab(t){
+    document.getElementById('wpaneChain').classList.toggle('hide',t!=='chain');
+    document.getElementById('wpaneInternal').classList.toggle('hide',t!=='internal');
+    document.getElementById('wtabChain').classList.toggle('on',t==='chain');
+    document.getElementById('wtabInternal').classList.toggle('on',t==='internal');
+  }
+  // Web 内部转账：识别方式切换
+  function webIdType(el,t){
+    el.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+    el.classList.add('on');
+    const ph={'邮箱':'请输入邮箱','手机':'请输入手机号','UID':'请输入 UID'}[t];
+    const val={'邮箱':'88213507@100xex.com','手机':'+1 650****213','UID':'88213507'}[t];
+    const inp=document.getElementById('webAcctInput'); if(inp){inp.placeholder=ph;inp.value=val;}
+  }
+  // App 提现入口弹窗
+  function openWdSheet(){document.getElementById('wdSheet').classList.remove('hide');document.getElementById('wdMask').classList.remove('hide');}
+  function closeWdSheet(){document.getElementById('wdSheet').classList.add('hide');document.getElementById('wdMask').classList.add('hide');}
+  function pickInternal(){closeWdSheet();go(0);}
+  function pickChain(){closeWdSheet();/* 链上提现流程本次不展开 */}
+  // App 内部转账：识别方式切换
+  function appIdType(el,t){
+    el.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+    el.classList.add('on');
+    const ph={'邮箱':'输入对方邮箱','手机':'输入对方手机号','UID':'输入对方 UID'}[t];
+    const val={'邮箱':'88213507@100xex.com','手机':'+1 650****213','UID':'88213507'}[t];
+    const inp=document.getElementById('appAcctInput'); if(inp){inp.placeholder=ph;inp.value=val;}
+  }
+
+  // app step nav
+  const rail=document.getElementById('rail');
+  function setRail(step){
+    [...rail.querySelectorAll('.node')].forEach(n=>n.classList.toggle('on', +n.dataset.step===step));
+  }
+  function go(scr){
+    document.querySelectorAll('.app-scr').forEach(s=>s.classList.add('hide'));
+    const el=document.querySelector('.app-scr[data-scr="'+scr+'"]');
+    if(el)el.classList.remove('hide');
+    const map={'3b':3,'5b':5}; setRail(map[scr]!==undefined?map[scr]:+scr);
+  }
+  function showFail(){go('3b');}
+  rail.addEventListener('click',e=>{
+    const n=e.target.closest('.node'); if(!n)return;
+    const step=n.dataset.step;
+    // drive whichever platform is visible
+    if(!document.getElementById('appView').classList.contains('hide')) go(step);
+    else webGo(step);
+  });
+
+  // web step nav
+  function webGo(scr){
+    document.querySelectorAll('.web-scr').forEach(s=>s.classList.add('hide'));
+    const el=document.querySelector('.web-scr[data-scr="'+scr+'"]');
+    if(el){el.classList.remove('hide');}
+    else {document.querySelector('.web-scr[data-scr="0"]').classList.remove('hide');}
+    setRail(+scr>=5?5:+scr);
+  }
+
+  // ===== 管理后台：流水 + 异常状态 =====
+  const ADMIN_ORDERS=[
+    {id:'TR20260819094123882',from:'66001234',to:'88213507',coin:'USDT',amt:'200.00',status:'success',msg:'上次的车费，收一下 🙏',ct:'2026-08-19 09:41:23',ft:'2026-08-19 09:41:23',debit:'success',credit:'success',balance:'ok'},
+    {id:'TR20260819101502400',from:'40012988',to:'66001234',coin:'USDT',amt:'50.00',status:'pending',msg:'请你喝奶茶 🧋',ct:'2026-08-19 10:15:02',ft:'—',debit:'success',credit:'pending',balance:'checking'},
+    {id:'TR20260819102233551',from:'55009911',to:'77320145',coin:'USDT',amt:'15.00',status:'abn',msg:'',ct:'2026-08-19 10:22:33',ft:'—',debit:'success',credit:'failed',balance:'broken'},
+    {id:'TR20260819103801660',from:'88213507',to:'99887766',coin:'USDT',amt:'1000.00',status:'failed',msg:'',ct:'2026-08-19 10:38:01',ft:'2026-08-19 10:38:02',debit:'failed',credit:'none',balance:'ok'},
+    {id:'TR20260819104120770',from:'66001234',to:'40012988',coin:'BTC',amt:'0.00500000',status:'success',msg:'',ct:'2026-08-19 10:41:20',ft:'2026-08-19 10:41:20',debit:'success',credit:'success',balance:'ok'}
+  ];
+  const STAT={success:{cls:'s-success',label:'成功'},pending:{cls:'s-pending',label:'处理中'},abn:{cls:'s-abn',label:'异常·账务不平'},failed:{cls:'s-failed',label:'失败'}};
+  function legMeta(s){return {success:{ic:'✓',color:'var(--green)',t:'成功'},pending:{ic:'⏳',color:'var(--yellow-d)',t:'处理中'},failed:{ic:'✕',color:'var(--red)',t:'失败'},none:{ic:'—',color:'var(--t3)',t:'未发生'}}[s];}
+  function renderRows(f){
+    const rows=ADMIN_ORDERS.filter(o=>f==='all'||o.status===f).map(o=>{
+      const st=STAT[o.status];
+      const legs=legMeta(o.debit).ic+' / '+legMeta(o.credit).ic;
+      return '<tr class="arow '+(o.status==='abn'?'abn':'')+'" onclick="openDetail(\''+o.id+'\')">'+
+        '<td class="mono">'+o.id+'</td><td class="mono">'+o.from+'</td><td class="mono">'+o.to+'</td>'+
+        '<td>'+o.coin+'</td><td class="mono" style="text-align:right">'+o.amt+'</td>'+
+        '<td><span class="stat '+st.cls+'"><span class="d"></span>'+st.label+'</span></td>'+
+        '<td class="mono" style="font-size:13px">'+legs+'</td>'+
+        '<td class="mono" style="font-size:12px">'+o.ct+'</td>'+
+        '<td><span style="color:var(--blue)">详情</span></td></tr>';
+    }).join('');
+    document.getElementById('atbody').innerHTML=rows||'<tr><td colspan="9" style="text-align:center;color:var(--t3);padding:40px">无符合条件的记录</td></tr>';
+  }
+  function filterStatus(v){renderRows(v);}
+  function openDetail(id){
+    const o=ADMIN_ORDERS.find(x=>x.id===id); if(!o)return;
+    const st=STAT[o.status], dm=legMeta(o.debit), cm=legMeta(o.credit);
+    const bal={ok:{ic:'✓',c:'var(--green)',t:'账务平衡'},checking:{ic:'⏳',c:'var(--yellow-d)',t:'校验中'},broken:{ic:'⚠',c:'var(--red)',t:'账务不平 · 已扣未入'}}[o.balance];
+    const abn=(o.status==='abn'||o.status==='pending')?
+      '<div style="background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:8px;padding:12px 14px;margin:14px 0">'+
+      '<div style="color:var(--warn-tx);font-weight:600;font-size:13px;margin-bottom:8px">⚠ 异常处理</div>'+
+      '<div class="muted" style="font-size:12px;line-height:1.7">'+(o.status==='abn'?'付款方已扣款、收款方入账失败，资金处于中间态，需人工核查并补入账或原路退回。':'入账处理中，超时未完成将转异常，请持续观察。')+'</div>'+
+      '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+      '<button class="btn btn-primary" style="width:auto;padding:8px 14px;font-size:13px">重试入账 <span class="warn-badge">⚠️待确认</span></button>'+
+      '<button class="btn btn-ghost" style="width:auto;padding:8px 14px;font-size:13px">原路退回 <span class="warn-badge">⚠️待确认</span></button>'+
+      '<button class="btn btn-ghost" style="width:auto;padding:8px 14px;font-size:13px">标记已处理</button></div></div>':'';
+    document.getElementById('drawer').innerHTML=
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'+
+      '<div style="font-size:15px;font-weight:600">转账详情</div>'+
+      '<span style="cursor:pointer;color:var(--t2);font-size:20px" onclick="closeDetail()">✕</span></div>'+
+      '<div class="mono muted" style="font-size:12px;margin-bottom:14px">'+o.id+'</div>'+
+      '<div style="text-align:center;margin:8px 0 16px">'+
+      '<div class="mono" style="font-size:28px;font-weight:700">'+o.amt+' <span style="font-size:14px;color:var(--t2)">'+o.coin+'</span></div>'+
+      '<div style="margin-top:8px"><span class="stat '+st.cls+'"><span class="d"></span>'+st.label+'</span></div></div>'+
+      '<div class="leg"><div class="lic" style="color:'+dm.color+'">'+dm.ic+'</div><div><div style="font-size:13px;font-weight:600">① 付款方扣款</div><div class="muted" style="font-size:12px">UID '+o.from+' · '+dm.t+'</div></div></div>'+
+      '<div class="leg"><div class="lic" style="color:'+cm.color+'">'+cm.ic+'</div><div><div style="font-size:13px;font-weight:600">② 收款方入账</div><div class="muted" style="font-size:12px">UID '+o.to+' · '+cm.t+'</div></div></div>'+
+      '<div class="leg" style="border-color:'+(o.balance==='broken'?'var(--red)':'var(--border)')+'"><div class="lic" style="color:'+bal.c+'">'+bal.ic+'</div><div><div style="font-size:13px;font-weight:600">③ 账务平衡校验</div><div style="font-size:12px;color:'+bal.c+'">'+bal.t+'</div></div></div>'+
+      abn+
+      '<div class="summary" style="margin-top:14px">'+
+      '<div class="srow"><span class="k">付款方</span><span class="v mono">UID '+o.from+'</span></div>'+
+      '<div class="srow"><span class="k">收款方</span><span class="v mono">UID '+o.to+'</span></div>'+
+      '<div class="srow"><span class="k">留言</span><span class="v">'+(o.msg||'—')+'</span></div>'+
+      '<div class="srow"><span class="k">创建时间</span><span class="v mono">'+o.ct+'</span></div>'+
+      '<div class="srow"><span class="k">完成时间</span><span class="v mono">'+o.ft+'</span></div></div>';
+    document.getElementById('drawer').classList.remove('hide');
+    document.getElementById('drawerMask').classList.remove('hide');
+  }
+  function closeDetail(){document.getElementById('drawer').classList.add('hide');document.getElementById('drawerMask').classList.add('hide');}
+  renderRows('all');
+</script>
+</body>
+</html>
