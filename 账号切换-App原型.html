@@ -114,6 +114,14 @@
   .empty{padding:60px 24px; text-align:center; color:var(--t3); font-size:14px;}
 
   .caption{margin-top:14px; font-size:12px; color:#8a8a92; text-align:center;}
+
+  /* 截图模式：仅渲染手机，供 PRD 出图 */
+  body.capture{padding:13px; background:#fff; display:block;}
+  .capture .wrap{max-width:none; margin:0;}
+  .capture .head{display:none;}
+  .capture .stage{display:block; gap:0;}
+  .capture .stage>div:not(.phone){display:none;}
+  .capture .phone{margin:0; box-shadow:0 0 0 11px #0d0d10, 0 0 0 13px #2b2b31;}
 </style>
 </head>
 <body>
@@ -470,6 +478,22 @@ function copyUid(){ toast('UID 已复制'); }
 // init
 seed(4);
 renderList();
+
+// 截图模式：?cap=account|list|edit|confirm|login
+(function(){
+  const cap=new URLSearchParams(location.search).get('cap');
+  if(!cap) return;
+  document.body.classList.add('capture');
+  const only=id=>{ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active','under')); document.getElementById(id).classList.add('active'); };
+  const run={
+    account(){ only('s-account'); },
+    list(){ preset(6); },
+    edit(){ preset(4); toggleEdit(); },
+    confirm(){ preset(4); toggleEdit(); const t=accounts.find(a=>a.status!=='current'); askDelete(t.id); },
+    login(){ only('s-add'); }
+  };
+  (run[cap]||run.account)();
+})();
 </script>
 </body>
 </html>
