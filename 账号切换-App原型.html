@@ -307,12 +307,13 @@ function maskEmail(e){
   return head + '***@' + domain;
 }
 // 手机脱敏：区号 + 前3位 + 固定3星 + 后3位（中间一律脱敏）
+// 极短号码兜底：号码不足7位时退化为「后2位 + 前面全脱敏」，杜绝露出完整号码
 function maskPhone(p){
   const digits = p.replace(/^\+/,'');
   let cc = '+'+digits.slice(0,2), nat = digits.slice(2);
   for(const c of CC){ if(digits.startsWith(c)){ cc='+'+c; nat=digits.slice(c.length); break; } }
-  const head = nat.slice(0,3), tail = nat.slice(-3);
-  return cc + ' ' + head + '***' + tail;
+  if(nat.length >= 7) return cc + ' ' + nat.slice(0,3) + '***' + nat.slice(-3);
+  return cc + ' ***' + nat.slice(-2);
 }
 function label(a){
   const raw = RAW[a.type] || 'user@mail.com';
