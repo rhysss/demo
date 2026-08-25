@@ -125,12 +125,12 @@ figure.diag figcaption{margin-top:14px;padding-top:12px;border-top:1px solid var
     <header class="cover">
       <div class="eyebrow">Product Requirements Document</div>
       <h1>账号切换（多账号管理）</h1>
-      <div class="sub">App 端 · V1.6 · 多登录账号免登切换 · 对齐 Binance</div>
+      <div class="sub">App 端 · V1.7 · 多登录账号免登切换 · 对齐 Binance</div>
     </header>
 
     <!-- 00 需求记录 -->
     <h2 id="sec0"><span class="secnum">00</span>需求记录</h2>
-    <p>本表记录每个版本 PRD 的调整内容与触发原因，供评审与研发追溯变更来源。规则级完整变更历史见《规则台账 · 账号切换》版本历史表（当前 v1.11）。</p>
+    <p>本表记录每个版本 PRD 的调整内容与触发原因，供评审与研发追溯变更来源。规则级完整变更历史见《规则台账 · 账号切换》版本历史表（当前 v2.0）。</p>
     <div class="tw"><table><colgroup><col style="width:8%"><col style="width:12%"><col style="width:52%"><col style="width:28%"></colgroup>
       <thead><tr><th>版本</th><th>日期</th><th>主要调整内容</th><th>触发原因</th></tr></thead>
       <tbody>
@@ -141,6 +141,7 @@ figure.diag figcaption{margin-top:14px;padding-top:12px;border-top:1px solid var
         <tr><td>V1.4</td><td>2026-08-25</td><td><b>待确认全部收敛</b>：Q-01 计时口径归<b>前端定义</b>、Q-02 <b>所有账号可入列（不做 KYC 拦截）</b>；新增 R18；3.5 转为决策记录</td><td>PM 确认计时口径归属与 KYC 门槛</td></tr>
         <tr><td>V1.5</td><td>2026-08-25</td><td>新增边界 Case <b>B9</b>（A 登录后 Log Out 再登录 B，列表不保留 A）；补充 Log Out 说明；新增 R19（Log Out 与切换/添加对列表的差异）</td><td>PM 询问登出后再登录的列表场景</td></tr>
         <tr><td>V1.6</td><td>2026-08-25</td><td>新增边界 Case <b>B10</b>（A 添加 B 后登出 A，列表仅剩 B）；R19 补充「Log Out 仅移除当前账号自身记录」</td><td>PM 询问添加 B 后登出 A 的列表场景</td></tr>
+        <tr><td>V1.7</td><td>2026-08-25</td><td><b>列表模型定为设备级通用 roster（R20）</b>：修订 B9/B10（登出后 A 仍留列表，需重新登录态）；Log Out 只结束会话不移出列表、移出仅靠垃圾桶删除；新增设备级列表/需重新验证态术语与状态机；同步修订 R10/R19</td><td>PM 明确列表为设备级通用、非按账号分列（模型 B）</td></tr>
       </tbody>
     </table></div>
 
@@ -176,6 +177,7 @@ figure.diag figcaption{margin-top:14px;padding-top:12px;border-top:1px solid var
 
     <h3 id="s21">2.1 产品逻辑</h3>
     <p>账号切换的核心是<b>登录会话（token）的本地切换</b>：设备本地保存至多 25 个已登录账号的会话凭证，切换即在本地会话间切换并刷新用户态，无需重新输入密码/2FA。<b>会话有有效期——账号连续 7 天未登录（无活跃）即判定过期（R15），需重新验证后方可再次使用。</b></p>
+    <div class="note info"><b>列表模型 = 设备级通用 roster（R20）：</b>切换列表是<b>设备级共享</b>的，内容与当前登录的是谁无关（同一设备无论当前登录谁，看到的是同一份列表）。「是否在列表」与「会话状态」是两个独立维度——<b>在列表</b>只由 添加(登录) 与 垃圾桶删除 控制；<b>会话状态</b> = 当前(current) / 可切换(active) / 需重新验证(needs-reauth，含 7 天过期与 Log Out 登出)。<b>Log Out 只结束会话、不移出列表</b>；移出列表仅靠垃圾桶删除。</div>
 
     <figure class="diag"><svg viewBox="0 0 840 470" width="100%" xmlns="http://www.w3.org/2000/svg" role="img">
       <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 z" fill="#A9A69E"/></marker></defs>
@@ -203,7 +205,8 @@ figure.diag figcaption{margin-top:14px;padding-top:12px;border-top:1px solid var
       <rect x="585" y="250" width="210" height="60" rx="7" fill="#fff" stroke="#D3D0C8" stroke-width="1.2"/><text x="690" y="273" text-anchor="middle" font-size="10.5" fill="#16181D">删：垃圾桶→二次确认（当前不可删）</text><text x="690" y="292" text-anchor="middle" font-size="10.5" fill="#16181D">增：登录页→入列（满 25 置灰）</text>
 
       <rect x="300" y="360" width="240" height="40" rx="7" fill="#16181D"/><text x="420" y="385" text-anchor="middle" font-size="11.5" font-weight="600" fill="#fff">会话状态机</text>
-      <text x="420" y="428" text-anchor="middle" font-size="10.5" fill="#6B7078">active ⇄ current ； active/current —7天未登录→ expired ； expired —重新验证→ active</text>
+      <text x="420" y="420" text-anchor="middle" font-size="10" fill="#6B7078">active ⇄ current ； active/current —7天未登录/Log Out→ needs-reauth ； needs-reauth —全量登录→ active</text>
+      <text x="420" y="437" text-anchor="middle" font-size="10" fill="#6B7078">移出列表仅靠垃圾桶删除（设备级通用列表 R20）</text>
     </svg><figcaption>图 A · 账号切换主流程与会话状态机</figcaption></figure>
 
     <h3 id="s22">2.2 功能架构</h3>
@@ -229,7 +232,8 @@ Switch Account（切换账号）
       <tbody>
         <tr><td>当前账号</td><td>Current</td><td>设备上正处于登录态、正在使用的账号；列表置顶、带 ✓ 勾选与金色头像描边。</td></tr>
         <tr><td>其他账号</td><td>Other Accounts</td><td>设备已保存会话、可一键切换的非当前账号。</td></tr>
-        <tr><td>过期账号</td><td>Expired</td><td>本地会话失效的账号——<b>触发条件为连续 7 天未登录（R15）</b>；带灰色 Expired 标，点击需重新验证，不能直接切换。</td></tr>
+        <tr><td>设备级通用列表</td><td>Device roster</td><td>切换列表为设备级共享，与当前登录账号无关；移出列表仅靠垃圾桶删除（R20）。</td></tr>
+        <tr><td>需重新验证态</td><td>Needs re-auth</td><td>账号仍在列表但不能直接切换、需重新登录/验证的状态；<b>两种来源</b>：① 连续 7 天未登录过期（R15）；② 被 Log Out 登出（R10）。带灰色标，点击走全量登录激活。</td></tr>
         <tr><td>重新验证</td><td>Re-verify</td><td>过期账号恢复可用前的身份校验流程；采用<b>全量登录（重新输入密码 + 2FA）</b>，与全新登录一致。</td></tr>
         <tr><td>登录方式</td><td>Login Method</td><td>账号注册/登录标识，为邮箱或手机号，列表中脱敏展示（R14）。</td></tr>
         <tr><td>脱敏</td><td>Mask</td><td>邮箱 = 前 3 位 + <code>***</code> + 完整 @尾缀；手机 = 区号 + 前 3 位 + <code>***</code> + 后 3 位。</td></tr>
@@ -292,7 +296,7 @@ Switch Account（切换账号）
     <ul>
       <li>顶部导航<b>右上角新增切换账号 icon</b>（双向箭头 swap 语义），点击进入 Switch Account。</li>
       <li>主体保留 Profile / Nickname / UID / Fee Schedule；<b>UID 仅在此页展示且可复制</b>（R12：切换列表不展示 UID）。</li>
-      <li>底部保留 <b>Log Out</b>（整行按钮），二次确认后退出当前账号（R10）；切换入口不再放底部。<b>Log Out 会将该账号从设备移除、不保留在切换列表</b>；如需保留以便切回，应使用「切换 / 添加」而非登出（见边界 Case B9）。</li>
+      <li>底部保留 <b>Log Out</b>（整行按钮），二次确认后退出当前账号（R10）；切换入口不再放底部。<b>Log Out 只结束会话，账号仍保留在切换列表并转为「需重新登录」态</b>（不移出列表）；登出后落地到切换列表（Switch Account）。移出列表仅通过编辑态垃圾桶删除（见边界 Case B9/B10）。</li>
     </ul>
 
     <p class="figref">图 2 · Switch Account（多账号列表）</p>
@@ -333,8 +337,8 @@ Switch Account（切换账号）
         <tr><td>B5</td><td>过期账号在删除态</td><td>显示垃圾桶，可直接删除（R9），无需先验证。</td></tr>
         <tr><td>B6</td><td>极短号码（国家码后不足 7 位，如虚拟小号）</td><td><b>脱敏兜底：</b>号码 ≥ 7 位走标准「前 3 + <code>***</code> + 后 3」；≤ 6 位时退化为「后 2 位 + 前面全脱敏」（如 <code>+65 ***67</code>），确保任何长度都不露出完整号码。真实手机号均 ≥ 7 位，一般不触发。<span class="pill ok">已定</span></td></tr>
         <tr><td>B7</td><td>同一账号重复添加</td><td><b>允许重复添加，但列表按账号去重、仅保留一条</b>——重复登录视为刷新该账号会话，定位到已有行，不新增重复项。<span class="pill ok">已定</span></td></tr>
-        <tr><td>B9</td><td>A 登录后 <b>Log Out</b>，再登录 B</td><td>A 已随 Log Out 从设备移除，<b>切换列表中不保留 A</b>，登录 B 后列表仅有 B（R10）。对比：若 A 是被「切换 / 添加 B」而非登出，则 A 仍保留在列表可切回。<span class="pill ok">已定</span></td></tr>
-        <tr><td>B10</td><td>A 登录 → 添加 B → 切到 A 后 <b>Log Out A</b> → 再登录 B</td><td>Log Out <b>仅移除当前账号 A 自身记录</b>，不影响列表中其他账号；A 登出后列表为 <code>[B]</code>，再登录 B 仍为 <code>[B]</code>，<b>不展示 A</b>。账号是否在列表只取决于其自身是否被登出，与是否添加过 B 无关（R19）。<span class="pill ok">已定</span></td></tr>
+        <tr><td>B9</td><td>A 登录后 <b>Log Out</b>，再登录 B</td><td>设备级通用列表（R20）下，Log Out 只结束会话、A 仍留在列表转「需重新登录」态；登录 B 后列表为 <code>[A(需重登), B]</code>，<b>A 仍展示</b>。只有对 A 执行垃圾桶删除才会移出（R19）。<span class="pill ok">已定</span></td></tr>
+        <tr><td>B10</td><td>A 登录 → 添加 B → 切到 A 后 <b>Log Out A</b> → 再登录 B</td><td>同理，Log Out A 只把 A 转为「需重新登录」态、不移出列表；列表为 <code>[A(需重登), B]</code>，<b>A 仍展示</b>。账号是否在列表只由 添加 与 垃圾桶删除 决定，与登出无关（R19/R20）。<span class="pill ok">已定</span></td></tr>
       </tbody>
     </table></div>
 
@@ -378,7 +382,8 @@ Switch Account（切换账号）
         <tr><td>获取可切换账号列表</td><td>返回本地已保存账号：账号标识、昵称、登录方式类型、<b>脱敏后展示串</b>、会话状态（current/active/expired）、头像、最近活跃时间。<b>脱敏建议由后端统一下发</b>展示串，前端不接触完整账号信息。</td></tr>
         <tr><td>切换账号（换会话）</td><td>以目标账号本地会话凭证换取有效登录态；会话失效（含超 7 天）返回过期错误码，前端置该账号 Expired。</td></tr>
         <tr><td>添加账号（登录并入列）</td><td>登录成功后将新会话追加到本地列表，不影响当前账号会话；服务端下发上限（25）供前端置灰判断。</td></tr>
-        <tr><td>删除账号（移除会话）</td><td>移除指定账号本地会话与列表项；<b>禁止删除当前账号</b>（服务端 + 前端双重校验）。</td></tr>
+        <tr><td>删除账号（移出列表）</td><td>移除指定账号本地会话与列表项——<b>这是移出设备列表的唯一方式</b>；<b>禁止删除当前账号</b>（服务端 + 前端双重校验）。</td></tr>
+        <tr><td>登出当前账号（Log Out）</td><td>结束当前账号会话、将其转为「需重新登录」态，<b>但保留在设备列表</b>（不移出）；登出后落地切换列表。与「删除账号」区分。</td></tr>
         <tr><td>过期账号重新验证</td><td>点击 Expired 账号走<b>全量登录（密码 + 2FA）</b>，验证成功后刷新该账号会话有效期、状态回 active。</td></tr>
       </tbody>
     </table></div>
@@ -423,7 +428,7 @@ Switch Account（切换账号）
       <li>需求提出方、SMART 目标值、发布日期等封面占位信息。</li>
     </ul>
 
-    <footer class="end">文档结束　·　账号切换（多账号管理）PRD V1.6　·　规则台账 v1.11　·　原型 账号切换-App原型.html</footer>
+    <footer class="end">文档结束　·　账号切换（多账号管理）PRD V1.7　·　规则台账 v2.0　·　原型 账号切换-App原型.html</footer>
   </main>
 </div>
 <div id="lb" onclick="this.style.display='none'"><img id="lbimg" src=""></div>
