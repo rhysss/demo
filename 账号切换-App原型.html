@@ -298,13 +298,13 @@ function maskEmail(e){
   const head = lp.slice(0,3);
   return head + '***@' + domain;
 }
-// 手机脱敏：区号 + 固定3星 + 后3位（全球统一，不泄露总长度）
+// 手机脱敏：区号 + 前3位 + 固定3星 + 后3位（中间一律脱敏）
 function maskPhone(p){
   const digits = p.replace(/^\+/,'');
   let cc = '+'+digits.slice(0,2), nat = digits.slice(2);
   for(const c of CC){ if(digits.startsWith(c)){ cc='+'+c; nat=digits.slice(c.length); break; } }
-  const last = nat.slice(-3);
-  return cc + ' ***' + last;
+  const head = nat.slice(0,3), tail = nat.slice(-3);
+  return cc + ' ' + head + '***' + tail;
 }
 function label(a){
   const raw = RAW[a.type] || 'user@mail.com';
