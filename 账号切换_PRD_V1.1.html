@@ -125,18 +125,19 @@ figure.diag figcaption{margin-top:14px;padding-top:12px;border-top:1px solid var
     <header class="cover">
       <div class="eyebrow">Product Requirements Document</div>
       <h1>账号切换（多账号管理）</h1>
-      <div class="sub">App 端 · V1.2 · 多登录账号免登切换 · 对齐 Binance</div>
+      <div class="sub">App 端 · V1.3 · 多登录账号免登切换 · 对齐 Binance</div>
     </header>
 
     <!-- 00 需求记录 -->
     <h2 id="sec0"><span class="secnum">00</span>需求记录</h2>
-    <p>本表记录每个版本 PRD 的调整内容与触发原因，供评审与研发追溯变更来源。规则级完整变更历史见《规则台账 · 账号切换》版本历史表（当前 v1.7）。</p>
+    <p>本表记录每个版本 PRD 的调整内容与触发原因，供评审与研发追溯变更来源。规则级完整变更历史见《规则台账 · 账号切换》版本历史表（当前 v1.8）。</p>
     <div class="tw"><table><colgroup><col style="width:8%"><col style="width:12%"><col style="width:52%"><col style="width:28%"></colgroup>
       <thead><tr><th>版本</th><th>日期</th><th>主要调整内容</th><th>触发原因</th></tr></thead>
       <tbody>
         <tr><td>V1.0</td><td>2026-08-25</td><td>首版。覆盖账号切换全链路（R1–R14）：My Account 右上角 icon 入口、Current/Other Accounts 分组、免登切换、添加账号、编辑删除 + 二次确认、当前账号不可删、过期重登、25 账号上限、登录方式脱敏口径</td><td>原型收敛后反向同步 PRD</td></tr>
         <tr><td>V1.1</td><td>2026-08-25</td><td>① 新增 <b>R15「账号 7 天未登录需重新验证」</b>，明确 Expired 触发条件；② 文档改用标准 PRD 模板（浅色 · IBM Plex）；③ 新增管理后台接口与「7 天过期扫描」定时任务章节；④ 补充评审结论与遗留章节；⑤ 3.3 原型说明内嵌真机截图</td><td>PM 提出 7 天重验规则并指定模板格式</td></tr>
         <tr><td>V1.2</td><td>2026-08-25</td><td>边界 Case 定稿：B6 极短号码脱敏兜底（≤6 位露后 2 位）、B7 同一账号可重复添加但列表去重仅留一条；<b>移除禁用账户相关内容</b>（当前无禁用机制）。Checklist 定稿：#4 不影响其他业务线、<b>#7 仅做 App 端</b>（不做 Web）、#8 无禁用机制。5.3 <b>失效会话不做二级清理</b>（过期账号保留列表）。关闭 Q-03/Q-05/Q-06</td><td>PM 确认边界与 Checklist 口径</td></tr>
+        <tr><td>V1.3</td><td>2026-08-25</td><td>Q-01 定稿：<b>7 天过期后的重新验证采用全量登录（密码 + 2FA）</b>，同步 2.3 术语、5.1 接口说明；待确认收敛为 Q-01/Q-02（计时口径、KYC）</td><td>PM 确认重新验证校验强度</td></tr>
       </tbody>
     </table></div>
 
@@ -226,7 +227,7 @@ Switch Account（切换账号）
         <tr><td>当前账号</td><td>Current</td><td>设备上正处于登录态、正在使用的账号；列表置顶、带 ✓ 勾选与金色头像描边。</td></tr>
         <tr><td>其他账号</td><td>Other Accounts</td><td>设备已保存会话、可一键切换的非当前账号。</td></tr>
         <tr><td>过期账号</td><td>Expired</td><td>本地会话失效的账号——<b>触发条件为连续 7 天未登录（R15）</b>；带灰色 Expired 标，点击需重新验证，不能直接切换。</td></tr>
-        <tr><td>重新验证</td><td>Re-verify</td><td>过期账号恢复可用前的身份校验流程；默认走重新登录，具体校验强度（全量登录 vs 仅 2FA/设备验证）<span class="warn">待确认</span>。</td></tr>
+        <tr><td>重新验证</td><td>Re-verify</td><td>过期账号恢复可用前的身份校验流程；采用<b>全量登录（重新输入密码 + 2FA）</b>，与全新登录一致。</td></tr>
         <tr><td>登录方式</td><td>Login Method</td><td>账号注册/登录标识，为邮箱或手机号，列表中脱敏展示（R14）。</td></tr>
         <tr><td>脱敏</td><td>Mask</td><td>邮箱 = 前 3 位 + <code>***</code> + 完整 @尾缀；手机 = 区号 + 前 3 位 + <code>***</code> + 后 3 位。</td></tr>
         <tr><td>账号数上限</td><td>Max = 25</td><td>单设备可保存的可切换账号上限，达上限需先删除才能新增。</td></tr>
@@ -336,9 +337,8 @@ Switch Account（切换账号）
     <div class="tw"><table><colgroup><col style="width:9%"><col style="width:58%"><col style="width:33%"></colgroup>
       <thead><tr><th>编号</th><th>问题</th><th>阻塞对象</th></tr></thead>
       <tbody>
-        <tr><td>Q-01</td><td>7 天重新验证的<b>校验强度</b>：全量登录（密码 + 2FA）还是仅 2FA/设备验证？</td><td>登录流程、安全组</td></tr>
-        <tr><td>Q-02</td><td>7 天计时口径：以「最近一次登录」还是「最近一次任意活跃」为准？跨设备是否合并？</td><td>会话服务、定时任务</td></tr>
-        <tr><td>Q-03</td><td>未完成 KYC 的账号能否加入切换列表？</td><td>KYC / 登录</td></tr>
+        <tr><td>Q-01</td><td>7 天计时口径：以「最近一次登录」还是「最近一次任意活跃」为准？跨设备是否合并？</td><td>会话服务、定时任务</td></tr>
+        <tr><td>Q-02</td><td>未完成 KYC 的账号能否加入切换列表？</td><td>KYC / 登录</td></tr>
       </tbody>
     </table></div>
 
@@ -373,7 +373,7 @@ Switch Account（切换账号）
         <tr><td>切换账号（换会话）</td><td>以目标账号本地会话凭证换取有效登录态；会话失效（含超 7 天）返回过期错误码，前端置该账号 Expired。</td></tr>
         <tr><td>添加账号（登录并入列）</td><td>登录成功后将新会话追加到本地列表，不影响当前账号会话；服务端下发上限（25）供前端置灰判断。</td></tr>
         <tr><td>删除账号（移除会话）</td><td>移除指定账号本地会话与列表项；<b>禁止删除当前账号</b>（服务端 + 前端双重校验）。</td></tr>
-        <tr><td>过期账号重新验证</td><td>点击 Expired 账号走验证流程，验证成功后刷新该账号会话有效期、状态回 active。校验强度见 Q-01。</td></tr>
+        <tr><td>过期账号重新验证</td><td>点击 Expired 账号走<b>全量登录（密码 + 2FA）</b>，验证成功后刷新该账号会话有效期、状态回 active。</td></tr>
       </tbody>
     </table></div>
 
@@ -391,7 +391,7 @@ Switch Account（切换账号）
     <div class="tw"><table><colgroup><col style="width:26%"><col style="width:74%"></colgroup>
       <thead><tr><th>任务</th><th>说明</th></tr></thead>
       <tbody>
-        <tr><td>7 天未登录过期扫描</td><td>周期扫描各账号会话的最近活跃时间，超过阈值（默认 7 天）标记为 Expired，使其在切换列表中不可直接切换、需重新验证。扫描周期与临界口径见 Q-02 / B2。</td></tr>
+        <tr><td>7 天未登录过期扫描</td><td>周期扫描各账号会话的最近活跃时间，超过阈值（默认 7 天）标记为 Expired，使其在切换列表中不可直接切换、需重新验证。扫描周期与临界口径见 Q-01 / B2。</td></tr>
         <tr><td>失效会话清理</td><td><b>不做二级自动清理/移除</b>：过期账号保留在切换列表，展示 Expired 标，由用户重新验证激活或手动删除。定时任务仅负责置 Expired，不主动移除列表项。</td></tr>
       </tbody>
     </table></div>
@@ -405,7 +405,7 @@ Switch Account（切换账号）
 
     <h3 id="s62">6.2 遗留事项</h3>
     <ul>
-      <li>Q-01～Q-03（见 3.5）：7 天重验强度、7 天计时口径、KYC 门槛。</li>
+      <li>Q-01～Q-02（见 3.5）：7 天计时口径、KYC 门槛。</li>
       <li>PRD 自检 <span class="warn">⚠️</span> 项须 PM 决策后回填，AI 不得自行标为通过：受限地区多账号聚集识别、KYC 门槛、失效会话二级清理策略。</li>
     </ul>
 
@@ -417,7 +417,7 @@ Switch Account（切换账号）
       <li>需求提出方、SMART 目标值、发布日期等封面占位信息。</li>
     </ul>
 
-    <footer class="end">文档结束　·　账号切换（多账号管理）PRD V1.2　·　规则台账 v1.7　·　原型 账号切换-App原型.html</footer>
+    <footer class="end">文档结束　·　账号切换（多账号管理）PRD V1.3　·　规则台账 v1.8　·　原型 账号切换-App原型.html</footer>
   </main>
 </div>
 <div id="lb" onclick="this.style.display='none'"><img id="lbimg" src=""></div>
