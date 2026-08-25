@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD-【App】账号切换（多账号管理）V1.0.0</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#0e0f13; --panel:#16181f; --panel2:#1b1e27; --line:#262a35; --line2:#2f3441;
+    --t1:#e8eaf0; --t2:#a3a8b8; --t3:#6f7688;
+    --accent:#f0b90b; --accent2:#3b82f6; --green:#0ecb81; --red:#e5484d; --amber:#f5a623;
+    --code:#0b0c10;
+  }
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg); color:var(--t1); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,Arial,sans-serif; font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .layout{display:flex; max-width:1280px; margin:0 auto;}
+
+  /* Sidebar TOC */
+  .toc{width:270px; flex:0 0 auto; position:sticky; top:0; height:100vh; overflow-y:auto; border-right:1px solid var(--line); padding:26px 18px 60px; background:var(--panel);}
+  .toc .doc-tag{font-size:11px; color:var(--accent); font-weight:700; letter-spacing:1px; text-transform:uppercase;}
+  .toc h1{font-size:15px; margin:8px 0 4px; line-height:1.4;}
+  .toc .ver{font-size:12px; color:var(--t3); margin-bottom:20px;}
+  .toc a{display:block; color:var(--t2); text-decoration:none; font-size:13px; padding:5px 10px; border-radius:6px; border-left:2px solid transparent;}
+  .toc a:hover{background:var(--panel2); color:var(--t1);}
+  .toc a.sub{padding-left:24px; font-size:12.5px; color:var(--t3);}
+  .toc a.h{margin-top:8px; font-weight:600; color:var(--t1);}
+
+  /* Content */
+  .content{flex:1; min-width:0; padding:48px 56px 120px;}
+  .cover{border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:44px; background:linear-gradient(160deg,#191c24,#121319);}
+  .cover .top{padding:32px 34px 26px; border-bottom:1px solid var(--line);}
+  .cover .tag{display:inline-block; font-size:12px; font-weight:700; color:#111; background:var(--accent); padding:3px 10px; border-radius:5px; letter-spacing:.5px;}
+  .cover h1{font-size:26px; margin:16px 0 6px; letter-spacing:.3px;}
+  .cover .sub{color:var(--t2); font-size:14px;}
+  .meta{display:grid; grid-template-columns:140px 1fr; gap:0;}
+  .meta .k{padding:12px 18px 12px 34px; color:var(--t3); font-size:13px; border-top:1px solid var(--line); background:rgba(255,255,255,.012);}
+  .meta .v{padding:12px 34px 12px 18px; font-size:13.5px; border-top:1px solid var(--line); color:var(--t1);}
+
+  h2{font-size:22px; margin:52px 0 18px; padding-top:14px; border-top:2px solid var(--line2); letter-spacing:.3px;}
+  h2 .num{color:var(--accent); margin-right:10px;}
+  h3{font-size:17px; margin:32px 0 12px; color:#dfe3ee;}
+  h3 .num{color:var(--accent2); margin-right:8px; font-size:15px;}
+  h4{font-size:15px; margin:22px 0 10px; color:var(--t1);}
+  p{margin:10px 0; color:var(--t1);}
+  ul,ol{margin:10px 0 10px 22px;} li{margin:5px 0; color:var(--t1);}
+  .muted{color:var(--t2);}
+  code{background:var(--code); border:1px solid var(--line); border-radius:4px; padding:1px 6px; font-family:"SF Mono",Menlo,Consolas,monospace; font-size:12.5px; color:#ffd479;}
+
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px; background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  th{background:var(--panel2); color:var(--t2); font-weight:600; text-align:left; padding:11px 14px; border-bottom:1px solid var(--line2); font-size:12.5px; letter-spacing:.3px;}
+  td{padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top; color:var(--t1);}
+  tr:last-child td{border-bottom:none;}
+  td.c,th.c{text-align:center;}
+  .pill{display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px;}
+  .p0{background:rgba(229,72,77,.15); color:#ff7a7e;}
+  .p1{background:rgba(245,166,35,.15); color:#f7b955;}
+  .p2{background:rgba(59,130,246,.15); color:#7aa8f7;}
+  .yes{color:var(--green); font-weight:700;} .no{color:var(--t3); font-weight:700;}
+
+  .callout{border:1px solid var(--line2); border-left:3px solid var(--accent); background:var(--panel2); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:13.5px;}
+  .callout.warn{border-left-color:var(--amber);} .callout.info{border-left-color:var(--accent2);} .callout.danger{border-left-color:var(--red);}
+  .callout b{color:#fff;}
+
+  .proto{border:1px dashed var(--line2); border-radius:12px; background:repeating-linear-gradient(45deg,#14161d,#14161d 12px,#161922 12px,#161922 24px); padding:34px; text-align:center; color:var(--t3); margin:16px 0; font-size:13px;}
+  .proto .ph{font-size:34px; opacity:.4;} .proto .cap{margin-top:8px; color:var(--t2);}
+
+  .flow{background:var(--code); border:1px solid var(--line); border-radius:10px; padding:20px 22px; margin:16px 0; font-family:"SF Mono",Menlo,monospace; font-size:12.5px; color:#c8ccd8; overflow-x:auto; line-height:2;}
+  .flow .n{color:var(--accent);} .flow .a{color:var(--green);} .flow .x{color:var(--red);}
+
+  .arch{background:var(--code); border:1px solid var(--line); border-radius:10px; padding:20px; margin:16px 0; font-family:"SF Mono",Menlo,monospace; font-size:12.5px; color:#c8ccd8; white-space:pre; overflow-x:auto;}
+
+  .selfcheck li{margin:8px 0;}
+  .selfcheck .ok::before{content:"✅ "; }
+  .selfcheck .todo::before{content:"⚠️ "; }
+  footer{margin-top:60px; padding-top:24px; border-top:1px solid var(--line); color:var(--t3); font-size:12.5px;}
+  a.link{color:var(--accent2); text-decoration:none;} a.link:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- ============ TOC ============ -->
+  <nav class="toc">
+    <div class="doc-tag">PRD · App</div>
+    <h1>账号切换（多账号管理）</h1>
+    <div class="ver">V1.0.0 · 2026-08-25</div>
+    <a href="#changelog" class="h">变更记录</a>
+    <a href="#s1" class="h">1 需求分析</a>
+    <a href="#s1-1" class="sub">1.1 用户分析</a>
+    <a href="#s1-2" class="sub">1.2 竞品分析</a>
+    <a href="#s2" class="h">2 产品概述</a>
+    <a href="#s2-1" class="sub">2.1 产品逻辑</a>
+    <a href="#s2-2" class="sub">2.2 功能信息架构</a>
+    <a href="#s2-3" class="sub">2.3 术语解释</a>
+    <a href="#s2-4" class="sub">2.4 重要信息 Checklist</a>
+    <a href="#s2-5" class="sub">2.5 上线节奏</a>
+    <a href="#s3" class="h">3 需求说明</a>
+    <a href="#s3-1" class="sub">3.1 功能列表</a>
+    <a href="#s3-2" class="sub">3.2 页面交互流程</a>
+    <a href="#s3-3" class="sub">3.3 原型及说明</a>
+    <a href="#s3-4" class="sub">3.4 边界 Case</a>
+    <a href="#s4" class="h">4 数据埋点</a>
+    <a href="#s5" class="h">5 SEO</a>
+    <a href="#s6" class="h">6 API 相关调整</a>
+    <a href="#selfcheck" class="h">PRD 自检</a>
+    <a href="#history" class="h">版本历史</a>
+  </nav>
+
+  <!-- ============ CONTENT ============ -->
+  <main class="content">
+    <!-- Cover -->
+    <section class="cover">
+      <div class="top">
+        <span class="tag">PRD · 【App】</span>
+        <h1>账号切换（多账号管理）V1.0.0</h1>
+        <div class="sub">支持在多个已登录账号间免登切换，对齐主流交易所（Binance）多账号能力</div>
+      </div>
+      <div class="meta">
+        <div class="k">业务线</div><div class="v">用户中心 / 账户体系</div>
+        <div class="k">PD</div><div class="v">@Rhys</div>
+        <div class="k">需求提出方</div><div class="v">产品 · @Rhys <span class="muted">（占位，可补充运营/客服来源）</span></div>
+        <div class="k">需求背景</div><div class="v">用户常在多个本人账号间往返（如现货/合约分账号、机构运营多账号）。当前切换需先登出再登录，操作繁琐、易误操作。主流交易所（Binance）已提供多账号免登快捷切换，本需求对齐该能力，提升多账号用户操作效率与留存。</div>
+        <div class="k">预期价值/收益</div><div class="v">遵循 SMART（待运营补充目标值）：<br>· 上线 1 个月，账号切换功能使用 UV 达 XX；<br>· 多账号用户日均切换次数 ≥ XX，切换流程平均耗时较「登出重登」下降 XX%；<br>· 通过 UAT 验收，无资产/登录态安全事故。</div>
+        <div class="k">Jira 链接</div><div class="v"><span class="muted">待创建（App 端单独建单）</span></div>
+        <div class="k">需求发布日期</div><div class="v"><span class="muted">待定</span></div>
+        <div class="k">目标达成情况</div><div class="v"><span class="muted">上线 1/2/3 个月后回填</span></div>
+      </div>
+    </section>
+
+    <!-- Changelog -->
+    <h2 id="changelog"><span class="num">§</span>变更记录</h2>
+    <p class="muted">所有涉及需求变更的调整均需记录，作为各项目组开发及测试验收依据。日期为变更实际提交日期（YYYY-MM-DD）；变更说明一句话描述内容与位置；所有变更需与开发、测试、交互、设计、翻译、互检人同步。</p>
+    <table>
+      <thead><tr><th style="width:110px;">日期</th><th>变更说明</th><th style="width:110px;">提交人</th><th style="width:110px;">修改人</th></tr></thead>
+      <tbody>
+        <tr><td>2026-08-25</td><td>创建文档（对应规则台账 v1.4，R1–R14）</td><td>@Rhys</td><td>@Rhys</td></tr>
+      </tbody>
+    </table>
+    <p class="muted" style="font-size:12.5px;">文案变更记录（日期/变更说明/原型修改/翻译确认/UE修改/UI修改/产品确认）：<b>暂无</b>，产生文案调整时补充。</p>
+
+    <!-- 1 需求分析 -->
+    <h2 id="s1"><span class="num">1</span>需求分析</h2>
+
+    <h3 id="s1-1"><span class="num">1.1</span>用户分析</h3>
+    <ul>
+      <li><b>目标用户</b>：持有并使用多个本人账号的活跃用户——包括现货/合约分账号操作者、机构或工作室的多账号运营人员、以及同时管理个人号与家庭代管号的用户。</li>
+      <li><b>用户特点</b>：切换频次高、对操作效率敏感；账号多为邮箱/手机号注册，需在列表中快速辨识「哪个是哪个」。</li>
+      <li><b>核心诉求</b>：① 免登切换，不重复输密码/2FA；② 一眼辨识账号（昵称 + 脱敏登录方式）；③ 安全——列表不暴露完整账号信息、当前账号不被误删。</li>
+      <li class="muted">外部反馈渗透率、诉求占比：待运营补充调研数据。</li>
+    </ul>
+
+    <h3 id="s1-2"><span class="num">1.2</span>竞品分析</h3>
+    <p class="muted">从功能形态、切换入口、账号标识、删除机制、账号数上限维度对比 Binance / OKX / Bybit / Bitget。<b>Binance 已联网核实官方 FAQ</b>；其余三家为基线认知，<span class="pill p1">待补充截图分析</span>。</p>
+    <table>
+      <thead><tr><th style="width:90px;">竞品</th><th>切换入口</th><th>账号标识</th><th>删除机制</th><th>子账号</th></tr></thead>
+      <tbody>
+        <tr><td><b>Binance</b><br><span class="muted">已核实</span></td><td>Profile → Account Info → Switch Account；右上角 <code>+</code> 添加</td><td>Current Account 置顶 + Other Accounts 分组</td><td>右上角 Edit → 账号旁删除图标</td><td>另有 Sub-account 体系（普通用户≤5）</td></tr>
+        <tr><td>OKX<br><span class="muted">待补充</span></td><td>头像区进入账号管理</td><td>主账号 + 子账号体系为主</td><td>编辑态删除</td><td>强子账号体系</td></tr>
+        <tr><td>Bybit<br><span class="muted">待补充</span></td><td>个人中心账号切换</td><td>多登录账号列表</td><td>编辑态删除</td><td>有子账号</td></tr>
+        <tr><td>Bitget<br><span class="muted">待补充</span></td><td>个人中心账号切换</td><td>多登录账号列表</td><td>编辑态删除</td><td>有子账号</td></tr>
+      </tbody>
+    </table>
+    <div class="callout info"><b>本期结论：</b>形态对齐 Binance「多登录账号 + Current/Other 分组」；<b>不引入子账号（Sub-account）体系</b>（R13），合规上遵循一人一实名账号 + 多登录会话。子账号可作为后续版本评估。</div>
+
+    <!-- 2 产品概述 -->
+    <h2 id="s2"><span class="num">2</span>产品概述</h2>
+
+    <h3 id="s2-1"><span class="num">2.1</span>产品逻辑</h3>
+    <p>账号切换核心是<b>登录会话（token）的切换</b>：设备本地保存最多 25 个已登录账号的会话凭证，切换即在本地会话间切换并刷新用户态，无需重新输入密码/2FA。会话过期的账号需重新登录激活。</p>
+    <h4>主流程（状态流转）</h4>
+    <div class="flow">
+<span class="n">[My Account]</span> —点右上角切换icon→ <span class="n">[Switch Account 列表]</span>
+   ├─ 点未过期的其他账号 ──→ <span class="a">切换成功</span> → 刷新用户态 → 返回 [My Account]
+   ├─ 点当前账号(Current) ──→ 无动作
+   ├─ 点过期账号(Expired) ──→ 弹「重新登录」确认 → <span class="n">[登录页]</span> → 成功后回列表(已激活)
+   ├─ 点右上角 Edit ────────→ <span class="n">[删除态]</span>
+   │      ├─ 点其他账号垃圾桶 → 二次确认弹窗 → <span class="x">Confirm</span> → 移除该账号
+   │      ├─ 当前账号：无垃圾桶，<span class="x">不可删除</span>
+   │      └─ 点 Done ───────→ 退出删除态
+   └─ 点底部 Add ───────────→ <span class="n">[登录页]</span> → 登录成功 → 加入列表(不登出当前账号)
+                              （列表满 25 个时 Add 置灰不可点）
+    </div>
+    <p class="muted">账号会话状态机：<code>active（可切换）</code> ⇄ <code>current（当前登录）</code>；<code>active/current → expired（会话过期）</code>；<code>expired → active</code>（重新登录激活）；任意非 current 状态 → <code>removed（删除）</code>。</p>
+
+    <h3 id="s2-2"><span class="num">2.2</span>功能信息架构</h3>
+    <div class="arch">My Account（我的账号）
+├─ Profile / Nickname / UID / Fee Schedule
+├─ [右上角] 切换账号入口（icon）───────────→ Switch Account
+└─ [底部] Log Out（退出当前账号，二次确认）
+
+Switch Account（切换账号）
+├─ [导航右上] Edit（进入/退出删除态）
+├─ Current Account（分组）
+│    └─ 当前账号行：头像 + 昵称 + 脱敏登录方式 + ✓勾选
+├─ Other Accounts（分组）
+│    └─ 账号行 × N：头像 + 昵称 + 脱敏登录方式 [ + Expired标 / 删除态垃圾桶 ]
+├─ 计数提示：n / 25
+└─ [底部] Add a new account（满25置灰） / Done（删除态）</div>
+
+    <h3 id="s2-3"><span class="num">2.3</span>术语解释</h3>
+    <table>
+      <thead><tr><th style="width:150px;">术语</th><th style="width:150px;">英文/标识</th><th>释义</th></tr></thead>
+      <tbody>
+        <tr><td>当前账号</td><td>Current</td><td>设备上正处于登录态、当前正在使用的账号；列表置顶、带 ✓ 勾选与金色头像描边。</td></tr>
+        <tr><td>其他账号</td><td>Other Accounts</td><td>设备已保存会话、可一键切换的非当前账号。</td></tr>
+        <tr><td>过期账号</td><td>Expired</td><td>本地会话已失效的账号，带灰色 Expired 标；点击需重新登录激活，不能直接切换。</td></tr>
+        <tr><td>登录方式</td><td>Login Method</td><td>账号的注册/登录标识，为邮箱或手机号，列表中脱敏展示（见 R14）。</td></tr>
+        <tr><td>脱敏</td><td>Mask</td><td>邮箱=前3位+<code>***</code>+完整@尾缀；手机=区号+前3位+<code>***</code>+后3位。</td></tr>
+        <tr><td>账号数上限</td><td>Max = 25</td><td>单设备可保存的可切换账号上限，达上限后需先删除才能新增。</td></tr>
+        <tr><td>子账号</td><td>Sub-account</td><td>主账号下挂载的从属账号体系。<b>本期不做</b>。</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s2-4"><span class="num">2.4</span>重要信息 Checklist</h3>
+    <table>
+      <thead><tr><th class="c" style="width:50px;">序号</th><th>事项</th><th class="c" style="width:90px;">结果</th><th>备注</th></tr></thead>
+      <tbody>
+        <tr><td class="c">1</td><td>是否涉及屏蔽特定地区用户</td><td class="c"><span class="no">N</span></td><td>切换功能本身无地区限制；受限地区账号的登录/交易仍走既有 KYC 与地区拦截，不在本需求改动。</td></tr>
+        <tr><td class="c">2</td><td>是否涉及用户资产变动（需同步账户/账单/订单）</td><td class="c"><span class="no">N</span></td><td>仅切换登录会话，不发生资产变动。</td></tr>
+        <tr><td class="c">3</td><td>是否需要追加账单类型 businessid</td><td class="c"><span class="no">N</span></td><td>无资金流水。</td></tr>
+        <tr><td class="c">4</td><td>是否涉及/影响其他业务线</td><td class="c"><span class="yes">Y</span></td><td>登录/账户体系（会话与 token 管理）、风控（异常登录/多账号识别）、安全（脱敏口径）。对接人待定。</td></tr>
+        <tr><td class="c">5</td><td>是否涉及 SEO 调整</td><td class="c"><span class="no">N</span></td><td>App 端功能，见 §5。</td></tr>
+        <tr><td class="c">6</td><td>是否涉及 API 调整</td><td class="c"><span class="yes">Y</span></td><td>详见 §6：账号列表、切换、添加、删除、脱敏口径。</td></tr>
+        <tr><td class="c">7</td><td>是否需要 App/Web 兼容处理</td><td class="c"><span class="yes">Y</span></td><td>本期先落 App 端；Web 端是否同步多账号切换<span class="pill p1">待人工确认</span>。</td></tr>
+        <tr><td class="c">8</td><td>禁用账户是否可使用</td><td class="c"><span class="no">N</span></td><td>禁用账户不可切入使用；列表中呈现方式（隐藏/置灰）<span class="pill p1">待确认</span>。</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s2-5"><span class="num">2.5</span>上线节奏要求</h3>
+    <table>
+      <thead><tr><th class="c" style="width:60px;">阶段</th><th>用户要求</th><th style="width:140px;">预期上线时间</th></tr></thead>
+      <tbody>
+        <tr><td class="c">0</td><td>内部测试 + 白名单人员</td><td class="muted">待定</td></tr>
+        <tr><td class="c">1</td><td>灰度：多账号活跃用户抽样放量</td><td class="muted">待定</td></tr>
+        <tr><td class="c">2</td><td>全面放开</td><td class="muted">待定</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 3 需求说明 -->
+    <h2 id="s3"><span class="num">3</span>需求说明</h2>
+
+    <h3 id="s3-1"><span class="num">3.1</span>功能列表</h3>
+    <table>
+      <thead><tr><th style="width:170px;">模块</th><th>功能点</th><th class="c" style="width:80px;">优先级</th></tr></thead>
+      <tbody>
+        <tr><td>My Account</td><td>右上角新增切换账号入口（icon），点击进入 Switch Account</td><td class="c"><span class="pill p0">P0</span></td></tr>
+        <tr><td>Switch Account 列表</td><td>按 Current Account / Other Accounts 分组展示；每行头像+昵称+脱敏登录方式；当前账号 ✓ 勾选</td><td class="c"><span class="pill p0">P0</span></td></tr>
+        <tr><td>账号切换</td><td>点未过期的其他账号免登切换，成功后返回 My Account 并刷新用户态</td><td class="c"><span class="pill p0">P0</span></td></tr>
+        <tr><td>添加账号</td><td>底部 Add a new account 进登录页，成功后加入列表且不登出当前账号</td><td class="c"><span class="pill p0">P0</span></td></tr>
+        <tr><td>删除账号</td><td>Edit 进入删除态；其他账号可删（垃圾桶+二次确认）；当前账号不可删；Done 退出</td><td class="c"><span class="pill p0">P0</span></td></tr>
+        <tr><td>登录方式脱敏</td><td>邮箱/手机号按 R14 口径脱敏展示</td><td class="c"><span class="pill p0">P0</span></td></tr>
+        <tr><td>过期重登</td><td>过期账号点击弹「重新登录」确认，激活后回列表</td><td class="c"><span class="pill p1">P1</span></td></tr>
+        <tr><td>账号数上限</td><td>上限 25，达上限 Add 置灰并提示；列表底部 n/25 计数</td><td class="c"><span class="pill p1">P1</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s3-2"><span class="num">3.2</span>页面交互流程</h3>
+    <p>主要页面跳转关系：<code>My Account</code> ⇄ <code>Switch Account</code>（列表/删除态两态）↔ <code>登录页（Add / 过期重登）</code>。详见 2.1 主流程图。原型文件：<code>账号切换-App原型.html</code>（含单账号 / 多账号 / 25 上限 / 删除态 / 二次确认全部可点击状态）。</p>
+
+    <h3 id="s3-3"><span class="num">3.3</span>原型及说明</h3>
+    <p class="muted">原型截图由 PM 从 <code>账号切换-App原型.html</code> 截取插入；以下以 MECE 原则拆解每屏逻辑。</p>
+
+    <h4>3.3.1　My Account · 切换入口</h4>
+    <div class="proto"><div class="ph">📱</div><div class="cap">【原型截图占位】My Account 页，右上角切换账号 icon</div></div>
+    <p><b>需求说明：</b></p>
+    <ol>
+      <li>页面顶部导航<b>右上角新增切换账号入口</b>，以 icon 呈现（双向箭头 swap 语义），点击进入 Switch Account 页。</li>
+      <li>页面主体保留 Profile / Nickname / UID / Fee Schedule 信息行；<b>UID 仅在此页展示且可复制</b>（R12：切换列表不展示 UID）。</li>
+      <li>底部保留 <b>Log Out</b>（整行按钮），点击二次确认后退出当前账号（R10）。<b>切换入口不再放在底部</b>。</li>
+    </ol>
+
+    <h4>3.3.2　Switch Account · 账号列表（多账号）</h4>
+    <div class="proto"><div class="ph">📱</div><div class="cap">【原型截图占位】Current Account + Other Accounts 分组列表</div></div>
+    <p><b>需求说明：</b></p>
+    <ol>
+      <li><b>分组结构</b>（R11）：<code>Current Account</code> 分组置顶，仅当前账号一行，带 ✓ 绿色勾选 + 金色头像描边；其下 <code>Other Accounts</code> 分组，展示其余全部账号。</li>
+      <li><b>账号行信息</b>（R12）：头像（昵称首字母）+ <b>昵称</b> + <b>脱敏登录方式</b>；<b>不展示 UID</b>。</li>
+      <li><b>脱敏口径</b>（R14）：
+        <ul>
+          <li>邮箱：前 3 位 + <code>***</code> + 完整 @尾缀，如 <code>rhy***@gmail.com</code>；</li>
+          <li>手机：区号 + 前 3 位 + <code>***</code> + 后 3 位，如 <code>+86 134***234</code>、<code>+1 516***797</code>；8 位短号同规则 <code>+65 812***567</code>；星数固定 3 颗，不随长度变化。</li>
+        </ul>
+      </li>
+      <li><b>切换交互</b>（R2/R3/R4）：点其他未过期账号 → 免登切换成功 → 返回 My Account 并刷新用户态，轻提示「已切换到…」；点当前账号无动作；点过期账号见 3.3.4。</li>
+      <li><b>底部</b>：Add a new account 按钮 + <code>n / 25</code> 计数提示。</li>
+    </ol>
+    <div class="callout info"><b>单账号态：</b>仅一个账号时，只展示 Current Account 分组一行，无 Other Accounts 分组；底部照常展示 Add。</div>
+
+    <h4>3.3.3　Switch Account · 删除态</h4>
+    <div class="proto"><div class="ph">📱</div><div class="cap">【原型截图占位】删除态（垃圾桶 + Done）与二次确认弹窗</div></div>
+    <p><b>需求说明：</b></p>
+    <ol>
+      <li>点导航右上角 <b>Edit（笔）</b>进入删除态：其他账号行右侧显示<b>垃圾桶</b>图标；底部按钮由 Add 变为 <b>Done</b>（R6）。</li>
+      <li><b>当前账号不可删除</b>（R8）：删除态下当前账号<b>不显示垃圾桶</b>，仍保留 Current 标识；退出当前账号只能走 My Account 的 Log Out。</li>
+      <li><b>过期账号可删除</b>（R9）：Expired 账号在删除态显示垃圾桶，可清理。</li>
+      <li>点垃圾桶 → 弹<b>二次确认</b>「Confirm deletion?」（R7）→ 点 Confirm 移除该账号；点 Cancel 取消。</li>
+      <li>点 <b>Done</b> 退出删除态，恢复正常列表。</li>
+    </ol>
+
+    <h4>3.3.4　登录页 · 添加账号 / 过期重登</h4>
+    <div class="proto"><div class="ph">📱</div><div class="cap">【原型截图占位】Add Account 登录页</div></div>
+    <p><b>需求说明：</b></p>
+    <ol>
+      <li><b>添加账号</b>（R5）：底部 Add a new account → 进登录页，登录成功后该账号<b>加入切换列表</b>，且<b>不登出当前账号</b>；返回列表并轻提示「账号已加入切换列表」。</li>
+      <li><b>25 上限</b>（R1）：账号数达 25 时 Add 按钮<b>置灰不可点</b>，底部提示「已达账号上限 25 个，如需添加请先删除」。</li>
+      <li><b>过期重登</b>（R4）：点击 Expired 账号弹「Session expired，是否重新登录？」，确认后进登录页；登录成功后该账号状态由 expired → active 并回到列表。</li>
+    </ol>
+
+    <h3 id="s3-4"><span class="num">3.4</span>边界 Case（服务评审）</h3>
+    <table>
+      <thead><tr><th style="width:60px;">编号</th><th>场景</th><th>系统行为 / 用户提示</th></tr></thead>
+      <tbody>
+        <tr><td>B1</td><td>仅剩 1 个账号（当前账号）且进入删除态</td><td>当前账号无垃圾桶，无可删项；用户只能 Done 退出。<span class="muted">（当前账号永不可删 → 不会出现「删空」）</span></td></tr>
+        <tr><td>B2</td><td>切换目标账号时其会话恰好过期</td><td>切换失败，将该账号置为 Expired 并提示「登录已过期，请重新登录」，引导至登录页。<span class="pill p1">口径待研发确认</span></td></tr>
+        <tr><td>B3</td><td>账号数已达 25，仍点 Add</td><td>Add 置灰不可点；若通过其他入口触发，toast「已达 25 个上限，无法继续添加」。</td></tr>
+        <tr><td>B4</td><td>删除二次确认弹窗打开时点击遮罩</td><td>等同 Cancel，关闭弹窗不删除。</td></tr>
+        <tr><td>B5</td><td>极短号码（国家码后不足 6 位）</td><td>前 3、后 3 可能重叠。主流手机号 ≥7 位不触发；若涉虚拟小号需追加兜底。<span class="pill p1">待确认</span></td></tr>
+        <tr><td>B6</td><td>同一账号重复添加</td><td>已在列表中的账号再次登录添加 → 不重复入列，定位到已有行并提示。<span class="pill p1">待确认</span></td></tr>
+        <tr><td>B7</td><td>被禁用账户尝试切入</td><td>不可切入；列表呈现方式（隐藏/置灰/Expired 类比）<span class="pill p1">待确认</span>。</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 4 埋点 -->
+    <h2 id="s4"><span class="num">4</span>数据埋点</h2>
+    <p class="muted">穷举关键用户行为事件（上报参数以业务语言描述，字段口径由数据组统一）。埋点文档链接：<span class="muted">待补充</span>。</p>
+    <table>
+      <thead><tr><th>事件名（业务语义）</th><th>触发时机</th><th>上报参数（业务语言）</th></tr></thead>
+      <tbody>
+        <tr><td>进入切换账号页</td><td>点击 My Account 右上角切换 icon</td><td>当前账号标识、列表账号总数</td></tr>
+        <tr><td>切换账号成功</td><td>点其他未过期账号并完成切换</td><td>源账号、目标账号、目标账号登录方式类型（邮箱/手机）</td></tr>
+        <tr><td>点击过期账号</td><td>点击 Expired 账号</td><td>被点账号标识</td></tr>
+        <tr><td>发起添加账号</td><td>点击 Add a new account</td><td>发起时列表账号数</td></tr>
+        <tr><td>添加账号成功</td><td>登录成功并加入列表</td><td>新增账号登录方式类型、加入后列表账号数</td></tr>
+        <tr><td>进入删除态</td><td>点击 Edit</td><td>当前列表账号数</td></tr>
+        <tr><td>删除账号成功</td><td>二次确认 Confirm 后移除</td><td>被删账号是否为过期账号、删除后账号数</td></tr>
+        <tr><td>触达账号上限</td><td>账号数达 25 且 Add 置灰展示</td><td>—</td></tr>
+        <tr><td>退出登录</td><td>Log Out 二次确认后退出</td><td>退出账号标识</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 5 SEO -->
+    <h2 id="s5"><span class="num">5</span>SEO</h2>
+    <p class="muted">本期为 App 端功能，<b>无 SEO 需求</b>，本章节省略。若后续 Web 端同步，再补充。</p>
+
+    <!-- 6 API -->
+    <h2 id="s6"><span class="num">6</span>API 相关调整</h2>
+    <p class="muted">以下为本需求涉及的接口调整方向（唯一允许出现实现层内容的章节），具体协议由前后端评审确定。</p>
+    <table>
+      <thead><tr><th style="width:190px;">接口能力</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>获取可切换账号列表</td><td>返回设备本地已保存账号：账号标识、昵称、登录方式类型（邮箱/手机）、<b>脱敏后展示串</b>、会话状态（current/active/expired）、头像。<br><b>脱敏建议由后端统一下发</b>展示串，避免各端口径不一致（前端不接触完整账号信息）。</td></tr>
+        <tr><td>切换账号（换会话）</td><td>以目标账号本地会话凭证换取有效登录态；会话失效时返回过期错误码，前端置该账号为 Expired。</td></tr>
+        <tr><td>添加账号（登录并入列）</td><td>登录成功后将新会话凭证追加到本地账号列表，不影响当前账号会话；需服务端下发上限（25）供前端置灰判断。</td></tr>
+        <tr><td>删除账号（移除会话）</td><td>移除指定账号的本地会话凭证与列表项；<b>禁止删除当前账号</b>（服务端与前端双重校验）。</td></tr>
+        <tr><td>上限与计数</td><td>账号数上限 25 建议由服务端配置下发，前端不写死，便于后续调整。</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn"><b>安全提示：</b>多账号会话凭证在设备本地的存储与加密、切换时的 2FA/风控策略，需与安全/风控组对齐；异常多账号聚集需纳入风控识别。</div>
+
+    <!-- Self-check -->
+    <h2 id="selfcheck"><span class="num">✓</span>PRD 自检</h2>
+    <ul class="selfcheck">
+      <li class="ok"><b>内容防污染</b>：本需求不涉及第三方内容注入；账号信息列表脱敏展示，前端不接触完整账号串。</li>
+      <li class="ok"><b>资产平账</b>：仅切换登录会话，不发生任何资产变动，无平账风险（Checklist #2/#3=N）。</li>
+      <li class="ok"><b>风控漏洞</b>：当前账号不可删（双重校验）、过期会话需重登、删除二次确认，已覆盖误操作与越权路径。</li>
+      <li class="todo"><b>受限地区</b>：切换功能无地区限制，但受限地区账号的登录/交易拦截沿用既有策略——<b>需风控确认是否对多账号聚合有额外识别要求</b>。</li>
+      <li class="todo"><b>KYC 门槛</b>：添加账号走标准登录，KYC 拦截沿用登录既有逻辑——<b>需确认未完成 KYC 的账号能否加入切换列表</b>。</li>
+      <li class="todo"><b>待人工确认项</b>：B2 切换时过期口径、B6 重复添加、B7 禁用账户呈现、Checklist #7 Web 端是否同步、#8 禁用账户呈现、B5 极短号码兜底。</li>
+    </ul>
+    <div class="callout danger">⚠️ 以上 ⚠️ 项须由 PM 决策后回填，AI 不得自行标记为通过。</div>
+
+    <!-- History -->
+    <h2 id="history"><span class="num">§</span>版本历史</h2>
+    <table>
+      <thead><tr><th style="width:80px;">版本</th><th style="width:110px;">日期</th><th style="width:90px;">阶段</th><th>变更摘要</th><th>变更原因</th></tr></thead>
+      <tbody>
+        <tr><td>v1.0</td><td>2026-08-25</td><td>初稿</td><td>建立 PRD，覆盖账号切换（多账号管理）全流程；对齐规则台账 v1.4（R1–R14）</td><td>账号切换原型收敛后反向同步 PRD</td></tr>
+      </tbody>
+    </table>
+
+    <footer>
+      对应原型：账号切换-App原型.html ｜ 对应规则台账：规则台账_账号切换.md（v1.4）｜ PRD 模板：【Web】实盘跟单 V1.0.0 结构改编为【App】<br>
+      本文档前 4 章为业务语言，实现层内容仅出现在第 6 章 API 相关调整。
+    </footer>
+  </main>
+</div>
+</body>
+</html>
