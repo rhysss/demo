@@ -363,7 +363,7 @@ function tapAccount(id){
   if(!a) return;
   if(a.status==='current'){ toast('已是当前账号'); return; }
   if(a.status==='expired'){
-    openDialog('Session expired','该账号登录已过期，是否重新登录？','Re-login',()=>{ closeDialog(); go('s-add'); }, true);
+    openDialog('需要重新验证','该账号超过 7 天未登录，登录状态已过期，需重新验证后才能使用。','去验证',()=>{ closeDialog(); go('s-add'); }, true);
     return;
   }
   // switch
