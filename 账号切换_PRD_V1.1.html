@@ -125,12 +125,12 @@ figure.diag figcaption{margin-top:14px;padding-top:12px;border-top:1px solid var
     <header class="cover">
       <div class="eyebrow">Product Requirements Document</div>
       <h1>账号切换（多账号管理）</h1>
-      <div class="sub">App 端 · V1.5 · 多登录账号免登切换 · 对齐 Binance</div>
+      <div class="sub">App 端 · V1.6 · 多登录账号免登切换 · 对齐 Binance</div>
     </header>
 
     <!-- 00 需求记录 -->
     <h2 id="sec0"><span class="secnum">00</span>需求记录</h2>
-    <p>本表记录每个版本 PRD 的调整内容与触发原因，供评审与研发追溯变更来源。规则级完整变更历史见《规则台账 · 账号切换》版本历史表（当前 v1.10）。</p>
+    <p>本表记录每个版本 PRD 的调整内容与触发原因，供评审与研发追溯变更来源。规则级完整变更历史见《规则台账 · 账号切换》版本历史表（当前 v1.11）。</p>
     <div class="tw"><table><colgroup><col style="width:8%"><col style="width:12%"><col style="width:52%"><col style="width:28%"></colgroup>
       <thead><tr><th>版本</th><th>日期</th><th>主要调整内容</th><th>触发原因</th></tr></thead>
       <tbody>
@@ -140,6 +140,7 @@ figure.diag figcaption{margin-top:14px;padding-top:12px;border-top:1px solid var
         <tr><td>V1.3</td><td>2026-08-25</td><td>Q-01 定稿：<b>7 天过期后的重新验证采用全量登录（密码 + 2FA）</b>，同步 2.3 术语、5.1 接口说明；待确认收敛为 Q-01/Q-02（计时口径、KYC）</td><td>PM 确认重新验证校验强度</td></tr>
         <tr><td>V1.4</td><td>2026-08-25</td><td><b>待确认全部收敛</b>：Q-01 计时口径归<b>前端定义</b>、Q-02 <b>所有账号可入列（不做 KYC 拦截）</b>；新增 R18；3.5 转为决策记录</td><td>PM 确认计时口径归属与 KYC 门槛</td></tr>
         <tr><td>V1.5</td><td>2026-08-25</td><td>新增边界 Case <b>B9</b>（A 登录后 Log Out 再登录 B，列表不保留 A）；补充 Log Out 说明；新增 R19（Log Out 与切换/添加对列表的差异）</td><td>PM 询问登出后再登录的列表场景</td></tr>
+        <tr><td>V1.6</td><td>2026-08-25</td><td>新增边界 Case <b>B10</b>（A 添加 B 后登出 A，列表仅剩 B）；R19 补充「Log Out 仅移除当前账号自身记录」</td><td>PM 询问添加 B 后登出 A 的列表场景</td></tr>
       </tbody>
     </table></div>
 
@@ -333,6 +334,7 @@ Switch Account（切换账号）
         <tr><td>B6</td><td>极短号码（国家码后不足 7 位，如虚拟小号）</td><td><b>脱敏兜底：</b>号码 ≥ 7 位走标准「前 3 + <code>***</code> + 后 3」；≤ 6 位时退化为「后 2 位 + 前面全脱敏」（如 <code>+65 ***67</code>），确保任何长度都不露出完整号码。真实手机号均 ≥ 7 位，一般不触发。<span class="pill ok">已定</span></td></tr>
         <tr><td>B7</td><td>同一账号重复添加</td><td><b>允许重复添加，但列表按账号去重、仅保留一条</b>——重复登录视为刷新该账号会话，定位到已有行，不新增重复项。<span class="pill ok">已定</span></td></tr>
         <tr><td>B9</td><td>A 登录后 <b>Log Out</b>，再登录 B</td><td>A 已随 Log Out 从设备移除，<b>切换列表中不保留 A</b>，登录 B 后列表仅有 B（R10）。对比：若 A 是被「切换 / 添加 B」而非登出，则 A 仍保留在列表可切回。<span class="pill ok">已定</span></td></tr>
+        <tr><td>B10</td><td>A 登录 → 添加 B → 切到 A 后 <b>Log Out A</b> → 再登录 B</td><td>Log Out <b>仅移除当前账号 A 自身记录</b>，不影响列表中其他账号；A 登出后列表为 <code>[B]</code>，再登录 B 仍为 <code>[B]</code>，<b>不展示 A</b>。账号是否在列表只取决于其自身是否被登出，与是否添加过 B 无关（R19）。<span class="pill ok">已定</span></td></tr>
       </tbody>
     </table></div>
 
@@ -421,7 +423,7 @@ Switch Account（切换账号）
       <li>需求提出方、SMART 目标值、发布日期等封面占位信息。</li>
     </ul>
 
-    <footer class="end">文档结束　·　账号切换（多账号管理）PRD V1.5　·　规则台账 v1.10　·　原型 账号切换-App原型.html</footer>
+    <footer class="end">文档结束　·　账号切换（多账号管理）PRD V1.6　·　规则台账 v1.11　·　原型 账号切换-App原型.html</footer>
   </main>
 </div>
 <div id="lb" onclick="this.style.display='none'"><img id="lbimg" src=""></div>
