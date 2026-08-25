@@ -140,6 +140,9 @@
       <div class="screen active" id="s-account">
         <div class="nav">
           <div class="title">My Account</div>
+          <div class="edit" onclick="go('s-switch')" title="Switch Account">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M4 8h13l-3-3M20 16H7l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
         </div>
         <div class="body">
           <div class="rowgroup" style="margin-bottom:0;">
@@ -168,10 +171,7 @@
           </div>
         </div>
         <div class="foot">
-          <div class="btn-row">
-            <button class="btn" onclick="go('s-switch')">Switch Account</button>
-            <button class="btn" onclick="askLogout()">Log Out</button>
-          </div>
+          <button class="btn" onclick="askLogout()">Log Out</button>
           <div class="homebar"></div>
         </div>
       </div>
