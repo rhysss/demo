@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OTC 快捷买币 Buy 全流程 · 交互原型</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#a4e514;--green-dim:#7fb30f;
+  --red:#f0424e;--red-bg:rgba(240,66,78,.14);
+  --orange:#f5a623;--blue:#3a86ff;
+  --usdt:#26a17b;
+  --bg-page:#0b0b0b;--bg-card:#161616;--bg-input:#1c1c1e;
+  --border:#2a2a2c;--txt:#f5f5f5;--txt-sub:#9a9fa6;--txt-dim:#6b7076;
+}
+body{background:#1f2124;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;color:#e8e8e8;padding:24px 28px 60px}
+h1{font-size:22px;font-weight:700;margin-bottom:6px}
+.page-sub{color:#9aa0a8;font-size:13px;margin-bottom:16px;line-height:1.7}
+.page-sub b{color:var(--green)}
+.fixnote{background:#1d2410;border:1px solid #3a4a14;border-radius:12px;padding:12px 14px;font-size:12px;color:#c8d69a;line-height:1.85;margin-bottom:22px}
+.fixnote b{color:var(--green)}
+
+.wrap{display:flex;gap:24px;align-items:flex-start}
+.ctrl{width:230px;flex-shrink:0;position:sticky;top:20px}
+.ctrl-box{background:#26282c;border:1px solid #34373c;border-radius:14px;padding:14px;margin-bottom:14px}
+.ctrl-box h3{font-size:12px;color:#8b929b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.ctrl-btn{display:block;width:100%;text-align:left;background:#31343a;border:1px solid #3d4148;color:#dfe3e8;border-radius:8px;padding:7px 10px;font-size:12.5px;margin-bottom:6px;cursor:pointer;transition:.15s}
+.ctrl-btn:hover{background:#3a3e45;border-color:var(--green)}
+.ctrl-btn:last-child{margin-bottom:0}
+.ctrl-btn.primary{background:var(--green);color:#111;border-color:var(--green);font-weight:600}
+.ctrl-row{display:flex;gap:6px}
+.ctrl-row .ctrl-btn{flex:1;text-align:center}
+
+.phone-col{flex-shrink:0}
+.phone{width:375px;height:812px;background:var(--bg-page);border-radius:42px;border:6px solid #2e3136;overflow:hidden;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.screen{position:absolute;inset:0;overflow:hidden}
+.page{position:absolute;inset:0;background:var(--bg-page);display:none;flex-direction:column}
+.page.on{display:flex}
+.statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 28px;flex-shrink:0}
+.statusbar .t{font-size:15px;font-weight:600;color:#fff}
+.navbar{height:48px;display:flex;align-items:center;padding:0 16px;flex-shrink:0;position:relative}
+.navbar .nav-title{position:absolute;left:0;right:0;text-align:center;font-size:17px;font-weight:700;color:#fff;pointer-events:none}
+.nav-ic{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;z-index:2}
+.nav-ic:active{background:#222}
+.nav-right{margin-left:auto}
+.body{flex:1;overflow-y:auto;padding:0 16px;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.foot{flex-shrink:0;padding:10px 16px 8px}
+.home-ind{width:135px;height:5px;border-radius:3px;background:#fff;margin:8px auto 6px}
+
+.btn{display:flex;align-items:center;justify-content:center;height:46px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;width:100%;font-family:inherit}
+.btn.green{background:var(--green);color:#101300}
+.btn.green:active{background:#93cf10}
+.btn.dark{background:#2a2a2c;color:#fff}
+.btn.disabled{background:#3a3d1e;color:#7a7d5e;cursor:not-allowed}
+
+/* buy input */
+.seg{display:flex;gap:18px;padding:14px 0 4px}
+.seg span{font-size:22px;font-weight:800;color:var(--txt-dim);cursor:pointer}
+.seg span.on{color:#fff}
+.fld-label{font-size:13px;color:var(--txt-sub);margin:16px 0 8px}
+.amt-box{background:var(--bg-input);border:1px solid transparent;border-radius:10px;height:52px;display:flex;align-items:center;padding:0 12px;gap:10px}
+.amt-box.err{border-color:var(--red)}
+.amt-box input{flex:1;background:none;border:none;outline:none;color:#fff;font-size:17px;font-weight:600;min-width:0;font-family:inherit}
+.amt-box input::placeholder{color:#5b6066}
+.coin-chip{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:700;color:#fff}
+.fld-err{color:var(--red);font-size:12px;margin-top:7px;display:none}
+.fld-err.on{display:block}
+.kv{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12.5px}
+.kv .k{color:var(--txt-sub)}
+.kv .v{color:#e8e8e8;display:flex;align-items:center;gap:5px}
+.rate-row{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:12.5px;color:#d8d8d8}
+.rate-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.rate-cd{color:var(--txt-dim);font-size:11px;margin-left:2px}
+.pm-cell{background:var(--bg-input);border-radius:10px;height:50px;display:flex;align-items:center;padding:0 12px;gap:8px;font-size:14px;color:#fff}
+.pm-cell .grow{flex:1}
+.pm-cell .hint{color:var(--txt-dim);font-size:12px}
+.tips{margin-top:18px}
+.tips h4{font-size:13px;color:#d0d3d8;font-weight:600;margin-bottom:8px}
+.tips p{font-size:11.5px;color:var(--txt-dim);line-height:1.75}
+.fee-line{font-size:12.5px;color:#cfd3d8;padding:6px 0 8px}
+
+/* sheets */
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.62);opacity:0;pointer-events:none;transition:.22s;z-index:20}
+.dim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#151517;border-radius:20px 20px 0 0;padding:10px 20px 6px;transform:translateY(105%);transition:.26s cubic-bezier(.3,.9,.4,1);z-index:21}
+.sheet.on{transform:translateY(0)}
+.grab{width:36px;height:4px;border-radius:2px;background:#3a3d42;margin:2px auto 14px}
+.sheet-title{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;margin-bottom:16px}
+.sheet-title .buy-w{color:var(--green)}
+.srow{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:14px}
+.srow .k{color:var(--txt-sub)}
+.srow .v{color:#fff;font-weight:600}
+.srow .v.big{color:var(--green)}
+.sheet-btns{display:flex;gap:12px;margin-top:8px}
+.sheet-btns .btn{flex:1}
+.ap-lbl{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--txt-sub);margin-bottom:8px}
+.ap-count{color:var(--txt-dim);font-size:12px}
+.ap-area{width:100%;height:110px;background:var(--bg-input);border:1px solid transparent;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.6}
+.ap-area::placeholder{color:#54585e}
+.ap-area:focus{border-color:#3a3d42}
+
+/* payment page */
+.pay-cd-wrap{text-align:center;padding:18px 0 6px}
+.pay-cd-lb{font-size:13px;color:var(--txt-sub);margin-bottom:8px}
+.pay-cd{font-size:30px;font-weight:800;color:var(--orange);font-variant-numeric:tabular-nums;letter-spacing:1px}
+.pay-amt{text-align:center;padding:14px 0 6px}
+.pay-amt .l{font-size:12.5px;color:var(--txt-sub);margin-bottom:6px}
+.pay-amt .n{font-size:30px;font-weight:800;color:#fff}
+.pay-amt .n small{font-size:15px;color:var(--txt-sub);font-weight:600;margin-left:4px}
+.rc{background:var(--bg-card);border-radius:12px;padding:4px 14px;margin-top:14px}
+.rc-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;font-size:13.5px;border-bottom:1px solid #202022}
+.rc-row:last-child{border-bottom:none}
+.rc-row .k{color:var(--txt-sub)}
+.rc-row .v{color:#fff;font-weight:500;display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.copy{cursor:pointer;color:var(--green)}
+.warn-box{background:var(--red-bg);border-radius:10px;padding:11px 13px;font-size:11.5px;color:#f2a5aa;line-height:1.7;margin-top:14px}
+.warn-box b{color:#ff7078}
+
+/* status detail */
+.d-status{text-align:center;padding:8px 0 2px;font-size:24px;font-weight:800}
+.d-side{text-align:center;font-size:14px;color:#fff;margin:6px 0 14px}
+.d-side .sw{color:var(--green);font-weight:700;margin-right:6px}
+.d-wait{background:#14181f;border:1px solid #223;border-radius:10px;padding:11px 13px;font-size:12px;color:#a9c3e6;line-height:1.7;margin-bottom:12px;display:flex;gap:8px}
+.okv{background:var(--bg-card);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr;column-gap:16px;row-gap:10px;align-items:baseline}
+.okv .k{font-size:12.5px;color:var(--txt-sub)}
+.okv .v{font-size:13px;color:#e8e8e8;font-weight:500;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:5px;justify-content:flex-end;text-align:right}
+.okv .v.recv{color:#fff;font-weight:700}
+.okv .div{grid-column:1/-1;height:1px;background:#232325;margin:1px 0}
+.st-pending{color:var(--orange)}.st-paid{color:var(--blue)}.st-done{color:var(--green)}.st-cancel{color:#9a9fa6}.st-dispute{color:var(--red)}
+.dsp{background:var(--bg-card);border-radius:12px;padding:2px 14px 12px;margin-top:14px;border:1px solid rgba(240,66,78,.3)}
+.dsp-h{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #232325}
+.dsp-h .t{font-size:13.5px;font-weight:700;color:#fff}
+.dsp-h .tm{font-size:11.5px;color:var(--txt-dim)}
+.dsp-lbl{font-size:12.5px;color:var(--txt-sub);padding:12px 0 5px}
+.dsp-desc{font-size:12.5px;color:#cfd2d6;line-height:1.7}
+
+/* history */
+.htabs{display:flex;gap:22px;padding:4px 0 0;border-bottom:1px solid #202022}
+.htabs span{font-size:15px;font-weight:700;color:var(--txt-dim);padding:8px 0 10px;cursor:pointer;position:relative}
+.htabs span.on{color:#fff}
+.htabs span.on::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:2px;background:var(--green)}
+.filters{display:flex;gap:16px;padding:12px 0 4px;font-size:12.5px;color:var(--txt-sub)}
+.filters .f{display:flex;align-items:center;gap:4px;cursor:pointer}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:150px;gap:14px}
+.empty .txt{font-size:13px;color:var(--txt-dim)}
+.ocard{background:var(--bg-card);border-radius:12px;padding:14px;margin-top:12px;cursor:pointer}
+.ocard:active{background:#1c1c1c}
+.ohead{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.side-tag{background:rgba(164,229,20,.16);color:var(--green);font-size:12px;font-weight:700;padding:2px 8px;border-radius:5px}
+.ohead .coin{display:flex;align-items:center;gap:6px;font-size:14.5px;font-weight:700;color:#fff}
+.ostat{margin-left:auto;font-size:13px;display:flex;align-items:center;gap:3px}
+.chev{color:#5b6066}
+.otime{font-size:11.5px;color:var(--txt-dim);margin-bottom:10px}
+
+.toast-wrap{position:absolute;left:0;right:0;top:46%;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:40;pointer-events:none}
+.toast{background:#2c2c2e;color:#fff;font-size:13.5px;padding:10px 18px;border-radius:9px;box-shadow:0 6px 24px rgba(0,0,0,.45);animation:tpop .2s;max-width:82%;text-align:center}
+@keyframes tpop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+.dialog{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:30}
+.dialog.on{display:flex}
+.dialog .mask{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.dlg-card{position:relative;width:280px;background:#1d1d1f;border-radius:16px;padding:24px 20px 20px;text-align:center}
+.dlg-t{font-size:15px;color:#fff;font-weight:600;margin-bottom:6px}
+.dlg-s{font-size:12.5px;color:var(--txt-sub);margin-bottom:18px;line-height:1.6}
+.dlg-btns{display:flex;gap:10px}
+.dlg-btns .btn{height:40px;font-size:14px;border-radius:9px}
+
+/* gallery */
+.gallery{flex:1;min-width:0}
+.g-sec{margin-bottom:26px}
+.g-sec h2{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.g-sec .g-note{font-size:12px;color:#8b929b;margin-bottom:12px}
+.g-grid{display:flex;flex-wrap:wrap;gap:14px}
+.g-card{background:#26282c;border:1px solid #34373c;border-radius:12px;padding:14px;min-width:150px}
+.g-card h4{font-size:12px;color:#9aa0a8;font-weight:600;margin-bottom:10px}
+.g-st{font-size:19px;font-weight:800;text-align:center;padding:14px;background:#0d0d0d;border-radius:10px}
+.g-toast{background:#0d0d0d;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;max-width:360px}
+.g-toast .toast{position:static;animation:none;cursor:pointer;max-width:none}
+.g-toast .toast:hover{outline:1px solid var(--green)}
+.g-btnrow{background:#0d0d0d;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;max-width:360px}
+.g-btnrow .pair{display:flex;gap:10px}
+.g-btnrow .pair .btn{height:40px;font-size:13.5px;flex:1;border-radius:9px;cursor:default}
+.g-btnrow .cap{font-size:11px;color:#6b7076}
+</style>
+</head>
+<body>
+<h1>OTC 快捷买币（Quick Buy · Buy）全流程交互原型</h1>
+<div class="page-sub">
+  左侧手机可完整走通：<b>买币下单 → 报价确认 → 付款页（商家收款账户 / 15分钟倒计时 / 我已付款）→ 已支付待放行 → 商家放币完成</b>，以及 <b>历史订单 / 订单详情五态 / 超时取消 / 申诉</b>。合作方 ChipPay。
+</div>
+<div class="fixnote">
+  <b>设计口径（与卖币镜像、与后台一致）：</b>支付 Pay（CNY）= 购买数量 × 单价；到账数量 Receive（USDT）= 购买数量 − 手续费（手续费从买到的币中扣）。状态流：<b>待支付 → 已支付待放行 → 已完成</b>（可分支 已取消 / 申诉中）。买币需线下向商家转账，故新增「付款页」，且下单不走二次验证（无平台资金流出，风险点在放币环节由商家控制）。<b>⚠️ 手续费=数量×1%、单价 7.35 均为演示值，待你确认。</b>
+</div>
+
+<div class="wrap">
+  <!-- control -->
+  <div class="ctrl">
+    <div class="ctrl-box"><h3>全局</h3><button class="ctrl-btn primary" onclick="resetAll()">重置原型</button></div>
+    <div class="ctrl-box">
+      <h3>买币页场景</h3>
+      <button class="ctrl-btn" onclick="scAmt('')">无输入</button>
+      <button class="ctrl-btn" onclick="scAmt(500)">500（正常，可 Preview）</button>
+      <div class="ctrl-row">
+        <button class="ctrl-btn" onclick="scAmt(50)">50 过小</button>
+        <button class="ctrl-btn" onclick="scAmt(60000)">60000 超限</button>
+      </div>
+      <button class="ctrl-btn" onclick="scConfirm()">直达确认弹窗</button>
+    </div>
+    <div class="ctrl-box">
+      <h3>付款流程</h3>
+      <button class="ctrl-btn" onclick="scPay()">付款页（待支付）</button>
+      <button class="ctrl-btn" onclick="scTimeout()">模拟支付超时</button>
+      <button class="ctrl-btn" onclick="scPaid()">已支付待放行</button>
+      <button class="ctrl-btn" onclick="scRelease()">模拟商家放币→完成</button>
+    </div>
+    <div class="ctrl-box">
+      <h3>订单</h3>
+      <div class="ctrl-row"><button class="ctrl-btn" onclick="scHistory(false)">历史订单</button><button class="ctrl-btn" onclick="scHistory(true)">空态</button></div>
+      <div class="ctrl-row"><button class="ctrl-btn" onclick="scDetail('pending')">待支付</button><button class="ctrl-btn" onclick="scDetail('paid')">待放行</button></div>
+      <div class="ctrl-row"><button class="ctrl-btn" onclick="scDetail('done')">已完成</button><button class="ctrl-btn" onclick="scDetail('cancel')">已取消</button></div>
+      <button class="ctrl-btn" onclick="scDetail('dispute')">申诉中</button>
+    </div>
+  </div>
+
+  <!-- phone -->
+  <div class="phone-col">
+    <div class="phone"><div class="screen" id="screen">
+
+      <!-- buy input -->
+      <div class="page on" id="pg-buy">
+        <div class="statusbar"><span class="t">9:41</span><span id="sb1"></span></div>
+        <div class="navbar"><div class="nav-ic" id="ic1" onclick="toast('返回（演示）')"></div><div class="nav-title">Quick Buy</div><div class="nav-ic nav-right" id="ic2" onclick="go('pg-history')"></div></div>
+        <div class="body">
+          <div class="seg"><span class="on">Buy</span><span onclick="toast('Sell 流程见卖币原型')">Sell</span></div>
+          <div class="fld-label">Buy</div>
+          <div class="amt-box" id="amtBox"><input id="amtInput" inputmode="decimal" placeholder="0" oninput="onAmt()"><span class="coin-chip"><span id="u1"></span>USDT</span></div>
+          <div class="fld-err" id="amtErr"></div>
+          <div class="kv"><span class="k">Limit</span><span class="v">100 ~ 50,000 USDT</span></div>
+          <div class="fld-label">You Pay</div>
+          <div class="amt-box"><input id="payInput" placeholder="0" readonly><span class="coin-chip"><span id="c1"></span>CNY</span></div>
+          <div class="rate-row"><span class="rate-dot"></span>1 USDT ≈ 7.35 CNY<span class="rate-cd" id="rateCd">报价 30s 后刷新</span></div>
+          <div class="fld-label">Payment Method</div>
+          <div class="pm-cell"><span>Bank Transfer</span><span class="grow"></span><span class="hint">下单后展示商家收款账户</span></div>
+          <div class="tips"><h4>Tips</h4><p>Your OTC transaction is processed through our platform partner, ChipPay.<br>ChipPay is a digital-currency trading platform providing merchants with fast, convenient buy and sell services.<br>A certain amount of USDT is charged as the OTC transaction fee.<br>Pay the merchant within the countdown; the crypto is released after the merchant confirms your payment.</p></div>
+        </div>
+        <div class="foot"><div class="fee-line">Fee: <span id="feeTxt">-</span> per transaction</div><button class="btn green disabled" id="btnPreview" onclick="openConfirm()">Preview</button></div>
+      </div>
+
+      <!-- payment page -->
+      <div class="page" id="pg-pay">
+        <div class="statusbar"><span class="t">9:41</span><span id="sb2"></span></div>
+        <div class="navbar"><div class="nav-ic" onclick="askCancel()" id="ic3"></div><div class="nav-title">Payment</div><div class="nav-ic nav-right" onclick="toast('联系客服（演示）')" id="ic4"></div></div>
+        <div class="body">
+          <div class="pay-cd-wrap"><div class="pay-cd-lb">Please complete payment within</div><div class="pay-cd" id="payCd">15:00</div></div>
+          <div class="pay-amt"><div class="l">Amount to Pay</div><div class="n" id="payN">≈3,675.00<small>CNY</small></div></div>
+          <div class="rc">
+            <div class="rc-row"><span class="k">Payment Method</span><span class="v">Bank Transfer</span></div>
+            <div class="rc-row"><span class="k">Payee Name</span><span class="v">张三 <span class="copy" onclick="toast('已复制')">复制</span></span></div>
+            <div class="rc-row"><span class="k">Bank</span><span class="v">中国银行</span></div>
+            <div class="rc-row"><span class="k">Card Number</span><span class="v">6214 4678 7319 9074 995 <span class="copy" onclick="toast('已复制')">复制</span></span></div>
+            <div class="rc-row"><span class="k">Order ID</span><span class="v" id="payOid">BI5660...3451 <span class="copy" onclick="toast('已复制')">复制</span></span></div>
+          </div>
+          <div class="warn-box">· 请务必使用<b>本人实名银行账户</b>向以上账户转账，金额需与「Amount to Pay」完全一致。<br>· 转账完成后点击「I've Paid」，等待商家确认放币。<br>· 平台/客服不会以任何理由要求您额外转账。</div>
+        </div>
+        <div class="foot"><div class="sheet-btns"><button class="btn dark" onclick="askCancel()">Cancel Order</button><button class="btn green" onclick="markPaid()">I've Paid</button></div><div class="home-ind"></div></div>
+      </div>
+
+      <!-- order detail -->
+      <div class="page" id="pg-detail">
+        <div class="statusbar"><span class="t">9:41</span><span id="sb3"></span></div>
+        <div class="navbar"><div class="nav-ic" onclick="go('pg-history')" id="ic5"></div><div class="nav-title">Order Details</div><div class="nav-ic nav-right" onclick="toast('联系客服（演示）')" id="ic6"></div></div>
+        <div class="body" id="detBody"></div>
+        <div class="foot" id="detFoot"></div>
+      </div>
+
+      <!-- history -->
+      <div class="page" id="pg-history">
+        <div class="statusbar"><span class="t">9:41</span><span id="sb4"></span></div>
+        <div class="navbar"><div class="nav-ic" onclick="go('pg-buy')" id="ic7"></div><div class="nav-title">Order History</div></div>
+        <div style="padding:0 16px"><div class="htabs"><span id="tabOn" class="on" onclick="switchTab('on')">Ongoing</span><span id="tabDone" onclick="switchTab('done')">Completed</span></div>
+        <div class="filters"><span class="f">Order Type: All ▾</span><span class="f">State: All ▾</span></div></div>
+        <div class="body" id="histBody"></div>
+        <div class="foot" style="padding-bottom:0"><div class="home-ind"></div></div>
+      </div>
+
+      <!-- overlays -->
+      <div class="dim" id="dim" onclick="closeSheets()"></div>
+      <div class="sheet" id="shConfirm">
+        <div class="grab"></div>
+        <div class="sheet-title"><span class="buy-w">Buy</span><span id="u2"></span>USDT</div>
+        <div class="srow"><span class="k">Quantity</span><span class="v" id="cQty">-</span></div>
+        <div class="srow"><span class="k">Fee</span><span class="v" id="cFee">-</span></div>
+        <div class="srow"><span class="k">Receive</span><span class="v" id="cRecv">-</span></div>
+        <div class="srow"><span class="k">You Pay</span><span class="v big" id="cPay">-</span></div>
+        <div class="sheet-btns"><button class="btn dark" onclick="closeSheets()">Cancel</button><button class="btn green" id="btnConfirm" onclick="confirmMain()">Confirm(30s)</button></div>
+        <div class="home-ind"></div>
+      </div>
+      <div class="sheet" id="shAppeal">
+        <div class="grab"></div>
+        <div class="sheet-title" style="justify-content:flex-start">申诉</div>
+        <div class="ap-lbl"><span>申诉理由</span><span class="ap-count" id="apCount">0/200</span></div>
+        <textarea id="apText" class="ap-area" maxlength="200" placeholder="请输入申诉理由（如：已付款但商家超时未放币）" oninput="onAp()"></textarea>
+        <div class="sheet-btns" style="margin-top:14px"><button class="btn dark" onclick="closeSheets()">取消</button><button class="btn green disabled" id="btnAp" onclick="submitAp()">提交</button></div>
+        <div class="home-ind"></div>
+      </div>
+      <div class="dialog" id="dlgCancel">
+        <div class="mask" onclick="closeDlg()"></div>
+        <div class="dlg-card"><div class="dlg-t">取消订单？</div><div class="dlg-s">若已完成转账请勿取消，可点「I've Paid」或联系客服。</div><div class="dlg-btns"><button class="btn dark" onclick="closeDlg()">再想想</button><button class="btn green" onclick="doCancel()">取消订单</button></div></div>
+      </div>
+      <div class="toast-wrap" id="toastWrap"></div>
+    </div></div>
+  </div>
+
+  <!-- gallery -->
+  <div class="gallery">
+    <div class="g-sec"><h2>订单状态色板</h2><div class="g-note">买币五态（控制面板可直达各态详情页）</div>
+      <div class="g-grid">
+        <div class="g-card"><h4>待支付</h4><div class="g-st st-pending">待支付</div></div>
+        <div class="g-card"><h4>已支付待放行</h4><div class="g-st st-paid">待放行</div></div>
+        <div class="g-card"><h4>已完成</h4><div class="g-st st-done">已完成</div></div>
+        <div class="g-card"><h4>已取消</h4><div class="g-st st-cancel">已取消</div></div>
+        <div class="g-card"><h4>申诉中</h4><div class="g-st st-dispute">申诉中</div></div>
+      </div>
+    </div>
+    <div class="g-sec"><h2>Toast 集合</h2><div class="g-note">点击可在左侧手机预览</div>
+      <div class="g-card" style="max-width:380px"><div class="g-toast" id="gToasts"></div></div>
+    </div>
+    <div class="g-sec"><h2>确认弹窗按钮状态</h2><div class="g-note">状态1报价倒计时 / 状态2报价过期刷新</div>
+      <div class="g-card" style="max-width:380px"><div class="g-btnrow">
+        <div class="cap">状态 1 · 倒计时</div><div class="pair"><button class="btn dark">Cancel</button><button class="btn green">Confirm(30s)</button></div>
+        <div class="cap">状态 2 · 报价过期</div><div class="pair"><button class="btn dark">Cancel</button><button class="btn green">Refresh</button></div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var RATE=7.35, FEER=0.01, MIN=100, MAX=50000;
+var curDetail=null, cdTimer=null, payTimer=null, pendingQty=0;
+function fee(q){ return Math.round(q*FEER*100)/100; }
+function fmt(n){ return Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function mkOrder(st, qty){ var f=fee(qty); return { st:st, qty:qty, fee:f, recv:qty-f, pay:Math.round(qty*RATE*100)/100, id:'BI566070249280103163451', time:'2026-08-11 14:25:25', reason:'' }; }
+var seed=function(){ return { on:[mkOrder('pending',500), mkOrder('paid',1000)], done:[mkOrder('done',200), mkOrder('cancel',300)] }; };
+var orders=seed(); var curTab='on'; var histEmpty=false;
+var stMap={ pending:{t:'待支付',c:'st-pending',en:'Pending Payment'}, paid:{t:'待放行',c:'st-paid',en:'Paid · Awaiting Release'}, done:{t:'已完成',c:'st-done',en:'Completed'}, cancel:{t:'已取消',c:'st-cancel',en:'Canceled'}, dispute:{t:'申诉中',c:'st-dispute',en:'In Dispute'} };
+
+/* icons */
+function ic(n,s){ s=s||22; var a='width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"'; var m={back:'<svg '+a+'><path d="M15 5l-7 7 7 7"/></svg>',hist:'<svg '+a+'><rect x="4" y="3.5" width="14" height="17" rx="2.5"/><path d="M8 8h6M8 12h6"/><circle cx="17.5" cy="17.5" r="4.2" fill="#0b0b0b" stroke="#fff"/><path d="M17.5 15.8v1.9l1.3.8"/></svg>',cs:'<svg '+a+'><path d="M5 12a7 7 0 0 1 14 0"/><rect x="3.5" y="12" width="4" height="6" rx="2"/><rect x="16.5" y="12" width="4" height="6" rx="2"/></svg>'}; return m[n]; }
+function usdt(s){ s=s||20; return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#26a17b"/><text x="10" y="14.2" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">₮</text></svg>'; }
+function cny(s){ s=s||20; return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#f0424e"/><text x="10" y="14.4" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">¥</text></svg>'; }
+function batt(){ return '<svg width="26" height="12" viewBox="0 0 26 12"><rect x="1" y="1" width="20" height="10" rx="2.5" fill="none" stroke="#fff" stroke-opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.2" fill="#fff"/><rect x="22" y="4" width="2" height="4" rx="1" fill="#fff" fill-opacity=".5"/></svg>'; }
+function docIco(){ return '<svg width="72" height="72" viewBox="0 0 76 76" fill="none"><path d="M18 14h28l12 12v34a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4V18a4 4 0 0 1 4-4z" fill="#8fce12"/><path d="M46 14l12 12H50a4 4 0 0 1-4-4v-8z" fill="#c8f55e"/></svg>'; }
+document.getElementById('ic1').innerHTML=ic('back');document.getElementById('ic2').innerHTML=ic('hist');document.getElementById('ic3').innerHTML=ic('back');document.getElementById('ic4').innerHTML=ic('cs');document.getElementById('ic5').innerHTML=ic('back');document.getElementById('ic6').innerHTML=ic('cs');document.getElementById('ic7').innerHTML=ic('back');
+document.getElementById('u1').innerHTML=usdt();document.getElementById('u2').innerHTML=usdt();document.getElementById('c1').innerHTML=cny();
+['sb1','sb2','sb3','sb4'].forEach(function(id){document.getElementById(id).innerHTML=batt();});
+
+/* router */
+function go(id){ document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');}); document.getElementById(id).classList.add('on'); closeSheets(); if(id==='pg-history') renderHist(); if(id!=='pg-pay') stopPayTimer(); }
+var toastT=null;
+function toast(m,l){ var w=document.getElementById('toastWrap'); w.innerHTML='<div class="toast">'+m+'</div>'; clearTimeout(toastT); toastT=setTimeout(function(){w.innerHTML='';}, l?2600:1800); }
+
+/* buy input */
+function onAmt(){
+  var el=document.getElementById('amtInput'), v=parseFloat(el.value);
+  var box=document.getElementById('amtBox'), err=document.getElementById('amtErr'), btn=document.getElementById('btnPreview');
+  var ok=false,msg='';
+  if(el.value===''||isNaN(v)||v===0){ msg=''; }
+  else if(v<MIN){ msg='Amount too low. Minimum '+MIN+' USDT.'; }
+  else if(v>MAX){ msg='Amount exceeds the maximum limit of '+fmt(MAX).replace('.00','')+' USDT.'; }
+  else ok=true;
+  box.classList.toggle('err',msg!==''); err.textContent=msg; err.classList.toggle('on',msg!=='');
+  document.getElementById('payInput').value=(isNaN(v)||v<=0)?'':fmt(v*RATE);
+  document.getElementById('feeTxt').textContent=(ok||msg)?(fmt(fee(v))+' USDT'):'-';
+  btn.classList.toggle('disabled',!ok);
+}
+var quoteS=30; setInterval(function(){ quoteS--; if(quoteS<=0)quoteS=30; var e=document.getElementById('rateCd'); if(e)e.textContent='报价 '+quoteS+'s 后刷新'; },1000);
+
+/* confirm */
+function openConfirm(){ if(document.getElementById('btnPreview').classList.contains('disabled')) return;
+  pendingQty=parseFloat(document.getElementById('amtInput').value);
+  var f=fee(pendingQty);
+  document.getElementById('cQty').textContent=fmt(pendingQty)+' USDT';
+  document.getElementById('cFee').textContent=fmt(f)+' USDT';
+  document.getElementById('cRecv').textContent=fmt(pendingQty-f)+' USDT';
+  document.getElementById('cPay').textContent='≈'+fmt(pendingQty*RATE)+' CNY';
+  document.getElementById('dim').classList.add('on'); document.getElementById('shConfirm').classList.add('on'); startCd();
+}
+function startCd(){ clearInterval(cdTimer); var s=30,b=document.getElementById('btnConfirm'); b.textContent='Confirm('+s+'s)'; b.dataset.m='c';
+  cdTimer=setInterval(function(){ s--; if(s<=0){clearInterval(cdTimer); b.textContent='Refresh'; b.dataset.m='r'; return;} b.textContent='Confirm('+s+'s)'; },1000); }
+function confirmMain(){ var b=document.getElementById('btnConfirm'); if(b.dataset.m==='r'){ toast('已刷新报价：1 USDT ≈ 7.35 CNY'); startCd(); return; }
+  clearInterval(cdTimer); closeSheets(); openPay(mkOrder('pending',pendingQty)); }
+
+/* payment page */
+function openPay(o){ curDetail=o; document.getElementById('payN').innerHTML='≈'+fmt(o.pay)+'<small>CNY</small>';
+  document.getElementById('payOid').innerHTML='BI5660...'+o.id.slice(-4)+' <span class="copy" onclick="toast(\'已复制\')">复制</span>';
+  go('pg-pay'); startPayTimer(15*60); }
+function startPayTimer(sec){ stopPayTimer(); var s=sec; renderCd(s);
+  payTimer=setInterval(function(){ s--; if(s<=0){ stopPayTimer(); paymentTimeout(); return; } renderCd(s); },1000); }
+function renderCd(s){ var m=Math.floor(s/60), ss=s%60; var e=document.getElementById('payCd'); if(e)e.textContent=(m<10?'0':'')+m+':'+(ss<10?'0':'')+ss; }
+function stopPayTimer(){ if(payTimer){ clearInterval(payTimer); payTimer=null; } }
+function paymentTimeout(){ toast('支付超时，订单已取消',true); if(curDetail){ curDetail.st='cancel'; } setTimeout(function(){ if(curDetail) renderDetail(curDetail); go('pg-detail'); },1200); }
+function askCancel(){ document.getElementById('dlgCancel').classList.add('on'); }
+function closeDlg(){ document.getElementById('dlgCancel').classList.remove('on'); }
+function doCancel(){ closeDlg(); stopPayTimer(); if(curDetail){ curDetail.st='cancel'; } toast('订单已取消'); setTimeout(function(){ if(curDetail) renderDetail(curDetail); go('pg-detail'); },900); }
+function markPaid(){ stopPayTimer(); if(curDetail){ curDetail.st='paid'; orders.on.unshift(curDetail); histEmpty=false; } toast('已通知商家，等待放币',true); setTimeout(function(){ if(curDetail){ renderDetail(curDetail); go('pg-detail'); } },1200); }
+
+/* detail */
+function drow(k,v,cls){ return '<span class="k">'+k+'</span><span class="v'+(cls?' '+cls:'')+'">'+v+'</span>'; }
+function renderDetail(o){ curDetail=o; var st=stMap[o.st];
+  var wait = o.st==='paid' ? '<div class="d-wait"><span>⏳</span><span>已通知商家，商家确认收款后将放币到您的账户，预计 5 分钟内完成。如长时间未放币可发起申诉。</span></div>' : '';
+  var h='<div class="d-status '+st.c+'">'+st.en+'</div><div class="d-side"><span class="sw">Buy</span>'+fmt(o.qty)+' USDT</div>'+wait
+    + '<div class="okv">'
+    + drow('Price','≈'+RATE+' CNY')
+    + drow('You Pay','≈'+fmt(o.pay)+' CNY')
+    + drow('Quantity',fmt(o.qty)+' USDT')
+    + drow('Fee',fmt(o.fee)+' USDT')
+    + '<span class="div"></span>'
+    + drow('Receive',fmt(o.recv)+' USDT','recv')
+    + '<span class="div"></span>'
+    + drow('Payment Method','Bank Transfer')
+    + drow('Payee Account','中国银行 (*4995)')
+    + drow('Order ID',o.id.slice(0,10)+'… <span class="copy" onclick="toast(\'已复制\')">复制</span>')
+    + drow('Order Time',o.time)
+    + '</div>'
+    + (o.st==='dispute'?disputeCard(o):'');
+  document.getElementById('detBody').innerHTML=h;
+  var f=document.getElementById('detFoot');
+  if(o.st==='pending'){ f.innerHTML='<button class="btn green" onclick="openPay(curDetail)">Go to Pay</button><div class="home-ind"></div>'; }
+  else if(o.st==='paid'||o.st==='dispute'){ f.innerHTML='<div class="sheet-btns"><button class="btn dark" onclick="openAppeal()">申诉</button><button class="btn green" onclick="toast(\'联系客服（演示）\')">Contact</button></div><div class="home-ind"></div>'; }
+  else if(o.st==='done'){ f.innerHTML='<button class="btn dark" onclick="openAppeal()">申诉</button><div class="home-ind"></div>'; }
+  else{ f.innerHTML='<div class="home-ind"></div>'; }
+}
+function disputeCard(o){ var r=o.reason||'已完成付款但商家超时未放币，申请客服介入。'; return '<div class="dsp"><div class="dsp-h"><span class="t">申诉信息</span><span class="tm">2026-08-11 15:02:10</span></div><div class="dsp-lbl">申诉理由</div><div class="dsp-desc">'+r+'</div></div>'; }
+function scRelease(){ if(!curDetail||curDetail.st!=='paid'){ toast('请先进入「已支付待放行」订单'); return; } curDetail.st='done'; toast('购买成功，USDT 已到账',true); setTimeout(function(){ renderDetail(curDetail); go('pg-detail'); },1000); }
+
+/* appeal */
+function openAppeal(){ document.getElementById('apText').value=''; onAp(); document.getElementById('dim').classList.add('on'); document.getElementById('shAppeal').classList.add('on'); }
+function onAp(){ var t=document.getElementById('apText').value; document.getElementById('apCount').textContent=t.length+'/200'; document.getElementById('btnAp').classList.toggle('disabled',t.trim().length===0); }
+function submitAp(){ var t=document.getElementById('apText').value.trim(); if(!t)return; closeSheets(); toast('申诉已提交'); if(curDetail){ curDetail.st='dispute'; curDetail.reason=t; } setTimeout(function(){ if(curDetail) renderDetail(curDetail); },1000); }
+
+/* history */
+function switchTab(t){ curTab=t; document.getElementById('tabOn').classList.toggle('on',t==='on'); document.getElementById('tabDone').classList.toggle('on',t==='done'); renderHist(); }
+function renderHist(){ var list=histEmpty?[]:orders[curTab]; var el=document.getElementById('histBody');
+  if(!list.length){ el.innerHTML='<div class="empty">'+docIco()+'<div class="txt">No data yet</div></div>'; return; }
+  el.innerHTML=list.map(function(o,i){ var st=stMap[o.st];
+    return '<div class="ocard" onclick="openDetailIdx(\''+curTab+'\','+i+')"><div class="ohead"><span class="side-tag">Buy</span><span class="coin">'+usdt(18)+'USDT</span><span class="ostat '+st.c+'">'+st.en+'<span class="chev">›</span></span></div><div class="otime">'+o.time+'</div>'
+    +'<div class="okv" style="padding:0;background:none">'
+    +drow('Price','≈'+RATE+' CNY')+drow('You Pay','≈'+fmt(o.pay)+' CNY')+drow('Quantity',fmt(o.qty)+' USDT')+drow('Fee',fmt(o.fee)+' USDT')
+    +'<span class="div"></span>'+drow('Receive',fmt(o.recv)+' USDT','recv')
+    +'</div></div>';
+  }).join('');
+}
+function openDetailIdx(tab,i){ renderDetail(orders[tab][i]); go('pg-detail'); }
+
+function closeSheets(){ clearInterval(cdTimer); document.getElementById('dim').classList.remove('on'); document.getElementById('shConfirm').classList.remove('on'); document.getElementById('shAppeal').classList.remove('on'); }
+
+/* gallery toasts */
+var TS=['购买成功，USDT 已到账','已通知商家，等待放币','支付超时，订单已取消','订单已取消','已复制','申诉已提交','Order error.','Network error.'];
+document.getElementById('gToasts').innerHTML=TS.map(function(t){return '<div class="toast" onclick="toast(this.textContent,true)">'+t+'</div>';}).join('');
+
+/* scenarios */
+function resetAll(){ orders=seed(); histEmpty=false; document.getElementById('amtInput').value=''; onAmt(); go('pg-buy'); toast('原型已重置'); }
+function scAmt(v){ go('pg-buy'); document.getElementById('amtInput').value=v; onAmt(); }
+function scConfirm(){ scAmt(500); openConfirm(); }
+function scPay(){ openPay(mkOrder('pending',500)); }
+function scTimeout(){ openPay(mkOrder('pending',500)); startPayTimer(3); toast('倒计时加速至 3 秒（演示）'); }
+function scPaid(){ renderDetail(mkOrder('paid',1000)); go('pg-detail'); }
+function scHistory(e){ histEmpty=e; go('pg-history'); switchTab('on'); }
+function scDetail(st){ renderDetail(mkOrder(st, st==='done'?200:st==='cancel'?300:st==='paid'?1000:500)); go('pg-detail'); }
+
+onAmt();
+</script>
+</body>
+</html>
