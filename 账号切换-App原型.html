@@ -420,10 +420,14 @@ function onAdd(){
 function addAccountSuccess(){
   if(accounts.length>=MAX){ toast('已达上限'); go('s-switch'); return; }
   const n=accounts.length;
-  accounts.push(mk('a'+Date.now(), '4002008'+String(24+n).padStart(2,'0'),'email','active'));
+  // 登录 B = 切到 B：B 成为当前账号，原当前账号降为可切换
+  accounts.forEach(a=>{ if(a.status==='current') a.status='active'; });
+  const b=mk('a'+Date.now(), '4002008'+String(24+n).padStart(2,'0'),'email','current');
+  accounts.push(b);
+  syncAccountScreen(b);
   renderList();
-  go('s-switch');
-  setTimeout(()=>toast('账号已加入切换列表'),320);
+  go('s-account');
+  setTimeout(()=>toast('已添加并切换到 UID: '+b.uid),320);
 }
 
 function askLogout(){
