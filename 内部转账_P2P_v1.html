@@ -273,6 +273,7 @@
     <button class="ec on" data-st="normal" onclick="setState('normal')">正常</button>
     <button class="ec" data-st="insufficient" onclick="setState('insufficient')">余额不足</button>
     <button class="ec" data-st="uid_invalid" onclick="setState('uid_invalid')">UID 不存在</button>
+    <button class="ec" data-st="self" onclick="setState('self')">转给自己</button>
     <span class="sep"></span>
     <button class="ec" onclick="showFail()">系统异常（结果态）</button>
     <span class="lbl" style="color:var(--t3);font-weight:400">前 3 项为发起页前置拦截（下一步置灰）</span>
@@ -739,14 +740,16 @@
   // 异常态控制器：切换发起页前置拦截状态（App/Web 同步）
   function setState(s){
     const V={
-      normal:{uid:'<span style="color:var(--green)">✓ 该 UID 有效，可接收转账</span> <span style="color:var(--t3)">（仅校验存在，不展示对方名称）</span>',amt:'可用 1,280.50 USDT · <span style="color:var(--t1)">不限额、免手续费</span>',val:'200',dis:false},
-      insufficient:{uid:'<span style="color:var(--green)">✓ 该 UID 有效，可接收转账</span>',amt:'<span style="color:var(--red)">✕ 余额不足，当前可用 1,280.50 USDT</span>',val:'5000',dis:true},
-      uid_invalid:{uid:'<span style="color:var(--red)">✕ 该 UID 不存在，请核对后重试</span>',amt:'可用 1,280.50 USDT · <span style="color:var(--t1)">不限额、免手续费</span>',val:'200',dis:true}
+      normal:{uid:'<span style="color:var(--green)">✓ 该 UID 有效，可接收转账</span> <span style="color:var(--t3)">（仅校验存在，不展示对方名称）</span>',amt:'可用 1,280.50 USDT · <span style="color:var(--t1)">不限额、免手续费</span>',val:'200',acct:'88213507',dis:false},
+      insufficient:{uid:'<span style="color:var(--green)">✓ 该 UID 有效，可接收转账</span>',amt:'<span style="color:var(--red)">✕ 余额不足，当前可用 1,280.50 USDT</span>',val:'5000',acct:'88213507',dis:true},
+      uid_invalid:{uid:'<span style="color:var(--red)">✕ 该 UID 不存在，请核对后重试</span>',amt:'可用 1,280.50 USDT · <span style="color:var(--t1)">不限额、免手续费</span>',val:'200',acct:'40099999',dis:true},
+      self:{uid:'<span style="color:var(--red)">✕ 不能向自己转账，请输入对方 UID</span>',amt:'可用 1,280.50 USDT · <span style="color:var(--t1)">不限额、免手续费</span>',val:'200',acct:'66001234',dis:true}
     }[s];
     ['app','web'].forEach(p=>{
       const u=document.getElementById(p+'UidCheck'); if(u)u.innerHTML=V.uid;
       const a=document.getElementById(p+'AmtHint'); if(a)a.innerHTML=V.amt;
       const i=document.getElementById(p+'AmtInput'); if(i)i.value=V.val;
+      const c=document.getElementById(p+'AcctInput'); if(c&&V.acct!==undefined)c.value=V.acct;
       const b=document.getElementById(p+'NextBtn'); if(b)b.disabled=V.dis;
     });
     document.querySelectorAll('#exctrl .ec[data-st]').forEach(c=>c.classList.toggle('on',c.dataset.st===s));
