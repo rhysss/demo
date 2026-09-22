@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>站内转账 · 流水状态展示</title>
+<style>
+  :root{
+    --bg:#eef0f3;--card:#ffffff;--t1:#16181d;--t2:#8b929e;--t3:#aeb4be;--line:#f1f2f4;
+    --in:#e8375c;   /* 入账 + 粉红（贵司体系） */
+    --out:#12b47b;  /* 出账 − 绿 */
+    --usdt:#26a17b;
+    --amber-bg:#fdf1d6;--amber-tx:#b5791b;
+    --gray-bg:#eef0f2;--gray-tx:#8b929e;
+    --red-bg:#fdeaee;--red-tx:#d23a58;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t1);padding:28px 16px 60px;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:1080px;margin:0 auto;display:flex;gap:40px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+
+  /* phone */
+  .phone{width:390px;flex:0 0 390px;background:#000;border-radius:46px;padding:11px;box-shadow:0 24px 60px rgba(20,30,50,.25)}
+  .screen{background:#fff;border-radius:36px;overflow:hidden;height:820px;display:flex;flex-direction:column;position:relative}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:14px 26px 4px;font-size:13px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:14px;padding:10px 18px 12px}
+  .nav .x{width:30px;height:30px;border-radius:50%;background:#f2f3f5;display:grid;place-items:center;font-size:16px;color:#666}
+  .nav .t{font-size:18px;font-weight:700;flex:1;text-align:center;margin-right:30px}
+  .tabs{display:flex;gap:8px;padding:2px 16px 12px;overflow-x:auto}
+  .tabs .tb{font-size:13px;color:var(--t2);padding:6px 12px;border-radius:8px;white-space:nowrap}
+  .tabs .tb.on{background:#e7f8f0;color:#0a9e6a;font-weight:600}
+  .filter{display:flex;gap:16px;padding:4px 20px 10px;border-bottom:1px solid var(--line)}
+  .filter span{font-size:13px;color:var(--t2)}
+  .list{flex:1;overflow-y:auto}
+  .list::-webkit-scrollbar{width:0}
+
+  .row{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--line)}
+  .ic{width:36px;height:36px;border-radius:50%;background:var(--usdt);display:grid;place-items:center;flex:0 0 36px;color:#fff;font-weight:700;font-size:15px}
+  .ic.px{background:#111}
+  .mid{flex:1;min-width:0}
+  .mid .r1{font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .mid .r2{font-size:12px;color:var(--t3);margin-top:3px}
+  .amt{text-align:right;flex:0 0 auto}
+  .amt .a{font-size:15px;font-weight:600}
+  .amt .c{font-size:12px;color:var(--t3);margin-top:2px}
+  .in{color:var(--in)} .out{color:var(--out)}
+
+  .pill{font-size:10.5px;font-weight:600;padding:1.5px 7px;border-radius:20px;line-height:1.5}
+  .pill.amber{background:var(--amber-bg);color:var(--amber-tx)}
+  .pill.gray{background:var(--gray-bg);color:var(--gray-tx)}
+  .pill.red{background:var(--red-bg);color:var(--red-tx)}
+
+  /* 弱化（待审核） */
+  .dim .a{opacity:.5}
+  /* 失效（拒绝/失败） */
+  .void .a{color:var(--t3)!important;text-decoration:line-through}
+  .void .r1{color:#6b7280}
+
+  .tagline{font-size:11px;color:var(--t3);margin-left:48px;padding:0 18px 10px;margin-top:-6px}
+
+  /* 说明 */
+  .notes{flex:1;min-width:340px;max-width:460px}
+  .notes h2{font-size:19px;font-weight:700;margin-bottom:4px}
+  .notes .sub{font-size:13px;color:#5b6472;margin-bottom:18px}
+  .card{background:#fff;border:1px solid #e6e9ee;border-radius:12px;padding:4px 16px;margin-bottom:16px}
+  .nrow{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f2f5;align-items:flex-start}
+  .nrow:last-child{border-bottom:0}
+  .nrow .k{flex:0 0 96px;font-size:13px;font-weight:600}
+  .nrow .v{flex:1;font-size:12.5px;color:#5b6472;line-height:1.65}
+  .nrow .v b{color:#16181d}
+  .key{background:#fff8e6;border:1px solid #f0e0b0;border-radius:12px;padding:14px 16px;font-size:12.5px;color:#7a6420;line-height:1.7}
+  .key b{color:#5a4a10}
+  .legend{display:flex;gap:16px;font-size:12px;color:#5b6472;margin:10px 2px 0}
+  .legend .dot{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:middle;margin-right:5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- PHONE -->
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar"><span>15:02</span><span>· · · 📶 🔋</span></div>
+      <div class="nav"><div class="x">✕</div><div class="t">历史记录</div></div>
+      <div class="tabs">
+        <div class="tb on">资金账户</div><div class="tb">现货</div><div class="tb">合约</div>
+        <div class="tb">Launchpad</div><div class="tb">划转</div>
+      </div>
+      <div class="filter"><span>类型 ▾</span><span>币种 ▾</span><span>日期 ▾</span></div>
+
+      <div class="list">
+
+        <!-- 1 待审核 -->
+        <div class="row dim">
+          <div class="ic">T</div>
+          <div class="mid"><div class="r1">站内转账 · 付款 <span class="pill amber">🕐 待审核</span></div>
+            <div class="r2 mono">2026-09-22 14:59:00</div></div>
+          <div class="amt"><div class="a out mono">−284.00</div><div class="c">USDT</div></div>
+        </div>
+
+        <!-- 2 已审核·成功（=转出成功） -->
+        <div class="row">
+          <div class="ic">T</div>
+          <div class="mid"><div class="r1">站内转账 · 付款 <span class="pill gray">已审核</span></div>
+            <div class="r2 mono">2026-09-22 14:30:11</div></div>
+          <div class="amt"><div class="a out mono">−284.00</div><div class="c">USDT</div></div>
+        </div>
+
+        <!-- 3 已审核·失败（系统原因，退回） -->
+        <div class="row void">
+          <div class="ic">T</div>
+          <div class="mid"><div class="r1">站内转账 · 付款 <span class="pill gray">失败 · 已退回</span></div>
+            <div class="r2 mono">2026-09-22 14:20:05</div></div>
+          <div class="amt"><div class="a mono">−284.00</div><div class="c">USDT</div></div>
+        </div>
+
+        <!-- 4 已拒绝（人工拒绝，退回） -->
+        <div class="row void">
+          <div class="ic">T</div>
+          <div class="mid"><div class="r1">站内转账 · 付款 <span class="pill red">已拒绝 · 已退回</span></div>
+            <div class="r2 mono">2026-09-22 14:10:39</div></div>
+          <div class="amt"><div class="a mono">−284.00</div><div class="c">USDT</div></div>
+        </div>
+
+        <!-- 5 转出（未触发审核，直接完成） -->
+        <div class="row">
+          <div class="ic">T</div>
+          <div class="mid"><div class="r1">站内转账 · 转出</div>
+            <div class="r2 mono">2026-09-22 13:58:44</div></div>
+          <div class="amt"><div class="a out mono">−10.00</div><div class="c">USDT</div></div>
+        </div>
+
+        <!-- 6 转入（收款，审核通过后才出现） -->
+        <div class="row">
+          <div class="ic">T</div>
+          <div class="mid"><div class="r1">站内转账 · 转入</div>
+            <div class="r2 mono">2026-09-22 13:40:20</div></div>
+          <div class="amt"><div class="a in mono">+50.00</div><div class="c">USDT</div></div>
+        </div>
+
+        <!-- context -->
+        <div class="row">
+          <div class="ic">T</div>
+          <div class="mid"><div class="r1">系统转入收款</div><div class="r2 mono">2026-09-20 13:21:17</div></div>
+          <div class="amt"><div class="a in mono">+100,000.00</div><div class="c">USDT</div></div>
+        </div>
+        <div class="row">
+          <div class="ic px">Y</div>
+          <div class="mid"><div class="r1">资金账户转入合约账户</div><div class="r2 mono">2026-09-20 11:37:34</div></div>
+          <div class="amt"><div class="a out mono">−10,000.00</div><div class="c">USDT</div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="notes">
+    <h2>流水状态展示规范</h2>
+    <div class="sub">一笔内转 = 一条流水，方向符号固定（付款恒 −），用「状态标 + 样式」表达进度，退回不单独成条。</div>
+
+    <div class="card">
+      <div class="nrow"><div class="k">🕐 待审核</div><div class="v">付款 <b>−</b> 方向；金额<b>半透明弱化</b>（钱已冻结、未定论）+ 琥珀色「待审核」标。区别于已完成出账。</div></div>
+      <div class="nrow"><div class="k">已审核·成功</div><div class="v">审核通过并转出成功；展示同「转出」，可加小灰标「已审核」体现走过审核（也可不加，见下）。</div></div>
+      <div class="nrow"><div class="k">已审核·失败</div><div class="v">审核通过但执行失败（系统原因）；金额<b>置灰 + 删除线</b> + 「失败 · 已退回」标，明确钱已退回。</div></div>
+      <div class="nrow"><div class="k">已拒绝</div><div class="v">人工审核不通过；金额<b>置灰 + 删除线</b> + 红「已拒绝 · 已退回」标。<b>不再显示为 +284 收入</b>。</div></div>
+      <div class="nrow"><div class="k">转出</div><div class="v">未触发审核、直接完成的付款；<b>−</b> 绿，正常展示，无标。</div></div>
+      <div class="nrow"><div class="k">转入</div><div class="v">收款；<b>+</b> 粉。<b>仅在审核通过后</b>才出现在收款方流水（钱没到不显示）。</div></div>
+    </div>
+
+    <div class="legend">
+      <span><span class="dot" style="background:var(--in)"></span>入账 + 粉</span>
+      <span><span class="dot" style="background:var(--out)"></span>出账 − 绿</span>
+      <span><span class="dot" style="background:#cfd3d9"></span>失效（拒绝/失败）灰+划线</span>
+    </div>
+
+    <div class="key" style="margin-top:18px">
+      <b>三条关键决策（并入 Q-07）：</b><br>
+      1. <b>退回不单独成条</b>——已拒绝/失败直接把原「待审核」那条变状态，不再生成 +284 退回条，避免污染收入。<br>
+      2. <b>待审核金额算不算"已支出"</b>——冻结中，「可用余额」已减；流水显示 −，但样式弱化。<br>
+      3. <b>「已审核·成功」要不要与「转出」区分</b>——建议<b>不区分</b>（完成态就是转出），审核只是过程；如需留痕加小灰标「已审核」即可。
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
