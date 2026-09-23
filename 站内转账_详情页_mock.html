@@ -3,163 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>站内转账 · 详情页（四态）</title>
+<title>站内转账 · 已审核 / 已拒绝 详情</title>
 <style>
   :root{
-    --bg:#eef0f3;--t1:#16181d;--t2:#8b929e;--t3:#aeb4be;--line:#eef0f2;
-    --usdt:#26a17b;--green:#12b47b;--amber:#e6a417;--red:#e8455f;
-    --card:#f6f8f9;
+    --bg:#eef0f3;--t1:#16181d;--t2:#9198a3;--t3:#b3b9c2;--line:#f0f1f3;
+    --usdt:#26a17b;--green:#16b46f;--amber:#eb9a12;--red:#e8455f;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t1);padding:30px 16px 60px;-webkit-font-smoothing:antialiased}
   .mono{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
   h1{text-align:center;font-size:20px;font-weight:700;margin-bottom:4px}
   .lead{text-align:center;font-size:13px;color:#5b6472;margin-bottom:26px}
-  .wrap{max-width:1360px;margin:0 auto;display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .wrap{max-width:1180px;margin:0 auto;display:flex;gap:30px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
   .col{display:flex;flex-direction:column;align-items:center;gap:12px}
   .tag{font-size:13px;font-weight:700;color:#3a4250;background:#fff;border:1px solid #e2e6ec;border-radius:20px;padding:5px 16px}
 
-  .phone{width:320px;background:#000;border-radius:40px;padding:9px;box-shadow:0 18px 44px rgba(20,30,50,.2)}
-  .screen{background:#fff;border-radius:32px;overflow:hidden;height:600px;display:flex;flex-direction:column}
-  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:12px 22px 2px;font-size:12px;font-weight:600}
-  .nav{display:flex;align-items:center;padding:8px 16px 4px}
-  .nav .b{font-size:22px;color:#16181d;width:28px}
-  .nav .t{font-size:17px;font-weight:700}
-  .body{flex:1;overflow-y:auto;padding:14px 16px}
+  .phone{width:360px;background:#000;border-radius:42px;padding:10px;box-shadow:0 20px 48px rgba(20,30,50,.22)}
+  .screen{background:#fff;border-radius:34px;overflow:hidden;height:640px;display:flex;flex-direction:column}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:13px 24px 2px;font-size:12px;font-weight:600}
+  .back{padding:8px 18px 2px;font-size:24px}
+  .ptitle{font-size:26px;font-weight:800;padding:6px 20px 16px}
+  .body{flex:1;overflow-y:auto;padding:0 18px}
   .body::-webkit-scrollbar{width:0}
 
-  .head{background:var(--card);border-radius:14px;padding:20px 16px;text-align:center;margin-bottom:12px}
-  .head .lb{font-size:12px;color:var(--t2)}
-  .head .amt{font-size:27px;font-weight:700;margin:6px 0 8px;letter-spacing:.3px}
-  .head .stt{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600}
-  .stt .dot{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#fff}
-  .s-amber{color:var(--amber)} .s-amber .dot{background:var(--amber)}
-  .s-green{color:var(--green)} .s-green .dot{background:var(--green)}
-  .s-red{color:var(--red)} .s-red .dot{background:var(--red)}
+  .head{border-radius:16px;padding:22px 16px;text-align:center;margin-bottom:14px}
+  .head .lb{font-size:13px;color:#8a9099}
+  .head .amt{font-size:30px;font-weight:700;margin:8px 0 10px}
+  .head .stt{display:inline-flex;align-items:center;gap:7px;font-size:15px;font-weight:600}
+  .stt .dot{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#fff}
+  .green{color:var(--green)} .green .dot{background:var(--green)}
+  .red{color:var(--red)} .red .dot{background:var(--red)}
+  .amber{color:var(--amber)} .amber .dot{background:var(--amber)}
+  .head.g{background:#eaf7ef} .head.r{background:#fdedf0} .head.a{background:#fdf3e2}
 
-  .rows{background:var(--card);border-radius:14px;padding:2px 16px}
-  .r{display:flex;justify-content:space-between;align-items:flex-start;padding:13px 0;border-bottom:1px solid #eceff1;font-size:13.5px;gap:14px}
+  .rows{padding:2px 2px}
+  .r{display:flex;justify-content:space-between;align-items:flex-start;padding:15px 0;border-bottom:1px solid #f0f1f3;font-size:14px;gap:14px}
   .r:last-child{border-bottom:0}
   .r .k{color:var(--t2);flex:0 0 auto}
-  .r .v{text-align:right;color:#22262c;word-break:break-all}
+  .r .v{text-align:right;color:#20242a;word-break:break-all}
   .r .v.coin{display:flex;align-items:center;gap:6px;justify-content:flex-end}
-  .r .v .ci{width:18px;height:18px;border-radius:50%;background:var(--usdt);color:#fff;display:grid;place-items:center;font-size:9px;font-weight:700}
+  .r .v .ci{width:19px;height:19px;border-radius:50%;background:var(--usdt);color:#fff;display:grid;place-items:center;font-size:9px;font-weight:700}
   .free{color:var(--green)}
-  .warn{color:var(--amber);font-size:11px}
+  .warn{color:var(--amber);font-size:12px}
+  .new{display:inline-block;font-size:10px;color:#fff;background:#3b82f6;border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:middle;font-weight:700}
 
-  .note{border-radius:10px;padding:11px 13px;font-size:12px;line-height:1.65;margin-top:12px}
-  .note.amber{background:#fdf5e3;color:#8a6d1c}
-  .note.red{background:#fdedf0;color:#b23a52}
-  .note.green{background:#e9f8f1;color:#0c8a5e}
+  .note{border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.7;margin:14px 2px 0}
+  .note.red{background:#fdedf0;color:#b23a52;border:1px solid #f6d5dd}
+  .note.green{background:#eaf7ef;color:#0c8a5e}
   .note b{font-weight:700}
 
-  .footnote{max-width:1000px;margin:30px auto 0;background:#fff8e6;border:1px solid #f0e0b0;border-radius:12px;padding:14px 18px;font-size:12.5px;color:#7a6420;line-height:1.8}
+  .footnote{max-width:1000px;margin:30px auto 0;background:#fff8e6;border:1px solid #f0e0b0;border-radius:12px;padding:16px 20px;font-size:12.5px;color:#7a6420;line-height:1.85}
   .footnote b{color:#5a4a10}
+  .footnote .h{font-size:13.5px;font-weight:800;margin-bottom:6px;color:#5a4a10}
 </style>
 </head>
 <body>
-<h1>站内转账 · 记录详情页（四态）</h1>
-<div class="lead">付款侧标题「付款详情」、收款侧「收款详情」；金额中性色，状态用图标+文字。</div>
+<h1>站内转账 · 「已审核 / 已拒绝」详情页（建议版）</h1>
+<div class="lead">贴真实 App 样式：状态色头卡 + 大标题；金额中性色，状态用图标+文字（−红/+绿）。蓝标 <span class="new">建议新增</span></div>
 
 <div class="wrap">
 
-  <!-- ① 审核中（付款） -->
+  <!-- 已审核 → 已完成 -->
   <div class="col">
-    <span class="tag">① 审核中 · 付款详情</span>
+    <span class="tag">「已审核」→ 展示为「已完成」</span>
     <div class="phone"><div class="screen">
-      <div class="statusbar"><span>15:02</span><span>· · 📶 🔋</span></div>
-      <div class="nav"><span class="b">‹</span><span class="t">付款详情</span></div>
+      <div class="statusbar"><span>10:57</span><span>· · 📶 🔋</span></div>
+      <div class="back">‹</div>
+      <div class="ptitle">付款详情</div>
       <div class="body">
-        <div class="head">
-          <div class="lb">转账数量</div>
-          <div class="amt mono">−284.00 USDT</div>
-          <div class="stt s-amber"><span class="dot">🕐</span>审核中</div>
+        <div class="head g">
+          <div class="lb">付款数量</div>
+          <div class="amt mono">-1.00 USDT</div>
+          <div class="stt green"><span class="dot">✓</span>已完成</div>
         </div>
         <div class="rows">
           <div class="r"><span class="k">币种</span><span class="v coin"><span class="ci">T</span>USDT</span></div>
-          <div class="r"><span class="k">收款方</span><span class="v mono">UID 1007824</span></div>
-          <div class="r"><span class="k">手续费</span><span class="v free">免手续费</span></div>
-          <div class="r"><span class="k">留言</span><span class="v">测试</span></div>
-          <div class="r"><span class="k">订单号</span><span class="v mono" style="font-size:12px">2bb1854c-a5e7…7e8f 📋</span></div>
-          <div class="r"><span class="k">提交时间</span><span class="v mono">2026-09-22 14:59:00</span></div>
-          <div class="r"><span class="k">预计审核</span><span class="v warn">⚠️ 时长待确认</span></div>
+          <div class="r"><span class="k">收款人</span><span class="v mono">1007825</span></div>
+          <div class="r"><span class="k">手续费</span><span class="v free">免手续费 <span class="new">新增</span></span></div>
+          <div class="r"><span class="k">留言</span><span class="v">test</span></div>
+          <div class="r"><span class="k">订单号</span><span class="v mono" style="font-size:12.5px">d7d57406-b6f9…6349de 📋</span></div>
+          <div class="r"><span class="k">到账时间</span><span class="v mono">2026-09-23 10:52:40</span></div>
         </div>
-        <div class="note amber">该笔金额<b>已冻结</b>，人工审核通过后转出到账；若未通过将<b>原路退回</b>你的账户。</div>
+        <div class="note green">转账<b>已通过审核并成功到账</b>对方账户。</div>
       </div>
     </div></div>
   </div>
 
-  <!-- ② 转出成功（付款） -->
+  <!-- 已拒绝 -->
   <div class="col">
-    <span class="tag">② 转出 · 付款详情</span>
+    <span class="tag">「已拒绝」详情</span>
     <div class="phone"><div class="screen">
-      <div class="statusbar"><span>15:02</span><span>· · 📶 🔋</span></div>
-      <div class="nav"><span class="b">‹</span><span class="t">付款详情</span></div>
+      <div class="statusbar"><span>10:57</span><span>· · 📶 🔋</span></div>
+      <div class="back">‹</div>
+      <div class="ptitle">付款详情</div>
       <div class="body">
-        <div class="head">
-          <div class="lb">转账数量</div>
-          <div class="amt mono">−120.00 USDT</div>
-          <div class="stt s-green"><span class="dot">✓</span>已完成</div>
+        <div class="head r">
+          <div class="lb">付款数量</div>
+          <div class="amt mono">-1.00 USDT</div>
+          <div class="stt red"><span class="dot">✕</span>已拒绝</div>
         </div>
         <div class="rows">
           <div class="r"><span class="k">币种</span><span class="v coin"><span class="ci">T</span>USDT</span></div>
-          <div class="r"><span class="k">收款方</span><span class="v mono">UID 1007824</span></div>
-          <div class="r"><span class="k">手续费</span><span class="v free">免手续费</span></div>
+          <div class="r"><span class="k">收款人</span><span class="v mono">1007825</span></div>
+          <div class="r"><span class="k">手续费</span><span class="v free">免手续费 <span class="new">新增</span></span></div>
           <div class="r"><span class="k">留言</span><span class="v">测试</span></div>
-          <div class="r"><span class="k">订单号</span><span class="v mono" style="font-size:12px">3ac9f012-b7e2…9d1a 📋</span></div>
-          <div class="r"><span class="k">到账时间</span><span class="v mono">2026-09-22 14:30:11</span></div>
+          <div class="r"><span class="k">拒绝原因</span><span class="v warn">⚠️ 是否展示待确认 <span class="new">新增</span></span></div>
+          <div class="r"><span class="k">订单号</span><span class="v mono" style="font-size:12.5px">0aee7cf3-b6fa…6349de 📋</span></div>
+          <div class="r"><span class="k">创建时间</span><span class="v mono">2026-09-23 10:54:06</span></div>
         </div>
-        <div class="note green">转账已通过审核并<b>成功到账</b>对方账户。</div>
-      </div>
-    </div></div>
-  </div>
-
-  <!-- ③ 失败（付款） -->
-  <div class="col">
-    <span class="tag">③ 失败 · 付款详情</span>
-    <div class="phone"><div class="screen">
-      <div class="statusbar"><span>15:02</span><span>· · 📶 🔋</span></div>
-      <div class="nav"><span class="b">‹</span><span class="t">付款详情</span></div>
-      <div class="body">
-        <div class="head">
-          <div class="lb">转账数量</div>
-          <div class="amt mono">−66.00 USDT</div>
-          <div class="stt s-red"><span class="dot">✕</span>失败 · 已退回</div>
-        </div>
-        <div class="rows">
-          <div class="r"><span class="k">币种</span><span class="v coin"><span class="ci">T</span>USDT</span></div>
-          <div class="r"><span class="k">收款方</span><span class="v mono">UID 1007824</span></div>
-          <div class="r"><span class="k">手续费</span><span class="v free">免手续费</span></div>
-          <div class="r"><span class="k">留言</span><span class="v">测试</span></div>
-          <div class="r"><span class="k">失败原因</span><span class="v warn">⚠️ 是否告知待确认</span></div>
-          <div class="r"><span class="k">订单号</span><span class="v mono" style="font-size:12px">5de3a1c8-c4f1…22bd 📋</span></div>
-          <div class="r"><span class="k">提交时间</span><span class="v mono">2026-09-22 14:10:39</span></div>
-        </div>
-        <div class="note red">该笔转账<b>未通过审核</b>，冻结金额<b>已退回</b>你的账户，本次<b>未扣款</b>。</div>
-      </div>
-    </div></div>
-  </div>
-
-  <!-- ④ 转入（收款） -->
-  <div class="col">
-    <span class="tag">④ 转入 · 收款详情</span>
-    <div class="phone"><div class="screen">
-      <div class="statusbar"><span>15:02</span><span>· · 📶 🔋</span></div>
-      <div class="nav"><span class="b">‹</span><span class="t">收款详情</span></div>
-      <div class="body">
-        <div class="head">
-          <div class="lb">转账数量</div>
-          <div class="amt mono">+50.00 USDT</div>
-          <div class="stt s-green"><span class="dot">✓</span>已到账</div>
-        </div>
-        <div class="rows">
-          <div class="r"><span class="k">币种</span><span class="v coin"><span class="ci">T</span>USDT</span></div>
-          <div class="r"><span class="k">付款方</span><span class="v mono">UID 40012988</span></div>
-          <div class="r"><span class="k">留言</span><span class="v">请你喝奶茶 🧋</span></div>
-          <div class="r"><span class="k">订单号</span><span class="v mono" style="font-size:12px">7fa2b90d-e1c3…4a56 📋</span></div>
-          <div class="r"><span class="k">到账时间</span><span class="v mono">2026-09-22 13:40:20</span></div>
-        </div>
-        <div class="note green">已收到对方转账，资金<b>已到账</b>你的资金账户。</div>
+        <div class="note red"><b>关键新增：</b>该笔转账<b>未通过审核</b>，冻结金额<b>已退回你的账户，本次未扣款</b>。</div>
       </div>
     </div></div>
   </div>
@@ -167,12 +119,12 @@
 </div>
 
 <div class="footnote">
-  <b>四态详情页要点：</b>
-  ① <b>审核中</b>：标「审核中」(琥珀)，说明金额已冻结、通过转出/拒绝退回；含订单号、提交时间。
-  ② <b>转出(成功)</b>：标「已完成」(绿)，展示到账时间。
-  ③ <b>失败</b>：标「失败·已退回」(红)，明确「已退回、未扣款」；<b>失败原因是否展示 = ⚠️ 待确认</b>。
-  ④ <b>转入(收款)</b>：标题「收款详情」，展示付款方、<b>不展示手续费</b>（R-13），仅成功到账才有此页。
-  <br>付款侧统一「付款详情」、收款侧「收款详情」；收款方仅在<b>成功到账</b>时才有详情（无脏数据）。
+  <div class="h">这两个详情页的核心改动</div>
+  <b>① 已审核 → 显示「已完成」</b>：对用户"已审核=转账成功"，状态直接用「已完成」(绿)，加小字「已通过审核」；不必让用户去理解"已审核"到底成没成。<br>
+  <b>② 已拒绝必须加「已退回·未扣款」说明</b>：现在只显 −1.00 + 已拒绝，用户会以为钱扣了。加说明条讲清「冻结金额已退回、未扣款」，这是最关键的一处。<br>
+  <b>③ 两页都补「手续费 免手续费」</b>：你现在付款详情缺这行，R-13 要求付款详情明示免手续费。<br>
+  <b>④ 拒绝原因是否展示 = ⚠️ 待你确认</b>：告知更透明，但风控可能不想暴露审核逻辑。<br>
+  <b>⑤ 术语一致性建议</b>：列表用「待审核」、详情用「审核中」，建议统一（二选一）；「已审核」列表项也建议随详情统一为「已完成/付款」。
 </div>
 
 </body>
