@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>站内转账 · 流水到详情交互</title>
+<style>
+  :root{
+    --bg:#e9ebef;--t1:#16181d;--t2:#8f96a1;--t3:#b3b9c2;--line:#f1f2f4;
+    --usdt:#26a17b;--green:#16b46f;--amber:#eb9a12;--red:#e8455f;--pend:#9aa0ab;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t1);padding:26px 16px 50px;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .mono{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+  .hint{font-size:13px;color:#5b6472}
+  .hint b{color:#16181d}
+
+  .phone{width:390px;background:#000;border-radius:46px;padding:11px;box-shadow:0 22px 55px rgba(20,30,50,.25)}
+  .screen{background:#fff;border-radius:36px;overflow:hidden;height:820px;position:relative}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:14px 26px 4px;font-size:13px;font-weight:600}
+  .scr{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;border-radius:36px}
+  .scr.hide{display:none}
+
+  /* list */
+  .lnav{display:flex;align-items:center;padding:8px 18px 12px}
+  .lnav .x{width:30px;height:30px;border-radius:50%;background:#f2f3f5;display:grid;place-items:center;font-size:16px;color:#666}
+  .lnav .t{font-size:18px;font-weight:700;flex:1;text-align:center;margin-right:30px}
+  .tabs{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto}
+  .tabs .tb{font-size:13px;color:var(--t2);padding:6px 12px;border-radius:8px;white-space:nowrap}
+  .tabs .tb.on{background:#e7f8f0;color:#0a9e6a;font-weight:600}
+  .filter{display:flex;gap:16px;padding:2px 20px 10px;border-bottom:1px solid var(--line)}
+  .filter span{font-size:13px;color:var(--t2)}
+  .list{flex:1;overflow-y:auto}.list::-webkit-scrollbar{width:0}
+  .row{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .row.tap{cursor:pointer}.row.tap:active{background:#f7f8fa}
+  .ic{width:36px;height:36px;border-radius:50%;background:var(--usdt);display:grid;place-items:center;flex:0 0 36px;color:#fff;font-weight:700;font-size:15px}
+  .ic.px{background:#111}
+  .mid{flex:1;min-width:0}
+  .mid .r1{font-size:14.5px;font-weight:600}
+  .mid .r2{font-size:12px;color:var(--t3);margin-top:4px}
+  .amt{text-align:right}
+  .amt .a{font-size:15px;font-weight:600}
+  .amt .c{font-size:12px;color:var(--t3);margin-top:3px}
+  .out{color:var(--red)} .in{color:var(--green)}
+  .pend .r1 span.st{color:var(--pend)} .pend .a{color:var(--pend)}
+  .void .r1 span.st{color:var(--pend)} .void .a{color:var(--t3);text-decoration:line-through}
+
+  /* detail */
+  .back{padding:10px 18px 2px;font-size:24px;cursor:pointer}
+  .ptitle{font-size:26px;font-weight:800;padding:4px 20px 16px}
+  .dbody{flex:1;overflow-y:auto;padding:0 18px}
+  .dbody::-webkit-scrollbar{width:0}
+  .head{border-radius:16px;padding:22px 16px;text-align:center;margin-bottom:14px}
+  .head .lb{font-size:13px;color:#8a9099}
+  .head .damt{font-size:30px;font-weight:700;margin:8px 0 10px}
+  .head .stt{display:inline-flex;align-items:center;gap:7px;font-size:15px;font-weight:600}
+  .stt .dot{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#fff}
+  .c-green{color:var(--green)} .c-green .dot{background:var(--green)}
+  .c-red{color:var(--red)} .c-red .dot{background:var(--red)}
+  .c-amber{color:var(--amber)} .c-amber .dot{background:var(--amber)}
+  .head.g{background:#eaf7ef} .head.r{background:#fdedf0} .head.a{background:#fdf3e2}
+  .rows{padding:0 2px}
+  .dr{display:flex;justify-content:space-between;align-items:flex-start;padding:15px 0;border-bottom:1px solid #f1f2f4;font-size:14px;gap:14px}
+  .dr:last-child{border-bottom:0}
+  .dr .k{color:var(--t2)}
+  .dr .v{text-align:right;color:#20242a;word-break:break-all}
+  .dr .v.coin{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+  .dr .v .ci{width:19px;height:19px;border-radius:50%;background:var(--usdt);color:#fff;display:grid;place-items:center;font-size:9px;font-weight:700}
+  .free{color:var(--green)} .warn{color:var(--amber);font-size:12px}
+  .note{border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.7;margin:14px 2px 24px}
+  .note.r{background:#fdedf0;color:#b23a52;border:1px solid #f6d5dd}
+  .note.g{background:#eaf7ef;color:#0c8a5e}
+  .note.a{background:#fdf3e2;color:#8a6d1c}
+  .note b{font-weight:700}
+</style>
+</head>
+<body>
+<div class="hint">点击列表里任意 <b>站内转账</b> 记录 → 进入对应详情；详情左上「‹」返回。</div>
+<div class="phone"><div class="screen">
+  <div class="statusbar"><span>10:58</span><span>· · 📶 🔋</span></div>
+
+  <!-- ============ 列表 ============ -->
+  <div class="scr" id="scr-list">
+    <div class="lnav"><div class="x">✕</div><div class="t">历史记录</div></div>
+    <div class="tabs"><div class="tb on">资金账户</div><div class="tb">现货</div><div class="tb">合约</div><div class="tb">Launchpad</div><div class="tb">划转</div></div>
+    <div class="filter"><span>类型 ▾</span><span>币种 ▾</span><span>日期 ▾</span></div>
+    <div class="list">
+
+      <div class="row tap pend" onclick="open_('pending')">
+        <div class="ic">T</div>
+        <div class="mid"><div class="r1">站内转账 · <span class="st">待审核</span></div><div class="r2 mono">2026-09-23 10:58:15</div></div>
+        <div class="amt"><div class="a mono">−1.00</div><div class="c">USDT</div></div>
+      </div>
+
+      <div class="row tap" onclick="open_('paid')">
+        <div class="ic">T</div>
+        <div class="mid"><div class="r1">站内转账 · 付款</div><div class="r2 mono">2026-09-23 10:52:40</div></div>
+        <div class="amt"><div class="a out mono">−1.00</div><div class="c">USDT</div></div>
+      </div>
+
+      <div class="row tap void" onclick="open_('rejected')">
+        <div class="ic">T</div>
+        <div class="mid"><div class="r1">站内转账 · <span class="st">已拒绝</span></div><div class="r2 mono">2026-09-23 10:54:06 · 已退回</div></div>
+        <div class="amt"><div class="a mono">−1.00</div><div class="c">USDT</div></div>
+      </div>
+
+      <div class="row tap" onclick="open_('received')">
+        <div class="ic">T</div>
+        <div class="mid"><div class="r1">站内转账 · 收款</div><div class="r2 mono">2026-09-18 18:02:30</div></div>
+        <div class="amt"><div class="a in mono">+100.00</div><div class="c">USDT</div></div>
+      </div>
+
+      <!-- context（非站内转账） -->
+      <div class="row"><div class="ic px">Y</div><div class="mid"><div class="r1">资金账户转入理财账户</div><div class="r2 mono">2026-09-16 13:58:07</div></div><div class="amt"><div class="a out mono">−1,000.00</div><div class="c">PXSTOCKS</div></div></div>
+      <div class="row"><div class="ic px">Y</div><div class="mid"><div class="r1">系统转入收款</div><div class="r2 mono">2026-09-16 13:57:16</div></div><div class="amt"><div class="a in mono">+1,000.00</div><div class="c">PXSTOCKS</div></div></div>
+      <div class="row tap" onclick="open_('paid')"><div class="ic">T</div><div class="mid"><div class="r1">站内转账 · 付款</div><div class="r2 mono">2026-09-03 16:12:52</div></div><div class="amt"><div class="a out mono">−1.00</div><div class="c">USDT</div></div></div>
+
+    </div>
+  </div>
+
+  <!-- ============ 待审核 详情 ============ -->
+  <div class="scr hide" id="scr-pending">
+    <div class="back" onclick="back_()">‹</div>
+    <div class="ptitle">付款详情</div>
+    <div class="dbody">
+      <div class="head a"><div class="lb">付款数量</div><div class="damt mono">-1.00 USDT</div><div class="stt c-amber"><span class="dot">!</span>审核中</div></div>
+      <div class="rows">
+        <div class="dr"><span class="k">币种</span><span class="v coin"><span class="ci">T</span>USDT</span></div>
+        <div class="dr"><span class="k">收款人</span><span class="v mono">1007825</span></div>
+        <div class="dr"><span class="k">手续费</span><span class="v free">免手续费</span></div>
+        <div class="dr"><span class="k">留言</span><span class="v">test</span></div>
+        <div class="dr"><span class="k">预计审核</span><span class="v warn">⚠️ 时长待确认</span></div>
+        <div class="dr"><span class="k">订单号</span><span class="v mono" style="font-size:12.5px">9f080c02-b6fa…6349de 📋</span></div>
+        <div class="dr"><span class="k">创建时间</span><span class="v mono">2026-09-23 10:58:15</span></div>
+      </div>
+      <div class="note a">该笔金额<b>已冻结</b>，人工审核<b>通过后转出到账</b>；若未通过将<b>原路退回</b>你的账户。</div>
+    </div>
+  </div>
+
+  <!-- ============ 付款(成功) 详情 ============ -->
+  <div class="scr hide" id="scr-paid">
+    <div class="back" onclick="back_()">‹</div>
+    <div class="ptitle">付款详情</div>
+    <div class="dbody">
+      <div class="head g"><div class="lb">付款数量</div><div class="damt mono">-1.00 USDT</div><div class="stt c-green"><span class="dot">✓</span>已完成</div></div>
+      <div class="rows">
+        <div class="dr"><span class="k">币种</span><span class="v coin"><span class="ci">T</span>USDT</span></div>
+        <div class="dr"><span class="k">收款人</span><span class="v mono">1007825</span></div>
+        <div class="dr"><span class="k">手续费</span><span class="v free">免手续费</span></div>
+        <div class="dr"><span class="k">留言</span><span class="v">test</span></div>
+        <div class="dr"><span class="k">订单号</span><span class="v mono" style="font-size:12.5px">d7d57406-b6f9…6349de 📋</span></div>
+        <div class="dr"><span class="k">到账时间</span><span class="v mono">2026-09-23 10:52:40</span></div>
+      </div>
+      <div class="note g">转账<b>已通过审核并成功到账</b>对方账户。</div>
+    </div>
+  </div>
+
+  <!-- ============ 已拒绝 详情 ============ -->
+  <div class="scr hide" id="scr-rejected">
+    <div class="back" onclick="back_()">‹</div>
+    <div class="ptitle">付款详情</div>
+    <div class="dbody">
+      <div class="head r"><div class="lb">付款数量</div><div class="damt mono">-1.00 USDT</div><div class="stt c-red"><span class="dot">✕</span>已拒绝</div></div>
+      <div class="rows">
+        <div class="dr"><span class="k">币种</span><span class="v coin"><span class="ci">T</span>USDT</span></div>
+        <div class="dr"><span class="k">收款人</span><span class="v mono">1007825</span></div>
+        <div class="dr"><span class="k">手续费</span><span class="v free">免手续费</span></div>
+        <div class="dr"><span class="k">留言</span><span class="v">测试</span></div>
+        <div class="dr"><span class="k">拒绝原因</span><span class="v warn">⚠️ 是否展示待确认</span></div>
+        <div class="dr"><span class="k">订单号</span><span class="v mono" style="font-size:12.5px">0aee7cf3-b6fa…6349de 📋</span></div>
+        <div class="dr"><span class="k">创建时间</span><span class="v mono">2026-09-23 10:54:06</span></div>
+      </div>
+      <div class="note r">该笔转账<b>未通过审核</b>，冻结金额<b>已退回你的账户，本次未扣款</b>。</div>
+    </div>
+  </div>
+
+  <!-- ============ 收款 详情 ============ -->
+  <div class="scr hide" id="scr-received">
+    <div class="back" onclick="back_()">‹</div>
+    <div class="ptitle">收款详情</div>
+    <div class="dbody">
+      <div class="head g"><div class="lb">收款数量</div><div class="damt mono" style="color:var(--green)">+100.00 USDT</div><div class="stt c-green"><span class="dot">✓</span>已完成</div></div>
+      <div class="rows">
+        <div class="dr"><span class="k">币种</span><span class="v coin"><span class="ci">T</span>USDT</span></div>
+        <div class="dr"><span class="k">付款人</span><span class="v mono">1001477</span></div>
+        <div class="dr"><span class="k">留言</span><span class="v">内转测试</span></div>
+        <div class="dr"><span class="k">订单号</span><span class="v mono" style="font-size:12.5px">54f97e6a-a520…6bccb 📋</span></div>
+        <div class="dr"><span class="k">到账时间</span><span class="v mono">2026-09-18 18:02:30</span></div>
+      </div>
+      <div class="note g">已收到对方转账，资金<b>已到账</b>你的资金账户。</div>
+    </div>
+  </div>
+
+</div></div>
+
+<script>
+  var scrs=['list','pending','paid','rejected','received'];
+  function show(id){scrs.forEach(function(s){document.getElementById('scr-'+s).classList.toggle('hide',s!==id);});}
+  function open_(id){show(id);}
+  function back_(){show('list');}
+</script>
+</body>
+</html>
