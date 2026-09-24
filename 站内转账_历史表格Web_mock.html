@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>站内转账 · 历史表格（Web 优化）</title>
+<style>
+  :root{
+    --bg:#0b0e11;--panel:#12161b;--line:#20262e;--border:#252b34;
+    --t1:#eaecef;--t2:#8b929e;--t3:#5e6673;
+    --red:#f6465d;--green:#2ebd85;--amber:#f0b90b;--pend:#7a828d;--blue:#4a9eff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t1);padding:26px 28px 60px;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+  h1{font-size:22px;font-weight:700;margin-bottom:16px}
+  .bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .chip{font-size:13px;color:var(--t2);border:1px solid var(--border);background:var(--panel);padding:6px 14px;border-radius:8px;cursor:pointer}
+  .chip.on{border-color:var(--amber);color:var(--amber)}
+  .sp{flex:1}
+  .search{background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--t2);font-size:13px;padding:7px 12px;width:220px}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  thead th{text-align:left;color:var(--t2);font-weight:500;font-size:12.5px;padding:13px 16px;border-bottom:1px solid var(--border);background:#0d1117;white-space:nowrap}
+  th.r,td.r{text-align:right}
+  tbody td{padding:15px 16px;border-bottom:1px solid var(--line);white-space:nowrap;color:#c8cdd4}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#161b22}
+  .num{font-family:"SF Mono",Menlo,monospace;font-variant-numeric:tabular-nums}
+  .out{color:var(--red)} .in{color:var(--green)}
+  .amt-pend{color:var(--pend)}
+  .amt-void{color:var(--t3);text-decoration:line-through}
+  .oid{color:var(--t3);font-size:12px}
+
+  .stt{display:inline-flex;align-items:center;gap:7px;font-weight:500}
+  .stt .d{width:7px;height:7px;border-radius:50%}
+  .s-ok{color:var(--green)} .s-ok .d{background:var(--green)}
+  .s-pend{color:var(--amber)} .s-pend .d{background:var(--amber)}
+  .s-rej{color:var(--red)} .s-rej .d{background:var(--red)}
+  .refund{color:var(--t3);font-size:11px;margin-left:6px}
+  .act{color:var(--blue);cursor:pointer}
+
+  .note{margin-top:22px;background:#12160c;border:1px solid #33390f;border-radius:12px;padding:16px 20px;font-size:12.5px;color:#c9cf9a;line-height:1.85;max-width:1000px}
+  .note b{color:#eef0d0}
+  .note .h{font-weight:700;color:#e6c86a;margin-bottom:6px;font-size:13.5px}
+  .lg{display:flex;gap:18px;font-size:12px;color:var(--t2);margin:12px 2px 0}
+  .lg i{font-style:normal}
+</style>
+</head>
+<body>
+<h1>转账历史 <span style="font-size:13px;color:var(--t3);font-weight:400">（原「划转历史」，站内转账）</span></h1>
+
+<div class="bar">
+  <span class="chip on">全部</span>
+  <span class="chip">成功</span>
+  <span class="chip">审核中</span>
+  <span class="chip">已拒绝</span>
+  <div class="sp"></div>
+  <input class="search" placeholder="搜索订单号 / 对方 UID">
+</div>
+
+<table>
+  <thead><tr>
+    <th>日期</th><th>对方</th><th>币种</th><th class="r">金额</th><th>状态</th><th>订单号</th><th class="r">操作</th>
+  </tr></thead>
+  <tbody>
+    <tr><td class="num">2026-09-24 15:33:28</td><td>到 UID 1</td><td>USDT</td><td class="r num amt-pend">−1</td><td><span class="stt s-pend"><span class="d"></span>审核中</span></td><td class="oid mono">9f08…6349de</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 16:17:18</td><td>到 UID 1007825</td><td>USDT</td><td class="r num amt-void">−1</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">0aee…6349de</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 16:15:45</td><td>从 UID 1001477</td><td>USDT</td><td class="r num in">+10</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">54f9…6bccb</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 15:32:46</td><td>到 UID 1007825</td><td>USDT</td><td class="r num amt-pend">−1</td><td><span class="stt s-pend"><span class="d"></span>审核中</span></td><td class="oid mono">7fa2…4a56</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 15:15:05</td><td>到 UID 1007825</td><td>USDT</td><td class="r num amt-void">−1,000</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">3ac9…9d1a</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 15:14:45</td><td>到 UID 1007825</td><td>USDT</td><td class="r num out">−100</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">5de3…22bd</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 15:13:47</td><td>到 UID 1007825</td><td>USDT</td><td class="r num amt-void">−1,000</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">d7d5…6349de</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 15:11:54</td><td>到 UID 1007825</td><td>USDT</td><td class="r num out">−12</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">2bb1…687e8f</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 10:58:15</td><td>到 UID 1007825</td><td>USDT</td><td class="r num out">−1</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">1c77…88a2</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 10:54:06</td><td>到 UID 1007825</td><td>USDT</td><td class="r num amt-void">−1</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">0aee…6349de</td><td class="r"><span class="act">详情</span></td></tr>
+  </tbody>
+</table>
+
+<div class="lg">
+  <i><span style="color:var(--green)">●</span> 成功=实扣/到账，金额正常色</i>
+  <i><span style="color:var(--amber)">●</span> 审核中=冻结未结算，金额<span style="color:var(--pend)">置灰</span></i>
+  <i><span style="color:var(--red)">●</span> 已拒绝=作废退回，金额<span style="color:var(--t3);text-decoration:line-through">灰+删除线</span></i>
+</div>
+
+<div class="note">
+  <div class="h">优化点</div>
+  <b>① 状态列加色点</b>：成功绿 / 审核中黄 / 已拒绝红，扫一眼分清，不再纯白字。<br>
+  <b>② 金额按状态区分（对账关键）</b>：成功=正常色(−红/+绿)；审核中=<b>灰</b>(未结算)；已拒绝=<b>灰+删除线</b>(作废/已退回)。这样表格里「真正影响余额的只有成功笔」，对账不会把已拒绝的 −1,000 算进去。<br>
+  <b>③ 标题</b>：内容是站内转账，改「转账历史」更准；若混多类型再加「类型」列。<br>
+  <b>④ 加订单号列 + 状态筛选 + 搜索</b>：便于运营/用户按状态查、按订单号对账。<br>
+  <b>⑤ 可读性</b>：hover 高亮、金额右对齐、UID/订单号可复制。
+</div>
+
+</body>
+</html>
