@@ -31,6 +31,9 @@
   .amt-pend{color:var(--pend)}
   .amt-void{color:var(--t3);text-decoration:line-through}
   .oid{color:var(--t3);font-size:12px}
+  .dir{font-weight:700;margin-right:8px;font-size:14px}
+  .dir.out{color:var(--red)} .dir.in{color:var(--green)}
+  .uid{cursor:pointer} .uid:hover{color:var(--t1)}
 
   .stt{display:inline-flex;align-items:center;gap:7px;font-weight:500}
   .stt .d{width:7px;height:7px;border-radius:50%}
@@ -61,19 +64,19 @@
 
 <table>
   <thead><tr>
-    <th>日期</th><th>对方</th><th>币种</th><th class="r">金额</th><th>状态</th><th>订单号</th><th class="r">操作</th>
+    <th>日期</th><th>对方（↑转出 / ↓转入）</th><th>币种</th><th class="r">金额</th><th>状态</th><th>订单号</th><th class="r">操作</th>
   </tr></thead>
   <tbody>
-    <tr><td class="num">2026-09-24 15:33:28</td><td>到 UID 1</td><td>USDT</td><td class="r num amt-pend">−1</td><td><span class="stt s-pend"><span class="d"></span>审核中</span></td><td class="oid mono">9f08…6349de</td><td class="r"><span class="act">详情</span></td></tr>
-    <tr><td class="num">2026-09-23 16:17:18</td><td>到 UID 1007825</td><td>USDT</td><td class="r num amt-void">−1</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">0aee…6349de</td><td class="r"><span class="act">详情</span></td></tr>
-    <tr><td class="num">2026-09-23 16:15:45</td><td>从 UID 1001477</td><td>USDT</td><td class="r num in">+10</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">54f9…6bccb</td><td class="r"><span class="act">详情</span></td></tr>
-    <tr><td class="num">2026-09-23 15:32:46</td><td>到 UID 1007825</td><td>USDT</td><td class="r num amt-pend">−1</td><td><span class="stt s-pend"><span class="d"></span>审核中</span></td><td class="oid mono">7fa2…4a56</td><td class="r"><span class="act">详情</span></td></tr>
-    <tr><td class="num">2026-09-23 15:15:05</td><td>到 UID 1007825</td><td>USDT</td><td class="r num amt-void">−1,000</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">3ac9…9d1a</td><td class="r"><span class="act">详情</span></td></tr>
-    <tr><td class="num">2026-09-23 15:14:45</td><td>到 UID 1007825</td><td>USDT</td><td class="r num out">−100</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">5de3…22bd</td><td class="r"><span class="act">详情</span></td></tr>
-    <tr><td class="num">2026-09-23 15:13:47</td><td>到 UID 1007825</td><td>USDT</td><td class="r num amt-void">−1,000</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">d7d5…6349de</td><td class="r"><span class="act">详情</span></td></tr>
-    <tr><td class="num">2026-09-23 15:11:54</td><td>到 UID 1007825</td><td>USDT</td><td class="r num out">−12</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">2bb1…687e8f</td><td class="r"><span class="act">详情</span></td></tr>
-    <tr><td class="num">2026-09-23 10:58:15</td><td>到 UID 1007825</td><td>USDT</td><td class="r num out">−1</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">1c77…88a2</td><td class="r"><span class="act">详情</span></td></tr>
-    <tr><td class="num">2026-09-23 10:54:06</td><td>到 UID 1007825</td><td>USDT</td><td class="r num amt-void">−1</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">0aee…6349de</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-24 15:33:28</td><td><span class="dir out">↑</span><span class="uid">UID 1 📋</span></td><td>USDT</td><td class="r num amt-pend">−1</td><td><span class="stt s-pend"><span class="d"></span>审核中</span></td><td class="oid mono">9f08…6349de</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 16:17:18</td><td><span class="dir out">↑</span><span class="uid">UID 1007825 📋</span></td><td>USDT</td><td class="r num amt-void">−1</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">0aee…6349de</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 16:15:45</td><td><span class="dir in">↓</span><span class="uid">UID 1001477 📋</span></td><td>USDT</td><td class="r num in">+10</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">54f9…6bccb</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 15:32:46</td><td><span class="dir out">↑</span><span class="uid">UID 1007825 📋</span></td><td>USDT</td><td class="r num amt-pend">−1</td><td><span class="stt s-pend"><span class="d"></span>审核中</span></td><td class="oid mono">7fa2…4a56</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 15:15:05</td><td><span class="dir out">↑</span><span class="uid">UID 1007825 📋</span></td><td>USDT</td><td class="r num amt-void">−1,000</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">3ac9…9d1a</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 15:14:45</td><td><span class="dir out">↑</span><span class="uid">UID 1007825 📋</span></td><td>USDT</td><td class="r num out">−100</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">5de3…22bd</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 15:13:47</td><td><span class="dir out">↑</span><span class="uid">UID 1007825 📋</span></td><td>USDT</td><td class="r num amt-void">−1,000</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">d7d5…6349de</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 15:11:54</td><td><span class="dir out">↑</span><span class="uid">UID 1007825 📋</span></td><td>USDT</td><td class="r num out">−12</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">2bb1…687e8f</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 10:58:15</td><td><span class="dir out">↑</span><span class="uid">UID 1007825 📋</span></td><td>USDT</td><td class="r num out">−1</td><td><span class="stt s-ok"><span class="d"></span>成功</span></td><td class="oid mono">1c77…88a2</td><td class="r"><span class="act">详情</span></td></tr>
+    <tr><td class="num">2026-09-23 10:54:06</td><td><span class="dir out">↑</span><span class="uid">UID 1007825 📋</span></td><td>USDT</td><td class="r num amt-void">−1</td><td><span class="stt s-rej"><span class="d"></span>已拒绝</span><span class="refund">已退回</span></td><td class="oid mono">0aee…6349de</td><td class="r"><span class="act">详情</span></td></tr>
   </tbody>
 </table>
 
@@ -89,7 +92,8 @@
   <b>② 金额按状态区分（对账关键）</b>：成功=正常色(−红/+绿)；审核中=<b>灰</b>(未结算)；已拒绝=<b>灰+删除线</b>(作废/已退回)。这样表格里「真正影响余额的只有成功笔」，对账不会把已拒绝的 −1,000 算进去。<br>
   <b>③ 标题</b>：内容是站内转账，改「转账历史」更准；若混多类型再加「类型」列。<br>
   <b>④ 加订单号列 + 状态筛选 + 搜索</b>：便于运营/用户按状态查、按订单号对账。<br>
-  <b>⑤ 可读性</b>：hover 高亮、金额右对齐、UID/订单号可复制。
+  <b>⑤ 可读性</b>：hover 高亮、金额右对齐、UID/订单号可复制。<br>
+  <b>⑥ 对方列：方向与身份分离</b>：去掉"到/从"文字，改<b>箭头(↑转出红 / ↓转入绿) + UID</b>，方向和金额±呼应、更清爽；UID 可点复制。若要按方向筛选，可另拆独立「方向」列。
 </div>
 
 </body>
