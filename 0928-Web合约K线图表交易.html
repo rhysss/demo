@@ -174,6 +174,32 @@
   .btns .row{display:flex;justify-content:space-between;color:var(--sub);font-size:11px}
   .btns .row b{color:var(--txt);font-weight:400}
   .op .note{color:var(--sub2);font-size:11px;line-height:1.6;border-top:1px solid var(--line);padding-top:10px}
+  .inp .mkt{flex:none;padding:2px 6px;border-radius:3px;border:1px solid var(--panel3);color:var(--sub);cursor:pointer;font-size:11px}
+  .inp .mkt.on{border-color:var(--yellow);color:var(--yellow)}
+  .inp.dis input{opacity:.35;pointer-events:none}
+  .trig-hint{color:var(--sub);font-size:11px;margin-top:-4px}
+  .trig-hint b{color:var(--txt);font-weight:500}
+
+  /* 仓位区 */
+  .bp{height:250px;flex:none;border-top:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel)}
+  .bp-tabs{height:38px;display:flex;align-items:center;gap:22px;padding:0 16px;border-bottom:1px solid var(--line);flex:none}
+  .bp-tabs button{height:38px;color:var(--sub);font-size:13px;border-bottom:2px solid transparent}
+  .bp-tabs button.on{color:var(--txt);font-weight:600;border-bottom-color:var(--yellow)}
+  .bp-tabs .rt{margin-left:auto;color:var(--sub)}
+  .bp-body{flex:1;overflow:auto}
+  .bp table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  .bp th{position:sticky;top:0;background:var(--panel);color:var(--sub);font-weight:400;text-align:left;padding:8px 12px;white-space:nowrap}
+  .bp td{padding:9px 12px;border-top:1px solid #20242b;white-space:nowrap}
+  .bp td .sym2{font-weight:600}
+  .bp td .sym2 small{color:var(--sub);font-weight:400;margin-left:4px}
+  .bp .bar{display:inline-block;width:3px;height:26px;border-radius:2px;vertical-align:middle;margin-right:8px}
+  .bp .lnk{color:var(--yellow);cursor:pointer;margin-right:12px}
+  .bp .lnk:hover{text-decoration:underline}
+  .bp .ed{color:var(--sub);cursor:pointer;margin-left:4px}
+  .bp .empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--sub2)}
+  .bp .empty button{background:var(--yellow);color:#181a20;padding:5px 18px;border-radius:4px;font-weight:600}
+  .bp .st{padding:1px 6px;border-radius:3px;font-size:11px;background:var(--panel3);color:var(--sub)}
+  .bp .st.ok{background:var(--green-bg);color:var(--green)} .bp .st.no{background:var(--red-bg);color:var(--red)} .bp .st.tr{background:rgba(240,185,11,.12);color:var(--yellow)}
 
   /* toast & modal & demo */
   #toast{position:fixed;left:50%;top:120px;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
@@ -192,7 +218,7 @@
   .md .ft button{flex:1;height:36px;border-radius:4px;font-weight:600}
   .md .ft .ok{background:var(--yellow);color:#181a20}
   .md .ft .cc{background:var(--panel3)}
-  #demo{position:fixed;left:12px;bottom:12px;z-index:120;display:flex;gap:10px;align-items:center;background:rgba(43,49,57,.95);border:1px dashed var(--yellow);border-radius:6px;padding:6px 10px;color:var(--sub);font-size:11px}
+  #demo{position:fixed;right:12px;bottom:12px;z-index:120;display:flex;gap:10px;align-items:center;background:rgba(43,49,57,.95);border:1px dashed var(--yellow);border-radius:6px;padding:6px 10px;color:var(--sub);font-size:11px}
   #demo b{color:var(--yellow)}
   #demo .seg{background:var(--panel)} #demo .seg button{height:22px;padding:0 8px;font-weight:400;font-size:11px}
   #demo .rs{color:var(--txt);border:1px solid var(--panel3);border-radius:3px;padding:2px 8px}
@@ -271,14 +297,20 @@
           <div id="netbar">⚠ 行情连接中断，正在重连…</div>
         </div>
       </div>
+      <div class="bp" id="bp">
+        <div class="bp-tabs" id="bpTabs"><button class="on" data-t="pos">仓位(<span id="cPos">0</span>)</button><button data-t="open">当前委托(<span id="cOpen">0</span>)</button><button data-t="hist">历史委托</button><span class="rt" id="bpRt"></span></div>
+        <div class="bp-body" id="bpBody"></div>
+      </div>
     </section>
 
     <aside class="op" id="op">
       <div class="op-top"><button class="chip">全仓</button><button class="chip">20x</button><button class="chip" style="color:var(--sub);font-weight:400">单向持仓</button></div>
       <div class="seg" id="ocTab"><button class="on" data-v="open">开仓</button><button data-v="close">平仓</button></div>
-      <div class="otype" id="otype"><button class="on" data-v="limit">限价</button><button data-v="market">市价</button></div>
+      <div class="otype" id="otype"><button class="on" data-v="limit">限价</button><button data-v="market">市价</button><button data-v="stop">条件</button></div>
       <div class="avail"><span>可用</span><span><b id="opAvail" class="num">--</b> USDT<span class="xf" title="划转">⇄</span></span></div>
-      <label class="inp" id="priceBox"><span class="ph">价格</span><input id="ipPrice" autocomplete="off"><span class="bbo" id="bbo">最新</span><span class="u">USDT</span></label>
+      <label class="inp" id="trigBox" style="display:none"><span class="ph">触发价</span><input id="ipTrig" autocomplete="off"><span class="bbo" id="bboT">最新</span><span class="u">USDT</span></label>
+      <div class="trig-hint" id="trigHint" style="display:none"></div>
+      <label class="inp" id="priceBox"><span class="ph">价格</span><input id="ipPrice" autocomplete="off"><span class="bbo" id="bbo">最新</span><span class="mkt" id="stopMkt" style="display:none">市价</span><span class="u">USDT</span></label>
       <div class="inp mk" id="mkBox" style="display:none">以当前最优价格成交</div>
       <label class="inp" id="qtyBox"><span class="ph">数量</span><input id="ipQty" autocomplete="off"><select id="unit"><option value="qty">SOL</option><option value="cost">USDT·成本</option><option value="value">USDT·价值</option></select></label>
       <div class="sl"><input type="range" id="slider" min="0" max="100" step="1" value="0"><div class="mk"><span data-p="0">0%</span><span data-p="25">25%</span><span data-p="50">50%</span><span data-p="75">75%</span><span data-p="100">100%</span></div></div>
@@ -316,7 +348,7 @@ function saveCfg(){try{localStorage.setItem(LSK,JSON.stringify(S.cfg));}catch(e)
 
 const S={logged:true,net:true,tf:'1m',price:118.58,open24:121.34,hi24:124.99,lo24:118.04,
   candles:[],ma:{},fmap:{},view:{end:0,count:90,follow:true},W:5000,pos:null,tpsl:{tp:null,sl:null},
-  orders:[],fills:[],oid:1,cfg:loadCfg(),hover:null,qp:null,drag:null,pan:null,loading:false,
+  orders:[],fills:[],hist:[],oid:1,bt:'pos',stopMkt:false,cfg:loadCfg(),hover:null,qp:null,drag:null,pan:null,loading:false,
   oc:'open',ot:'limit'};
 let G={};
 
@@ -354,7 +386,7 @@ function calcMA(){
   }
 }
 function init(){
-  S.price=118.58;S.W=5000;S.orders=[];S.fills=[];S.tpsl={tp:null,sl:null};S.pos=null;S.tf='1m';S.qp=null;S.drag=null;
+  S.price=118.58;S.W=5000;S.orders=[];S.fills=[];S.hist=[];S.tpsl={tp:null,sl:null};S.pos=null;S.tf='1m';S.qp=null;S.drag=null;
   S.candles=gen('1m');
   const c=S.candles,L=c.length,ms=TF['1m'];
   const at=(i,f)=>r2(c[i].l+(c[i].h-c[i].l)*f), t=i=>c[i].t+ms*0.3;
@@ -363,21 +395,36 @@ function init(){
   S.W+=r2((p2-p1)*5);
   const b1=at(L-40,.25),b2=at(L-40,.65);
   S.fills.push({ts:t(L-40),side:'buy',qty:6,price:b1},{ts:t(L-40)+8000,side:'buy',qty:4,price:b2});
+  S.hist=[
+    {ts:t(L-40)+8000,type:'限价',side:'buy',price:b2,avg:b2,qty:4,status:'已成交'},
+    {ts:t(L-40),type:'限价',side:'buy',price:b1,avg:b1,qty:6,status:'已成交'},
+    {ts:t(L-105),type:'市价',side:'sell',price:null,avg:p2,qty:5,status:'已成交',reduce:true},
+    {ts:t(L-120),type:'限价',side:'sell',price:r2(p2+1.2),avg:null,qty:5,status:'已撤销',reduce:true},
+    {ts:t(L-150),type:'限价',side:'buy',price:p1,avg:p1,qty:5,status:'已成交'}];
   S.pos={qty:10,entry:(b1*6+b2*4)/10};
   S.tpsl.tp=r2(S.price+3.2);
-  S.orders.push({id:S.oid++,side:'buy',qty:5,price:r2(S.price-1.6)},{id:S.oid++,side:'sell',qty:3,price:r2(S.price+1.9)});
+  const now=Date.now();
+  S.orders.push({id:S.oid++,type:'limit',side:'buy',qty:5,price:r2(S.price-1.6),ts:now-300000},
+    {id:S.oid++,type:'limit',side:'sell',qty:3,price:r2(S.price+1.9),ts:now-200000},
+    {id:S.oid++,type:'stop',side:'buy',qty:4,price:null,trigger:r2(S.price+1.2),dir:'up',ts:now-100000});
   S.view={end:L+6,count:90,follow:true};
   buildFillMap();calcMA();
   $$('#ov .lbl').forEach(e=>e.remove()); for(const k in LBL) delete LBL[k];
-  closeQp(); renderPanel(); req();
+  closeQp(); renderTf(); renderPanel(); req();
 }
 
-/* ---------------- 交易逻辑（沿用 App V1.0.4） ---------------- */
-function usedMargin(){let m=0;if(S.pos)m+=Math.abs(S.pos.qty)*S.pos.entry/LEV;for(const o of S.orders)if(!o.reduce)m+=o.qty*o.price/LEV;return m;}
+/* ---------------- 交易逻辑（沿用 App V1.0.4；条件单为 Web 新增） ---------------- */
+/* 条件单触发前不占用保证金，触发后按普通单校验 */
+function usedMargin(){let m=0;if(S.pos)m+=Math.abs(S.pos.qty)*S.pos.entry/LEV;for(const o of S.orders)if(o.type==='limit'&&!o.reduce)m+=o.qty*o.price/LEV;return m;}
 function avail(){return Math.max(0,S.W-usedMargin());}
 function maxOpen(price){return price>0?avail()*LEV/price:0;}
 function incMargin(side,qty,price){const cur=S.pos?S.pos.qty:0,nq=cur+(side==='buy'?qty:-qty);return Math.max(0,Math.abs(nq)-Math.abs(cur))*price/LEV;}
 function upnl(){return S.pos?(S.price-S.pos.entry)*S.pos.qty:0;}
+function closable(side){return !!S.pos&&(side==='buy'?S.pos.qty<0:S.pos.qty>0);}
+function liqPrice(){ // 演示估算：全仓，钱包余额扣除其他占用后全部作为该仓位保证金
+  if(!S.pos) return null; const q=S.pos.qty,eq=S.W-usedMargin()+Math.abs(q)*S.pos.entry/LEV;
+  const lp=S.pos.entry-eq/q; return lp>0?lp:null;
+}
 
 function applyFill(side,qty,price){
   const sq=side==='buy'?qty:-qty; let realized=0; const p=S.pos;
@@ -395,53 +442,100 @@ function applyFill(side,qty,price){
   buildFillMap();
   return realized;
 }
-function sideTxt(side,reduce){return side==='buy'?(reduce?'买入平空':'买入/开多'):(reduce?'卖出平多':'卖出/开空');}
+function addHist(h){S.hist.unshift({ts:Date.now(),...h});if(S.hist.length>60)S.hist.pop();}
+function sideTxt(side,reduce){return side==='buy'?(reduce?'买入/平空':'买入/开多'):(reduce?'卖出/平多':'卖出/开空');}
+const rzTxt=rz=>rz?`，已实现盈亏 ${sg(rz)} USDT`:'';
 function guard(){
   if(!S.logged){needLogin();return false;}
   if(!S.net){toast('网络异常，请稍后重试','err');return false;}
   return true;
 }
-/* o: {side, qty, price(null=市价), reduce} */
-function place(o){
-  if(!guard()) return false;
-  let qty=r2(o.qty);
-  if(!(qty>0)){toast('请输入数量','err');return false;}
-  if(o.reduce){
-    if(!S.pos||(o.side==='buy'&&S.pos.qty>0)||(o.side==='sell'&&S.pos.qty<0)){toast('当前无可平仓位','err');return false;}
-    qty=Math.min(qty,Math.abs(S.pos.qty));
-  }
+/* 执行限价/市价单；返回错误文案，成功返回 '' */
+function execCore(o,pre){
+  let qty=o.qty;
+  if(o.reduce){if(!closable(o.side))return '当前无可平仓位';qty=Math.min(qty,Math.abs(S.pos.qty));}
   const cross=o.price==null||(o.side==='buy'?o.price>=S.price:o.price<=S.price);
   if(cross){
-    if(!o.reduce&&incMargin(o.side,qty,S.price)>avail()+1e-9){toast('可用保证金不足','err');return false;}
+    if(!o.reduce&&incMargin(o.side,qty,S.price)>avail()+1e-9) return '可用保证金不足';
     const rz=applyFill(o.side,qty,S.price);
-    toast(`${sideTxt(o.side,o.reduce)} ${fq(qty)} SOL 已按市价成交 @ ${fp(S.price)}`+(rz?`，已实现盈亏 ${sg(rz)} USDT`:''));
+    addHist({type:o.src||(o.price==null?'市价':'限价'),side:o.side,price:o.price,trigger:o.trigger,dir:o.dir,avg:S.price,qty,status:'已成交',reduce:o.reduce});
+    toast(`${pre||''}${sideTxt(o.side,o.reduce)} ${fq(qty)} SOL 已按市价成交 @ ${fp(S.price)}${rzTxt(rz)}`);
   }else{
-    if(!o.reduce&&qty*o.price/LEV>avail()+1e-9){toast('可用保证金不足','err');return false;}
-    S.orders.push({id:S.oid++,side:o.side,qty,price:o.price,reduce:!!o.reduce});
-    toast(`限价委托已提交：${sideTxt(o.side,o.reduce)} ${fq(qty)} SOL @ ${fp(o.price)}`,'info');
+    if(!o.reduce&&qty*o.price/LEV>avail()+1e-9) return '可用保证金不足';
+    S.orders.push({id:S.oid++,type:'limit',side:o.side,qty,price:o.price,reduce:!!o.reduce,ts:Date.now()});
+    toast(`${pre||''}限价委托已提交：${sideTxt(o.side,o.reduce)} ${fq(qty)} SOL @ ${fp(o.price)}`,'info');
+  }
+  return '';
+}
+/* o: {type:'limit'|'market'|'stop', side, qty, price(null=市价), trigger, reduce} */
+function place(o){
+  if(!guard()) return false;
+  const qty=r2(o.qty);
+  if(!(qty>0)){toast('请输入数量','err');return false;}
+  const price=o.price==null?null:r2(o.price);
+  if(o.type==='stop'){
+    const tr=r2(o.trigger);
+    if(!(tr>0)){toast('请输入触发价','err');return false;}
+    if(tr===S.price){toast('触发价不能等于最新价','err');return false;}
+    if(o.reduce&&!closable(o.side)){toast('当前无可平仓位','err');return false;}
+    const dir=tr>S.price?'up':'down';
+    S.orders.push({id:S.oid++,type:'stop',side:o.side,qty,price,trigger:tr,dir,reduce:!!o.reduce,ts:Date.now()});
+    toast(`条件委托已提交：最新价 ${dir==='up'?'≥':'≤'} ${fp(tr)} 时，以${price==null?'市价':'限价 '+fp(price)} ${sideTxt(o.side,o.reduce)} ${fq(qty)} SOL`,'info');
+  }else{
+    const err=execCore({...o,qty,price});
+    if(err){toast(err,'err');return false;}
   }
   renderPanel();req();return true;
 }
-function closeAll(reason){
+function closeAll(reason,type){
   if(!S.pos) return;
   const side=S.pos.qty>0?'sell':'buy',q=Math.abs(S.pos.qty);
   const rz=applyFill(side,q,S.price);
+  addHist({type:type||'市价',side,price:null,avg:S.price,qty:q,status:'已成交',reduce:true});
   toast(`${reason}：已市价平仓 ${fq(q)} SOL @ ${fp(S.price)}，已实现盈亏 ${sg(rz)} USDT`,rz>=0?'':'err');
+}
+function doCancel(id,silent){
+  const o=S.orders.find(x=>x.id===id);if(!o)return;
+  S.orders=S.orders.filter(x=>x!==o);
+  addHist({type:o.type==='stop'?'条件':'限价',side:o.side,price:o.price,trigger:o.trigger,dir:o.dir,avg:null,qty:o.qty,status:'已撤销',reduce:o.reduce});
+  if(!silent)toast(`已撤单：${o.type==='stop'?'条件':'限价'}${sideTxt(o.side,o.reduce)} ${fq(o.qty)} SOL`,'info');
+}
+function cancelAll(){
+  if(!guard())return;
+  const n=S.orders.length;if(!n)return;
+  [...S.orders].forEach(o=>doCancel(o.id,true));toast(`已撤销全部 ${n} 笔委托`,'info');renderPanel();req();
+}
+function doReverse(){
+  if(!guard()||!S.pos)return;
+  const q=Math.abs(S.pos.qty),rs=S.pos.qty>0?'sell':'buy';
+  if(q*S.price/LEV>avail()+q*S.pos.entry/LEV+1e-9){toast('可用保证金不足，无法反手','err');return;}
+  closeAll('反手①');
+  applyFill(rs,q,S.price);addHist({type:'市价',side:rs,price:null,avg:S.price,qty:q,status:'已成交'});
+  toast(`反手②：市价开${rs==='sell'?'空':'多'} ${fq(q)} SOL @ ${fp(S.price)}`);
+  renderPanel();req();
 }
 function checkTriggers(){
   for(const o of [...S.orders]){
-    if((o.side==='buy'&&S.price<=o.price)||(o.side==='sell'&&S.price>=o.price)){
+    if(!S.orders.includes(o)) continue;
+    if(o.type==='limit'&&((o.side==='buy'&&S.price<=o.price)||(o.side==='sell'&&S.price>=o.price))){
       S.orders=S.orders.filter(x=>x!==o);
-      let q=o.qty;
-      if(o.reduce){if(!S.pos||(o.side==='buy')===(S.pos.qty>0)) continue; q=Math.min(q,Math.abs(S.pos.qty));}
+      if(o.reduce&&!closable(o.side)){addHist({type:'限价',side:o.side,price:o.price,avg:null,qty:o.qty,status:'已撤销',reduce:true});toast('只减仓委托因无可平仓位已自动撤销','err');continue;}
+      const q=o.reduce?Math.min(o.qty,Math.abs(S.pos.qty)):o.qty;
       const rz=applyFill(o.side,q,o.price);
-      toast(`限价委托成交：${sideTxt(o.side,o.reduce)} ${fq(q)} SOL @ ${fp(o.price)}`+(rz?`，已实现盈亏 ${sg(rz)} USDT`:''));
+      addHist({type:'限价',side:o.side,price:o.price,avg:o.price,qty:q,status:'已成交',reduce:o.reduce});
+      toast(`限价委托成交：${sideTxt(o.side,o.reduce)} ${fq(q)} SOL @ ${fp(o.price)}${rzTxt(rz)}`);
+    }else if(o.type==='stop'&&(o.dir==='up'?S.price>=o.trigger:S.price<=o.trigger)){
+      S.orders=S.orders.filter(x=>x!==o);
+      const h={type:'条件',side:o.side,price:o.price,trigger:o.trigger,dir:o.dir,avg:null,qty:o.qty,reduce:o.reduce},n0=S.hist.length;
+      const err=execCore({side:o.side,qty:o.qty,price:o.price,reduce:o.reduce,src:'条件',trigger:o.trigger,dir:o.dir},'条件单已触发，');
+      if(err){addHist({...h,status:'触发失败'});toast(`条件单触发失败：${err}`,'err');}
+      else if(S.hist.length===n0) addHist({...h,status:'已触发'}); // 触发后转为限价挂单
     }
   }
   if(S.pos){
     const L=S.pos.qty>0,{tp,sl}=S.tpsl;
-    if(tp!=null&&(L?S.price>=tp:S.price<=tp)) closeAll('止盈触发');
-    else if(sl!=null&&(L?S.price<=sl:S.price>=sl)) closeAll('止损触发');
+    if(tp!=null&&(L?S.price>=tp:S.price<=tp)) closeAll('止盈触发','止盈');
+    else if(sl!=null&&(L?S.price<=sl:S.price>=sl)) closeAll('止损触发','止损');
   }
 }
 function tpslErr(tp,sl){
@@ -464,7 +558,7 @@ function layout(){
   let hi=-Infinity,lo=Infinity,vmax=0;
   for(let i=i0;i<=i1;i++){hi=Math.max(hi,c[i].h);lo=Math.min(lo,c[i].l);vmax=Math.max(vmax,c[i].v);}
   if(!isFinite(hi)){hi=G.hi||S.price*1.02;lo=G.lo||S.price*0.98;}
-  if(S.logged){const ex=[];if(S.cfg.open)S.orders.forEach(o=>ex.push(o.price));if(S.cfg.pos&&S.pos){ex.push(S.pos.entry);if(S.tpsl.tp!=null)ex.push(S.tpsl.tp);if(S.tpsl.sl!=null)ex.push(S.tpsl.sl);}
+  if(S.logged){const ex=[];if(S.cfg.open)S.orders.forEach(o=>ex.push(lpx(o)));if(S.cfg.pos&&S.pos){ex.push(S.pos.entry);if(S.tpsl.tp!=null)ex.push(S.tpsl.tp);if(S.tpsl.sl!=null)ex.push(S.tpsl.sl);}
     for(const p of ex){hi=Math.max(hi,p);lo=Math.min(lo,p);}}
   const pd=(hi-lo)*0.1||1;hi+=pd;lo-=pd;
   if(S.drag&&G.hi0){hi=G.hi0;lo=G.lo0;}
@@ -473,6 +567,7 @@ function layout(){
 const X=i=>(i-G.start+0.5)*G.barW;
 const Y=p=>8+(G.hi-p)/(G.hi-G.lo)*(G.mainH-16);
 const P=y=>G.hi-(y-8)/(G.mainH-16)*(G.hi-G.lo);
+const lpx=o=>o.type==='stop'?o.trigger:o.price;
 const inView=p=>p!=null&&p<=G.hi&&p>=G.lo;
 function niceStep(r){const e=Math.pow(10,Math.floor(Math.log10(r))),f=r/e;return (f<1.5?1:f<3?2:f<7?5:10)*e;}
 function fmtT(t,full){const d=new Date(t),md=`${pad(d.getMonth()+1)}-${pad(d.getDate())}`,hm=`${pad(d.getHours())}:${pad(d.getMinutes())}`;if(full)return TF[S.tf]>=864e5?`${d.getFullYear()}-${md}`:`${md} ${hm}`;return TF[S.tf]>=864e5?md:(hm==='00:00'?md:hm);}
@@ -529,7 +624,7 @@ function draw(){
   // 订单线（标签在 DOM）
   const lines=[];
   if(S.logged){
-    if(S.cfg.open) for(const o of S.orders){const p=S.drag&&S.drag.kind==='order'&&S.drag.id===o.id?S.drag.price:o.price;lines.push({p,col:o.side==='buy'?GREEN:RED,dash:[2,3]});}
+    if(S.cfg.open) for(const o of S.orders){const p=S.drag&&S.drag.kind==='order'&&S.drag.id===o.id?S.drag.price:lpx(o);lines.push({p,col:o.side==='buy'?GREEN:RED,dash:o.type==='stop'?[8,3,2,3]:[2,3]});}
     if(S.cfg.pos&&S.pos){
       lines.push({p:S.pos.entry,col:S.pos.qty>0?GREEN:RED,dash:[6,4]});
       for(const k of ['tp','sl']){const v=S.drag&&S.drag.kind===k?S.drag.price:S.tpsl[k];if(v!=null)lines.push({p:v,col:k==='tp'?GREEN:RED,dash:[10,5]});}
@@ -587,8 +682,8 @@ function syncOverlay(){
   };
   if(S.logged){
     if(S.cfg.open) for(const o of S.orders){
-      const p=S.drag&&S.drag.kind==='order'&&S.drag.id===o.id?S.drag.price:o.price;
-      place2('o'+o.id,'order',p,o.side==='buy'?'g':'r',el=>{el.classList.add('drag');setF(el,'t',`限价 ${o.side==='buy'?'买入':'卖出'}`);setF(el,'q',`${fq(o.qty)} SOL @ ${fp(p)}`);});
+      const p=S.drag&&S.drag.kind==='order'&&S.drag.id===o.id?S.drag.price:lpx(o),st=o.type==='stop',sd=o.side==='buy'?'买入':'卖出';
+      place2('o'+o.id,'order',p,o.side==='buy'?'g':'r',el=>{el.classList.add('drag');setF(el,'t',st?`条件 ${sd}`:`限价 ${sd}`);setF(el,'q',st?`${fq(o.qty)} SOL · 触发${o.dir==='up'?'≥':'≤'}${fp(p)} → ${o.price==null?'市价':fp(o.price)}`:`${fq(o.qty)} SOL @ ${fp(p)}`);});
     }
     if(S.cfg.pos&&S.pos){
       const L=S.pos.qty>0,pn=upnl(),roe=pn/(Math.abs(S.pos.qty)*S.pos.entry/LEV)*100;
@@ -656,10 +751,10 @@ qp.addEventListener('click',e=>{
   if(act==='x') return closeQp();
   if(act==='login'){closeQp();return needLogin();}
   if(act==='edit'){fillPanel(S.qp.price,$('#qpQty').value);closeQp();return;}
-  const ok=place({side:act,qty:parseFloat($('#qpQty').value),price:S.qp.price,reduce:false});
+  const ok=place({type:'limit',side:act,qty:parseFloat($('#qpQty').value),price:S.qp.price,reduce:false});
   if(ok) closeQp();
 });
-qp.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='qpQty'){} if(e.key==='Escape')closeQp();});
+qp.addEventListener('keydown',e=>{if(e.key==='Escape')closeQp();});
 
 /* 悬浮窗 */
 const fw=$('#float');
@@ -682,15 +777,15 @@ $('#fwHd').addEventListener('mousedown',e=>{
   document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);e.preventDefault();
 });
 $('#fwX').onclick=()=>{S.cfg.float=false;saveCfg();renderMenu();req();toast('悬浮窗已关闭，可在「图表交易设置 › 快捷下单」重新开启','info');};
-$('#fwBuy').onclick=()=>{if(place({side:'buy',qty:parseFloat($('#fwQty').value),price:null}))0;};
-$('#fwSell').onclick=()=>{if(place({side:'sell',qty:parseFloat($('#fwQty').value),price:null}))0;};
+$('#fwBuy').onclick=()=>place({type:'market',side:'buy',qty:parseFloat($('#fwQty').value),price:null});
+$('#fwSell').onclick=()=>place({type:'market',side:'sell',qty:parseFloat($('#fwQty').value),price:null});
 
 /* 线标签交互：撤单 / 平仓 / 反手 / 止盈止损 / 拖拽改价 */
 $('#ov').addEventListener('mousedown',e=>{
   e.stopPropagation();
   const el=e.target.closest('.lbl');if(!el||e.target.closest('button'))return;
   const key=el.dataset.key;let kind,id,price;
-  if(key[0]==='o'){kind='order';id=+key.slice(1);price=S.orders.find(o=>o.id===id).price;}
+  if(key[0]==='o'){kind='order';id=+key.slice(1);const o=S.orders.find(o=>o.id===id);if(!o)return;price=lpx(o);}
   else if(key==='tp'||key==='sl'){kind=key;price=S.tpsl[key];}
   else return;
   S.drag={kind,id,price,orig:price,y0:e.clientY,moved:false};
@@ -705,12 +800,20 @@ function commitDrag(){
   if(!S.net){toast('网络异常，改价未提交','err');req();return;}
   if(d.kind==='order'){
     const o=S.orders.find(x=>x.id===d.id);if(!o){req();return;}
-    S.orders=S.orders.filter(x=>x!==o);
-    const cross=o.side==='buy'?d.price>=S.price:d.price<=S.price;
-    if(cross){
-      if(!o.reduce&&incMargin(o.side,o.qty,S.price)>avail()+1e-9){S.orders.push(o);toast('可用保证金不足，改价未生效','err');req();return;}
-      const rz=applyFill(o.side,o.qty,S.price);toast(`新委托价已越过最新价，已按市价成交 ${fq(o.qty)} SOL @ ${fp(S.price)}`+(rz?`，已实现盈亏 ${sg(rz)} USDT`:''));
-    }else{S.orders.push({...o,id:S.oid++,price:d.price});toast(`委托价已修改为 ${fp(d.price)}，重新排队`,'info');}
+    if(o.type==='stop'){
+      if(o.dir==='up'?d.price<=S.price:d.price>=S.price){toast(`触发价须${o.dir==='up'?'高于':'低于'}最新价，已恢复原价`,'err');req();return;}
+      o.trigger=d.price;toast(`条件单触发价已修改为 ${fp(d.price)}`,'info');
+    }else{
+      const cross=o.side==='buy'?d.price>=S.price:d.price<=S.price;
+      if(cross){
+        S.orders=S.orders.filter(x=>x!==o);
+        const err=execCore({side:o.side,qty:o.qty,price:d.price,reduce:o.reduce},'新委托价已越过最新价，');
+        if(err){S.orders.push(o);toast(err+'，改价未生效','err');}
+      }else{
+        if(!o.reduce&&o.qty*(d.price-o.price)/LEV>avail()+1e-9){toast('可用保证金不足，改价未生效','err');req();return;}
+        o.price=d.price;o.ts=Date.now();toast(`委托价已修改为 ${fp(d.price)}，重新排队`,'info');
+      }
+    }
   }else{
     const nx={...S.tpsl,[d.kind]:d.price},err=tpslErr(nx.tp,nx.sl);
     if(err){toast(err+'，已恢复原价','err');}
@@ -721,19 +824,18 @@ function commitDrag(){
 $('#ov').addEventListener('click',e=>{
   const b=e.target.closest('button[data-a]');if(!b)return;
   const key=b.closest('.lbl').dataset.key,a=b.dataset.a;
-  if(!S.net&&a!=='tpsl'){toast('网络异常，请稍后重试','err');return;}
-  if(a==='cancel'){const id=+key.slice(1),o=S.orders.find(x=>x.id===id);S.orders=S.orders.filter(x=>x.id!==id);toast(`已撤单：限价${o.side==='buy'?'买入':'卖出'} ${fq(o.qty)} SOL @ ${fp(o.price)}`,'info');}
-  else if(a==='rm'){S.tpsl[key]=null;toast(`已撤销${key==='tp'?'止盈':'止损'}`,'info');}
-  else if(a==='close') closeModal();
-  else if(a==='rev'){
-    const q=Math.abs(S.pos.qty),rs=S.pos.qty>0?'sell':'buy';
-    if(q*S.price/LEV>avail()+q*S.pos.entry/LEV+1e-9){toast('可用保证金不足，无法反手','err');return;}
-    const rz=applyFill(rs,q,S.price);toast(`反手①：市价平仓 ${fq(q)} SOL，已实现盈亏 ${sg(rz)} USDT`);
-    applyFill(rs,q,S.price);toast(`反手②：市价开${rs==='sell'?'空':'多'} ${fq(q)} SOL @ ${fp(S.price)}`);
-  }
-  else if(a==='tpsl') tpslModal();
-  renderPanel();req();
+  posAction(a,key);
 });
+/* 图上标签与仓位区共用的操作 */
+function posAction(a,key){
+  if(a==='tpsl'){if(S.pos)tpslModal();return;}
+  if(!guard())return;
+  if(a==='cancel') doCancel(+String(key).replace('o',''));
+  else if(a==='rm'){S.tpsl[key]=null;toast(`已撤销${key==='tp'?'止盈':'止损'}`,'info');}
+  else if(a==='close'){if(S.pos)closeModal();}
+  else if(a==='rev') doReverse();
+  renderPanel();req();
+}
 
 /* ---------------- 图表鼠标 ---------------- */
 function rel(e){const r=chartEl.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
@@ -785,37 +887,61 @@ $$('.ctool .tf').forEach(el=>el.onclick=()=>{
 function renderTf(){$$('.ctool .tf').forEach(el=>el.classList.toggle('on',el.dataset.tf===S.tf));}
 
 /* ---------------- 右侧下单区 ---------------- */
-const ipP=$('#ipPrice'),ipQ=$('#ipQty'),unit=$('#unit'),slider=$('#slider');
-function pxForCalc(){return S.ot==='market'?S.price:(parseFloat(ipP.value)||S.price);}
+const ipP=$('#ipPrice'),ipT=$('#ipTrig'),ipQ=$('#ipQty'),unit=$('#unit'),slider=$('#slider');
+function pxForCalc(){
+  if(S.ot==='market')return S.price;
+  if(S.ot==='stop')return (S.stopMkt?parseFloat(ipT.value):parseFloat(ipP.value))||parseFloat(ipT.value)||S.price;
+  return parseFloat(ipP.value)||S.price;
+}
 function curQtyBase(){const v=parseFloat(ipQ.value);if(!(v>0))return 0;const p=pxForCalc();return unit.value==='qty'?v:unit.value==='cost'?v*LEV/p:v/p;}
 function showQty(base){const p=pxForCalc();const v=unit.value==='qty'?base:unit.value==='cost'?base*p/LEV:base*p;ipQ.value=base>0?fp(v).replace(/\.?0+$/,''):'';}
+function setQtyBase(q){unit.value='qty';lastUnit='qty';ipQ.value=q>0?fq(q):'';}
 function fillPanel(price,qtyStr){
   setOc('open');setOt('limit');ipP.value=fp(price);
-  const q=parseFloat(qtyStr);if(q>0){unit.value='qty';ipQ.value=fq(q);}
+  const q=parseFloat(qtyStr);if(q>0)setQtyBase(q);
   $('#priceBox').classList.remove('flash');void $('#priceBox').offsetWidth;$('#priceBox').classList.add('flash');
   ipQ.focus();renderPanel();
 }
 function setOc(v){S.oc=v;$$('#ocTab button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
-  if(v==='close'&&S.pos){unit.value='qty';ipQ.value=fq(Math.abs(S.pos.qty));slider.value=100;}else{ipQ.value='';slider.value=0;}
+  if(v==='close'&&S.pos){setQtyBase(Math.abs(S.pos.qty));slider.value=100;}else{ipQ.value='';slider.value=0;}
   renderPanel();}
-function setOt(v){S.ot=v;$$('#otype button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$('#priceBox').style.display=v==='limit'?'flex':'none';$('#mkBox').style.display=v==='market'?'flex':'none';renderPanel();}
+function setOt(v){
+  S.ot=v;$$('#otype button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  const st=v==='stop';
+  $('#trigBox').style.display=st?'flex':'none';$('#trigHint').style.display=st?'block':'none';
+  $('#priceBox').style.display=v!=='market'?'flex':'none';$('#mkBox').style.display=v==='market'?'flex':'none';
+  $('#stopMkt').style.display=st?'inline':'none';$('#bbo').style.display=st&&S.stopMkt?'none':'';
+  $('#priceBox').classList.toggle('dis',st&&S.stopMkt);
+  ipP.placeholder=st&&S.stopMkt?'以市价成交':'';if(st&&S.stopMkt)ipP.value='';
+  renderPanel();
+}
 $('#ocTab').onclick=e=>{const b=e.target.closest('button');if(b)setOc(b.dataset.v);};
 $('#otype').onclick=e=>{const b=e.target.closest('button');if(b)setOt(b.dataset.v);};
 $('#bbo').onclick=()=>{ipP.value=fp(S.price);renderPanel();};
+$('#bboT').onclick=()=>{ipT.value=fp(S.price);renderPanel();};
+$('#stopMkt').onclick=e=>{e.preventDefault();S.stopMkt=!S.stopMkt;$('#stopMkt').classList.toggle('on',S.stopMkt);setOt('stop');};
 let lastUnit='qty';
 unit.onchange=()=>{const nu=unit.value;unit.value=lastUnit;const b=curQtyBase();unit.value=nu;lastUnit=nu;showQty(b);renderPanel();};
 slider.oninput=()=>{const pct=+slider.value/100;const base=S.oc==='close'?(S.pos?Math.abs(S.pos.qty):0):maxOpen(pxForCalc());showQty(r2(base*pct));renderPanel();};
 $$('.sl .mk span').forEach(s=>s.onclick=()=>{slider.value=s.dataset.p;slider.oninput();});
-ipQ.oninput=()=>{slider.value=0;renderPanel();};ipP.oninput=renderPanel;
+ipQ.oninput=()=>{slider.value=0;renderPanel();};ipP.oninput=renderPanel;ipT.oninput=renderPanel;
 $('#btns').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.a==='login'){needLogin();return;}
-  const side=b.dataset.side,price=S.ot==='market'?null:parseFloat(ipP.value);
-  if(S.ot==='limit'&&!(price>0)){toast('请输入价格','err');return;}
-  const ok=place({side,qty:curQtyBase(),price,reduce:S.oc==='close'});
-  if(ok){ipQ.value='';slider.value=0;renderPanel();}
+  const side=b.dataset.side,ot=S.ot,reduce=S.oc==='close';
+  const price=ot==='market'||(ot==='stop'&&S.stopMkt)?null:parseFloat(ipP.value);
+  if(price===null&&ot==='limit'||ot!=='market'&&price!==null&&!(price>0)){toast('请输入价格','err');return;}
+  const o={type:ot,side,qty:curQtyBase(),price,reduce};
+  if(ot==='stop')o.trigger=parseFloat(ipT.value);
+  if(place(o)){ipQ.value='';slider.value=0;renderPanel();}
 });
 function renderPanel(){
+  renderBottom();
+  if(S.ot==='stop'){
+    const tr=parseFloat(ipT.value),th=$('#trigHint');
+    const t=tr>0?(tr===S.price?'<span class="r">触发价不能等于最新价</span>':`最新价 ${tr>S.price?'≥':'≤'} <b>${fp(tr)}</b> 时触发，以${S.stopMkt?'市价':'限价'}下单`):'触发价格类型：最新价格';
+    if(th._t!==t){th.innerHTML=t;th._t=t;}
+  }
   $('#opAvail').textContent=S.logged?fm(avail()):'--';
   const bt=$('#btns');
   if(!S.logged){if(bt._m!=='out'){bt.innerHTML='<div><button class="big lg" data-a="login">登录</button></div><div><button class="big rg" data-a="login">注册</button></div>';bt._m='out';}return;}
@@ -833,9 +959,59 @@ function renderPanel(){
   const g=mode==='open'?fm(q*p/LEV)+' USDT':'-- USDT';$('#gB').textContent=g;$('#gS').textContent=g;
 }
 
+
+/* ---------------- 仓位区 ---------------- */
+const fts=t=>{const d=new Date(t);return `${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;};
+const SYM='<span class="sym2">SOLUSDT<small>永续</small></span>';
+const dirTd=(side,reduce)=>`<span class="${side==='buy'?'g':'r'}">${sideTxt(side,reduce)}</span>`;
+const trigTd=o=>o.trigger!=null?`最新价 ${o.dir==='up'?'≥':'≤'} ${fp(o.trigger)}`:'--';
+function bpSig(){return [S.logged,S.bt,S.pos?S.pos.qty+'|'+S.pos.entry:'',S.tpsl.tp,S.tpsl.sl,S.orders.map(o=>o.id+':'+lpx(o)+':'+o.price).join(','),S.hist.length,S.hist[0]?S.hist[0].ts+S.hist[0].status:''].join('#');}
+function bpHTML(){
+  if(!S.logged) return '<div class="empty"><span>登录后查看仓位与委托</span><button data-a="login">登录</button></div>';
+  const empty=t=>`<div class="empty"><span>${t}</span></div>`;
+  if(S.bt==='pos'){
+    if(!S.pos) return empty('暂无仓位');
+    const p=S.pos,L=p.qty>0;
+    return `<table><tr><th>合约</th><th>数量</th><th>开仓价格</th><th>标记价格</th><th>强平价格</th><th>保证金</th><th>未实现盈亏 (收益率)</th><th>止盈 / 止损</th><th>操作</th></tr>
+      <tr><td><span class="bar" style="background:${L?'var(--green)':'var(--red)'}"></span>${SYM}<small class="s" style="margin-left:6px">全仓 ${LEV}x</small></td>
+      <td class="${L?'g':'r'}">${L?'':'-'}${fq(Math.abs(p.qty))} SOL</td><td>${fp(p.entry)}</td><td id="bpMark"></td><td id="bpLiq" title="演示估算，上线复用现有强平价格计算"></td>
+      <td>${fm(Math.abs(p.qty)*p.entry/LEV)} USDT</td><td id="bpPnl"></td>
+      <td>${S.tpsl.tp!=null?`<span class="g">${fp(S.tpsl.tp)}</span>`:'--'} / ${S.tpsl.sl!=null?`<span class="r">${fp(S.tpsl.sl)}</span>`:'--'}<span class="ed" data-a="tpsl" title="设置止盈止损">✎</span></td>
+      <td><span class="lnk" data-a="close">市价平仓</span><span class="lnk" data-a="rev">反手</span></td></tr></table>`;
+  }
+  if(S.bt==='open'){
+    if(!S.orders.length) return empty('暂无委托');
+    const rows=[...S.orders].sort((a,b)=>b.ts-a.ts).map(o=>`<tr><td class="s">${fts(o.ts)}</td><td>${SYM}</td><td>${o.type==='stop'?(o.price==null?'条件 · 市价':'条件 · 限价'):'限价'}</td><td>${dirTd(o.side,o.reduce)}</td><td>${trigTd(o)}</td><td>${o.price==null?'市价':fp(o.price)}</td><td>${fq(o.qty)} SOL</td><td>${o.reduce?'是':'否'}</td><td><span class="lnk" data-a="cancel" data-id="${o.id}">撤单</span></td></tr>`).join('');
+    return `<table><tr><th>时间</th><th>合约</th><th>类型</th><th>方向</th><th>触发条件</th><th>委托价格</th><th>数量</th><th>只减仓</th><th>操作</th></tr>${rows}</table>`;
+  }
+  if(!S.hist.length) return empty('暂无历史委托');
+  const stc={'已成交':'ok','已撤销':'','已触发':'tr','触发失败':'no'};
+  const rows=S.hist.map(h=>`<tr><td class="s">${fts(h.ts)}</td><td>${SYM}</td><td>${h.type}</td><td>${dirTd(h.side,h.reduce)}</td><td>${trigTd(h)}</td><td>${h.price==null?'市价':fp(h.price)}</td><td>${h.avg==null?'--':fp(h.avg)}</td><td>${fq(h.qty)} SOL</td><td><span class="st ${stc[h.status]}">${h.status}</span></td></tr>`).join('');
+  return `<table><tr><th>时间</th><th>合约</th><th>类型</th><th>方向</th><th>触发条件</th><th>委托价格</th><th>成交均价</th><th>数量</th><th>状态</th></tr>${rows}</table>`;
+}
+function renderBottom(){
+  $('#cPos').textContent=S.logged&&S.pos?1:0;$('#cOpen').textContent=S.logged?S.orders.length:0;
+  const rt=S.logged&&S.bt==='open'&&S.orders.length?'<span class="lnk" style="color:var(--yellow);cursor:pointer" data-a="cancelAll">全部撤销</span>':'';
+  const r=$('#bpRt');if(r._h!==rt){r.innerHTML=rt;r._h=rt;}
+  const body=$('#bpBody'),sig=bpSig();
+  if(body._s!==sig){body._s=sig;body.innerHTML=bpHTML();}
+  if(S.logged&&S.bt==='pos'&&S.pos){
+    const pn=upnl(),roe=pn/(Math.abs(S.pos.qty)*S.pos.entry/LEV)*100,lp=liqPrice();
+    $('#bpMark').textContent=fp(S.price-0.01);$('#bpLiq').textContent=lp?fp(lp):'--';
+    const e=$('#bpPnl');e.textContent=`${sg(pn)} USDT (${sg(roe)}%)`;e.className=pn>=0?'g':'r';
+  }
+}
+$('#bpTabs').onclick=e=>{const b=e.target.closest('button[data-t]');if(!b)return;S.bt=b.dataset.t;$$('#bpTabs button').forEach(x=>x.classList.toggle('on',x===b));renderBottom();};
+$('#bpRt').onclick=e=>{if(e.target.closest('[data-a="cancelAll"]'))cancelAll();};
+$('#bpBody').onclick=e=>{
+  const a=e.target.closest('[data-a]');if(!a)return;const act=a.dataset.a;
+  if(act==='login')return needLogin();
+  posAction(act,act==='cancel'?a.dataset.id:undefined);
+};
+
 /* ---------------- 弹窗 / 提示 ---------------- */
 function toast(msg,type){const d=document.createElement('div');d.className='ts '+(type||'');d.textContent=msg;$('#toast').appendChild(d);setTimeout(()=>d.remove(),2600);}
-function showModal(html){$('#md').innerHTML=html;$('#mask').style.display='flex';}
+function showModal(html){modalTick=null;$('#md').innerHTML=html;$('#mask').style.display='flex';}
 function hideModal(){$('#mask').style.display='none';}
 $('#mask').addEventListener('click',e=>{if(e.target.id==='mask'||e.target.closest('[data-m="x"]'))hideModal();});
 function needLogin(){
