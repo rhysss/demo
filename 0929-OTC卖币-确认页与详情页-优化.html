@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OTC 卖币 · 确认页与详情页(优化)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#16b96a;--green-d:#12a25d;
+  --red:#f0424e;--orange:#ff8f1f;
+  --txt:#1f2329;--txt2:#5b6069;--txt3:#8a9099;--txt4:#aab0b8;
+  --card:#f6f7f9;--line:#eceef1;--bg:#e9ebef;
+}
+body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;color:var(--txt);padding:26px 24px 40px}
+.cap{max-width:860px;margin:0 auto 20px;background:#fff;border:1px solid #dfe3e8;border-radius:12px;padding:12px 16px;font-size:12.5px;color:#5b6069;line-height:1.9}
+.cap b{color:var(--green-d)}
+.cap .t{font-weight:700;color:var(--txt);margin-right:6px}
+.stage{display:flex;gap:44px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.col{display:flex;flex-direction:column;align-items:center;gap:12px}
+.col .name{font-size:13px;color:#6b7079;font-weight:600}
+
+.phone{width:360px;height:740px;background:#fff;border-radius:38px;border:9px solid #111417;box-shadow:0 22px 50px rgba(0,0,0,.28);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.sb{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;flex-shrink:0}
+.sb .t{font-size:15px;font-weight:600}
+.sb .r{display:flex;align-items:center;gap:6px}
+.nav{height:50px;display:flex;align-items:center;padding:0 14px;position:relative;flex-shrink:0}
+.nav .bk{width:34px;height:34px;border-radius:50%;background:#f2f3f5;display:flex;align-items:center;justify-content:center}
+.nav .ti{position:absolute;left:0;right:0;text-align:center;font-size:17px;font-weight:700;pointer-events:none}
+.nav .cs{margin-left:auto;width:34px;height:34px;display:flex;align-items:center;justify-content:center}
+.body{flex:1;overflow:hidden;padding:6px 18px 0}
+
+/* note */
+.note{background:var(--card);border-radius:10px;padding:11px 12px;display:flex;gap:8px;font-size:12px;color:var(--txt3);line-height:1.6;margin-bottom:16px}
+.note svg{flex-shrink:0;margin-top:1px}
+
+/* confirm rows */
+.crow{display:flex;justify-content:space-between;align-items:baseline;padding:13px 2px;font-size:14px}
+.crow .k{color:var(--txt3)}
+.crow .v{color:var(--txt);font-weight:600;font-variant-numeric:tabular-nums}
+.crow .v .u{color:var(--txt3);font-weight:400;font-size:12px;margin-left:3px}
+.crow.recv .k{color:var(--txt2)}
+.crow.recv .v{font-size:20px;font-weight:800}
+.crow.recv .v .u{font-size:13px}
+.hr{height:1px;background:var(--line);margin:2px 0}
+.pm{display:flex;align-items:center;gap:8px}
+.pm .bank{display:flex;align-items:center;gap:7px;font-weight:600}
+.pm .ic{width:24px;height:24px;border-radius:6px;background:#eef7f1;display:flex;align-items:center;justify-content:center}
+
+.foot{padding:14px 18px 20px;flex-shrink:0}
+.btn{height:50px;border-radius:25px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;width:100%}
+.btn.green{background:var(--green);color:#fff}
+.btn.ghost{background:#fff;border:1px solid #dfe3e8;color:var(--txt2)}
+.home{width:120px;height:5px;border-radius:3px;background:#111;opacity:.85;margin:12px auto 0}
+
+/* detail */
+.st{text-align:center;font-size:22px;font-weight:800;color:var(--orange);padding:6px 0 2px}
+.side{text-align:center;font-size:14px;margin-bottom:14px}
+.side .s{color:var(--red);font-weight:700;margin-right:5px}
+.hint{background:#fff7ec;border:1px solid #ffe4c2;border-radius:10px;padding:10px 12px;font-size:12px;color:#a5691a;line-height:1.6;display:flex;gap:7px;margin-bottom:14px}
+.card{background:var(--card);border-radius:14px;padding:4px 14px}
+.drow{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;font-size:13.5px;border-bottom:1px solid #edeff2}
+.drow:last-child{border-bottom:none}
+.drow .k{color:var(--txt3)}
+.drow .v{color:var(--txt);font-weight:500;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:5px}
+.drow.recv .v{font-weight:800;font-size:16px}
+.copy{color:var(--green);font-size:12px}
+.badge{display:inline-flex;align-items:center;gap:6px}
+.badge .ic{width:22px;height:22px;border-radius:6px;background:#eef7f1;display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+<div class="cap">
+  <span class="t">优化后 · OTC 卖币</span>字段两页统一:<b>汇率→单价</b>(补全 1 USDT≈)、<b>订单金额/获得→到账金额</b>、<b>数量→卖出数量</b>、<b>实际数量→交易数量</b>(对齐后台);按计算链排序 单价→卖出数量→手续费→交易数量→到账金额;<b>到账金额加粗强调</b>;进行中加打款说明;移除语义不明的悬浮球。<br>
+  数据示例:卖出 30.8845 − 手续费 0.8995 = 交易数量 29.985 ×6.67 = 到账 200.00 CNY(⚠️ 当前为内扣模型,手续费率待确认)。
+</div>
+
+<div class="stage">
+
+  <!-- 确认订单 -->
+  <div class="col">
+    <div class="name">① 确认订单</div>
+    <div class="phone">
+      <div class="sb"><span class="t">15:32</span><span class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><path d="M8.5 3.2c1.9 0 3.6.7 4.9 1.9M8.5 6.4c1 0 2 .4 2.7 1.1M8.5 9.3l.01.01" stroke="#1f2329" stroke-width="1.4" stroke-linecap="round"/></svg><svg width="24" height="12" viewBox="0 0 24 12"><rect x="1" y="1" width="19" height="10" rx="2.5" fill="none" stroke="#1f2329" stroke-opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.3" fill="#1f2329"/><rect x="21" y="4" width="2" height="4" rx="1" fill="#1f2329" fill-opacity=".5"/></svg></span></div>
+      <div class="nav"><div class="bk"><svg width="10" height="17" viewBox="0 0 10 17" fill="none"><path d="M8 1L1.5 8.5 8 16" stroke="#1f2329" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ti">确认订单</div></div>
+      <div class="body">
+        <div class="note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#aab0b8" stroke-width="1.8"/><path d="M12 11v5" stroke="#aab0b8" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1" fill="#aab0b8"/></svg><span>价格会根据市场行情而变化,最终以实际成交价为准。</span></div>
+        <div class="crow"><span class="k">单价</span><span class="v">1 USDT ≈ 6.67 CNY</span></div>
+        <div class="crow"><span class="k">卖出数量</span><span class="v">30.8845<span class="u">USDT</span></span></div>
+        <div class="crow"><span class="k">手续费</span><span class="v">0.8995<span class="u">USDT</span></span></div>
+        <div class="crow"><span class="k">交易数量</span><span class="v">29.985<span class="u">USDT</span></span></div>
+        <div class="hr"></div>
+        <div class="crow recv"><span class="k">到账金额</span><span class="v">200.00<span class="u">CNY</span></span></div>
+        <div class="hr"></div>
+        <div class="crow"><span class="k">交易方式</span><span class="v"><span class="pm"><span class="bank"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 9h16M5 9l7-4 7 4M6 9v8M18 9v8M10 9v8M14 9v8M4 18h16" stroke="#16b96a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>交通银行(*9077)</span></span></span></div>
+      </div>
+      <div class="foot"><div class="btn green">创建订单(29s)</div><div class="home"></div></div>
+    </div>
+  </div>
+
+  <!-- 订单详情 -->
+  <div class="col">
+    <div class="name">② 订单详情(进行中)</div>
+    <div class="phone">
+      <div class="sb"><span class="t">15:37</span><span class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><path d="M8.5 3.2c1.9 0 3.6.7 4.9 1.9M8.5 6.4c1 0 2 .4 2.7 1.1M8.5 9.3l.01.01" stroke="#1f2329" stroke-width="1.4" stroke-linecap="round"/></svg><svg width="24" height="12" viewBox="0 0 24 12"><rect x="1" y="1" width="19" height="10" rx="2.5" fill="none" stroke="#1f2329" stroke-opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.3" fill="#1f2329"/><rect x="21" y="4" width="2" height="4" rx="1" fill="#1f2329" fill-opacity=".5"/></svg></span></div>
+      <div class="nav"><div class="bk"><svg width="10" height="17" viewBox="0 0 10 17" fill="none"><path d="M8 1L1.5 8.5 8 16" stroke="#1f2329" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ti">订单详情</div><div class="cs"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f2329" stroke-width="1.7" stroke-linecap="round"><path d="M5 12a7 7 0 0 1 14 0"/><rect x="3.5" y="12" width="4" height="6" rx="2"/><rect x="16.5" y="12" width="4" height="6" rx="2"/></svg></div></div>
+      <div class="body" style="overflow-y:auto">
+        <div class="st">进行中</div>
+        <div class="side"><span class="s">卖出</span>30.8845 USDT</div>
+        <div class="hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#e0982f" stroke-width="1.8"/><path d="M12 7.5v5l3 2" stroke="#e0982f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>已受理,等待平台打款,预计 5 分钟内到账。如超时未到账可联系客服。</span></div>
+        <div class="card">
+          <div class="drow"><span class="k">单价</span><span class="v">1 USDT ≈ 6.67 CNY</span></div>
+          <div class="drow"><span class="k">卖出数量</span><span class="v">30.8845 USDT</span></div>
+          <div class="drow"><span class="k">手续费</span><span class="v">0.8995 USDT</span></div>
+          <div class="drow"><span class="k">交易数量</span><span class="v">29.985 USDT</span></div>
+          <div class="drow recv"><span class="k">到账金额</span><span class="v">200.00 CNY</span></div>
+          <div class="drow"><span class="k">交易方式</span><span class="v">银行转账</span></div>
+          <div class="drow"><span class="k">账户信息</span><span class="v"><span class="badge"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 9h16M5 9l7-4 7 4M6 9v8M18 9v8M10 9v8M14 9v8M4 18h16" stroke="#16b96a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>交通银行(*9077)</span></span></div>
+          <div class="drow"><span class="k">订单编号</span><span class="v">BI5674...054812 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16b96a" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg></span></div>
+          <div class="drow"><span class="k">下单时间</span><span class="v">2026-09-29 15:34:21</span></div>
+        </div>
+      </div>
+      <div class="foot"><div class="btn ghost">联系客服</div><div class="home"></div></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
