@@ -76,7 +76,7 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang
 </head>
 <body>
 <div class="cap">
-  <span class="t">优化后 · OTC 买卖币</span>四页字段统一:<b>单价 / 手续费</b> 通用;卖出侧 <b>卖出数量→交易数量→到账金额(CNY)</b>,买入侧 <b>购买数量→到账数量(USDT)+支付金额(CNY)</b>;均按计算链排序、<b>到账加粗强调</b>;进行中/待支付加状态说明;买入详情落「<b>继续支付</b>」入口(切 IP 后复用原单,不新建)。<br>
+  <span class="t">优化后 · OTC 买卖币</span>四页字段统一:<b>单价 / 手续费</b> 通用;卖出侧 <b>卖出数量→交易数量→到账金额(CNY)</b>,买入侧 <b>买入数量→到账数量(USDT)+支付金额(CNY)</b>;均按计算链排序、<b>到账加粗强调</b>;进行中/待支付加状态说明;买入详情落「<b>继续支付</b>」入口(切 IP 后复用原单,不新建)。<br>
   买入详情状态由「进行中」改为「<b>待支付</b>」——有支付倒计时+继续支付即代表尚未付款,用"进行中"会误导。<br>
   <span style="color:#b26a12">⚠️ 当前为内扣模型、手续费率/单价为示例值,待确认。</span>
 </div>
@@ -144,7 +144,7 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang
         <div class="note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#aab0b8" stroke-width="1.8"/><path d="M12 11v5" stroke="#aab0b8" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1" fill="#aab0b8"/></svg><span>价格会根据市场行情而变化,最终以实际成交价为准。付款后由商家放币。</span></div>
         <div class="crow"><span class="k">单价</span><span class="v">1 USDT ≈ 6.81 CNY</span></div>
         <div class="crow"><span class="k">支付金额</span><span class="v">200.00<span class="u">CNY</span></span></div>
-        <div class="crow"><span class="k">购买数量</span><span class="v">29.3685<span class="u">USDT</span></span></div>
+        <div class="crow"><span class="k">买入数量</span><span class="v">29.3685<span class="u">USDT</span></span></div>
         <div class="crow"><span class="k">手续费</span><span class="v">0.3524<span class="u">USDT</span></span></div>
         <div class="hr"></div>
         <div class="crow recv"><span class="k">到账数量</span><span class="v">29.0161<span class="u">USDT</span></span></div>
@@ -167,7 +167,7 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang
         <div class="card">
           <div class="drow"><span class="k">单价</span><span class="v">1 USDT ≈ 6.81 CNY</span></div>
           <div class="drow"><span class="k">支付金额</span><span class="v">200.00 CNY</span></div>
-          <div class="drow"><span class="k">购买数量</span><span class="v">29.3685 USDT</span></div>
+          <div class="drow"><span class="k">买入数量</span><span class="v">29.3685 USDT</span></div>
           <div class="drow"><span class="k">手续费</span><span class="v">0.3524 USDT</span></div>
           <div class="drow recv"><span class="k">到账数量</span><span class="v">29.0161 USDT</span></div>
           <div class="drow"><span class="k">交易方式</span><span class="v"><span class="chip">CHIPPAY</span></span></div>
