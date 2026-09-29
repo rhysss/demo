@@ -69,7 +69,6 @@ table.grid{width:100%;border-collapse:collapse}
 .st{display:inline-flex;align-items:center;gap:6px}
 .st i{width:6px;height:6px;border-radius:50%;display:inline-block}
 .st-pending i{background:#fa8c16}.st-pending{color:#d46b08}
-.st-sending i{background:#4265f4}
 .st-done i{background:#52c41a}
 .st-rejected i{background:#bfbfbf}.st-rejected{color:#8f959e}
 .st-failed i{background:#f5222d}.st-failed{color:#cf1322}
@@ -105,16 +104,6 @@ table.grid{width:100%;border-collapse:collapse}
 .party .row{display:flex;padding:4px 0;font-size:12.5px}
 .party .row .k{width:74px;color:#8f959e;flex-shrink:0}
 .party .row .v{word-break:break-all}
-.legs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.leg{border:1px solid #ebeef5;border-radius:4px;padding:10px 12px}
-.leg .lt{font-size:12px;color:#8f959e;margin-bottom:6px}
-.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:3px;border:1px solid}
-.pill-frozen{color:#d46b08;background:#fff7e6;border-color:#ffd591}
-.pill-wait{color:#646a73;background:#f5f5f5;border-color:#d9d9d9}
-.pill-ok{color:#389e0d;background:#f6ffed;border-color:#b7eb8f}
-.pill-back{color:#0958d9;background:#e6f4ff;border-color:#91caff}
-.pill-no{color:#8f959e;background:#fafafa;border-color:#e5e6eb}
-.leg .ld{font-size:12px;color:#646a73;margin-top:6px;line-height:1.6}
 .alert{border-radius:4px;padding:8px 12px;font-size:12.5px;margin-top:10px}
 .alert-err{background:#fff1f0;border:1px solid #ffccc7;color:#cf1322}
 .alert-info{background:#f3f5fe;border:1px solid #d6defc;color:#3a4a8a}
@@ -143,6 +132,12 @@ textarea.ctrl{width:100%;height:76px;padding:8px 10px;resize:vertical}
 .cfm .acts{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
 .toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#1f2329;color:#fff;padding:8px 16px;border-radius:4px;font-size:13px;z-index:70;opacity:0;transition:.2s;pointer-events:none}
 .toast.on{opacity:1}
+.new{display:inline-block;font-size:10.5px;font-weight:500;color:#1a7f37;background:#e6f7ea;border:1px solid #b7e4c2;border-radius:3px;padding:0 4px;line-height:15px;vertical-align:1px}
+.scroll{overflow-x:auto}
+.scroll .grid td,.scroll .grid th{font-size:12.5px}
+.fix-l{position:sticky;left:0;background:#fff;z-index:1;box-shadow:1px 0 0 #ebeef5}
+.fix-r{position:sticky;right:0;background:#fff;z-index:1;box-shadow:-1px 0 0 #ebeef5}
+.grid th.fix-l,.grid th.fix-r{background:#f5f7fa}
 </style>
 </head>
 <body>
@@ -150,38 +145,46 @@ textarea.ctrl{width:100%;height:76px;padding:8px 10px;resize:vertical}
 
   <!-- 优化说明（原型标注，可收起） -->
   <div class="note-card" id="noteCard">
-    <h4>📌 本次优化说明（原型标注，上线无此区块）<button onclick="toggleNote()" id="noteBtn">收起</button></h4>
+    <h4>📌 本轮优化说明（原型标注，上线无此区块）<button onclick="toggleNote()" id="noteBtn">收起</button></h4>
     <div id="noteBody">
+      <div style="margin-bottom:4px">列表<b>保留现网全部列与筛选项</b>不删不并，只做新增；表头带 <span class="new">新增</span> 的是本轮加的。</div>
       <table>
-        <tr><th>调整</th><th>字段 / 功能</th><th>原因</th></tr>
-        <tr><td class="tag-del">删除</td><td>列表「用户ID」「ID」</td><td>用户ID 与 UID 值完全相同；ID 为内部主键，放进抽屉</td></tr>
-        <tr><td class="tag-mod">合并</td><td>「内部提现 是/否」→「类型：链上提现 / 站内转账」；筛选项同步</td><td>“是/否”语义不直观</td></tr>
-        <tr><td class="tag-mod">合并</td><td>用户ID / UID / 邮箱 / 手机 与 付款方UID / 邮箱 / 手机 → 统一为「付款方」</td><td>站内转账时两组值完全重复；链上提现时付款方即发起人</td></tr>
-        <tr><td class="tag-mod">合并</td><td>「接收地址/用户」+ 链名称 + 网络 + 收款方UID →「接收方」一列</td><td>链上显示地址+链/网络，站内显示收款方UID；ETH/Ethereum 两列冗余</td></tr>
-        <tr><td class="tag-mod">移入抽屉</td><td>付款方/收款方邮箱与手机号、付款腿/收款腿、是否机审、审核时间、发送次数/时间/失败原因、交易哈希、区块高度</td><td>列表只留定位与判断字段，明细在抽屉看</td></tr>
-        <tr><td class="tag-mod">改名</td><td>「发送数量」→「到账数量」；「流水号」「订单号」统一叫「订单号」；「提现时间」→「创建时间」</td><td>筛选项叫订单号、列表叫流水号，口径不一致</td></tr>
-        <tr><td class="tag-mod">改口径</td><td>付款腿/收款腿去掉红色「缺失」，改成 已冻结 / 待入账 / 已扣款 / 已入账 / 已解冻退回 / 不入账</td><td>待审核时显示「缺失」像是出了故障；按「提交即冻结」规则显示</td></tr>
-        <tr><td class="tag-mod">修数据</td><td>站内转账的发送状态/次数/区块高度显示「—」；未审核的审核时间显示「—」；「已取消 + 未通过」改为「已拒绝」</td><td>现网站内转账显示「提现成功 + 未发送 + 区块高度 0」，自相矛盾；未审核的单子也有审核时间</td></tr>
-        <tr><td class="tag-add">新增</td><td>状态快捷 Tab（含待审核计数）、审核人、审核备注、完成时间、留言（站内）、审核方式筛选</td><td>审核需要留痕；审核员主要处理「待审核」队列</td></tr>
-        <tr><td class="tag-add">新增</td><td>损益里加「站内转入 / 站内转出」统计 <span class="warn">⚠️ 口径待确认</span></td><td>现在入金只统计站外充值，拿站内转账进来的钱去提现，风控看不到钱的来源</td></tr>
-        <tr><td class="tag-mod">交互</td><td>点整行或「详情」都能打开抽屉，任何状态都能打开；审核统一在抽屉底部（去掉原来的站内转账审核弹窗）</td><td>审核站内转账时也要看损益</td></tr>
+        <tr><th>调整</th><th>字段 / 功能</th><th>说明</th></tr>
+        <tr><td class="tag-add">新增</td><td>操作列「详情」</td><td>任何状态都能打开抽屉；点整行也能打开。待审核的单子另有「审核」，打开后直接定位到审核区</td></tr>
+        <tr><td class="tag-add">新增</td><td>列「审核人」</td><td>审核留痕；机审显示「系统」</td></tr>
+        <tr><td class="tag-add">新增</td><td>快捷 Tab「全部 / 待审核（计数）」</td><td>审核员主要处理待审核的单子</td></tr>
+        <tr><td class="tag-add">新增</td><td>详情抽屉：订单信息、付款方 / 收款方（原图 6 的字段）、链上发送、用户损益、审核 / 审核记录</td><td>站内转账与链上提现都在抽屉底部审核，去掉原来的站内转账审核弹窗</td></tr>
+        <tr><td class="tag-add">新增</td><td>抽屉内：审核备注、完成时间、留言（站内转账）</td><td>—</td></tr>
+        <tr><td class="tag-add">新增</td><td>损益加「站内转入 / 站内转出」统计 <span class="warn">⚠️ 口径待确认</span></td><td>现在入金只算站外充值，看不到站内转入的资金来源</td></tr>
+        <tr><td class="tag-del">删除</td><td>付款腿 / 收款腿（列表与抽屉都不展示）</td><td>PM 决策</td></tr>
+        <tr><th colspan="3">站内转账放进提现表（不加列，只调内转行的显示）</th></tr>
+        <tr><td class="tag-mod">内转行</td><td>「内部提现」列的「是」加紫色标签</td><td>在混合列表里一眼分出内转</td></tr>
+        <tr><td class="tag-mod">内转行</td><td>「接收地址/用户」显示「UID 1」</td><td>和链上地址区分开</td></tr>
+        <tr><td class="tag-mod">内转行</td><td>链名称、网络、发送状态/时间/次数、交易哈希、区块高度一律显示「-」</td><td>现网内转显示「未发送」、次数 0、区块高度 0，和「提现成功」矛盾；内转不上链，没有这些信息</td></tr>
+        <tr><td class="tag-mod">内转行</td><td>手续费 0，发送数量 = 提现数量</td><td>内转免手续费（R-04）</td></tr>
+        <tr><td class="tag-mod">内转行</td><td>未审核时审核时间显示「-」</td><td>现网未审核的单子也有审核时间</td></tr>
+        <tr><td class="tag-mod">筛选</td><td>付款方UID / 收款方UID 加提示「仅内转」</td><td>链上提现没有收款方UID，避免误用</td></tr>
+        <tr><td class="tag-mod">币种合计</td><td>按「链上提现 / 站内转账」分开合计，已取消不计入</td><td>内转只是用户之间划转，不是平台流出；混在一起会把出金算多</td></tr>
       </table>
     </div>
   </div>
 
-  <!-- 筛选 -->
+  <!-- 筛选（与现网一致） -->
   <div class="filter-card">
     <div class="filter-grid">
-      <div class="f-item"><label>类型</label><select class="ctrl" id="fType"><option value="">全部</option><option value="chain">链上提现</option><option value="p2p">站内转账</option></select></div>
-      <div class="f-item"><label>付款方UID</label><input class="ctrl" id="fPayer" placeholder="请输入"></div>
-      <div class="f-item"><label>收款方UID</label><input class="ctrl" id="fPayee" placeholder="仅站内转账"></div>
-      <div class="f-item"><label>邮箱/手机号</label><input class="ctrl" id="fContact" placeholder="付款方邮箱或手机号"></div>
+      <div class="f-item"><label>用户ID</label><input class="ctrl" id="fUser"></div>
+      <div class="f-item"><label>UID</label><input class="ctrl" id="fUid"></div>
       <div class="f-item"><label>国家</label><select class="ctrl" id="fCountry"><option value="">请选择</option><option>CN</option><option>SG</option></select></div>
-      <div class="f-item"><label>币种名称</label><select class="ctrl" id="fCoin"><option value="">请选择</option><option>USDT</option></select></div>
-      <div class="f-item"><label>链名称</label><select class="ctrl" id="fChain"><option value="">请选择</option><option>ETH</option><option>TRON</option></select></div>
-      <div class="f-item"><label>审核方式</label><select class="ctrl" id="fMode"><option value="">请选择</option><option>人工审核</option><option>机审</option></select></div>
-      <div class="f-item"><label>订单号</label><input class="ctrl" id="fOrder" placeholder="请输入"></div>
-      <div class="f-item"><label>创建时间</label><div class="date-range"><span class="muted">🕒</span><input placeholder="开始时间"><span class="muted">-</span><input placeholder="结束时间"></div></div>
+      <div class="f-item"><label>手机号码</label><input class="ctrl" id="fPhone" placeholder="请输入"></div>
+      <div class="f-item"><label>邮箱</label><input class="ctrl" id="fEmail" placeholder="请输入"></div>
+      <div class="f-item"><label>链名称</label><select class="ctrl" id="fChain"><option value="">请选择</option><option>BSC</option><option>TRON</option></select></div>
+      <div class="f-item"><label>币种名称</label><select class="ctrl" id="fCoin"><option value="">请选择</option><option>USDT</option><option>100XT</option></select></div>
+      <div class="f-item"><label>提现状态</label><select class="ctrl" id="fStatus"><option value="">请选择</option><option>处理中</option><option>提现成功</option><option>已取消</option></select></div>
+      <div class="f-item"><label>内部提现</label><select class="ctrl" id="fInner"><option value="">请选择</option><option value="p2p">是</option><option value="chain">否</option></select></div>
+      <div class="f-item"><label>订单号</label><input class="ctrl" id="fOrder"></div>
+      <div class="f-item"><label>付款方UID</label><input class="ctrl" id="fPayer" style="width:110px" placeholder="仅内转"></div>
+      <div class="f-item"><label>收款方UID</label><input class="ctrl" id="fPayee" style="width:110px" placeholder="仅内转"></div>
+      <div class="f-item"><label>提现时间</label><div class="date-range"><span class="muted">🕒</span><input placeholder="开始时间"><span class="muted">-</span><input placeholder="结束时间"></div></div>
       <div class="f-item"><button class="btn btn-primary" onclick="render()">搜索</button><button class="btn btn-default" onclick="resetFilter()">重置</button></div>
     </div>
   </div>
@@ -189,20 +192,25 @@ textarea.ctrl{width:100%;height:76px;padding:8px 10px;resize:vertical}
   <!-- 表格 -->
   <div class="table-card">
     <div class="toolbar">
-      <div class="tabs" id="tabs"></div>
       <button class="btn btn-primary" onclick="toggleSum()" id="sumBtn">显示币种合计</button>
+      <div class="tabs" id="tabs"></div>
     </div>
     <div class="sum-bar" id="sumBar"></div>
+    <div class="scroll">
     <table class="grid">
       <thead><tr>
-        <th>订单号</th><th>类型</th><th>付款方</th><th>接收方</th><th>币种</th>
-        <th class="r">数量</th><th class="r">手续费</th><th class="r">到账数量</th>
-        <th>状态</th><th>审核</th><th>创建时间(UTC+8)</th><th>操作</th>
+        <th class="fix-l">用户ID</th><th>ID</th><th>内部提现</th><th>UID</th><th>邮箱</th><th>国家</th><th>手机号码</th>
+        <th>链名称</th><th>网络</th><th>币种名称</th><th>流水号</th><th>接收地址/用户</th>
+        <th>提现数量</th><th>手续费</th><th>提现状态</th><th>发送数量</th><th>是否机审</th><th>审核状态</th>
+        <th>审核时间(UTC+8)</th><th>审核人 <span class="new">新增</span></th><th>发送状态</th><th>发送时间(UTC+8)</th><th>发送次数</th><th>发送失败原因</th>
+        <th>交易哈希</th><th>区块高度</th><th>创建时间(UTC+8)</th><th class="fix-r">操作</th>
       </tr></thead>
       <tbody id="tbody"></tbody>
     </table>
+    </div>
     <div class="pager"><span id="total"></span><span class="p">‹</span><span class="p on">1</span><span class="p">›</span></div>
   </div>
+</div>
 </div>
 
 <!-- 抽屉 -->
@@ -233,36 +241,50 @@ textarea.ctrl{width:100%;height:76px;padding:8px 10px;resize:vertical}
 // ---------- 模拟数据 ----------
 const USERS = {
   '1000260': {uid:'1000260', email:'eslyq607@gmail.com', phone:'13333333333', country:'CN', kyc:'高级认证', name:'bdjdbd', regDays:386},
-  '23':      {uid:'23', email:'ymlqbltj7tkp1he@proton.me', phone:'-', country:'SG', kyc:'初级认证', name:'-', regDays:512},
-  '1009459': {uid:'1009459', email:'000009@qq.com', phone:'-', country:'CN', kyc:'未认证', name:'-', regDays:12},
-  '1006527': {uid:'1006527', email:'0303@qq.com', phone:'-', country:'CN', kyc:'初级认证', name:'-', regDays:47},
+  '1':       {uid:'1', email:'qpm9njwwd56q5c6@gmail.com', phone:'', country:'SG', kyc:'高级认证', name:'-', regDays:890},
+  '1006527': {uid:'1006527', email:'0303@qq.com', phone:'', country:'CN', kyc:'初级认证', name:'-', regDays:47},
+  '1009459': {uid:'1009459', email:'000009@qq.com', phone:'', country:'CN', kyc:'未认证', name:'-', regDays:12},
   '1002431': {uid:'1002431', email:'1234@qq.com', phone:'13574102580', country:'CN', kyc:'高级认证', name:'wang**', regDays:203},
-  '1':       {uid:'1', email:'qpm9njwwd56q5c6@gmail.com', phone:'-', country:'SG', kyc:'高级认证', name:'-', regDays:890},
-  '1003318': {uid:'1003318', email:'lucas.t@gmail.com', phone:'-', country:'SG', kyc:'高级认证', name:'Lu***s', regDays:260}
+  '10149986':{uid:'10149986', email:'a13375685268@163.com', phone:'', country:'', kyc:'高级认证', name:'-', regDays:95},
+  '10001125':{uid:'10001125', email:'657521399@qq.com', phone:'', country:'', kyc:'高级认证', name:'-', regDays:410},
+  '10221986':{uid:'10221986', email:'thisneeds2b@simplelogin.com', phone:'', country:'', kyc:'未认证', name:'-', regDays:3},
+  '10150101':{uid:'10150101', email:'2485655405@qq.com', phone:'', country:'', kyc:'初级认证', name:'-', regDays:88},
+  '10150110':{uid:'10150110', email:'3347716017@qq.com', phone:'', country:'', kyc:'高级认证', name:'-', regDays:88},
+  '10155244':{uid:'10155244', email:'15937111382@163.com', phone:'', country:'', kyc:'高级认证', name:'-', regDays:71},
+  '10094378':{uid:'10094378', email:'1297481712@qq.com', phone:'', country:'', kyc:'高级认证', name:'-', regDays:130},
+  '10150657':{uid:'10150657', email:'3918101983@qq.com', phone:'', country:'', kyc:'初级认证', name:'-', regDays:87},
+  '10186690':{uid:'10186690', email:'2598304727@qq.com', phone:'', country:'', kyc:'高级认证', name:'-', regDays:40}
 };
-// status: pending 待审核 / sending 发送中 / done 已完成 / rejected 已拒绝 / failed 发送失败
+// 内部状态：pending 待审核 / done 已完成 / rejected 已拒绝 / failed 发送失败；列表按现网文案展示
+const D = '2026-09-29 ';
 let ROWS = [
-  {id:533, order:'21e8deec-bbd0-11f1-8520-32d33bab5af0', type:'p2p', payer:'1000260', payee:'1', coin:'USDT', amount:'1', fee:'0', status:'pending', mode:'人工审核', createdAt:'2026-09-29 14:36:42', memo:'还款'},
-  {id:532, order:'OTCM1790590588213', type:'chain', payer:'23', chain:'TRON', network:'TRON', addr:'TXk9mQ2vE7RwdPf3nU8aLc4ZyHbT1sGo6J', coin:'USDT', amount:'100', fee:'0', status:'rejected', mode:'人工审核', createdAt:'2026-09-28 18:15:31', audit:{by:'ops_amy', at:'2026-09-28 18:16:42', remark:'接收地址命中风险地址库'}, hot:'52810.33'},
-  {id:531, order:'9fc083fc-b806-11f1-9a1e-5e2b0d7c14a2', type:'p2p', payer:'1009459', payee:'1', coin:'USDT', amount:'1', fee:'0', status:'pending', mode:'人工审核', createdAt:'2026-09-24 18:56:41', memo:''},
-  {id:530, order:'64c79cef-b806-11f1-8c33-2a9f41e07b55', type:'p2p', payer:'1006527', payee:'1009459', coin:'USDT', amount:'1', fee:'0', status:'done', mode:'人工审核', createdAt:'2026-09-24 18:55:02', doneAt:'2026-09-24 18:55:28', audit:{by:'ops_lily', at:'2026-09-24 18:55:28', remark:''}, memo:'饭钱'},
-  {id:529, order:'ee4146c6-b805-11f1-a7d0-7e11c93b5f08', type:'p2p', payer:'1002431', payee:'1', coin:'USDT', amount:'1', fee:'0', status:'pending', mode:'人工审核', createdAt:'2026-09-24 18:51:43', memo:''},
-  {id:528, order:'90954537-b805-11f1-b2f4-1c6d8e3a9b70', type:'p2p', payer:'1002431', payee:'1', coin:'USDT', amount:'1', fee:'0', status:'pending', mode:'人工审核', createdAt:'2026-09-24 18:49:06', memo:''},
-  {id:527, order:'8e674460-b803-11f1-8f5a-6b0c2e4d7a19', type:'chain', payer:'1000260', chain:'TRON', network:'TRON', addr:'TQ7nGv3kP9sLw2XhZc5RbF8uJ4mYdE1aTo', coin:'USDT', amount:'10', fee:'1', status:'rejected', mode:'人工审核', createdAt:'2026-09-24 18:34:43', audit:{by:'ops_amy', at:'2026-09-24 18:35:02', remark:'用户申请撤回'}, hot:'52810.33'},
-  {id:526, order:'125a06f3-b803-11f1-819d-46a24ed8633f', type:'chain', payer:'1000260', chain:'ETH', network:'Ethereum', addr:'0x7a3F9c21E4b8D05a6C1e2F93dB47c8A0e5F6B129', coin:'USDT', amount:'5', fee:'0.00001', status:'pending', mode:'人工审核', createdAt:'2026-09-24 18:31:15', hot:'0'},
-  {id:525, order:'099d0659-b7fa-11f1-93c7-0d4e5a6f2b81', type:'chain', payer:'1000260', chain:'ETH', network:'Ethereum', addr:'0x7a3F9c21E4b8D05a6C1e2F93dB47c8A0e5F6B129', coin:'USDT', amount:'11', fee:'0.00001', status:'failed', mode:'人工审核', createdAt:'2026-09-24 17:26:35', audit:{by:'ops_lily', at:'2026-09-24 17:28:10', remark:''}, send:{count:3, reason:'热钱包余额不足', at:'2026-09-24 17:40:02'}, hot:'0'},
-  {id:524, order:'e5928587-b7f9-11f1-80a2-3f7c1d9e6b04', type:'chain', payer:'1003318', chain:'TRON', network:'TRON', addr:'TMa81pZ6cWq3YvRn7Ek2sDxL9gHuF4jBo5', coin:'USDT', amount:'200', fee:'1', status:'done', mode:'机审', createdAt:'2026-09-24 17:25:35', doneAt:'2026-09-24 17:26:58', audit:{by:'系统', at:'2026-09-24 17:25:36', remark:'机审通过'}, send:{count:1, reason:'', at:'2026-09-24 17:25:40', hash:'9c1e5b7a02d44f8e8a3b6c0d91f2e7a54b8c3d6e1f0a9b2c7d4e5f6a8b9c0d1e', height:'67581342'}, hot:'52810.33'},
-  {id:523, order:'c1f40a9e-b7f2-11f1-8d6b-2e9a0c5b7f13', type:'chain', payer:'1002431', chain:'TRON', network:'TRON', addr:'TVb2Kx8mQ5nPw7Ls3Rd9Fy1HcZ4gJt6Eu0', coin:'USDT', amount:'50', fee:'1', status:'sending', mode:'人工审核', createdAt:'2026-09-24 16:58:20', audit:{by:'ops_lily', at:'2026-09-24 17:02:44', remark:''}, send:{count:1, reason:'', at:'2026-09-24 17:02:50', hash:'', height:''}, hot:'52810.33'}
+  {id:6166, order:'f03b9e41-bbd2-11f1-9c07-4a1e6d2b8c55', type:'chain', payer:'10150101', chain:'BSC', network:'BSC', addr:'0xd6cDa173A76e0b4F9c21a8E35d7B6f02C4e9a1D3', coin:'USDT', amount:'50', fee:'0.8', status:'pending', mode:'人工审核', createdAt:D+'14:40:11', hot:'0'},
+  {id:6165, order:'21e8deec-bbd0-11f1-8520-32d33bab5af0', type:'p2p', payer:'1000260', payee:'1', coin:'USDT', amount:'1', fee:'0', status:'pending', mode:'人工审核', createdAt:D+'14:36:42', memo:'还款'},
+  {id:6164, order:'64c79cef-bbcf-11f1-8c33-2a9f41e07b55', type:'p2p', payer:'1006527', payee:'1009459', coin:'USDT', amount:'20', fee:'0', status:'done', mode:'人工审核', createdAt:D+'14:31:02', doneAt:D+'14:31:28', audit:{by:'ops_lily', at:D+'14:31:28', remark:''}, memo:'饭钱'},
+  {id:6163, order:'ee4146c6-bbcf-11f1-a7d0-7e11c93b5f08', type:'p2p', payer:'1002431', payee:'1', coin:'USDT', amount:'5', fee:'0', status:'rejected', mode:'人工审核', createdAt:D+'14:29:40', audit:{by:'ops_amy', at:D+'14:30:05', remark:'收款方为风险账户'}, memo:''},
+  {id:6162, order:'ac8a7106-bbce-11f1-8a3d-1f5c7e9b2d40', type:'chain', payer:'10149986', chain:'BSC', network:'BSC', addr:'0x6662aec706bF5a1D9e3C07b48f2A6d1E9c5B8a73', coin:'USDT', amount:'201', fee:'0.8', status:'done', mode:'人工审核', createdAt:D+'14:26:15', doneAt:D+'14:28:06', audit:{by:'ops_lily', at:D+'14:28:05', remark:''}, send:{count:1, at:D+'14:28:06', hash:'0x460101628d4a7e2b9c5f18d3a6e0b47c2f9d815e3a6b7c4d0e2f9a8b1c3d5e7f', height:'124668699'}, hot:'86210.4'},
+  {id:6161, order:'478ea23d-bbc6-11f1-b6e2-3c8d0a5f7e19', type:'chain', payer:'10001125', chain:'BSC', network:'BSC', addr:'0x2db1ff9a0570f3C8e6B2d94A1f7e05c3D8b6A2e4', coin:'USDT', amount:'1000.8', fee:'0.8', status:'done', mode:'人工审核', createdAt:D+'13:26:10', doneAt:D+'13:30:50', audit:{by:'ops_lily', at:D+'13:30:31', remark:''}, send:{count:1, at:D+'13:30:50', hash:'0x9ff8ecff96d6fd2a4b7c1e9d3f5a8b0c6e2d4f7a9b1c3e5d7f0a2b4c6d8e0f1a', height:'124661063'}, hot:'86210.4'},
+  {id:6160, order:'d752650e-bbbe-11f1-93a4-6e0f2b8d1c57', type:'chain', payer:'10221986', chain:'BSC', network:'BSC', addr:'0x5396a7bFC55f1E8d3A0c6B9e2F47d5a8C1b3E6f0', coin:'USDT', amount:'8.72', fee:'0.8', status:'rejected', mode:'人工审核', createdAt:D+'12:32:55', audit:{by:'ops_amy', at:D+'12:47:12', remark:'新注册账户，地址与多账户重复'}, hot:'86210.4'},
+  {id:6159, order:'e2a8cb26-bbb9-11f1-8f21-0b4d6c9e3a78', type:'chain', payer:'10150101', chain:'BSC', network:'BSC', addr:'0xd6cDa173A76e0b4F9c21a8E35d7B6f02C4e9a1D3', coin:'USDT', amount:'101', fee:'0.8', status:'done', mode:'人工审核', createdAt:D+'11:57:27', doneAt:D+'12:01:49', audit:{by:'ops_lily', at:D+'12:01:20', remark:''}, send:{count:1, at:D+'12:01:49', hash:'0xf5c6acfcf7a2d3e8b1c4f6a9d0e2b5c7f8a1d3e6b9c0f2a4d7e8b1c3f5a6d9e0', height:'124649204'}, hot:'86210.4'},
+  {id:6158, order:'1b83927c-bbb9-11f1-a0c5-5d7e9f1b3a26', type:'chain', payer:'10221986', chain:'BSC', network:'BSC', addr:'0x5396a7bFC55f1E8d3A0c6B9e2F47d5a8C1b3E6f0', coin:'USDT', amount:'8.72', fee:'0.8', status:'rejected', mode:'人工审核', createdAt:D+'11:51:53', audit:{by:'ops_amy', at:D+'12:26:39', remark:'新注册账户，地址与多账户重复'}, hot:'86210.4'},
+  {id:6157, order:'ace0721d-bbb7-11f1-9b48-2f6a8c0e4d13', type:'chain', payer:'10150110', chain:'TRON', network:'TRON', addr:'TNtzQdktsSh3tNf8Kp2Lm6Xw9Rb4Vc7Ya1', coin:'USDT', amount:'103.5', fee:'1.5', status:'done', mode:'人工审核', createdAt:D+'11:41:37', doneAt:D+'11:43:18', audit:{by:'ops_lily', at:D+'11:42:58', remark:''}, send:{count:1, at:D+'11:43:18', hash:'bfc3a893bace2a6d1e8f4b7c0a3d5e9f2b6c8a1d4e7f0b3c5a8d2e6f9b1c4a7d', height:'86660317'}, hot:'52810.33'},
+  {id:6156, order:'65b18a18-bbb6-11f1-8d73-4a9c1e5f7b02', type:'chain', payer:'10155244', chain:'BSC', network:'BSC', addr:'0xb76119A05112dC4e8F3a6B0d9E7c2A5f1D8b4C63', coin:'USDT', amount:'120', fee:'0.8', status:'done', mode:'人工审核', createdAt:D+'11:32:28', doneAt:D+'11:33:47', audit:{by:'ops_amy', at:D+'11:33:41', remark:''}, send:{count:1, at:D+'11:33:47', hash:'0x06ca833e1c34f7a2d9b5e8c1f4a6d0b3e7c9f2a5d8b1e4c6f0a3d7b9e2c5f8a1', height:'124645465'}, hot:'86210.4'},
+  {id:6155, order:'7a17493c-bbb2-11f1-b1e9-7c3e5a9d0f64', type:'chain', payer:'10094378', chain:'TRON', network:'TRON', addr:'TCZhAZsV9KFLnq3Pw7Xe2Rm5Bd8Hc4Jt6U', coin:'USDT', amount:'406.700001', fee:'1.5', status:'done', mode:'人工审核', createdAt:D+'11:04:25', doneAt:D+'11:05:47', audit:{by:'ops_lily', at:D+'11:05:32', remark:''}, send:{count:1, at:D+'11:05:47', hash:'5a7a81f6714525c8e3b9d0f2a6c4e7b1d5f8a2c9e0b3d6f4a7c1e8b2d5f9a0c3', height:'86659565'}, hot:'52810.33'},
+  {id:6154, order:'c48a6a03-bbb1-11f1-9e26-1b5d7f9a3c80', type:'chain', payer:'10150657', chain:'BSC', network:'BSC', addr:'0x5ddb0b078b7e4A1c9D2f6E3b8a05C7d1F4e9B2a6', coin:'100XT', amount:'15', fee:'0.01', status:'done', mode:'人工审核', createdAt:D+'10:59:20', doneAt:D+'11:03:46', audit:{by:'ops_amy', at:D+'11:03:31', remark:''}, send:{count:1, at:D+'11:03:46', hash:'L47847724bd84c1e9f3a6d0b8e2c5f7a1d4b9e6c3f0a8d2b5e7c1f4a9d6b3e0c8', height:'0'}, hot:'1200000'},
+  {id:6153, order:'895d7da6-bba9-11f1-8c14-3e7a9c1d5f26', type:'chain', payer:'10186690', chain:'BSC', network:'BSC', addr:'0xd7c885193fe4B2a6E1d9C3f7a0B5e8D2c4F6a1b9', coin:'USDT', amount:'288.8', fee:'0.8', status:'done', mode:'人工审核', createdAt:D+'10:00:25', doneAt:D+'10:02:14', audit:{by:'ops_lily', at:D+'10:02:03', remark:''}, send:{count:1, at:D+'10:02:14', hash:'0xf7af389bc4c95e2d8a1b6f3c9e0d4a7b2f5c8e1d3a6b9f0c2e5d8a1b4f7c3e6d', height:'124633269'}, hot:'86210.4'}
 ];
-const STATUS = {pending:'待审核', sending:'发送中', done:'已完成', rejected:'已拒绝', failed:'发送失败'};
-const TAB_KEYS = ['all','pending','sending','done','rejected','failed'];
+// 现网文案映射
+const WD_STATUS = {pending:'处理中', done:'提现成功', rejected:'已取消', failed:'处理中'};
+const AUDIT_STATUS = {pending:'未审核', done:'已通过', rejected:'未通过', failed:'已通过'};
+const STATUS = {pending:'待审核', done:'已完成', rejected:'已拒绝', failed:'发送失败'};
+const sendStatus = r => r.type==='p2p' ? '-' : ({pending:'未发送', rejected:'未发送', done:'已发送', failed:'发送失败'}[r.status]);
 let curTab = 'all', showSum = false, curId = null;
 
 // ---------- 工具 ----------
 const $ = id => document.getElementById(id);
-const sub = (a,b) => { const d = Math.max(dec(a),dec(b)); return (Number(a)-Number(b)).toFixed(d).replace(/\.?0+$/,'') || '0'; };
 const dec = s => (String(s).split('.')[1]||'').length;
-const shortOrder = o => o.length > 14 ? o.slice(0,8)+'…'+o.slice(-4) : o;
+const sub = (a,b) => { const d = Math.max(dec(a),dec(b)); return (Number(a)-Number(b)).toFixed(d).replace(/\.?0+$/,'') || '0'; };
+const trunc = (s, n) => s && s.length > n ? s.slice(0, n)+'...' : (s || '');
 const shortAddr = a => a.slice(0,6)+'…'+a.slice(-4);
 const recv = r => sub(r.amount, r.fee);
 const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -274,56 +296,51 @@ function filtered(ignoreTab){
   const v = id => $(id).value.trim();
   return ROWS.filter(r => {
     const p = USERS[r.payer];
-    if (v('fType') && r.type !== v('fType')) return false;
-    if (v('fPayer') && r.payer !== v('fPayer')) return false;
-    if (v('fPayee') && r.payee !== v('fPayee')) return false;
-    if (v('fContact') && !(p.email.includes(v('fContact')) || p.phone.includes(v('fContact')))) return false;
+    if (v('fUser') && r.payer !== v('fUser')) return false;
+    if (v('fUid') && r.payer !== v('fUid')) return false;
     if (v('fCountry') && p.country !== v('fCountry')) return false;
-    if (v('fCoin') && r.coin !== v('fCoin')) return false;
+    if (v('fPhone') && !p.phone.includes(v('fPhone'))) return false;
+    if (v('fEmail') && !p.email.includes(v('fEmail'))) return false;
     if (v('fChain') && r.chain !== v('fChain')) return false;
-    if (v('fMode') && r.mode !== v('fMode')) return false;
+    if (v('fCoin') && r.coin !== v('fCoin')) return false;
+    if (v('fStatus') && WD_STATUS[r.status] !== v('fStatus')) return false;
+    if (v('fInner') && r.type !== v('fInner')) return false;
     if (v('fOrder') && !r.order.includes(v('fOrder'))) return false;
-    if (!ignoreTab && curTab !== 'all' && r.status !== curTab) return false;
+    if (v('fPayer') && !(r.type==='p2p' && r.payer === v('fPayer'))) return false;
+    if (v('fPayee') && r.payee !== v('fPayee')) return false;
+    if (!ignoreTab && curTab === 'pending' && r.status !== 'pending') return false;
     return true;
   });
 }
 function renderTabs(){
-  const base = filtered(true);
-  $('tabs').innerHTML = TAB_KEYS.map(k => {
-    const n = k==='all' ? base.length : base.filter(r=>r.status===k).length;
-    const badge = k==='pending' ? `<span class="cnt">${n}</span>` : `<span class="cnt plain">${n}</span>`;
-    return `<button class="tab ${curTab===k?'on':''}" onclick="setTab('${k}')">${k==='all'?'全部':STATUS[k]}${badge}</button>`;
-  }).join('');
+  const base = filtered(true), n = base.filter(r=>r.status==='pending').length;
+  $('tabs').innerHTML = `<button class="tab ${curTab==='all'?'on':''}" onclick="setTab('all')">全部<span class="cnt plain">${base.length}</span></button>
+    <button class="tab ${curTab==='pending'?'on':''}" onclick="setTab('pending')">待审核<span class="cnt">${n}</span></button>
+    <span class="new" style="align-self:center">新增</span>`;
 }
 function setTab(k){ curTab = k; render(); }
-function auditCell(r){
-  if (r.status === 'pending') return `<span class="muted">${r.mode}</span> · <span class="st-pending">未审核</span>`;
-  const res = r.status==='rejected' ? '<span style="color:#cf1322">拒绝</span>' : '<span style="color:#389e0d">通过</span>';
-  return `<div>${r.mode} · ${res}</div><div class="sub">${esc(r.audit.by)} · ${r.audit.at.slice(5,16)}</div>`;
-}
 function render(){
   renderTabs();
   const list = filtered();
   $('total').textContent = `共 ${list.length} 条`;
-  if (!list.length){ $('tbody').innerHTML = `<tr><td colspan="12" class="empty">暂无符合条件的记录</td></tr>`; renderSum(list); return; }
+  if (!list.length){ $('tbody').innerHTML = `<tr><td colspan="28" class="empty">暂无数据</td></tr>`; renderSum(list); return; }
   $('tbody').innerHTML = list.map(r => {
-    const p = USERS[r.payer];
-    const to = r.type==='chain'
-      ? `<div class="num">${shortAddr(r.addr)} <span class="link" onclick="copy('${r.addr}',event)">复制</span></div><div class="sub">${r.chain} · ${r.network}</div>`
-      : `<div>UID ${r.payee}</div><div class="sub">站内账户</div>`;
+    const p = USERS[r.payer], chain = r.type==='chain', s = r.send || {}, a = r.audit;
+    const cs = r.status==='failed' ? 'color:#cf1322' : '';
     return `<tr class="${curId===r.id?'active':''}" onclick="openDrawer(${r.id})">
-      <td><span class="num">${shortOrder(r.order)}</span> <span class="link" onclick="copy('${r.order}',event)">复制</span></td>
-      <td><span class="type-tag ${r.type==='chain'?'type-chain':'type-p2p'}">${r.type==='chain'?'链上提现':'站内转账'}</span></td>
-      <td>${p.uid}<span class="cty">${p.country}</span></td>
-      <td>${to}</td>
-      <td>${r.coin}</td>
-      <td class="r num">${r.amount}</td>
-      <td class="r num">${r.fee}</td>
-      <td class="r num">${recv(r)}</td>
-      <td><span class="st st-${r.status}"><i></i>${STATUS[r.status]}</span></td>
-      <td>${auditCell(r)}</td>
-      <td class="num">${r.createdAt}</td>
-      <td><div class="ops">
+      <td class="fix-l">${p.uid}</td><td>${r.id}</td><td>${chain?'否':'<span class="type-tag type-p2p">是</span>'}</td><td>${p.uid}</td>
+      <td title="${esc(p.email)}">${esc(trunc(p.email,14))}</td><td>${p.country}</td><td>${p.phone}</td>
+      <td>${chain?r.chain:'-'}</td><td>${chain?r.network:'-'}</td><td>${r.coin}</td>
+      <td class="num">${trunc(r.order,13)}</td>
+      <td class="num" title="${chain?r.addr:'收款方UID '+r.payee}">${chain?trunc(r.addr,15):'UID '+r.payee}</td>
+      <td>${r.amount}</td><td>${r.fee}</td><td>${WD_STATUS[r.status]}</td><td>${recv(r)}</td>
+      <td>${r.mode}</td><td>${AUDIT_STATUS[r.status]}</td>
+      <td>${a?a.at:'-'}</td><td>${a?esc(a.by):'-'}</td>
+      <td style="${cs}">${sendStatus(r)}</td><td>${chain?(s.at||'-'):'-'}</td><td>${chain?(s.count??0):'-'}</td>
+      <td style="${cs}">${s.reason?esc(s.reason):''}</td>
+      <td class="num">${chain&&s.hash?trunc(s.hash,14):'-'}</td><td>${chain?(s.height??0):'-'}</td>
+      <td>${r.createdAt}</td>
+      <td class="fix-r"><div class="ops">
         ${r.status==='pending' ? `<span class="link" onclick="event.stopPropagation();openDrawer(${r.id},true)">审核</span>` : ''}
         <span class="link" onclick="event.stopPropagation();openDrawer(${r.id})">详情</span>
         <span class="link" onclick="copyInfo(${r.id},event)">复制信息</span>
@@ -336,10 +353,17 @@ function renderSum(list){
   const bar = $('sumBar');
   bar.classList.toggle('on', showSum);
   if (!showSum) return;
-  const coins = {};
-  list.forEach(r => { coins[r.coin] = coins[r.coin] || {amt:0, fee:0, n:0}; coins[r.coin].amt += +r.amount; coins[r.coin].fee += +r.fee; coins[r.coin].n++; });
-  bar.innerHTML = Object.keys(coins).length ? Object.entries(coins).map(([c,s]) =>
-    `<span>${c}：${s.n} 笔 · 数量 <b class="num">${+s.amt.toFixed(8)}</b> · 手续费 <b class="num">${+s.fee.toFixed(8)}</b> · 到账 <b class="num">${+(s.amt-s.fee).toFixed(8)}</b></span>`).join('')
+  // 链上提现是平台真实流出，站内转账只是用户间划转，分开合计避免虚增出金
+  const g = {};
+  list.filter(r => r.status !== 'rejected').forEach(r => {
+    const k = r.coin + '|' + r.type;
+    g[k] = g[k] || {coin:r.coin, type:r.type, amt:0, fee:0, n:0};
+    g[k].amt += +r.amount; g[k].fee += +r.fee; g[k].n++;
+  });
+  const rows = Object.values(g).sort((a,b) => a.type.localeCompare(b.type));
+  bar.innerHTML = rows.length ? rows.map(s =>
+    `<span><span class="type-tag ${s.type==='chain'?'type-chain':'type-p2p'}">${s.type==='chain'?'链上提现':'站内转账'}</span> ${s.coin}：${s.n} 笔 · 数量 <b class="num">${+s.amt.toFixed(8)}</b> · 手续费 <b class="num">${+s.fee.toFixed(8)}</b></span>`).join('')
+    + '<span class="muted">已取消不计入</span>'
     : '<span>当前筛选无数据</span>';
 }
 function toggleSum(){ showSum = !showSum; $('sumBtn').textContent = showSum ? '隐藏币种合计' : '显示币种合计'; render(); }
@@ -347,17 +371,10 @@ function resetFilter(){ document.querySelectorAll('.filter-card input, .filter-c
 function copyInfo(id, e){
   const r = ROWS.find(x=>x.id===id);
   const to = r.type==='chain' ? `接收地址：${r.addr}（${r.chain}/${r.network}）` : `收款方UID：${r.payee}`;
-  copy(`订单号：${r.order}\n类型：${r.type==='chain'?'链上提现':'站内转账'}\n付款方UID：${r.payer}\n${to}\n币种：${r.coin}\n数量：${r.amount}\n手续费：${r.fee}\n状态：${STATUS[r.status]}`, e);
+  copy(`流水号：${r.order}\n内部提现：${r.type==='chain'?'否':'是'}\nUID：${r.payer}\n${to}\n币种：${r.coin}\n提现数量：${r.amount}\n手续费：${r.fee}\n提现状态：${WD_STATUS[r.status]}`, e);
 }
 function toggleNote(){ const b=$('noteBody'); const h=b.style.display==='none'; b.style.display=h?'':'none'; $('noteBtn').textContent=h?'收起':'展开'; }
-
 // ---------- 抽屉 ----------
-function legs(r){
-  // 站内转账：提交即冻结，通过才扣款入账，拒绝解冻退回（R-22）
-  if (r.status==='pending') return [['pill-frozen','已冻结',`提交时已冻结付款方 ${r.amount} ${r.coin}，审核通过后扣款`],['pill-wait','待入账','审核通过后与扣款同时入账']];
-  if (r.status==='done')    return [['pill-ok','已扣款',`${r.audit.at} 扣款 ${r.amount} ${r.coin}`],['pill-ok','已入账',`${r.audit.at} 入账 ${r.amount} ${r.coin}`]];
-  return [['pill-back','已解冻退回',`${r.audit.at} 冻结金额已全额退回付款方`],['pill-no','不入账','审核拒绝，收款方不入账']];
-}
 function party(title, u){
   return `<div class="party"><h5><span>${title}</span><span class="muted">UID ${u.uid}</span></h5><div class="rows">
     <div class="row"><span class="k">邮箱</span><span class="v">${esc(u.email)}</span></div>
@@ -416,7 +433,7 @@ function openDrawer(id, focusAudit){
     const s = r.send || {}, low = Number(r.hot) < Number(recv(r));
     const noSend = r.status==='pending' || r.status==='rejected';
     fund = `<div class="sec"><div class="sec-t">链上发送</div><div class="kv">
-      <div class="it"><span class="k">发送状态</span><span class="v">${noSend?'未发送':(r.status==='sending'?'发送中':r.status==='done'?'发送成功':'<span style="color:#cf1322">发送失败</span>')}</span></div>
+      <div class="it"><span class="k">发送状态</span><span class="v">${noSend?'未发送':(r.status==='done'?'发送成功':'<span style="color:#cf1322">发送失败</span>')}</span></div>
       <div class="it"><span class="k">发送次数</span><span class="v">${s.count??0}</span></div>
       <div class="it"><span class="k">发送时间</span><span class="v num">${s.at||'—'}</span></div>
       <div class="it full"><span class="k">失败原因</span><span class="v">${s.reason?`<span style="color:#cf1322">${esc(s.reason)}</span>`:'—'}</span></div>
@@ -426,13 +443,7 @@ function openDrawer(id, focusAudit){
     </div>
     ${low && (r.status==='pending'||r.status==='failed') ? `<div class="alert alert-err">热钱包（${r.chain}-${r.coin}）余额不足，审核通过后将无法发送，请先补充热钱包余额</div>` : ''}
     </div>`;
-  } else {
-    const [a,b] = legs(r);
-    fund = `<div class="sec"><div class="sec-t">资金状态 <span class="hint">站内转账不上链，无发送信息</span></div><div class="legs">
-      <div class="leg"><div class="lt">付款腿 · UID ${r.payer}</div><span class="pill ${a[0]}">${a[1]}</span><div class="ld">${a[2]}</div></div>
-      <div class="leg"><div class="lt">收款腿 · UID ${r.payee}</div><span class="pill ${b[0]}">${b[1]}</span><div class="ld">${b[2]}</div></div>
-    </div></div>`;
-  }
+  } else fund = '';
 
   let audit;
   if (r.status==='pending'){
@@ -493,8 +504,9 @@ function submitAudit(){
     if (rej) r.status = 'rejected';
     else if (isChain){
       const low = Number(r.hot) < Number(recv(r));
-      r.status = low ? 'failed' : 'sending';
-      r.send = {count:1, reason: low?'热钱包余额不足':'', at:now, hash:'', height:''};
+      r.status = low ? 'failed' : 'done';
+      if (!low) r.doneAt = now;
+      r.send = low ? {count:1, reason:'热钱包余额不足', at:now} : {count:1, at:now, hash:'0x'+'3be1c07a9d42f5e8'.repeat(4), height:'124671020'};
     } else { r.status = 'done'; r.doneAt = now; }
     closeCfm(); toast(rej ? '已拒绝' : '审核通过'); openDrawer(r.id);
   };
