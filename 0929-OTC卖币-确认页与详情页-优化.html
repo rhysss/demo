@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OTC 卖币 · 确认页与详情页(优化)</title>
+<title>OTC 买卖币 · 确认页与详情页(优化)</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -12,15 +12,21 @@
   --txt:#1f2329;--txt2:#5b6069;--txt3:#8a9099;--txt4:#aab0b8;
   --card:#f6f7f9;--line:#eceef1;--bg:#e9ebef;
 }
-body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;color:var(--txt);padding:26px 24px 40px}
-.cap{max-width:860px;margin:0 auto 20px;background:#fff;border:1px solid #dfe3e8;border-radius:12px;padding:12px 16px;font-size:12.5px;color:#5b6069;line-height:1.9}
+body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;color:var(--txt);padding:26px 24px 44px}
+.cap{max-width:860px;margin:0 auto 22px;background:#fff;border:1px solid #dfe3e8;border-radius:12px;padding:12px 16px;font-size:12.5px;color:#5b6069;line-height:1.9}
 .cap b{color:var(--green-d)}
 .cap .t{font-weight:700;color:var(--txt);margin-right:6px}
-.stage{display:flex;gap:44px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+
+.sec{max-width:860px;margin:0 auto 6px;display:flex;align-items:center;gap:10px}
+.sec .lb{font-size:15px;font-weight:800}
+.sec .lb.sell{color:var(--red)}
+.sec .lb.buy{color:var(--green-d)}
+.sec .ln{flex:1;height:1px;background:#d7dbe0}
+.stage{display:flex;gap:44px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin-bottom:34px}
 .col{display:flex;flex-direction:column;align-items:center;gap:12px}
 .col .name{font-size:13px;color:#6b7079;font-weight:600}
 
-.phone{width:360px;height:740px;background:#fff;border-radius:38px;border:9px solid #111417;box-shadow:0 22px 50px rgba(0,0,0,.28);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.phone{width:360px;height:748px;background:#fff;border-radius:38px;border:9px solid #111417;box-shadow:0 22px 50px rgba(0,0,0,.28);overflow:hidden;position:relative;display:flex;flex-direction:column}
 .sb{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;flex-shrink:0}
 .sb .t{font-size:15px;font-weight:600}
 .sb .r{display:flex;align-items:center;gap:6px}
@@ -30,11 +36,9 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang
 .nav .cs{margin-left:auto;width:34px;height:34px;display:flex;align-items:center;justify-content:center}
 .body{flex:1;overflow:hidden;padding:6px 18px 0}
 
-/* note */
 .note{background:var(--card);border-radius:10px;padding:11px 12px;display:flex;gap:8px;font-size:12px;color:var(--txt3);line-height:1.6;margin-bottom:16px}
 .note svg{flex-shrink:0;margin-top:1px}
 
-/* confirm rows */
 .crow{display:flex;justify-content:space-between;align-items:baseline;padding:13px 2px;font-size:14px}
 .crow .k{color:var(--txt3)}
 .crow .v{color:var(--txt);font-weight:600;font-variant-numeric:tabular-nums}
@@ -43,7 +47,6 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang
 .crow.recv .v{font-size:20px;font-weight:800}
 .crow.recv .v .u{font-size:13px}
 .hr{height:1px;background:var(--line);margin:2px 0}
-.pm{display:flex;align-items:center;gap:8px}
 .pm .bank{display:flex;align-items:center;gap:7px;font-weight:600}
 .pm .ic{width:24px;height:24px;border-radius:6px;background:#eef7f1;display:flex;align-items:center;justify-content:center}
 
@@ -53,10 +56,12 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang
 .btn.ghost{background:#fff;border:1px solid #dfe3e8;color:var(--txt2)}
 .home{width:120px;height:5px;border-radius:3px;background:#111;opacity:.85;margin:12px auto 0}
 
-/* detail */
-.st{text-align:center;font-size:22px;font-weight:800;color:var(--orange);padding:6px 0 2px}
+.st{text-align:center;font-size:22px;font-weight:800;padding:6px 0 2px}
+.st.prog{color:var(--orange)}
 .side{text-align:center;font-size:14px;margin-bottom:14px}
-.side .s{color:var(--red);font-weight:700;margin-right:5px}
+.side .s{font-weight:700;margin-right:5px}
+.side .s.sell{color:var(--red)}
+.side .s.buy{color:var(--green-d)}
 .hint{background:#fff7ec;border:1px solid #ffe4c2;border-radius:10px;padding:10px 12px;font-size:12px;color:#a5691a;line-height:1.6;display:flex;gap:7px;margin-bottom:14px}
 .card{background:var(--card);border-radius:14px;padding:4px 14px}
 .drow{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;font-size:13.5px;border-bottom:1px solid #edeff2}
@@ -64,20 +69,21 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang
 .drow .k{color:var(--txt3)}
 .drow .v{color:var(--txt);font-weight:500;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:5px}
 .drow.recv .v{font-weight:800;font-size:16px}
-.copy{color:var(--green);font-size:12px}
 .badge{display:inline-flex;align-items:center;gap:6px}
 .badge .ic{width:22px;height:22px;border-radius:6px;background:#eef7f1;display:flex;align-items:center;justify-content:center}
+.chip{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:#e0982f}
 </style>
 </head>
 <body>
 <div class="cap">
-  <span class="t">优化后 · OTC 卖币</span>字段两页统一:<b>汇率→单价</b>(补全 1 USDT≈)、<b>订单金额/获得→到账金额</b>、<b>数量→卖出数量</b>、<b>实际数量→交易数量</b>(对齐后台);按计算链排序 单价→卖出数量→手续费→交易数量→到账金额;<b>到账金额加粗强调</b>;进行中加打款说明;移除语义不明的悬浮球。<br>
-  数据示例:卖出 30.8845 − 手续费 0.8995 = 交易数量 29.985 ×6.67 = 到账 200.00 CNY(⚠️ 当前为内扣模型,手续费率待确认)。
+  <span class="t">优化后 · OTC 买卖币</span>四页字段统一:<b>单价 / 手续费</b> 通用;卖出侧 <b>卖出数量→交易数量→到账金额(CNY)</b>,买入侧 <b>购买数量→到账数量(USDT)+支付金额(CNY)</b>;均按计算链排序、<b>到账加粗强调</b>;进行中/待支付加状态说明;买入详情落「<b>继续支付</b>」入口(切 IP 后复用原单,不新建)。<br>
+  <span style="color:#b26a12">⚠️ 当前为内扣模型、手续费率/单价为示例值,待确认。</span>
 </div>
 
+<!-- ============ 卖出 ============ -->
+<div class="sec"><span class="lb sell">卖出 Sell</span><span class="ln"></span></div>
 <div class="stage">
 
-  <!-- 确认订单 -->
   <div class="col">
     <div class="name">① 确认订单</div>
     <div class="phone">
@@ -98,15 +104,14 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang
     </div>
   </div>
 
-  <!-- 订单详情 -->
   <div class="col">
     <div class="name">② 订单详情(进行中)</div>
     <div class="phone">
       <div class="sb"><span class="t">15:37</span><span class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><path d="M8.5 3.2c1.9 0 3.6.7 4.9 1.9M8.5 6.4c1 0 2 .4 2.7 1.1M8.5 9.3l.01.01" stroke="#1f2329" stroke-width="1.4" stroke-linecap="round"/></svg><svg width="24" height="12" viewBox="0 0 24 12"><rect x="1" y="1" width="19" height="10" rx="2.5" fill="none" stroke="#1f2329" stroke-opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.3" fill="#1f2329"/><rect x="21" y="4" width="2" height="4" rx="1" fill="#1f2329" fill-opacity=".5"/></svg></span></div>
       <div class="nav"><div class="bk"><svg width="10" height="17" viewBox="0 0 10 17" fill="none"><path d="M8 1L1.5 8.5 8 16" stroke="#1f2329" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ti">订单详情</div><div class="cs"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f2329" stroke-width="1.7" stroke-linecap="round"><path d="M5 12a7 7 0 0 1 14 0"/><rect x="3.5" y="12" width="4" height="6" rx="2"/><rect x="16.5" y="12" width="4" height="6" rx="2"/></svg></div></div>
       <div class="body" style="overflow-y:auto">
-        <div class="st">进行中</div>
-        <div class="side"><span class="s">卖出</span>30.8845 USDT</div>
+        <div class="st prog">进行中</div>
+        <div class="side"><span class="s sell">卖出</span>30.8845 USDT</div>
         <div class="hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#e0982f" stroke-width="1.8"/><path d="M12 7.5v5l3 2" stroke="#e0982f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>已受理,等待平台打款,预计 5 分钟内到账。如超时未到账可联系客服。</span></div>
         <div class="card">
           <div class="drow"><span class="k">单价</span><span class="v">1 USDT ≈ 6.67 CNY</span></div>
@@ -123,7 +128,56 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'PingFang
       <div class="foot"><div class="btn ghost">联系客服</div><div class="home"></div></div>
     </div>
   </div>
-
 </div>
+
+<!-- ============ 买入 ============ -->
+<div class="sec"><span class="lb buy">买入 Buy</span><span class="ln"></span></div>
+<div class="stage">
+
+  <div class="col">
+    <div class="name">① 确认订单</div>
+    <div class="phone">
+      <div class="sb"><span class="t">15:41</span><span class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><path d="M8.5 3.2c1.9 0 3.6.7 4.9 1.9M8.5 6.4c1 0 2 .4 2.7 1.1M8.5 9.3l.01.01" stroke="#1f2329" stroke-width="1.4" stroke-linecap="round"/></svg><svg width="24" height="12" viewBox="0 0 24 12"><rect x="1" y="1" width="19" height="10" rx="2.5" fill="none" stroke="#1f2329" stroke-opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.3" fill="#1f2329"/><rect x="21" y="4" width="2" height="4" rx="1" fill="#1f2329" fill-opacity=".5"/></svg></span></div>
+      <div class="nav"><div class="bk"><svg width="10" height="17" viewBox="0 0 10 17" fill="none"><path d="M8 1L1.5 8.5 8 16" stroke="#1f2329" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ti">确认订单</div></div>
+      <div class="body">
+        <div class="note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#aab0b8" stroke-width="1.8"/><path d="M12 11v5" stroke="#aab0b8" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1" fill="#aab0b8"/></svg><span>价格会根据市场行情而变化,最终以实际成交价为准。付款后由商家放币。</span></div>
+        <div class="crow"><span class="k">单价</span><span class="v">1 USDT ≈ 6.67 CNY</span></div>
+        <div class="crow"><span class="k">支付金额</span><span class="v">200.10<span class="u">CNY</span></span></div>
+        <div class="crow"><span class="k">购买数量</span><span class="v">30.00<span class="u">USDT</span></span></div>
+        <div class="crow"><span class="k">手续费</span><span class="v">0.90<span class="u">USDT</span></span></div>
+        <div class="hr"></div>
+        <div class="crow recv"><span class="k">到账数量</span><span class="v">29.10<span class="u">USDT</span></span></div>
+        <div class="hr"></div>
+        <div class="crow"><span class="k">交易方式</span><span class="v"><span class="chip"><span class="ic" style="background:#fff3e6;border-radius:6px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff8f1f" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></span>CHIPPAY</span></span></div>
+      </div>
+      <div class="foot"><div class="btn green">创建订单(29s)</div><div class="home"></div></div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="name">② 订单详情(待支付 · 含继续支付)</div>
+    <div class="phone">
+      <div class="sb"><span class="t">15:44</span><span class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><path d="M8.5 3.2c1.9 0 3.6.7 4.9 1.9M8.5 6.4c1 0 2 .4 2.7 1.1M8.5 9.3l.01.01" stroke="#1f2329" stroke-width="1.4" stroke-linecap="round"/></svg><svg width="24" height="12" viewBox="0 0 24 12"><rect x="1" y="1" width="19" height="10" rx="2.5" fill="none" stroke="#1f2329" stroke-opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.3" fill="#1f2329"/><rect x="21" y="4" width="2" height="4" rx="1" fill="#1f2329" fill-opacity=".5"/></svg></span></div>
+      <div class="nav"><div class="bk"><svg width="10" height="17" viewBox="0 0 10 17" fill="none"><path d="M8 1L1.5 8.5 8 16" stroke="#1f2329" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ti">订单详情</div><div class="cs"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f2329" stroke-width="1.7" stroke-linecap="round"><path d="M5 12a7 7 0 0 1 14 0"/><rect x="3.5" y="12" width="4" height="6" rx="2"/><rect x="16.5" y="12" width="4" height="6" rx="2"/></svg></div></div>
+      <div class="body" style="overflow-y:auto">
+        <div class="st prog">待支付</div>
+        <div class="side"><span class="s buy">买入</span>30.00 USDT</div>
+        <div class="hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#e0982f" stroke-width="1.8"/><path d="M12 7.5v5l3 2" stroke="#e0982f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>订单待支付,请在有效期内完成付款;如遇地区限制报错,请切换网络后点击下方「继续支付」。</span></div>
+        <div class="card">
+          <div class="drow"><span class="k">单价</span><span class="v">1 USDT ≈ 6.67 CNY</span></div>
+          <div class="drow"><span class="k">支付金额</span><span class="v">200.10 CNY</span></div>
+          <div class="drow"><span class="k">购买数量</span><span class="v">30.00 USDT</span></div>
+          <div class="drow"><span class="k">手续费</span><span class="v">0.90 USDT</span></div>
+          <div class="drow recv"><span class="k">到账数量</span><span class="v">29.10 USDT</span></div>
+          <div class="drow"><span class="k">交易方式</span><span class="v"><span class="chip">CHIPPAY</span></span></div>
+          <div class="drow"><span class="k">订单编号</span><span class="v">BI5668...154858 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16b96a" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg></span></div>
+          <div class="drow"><span class="k">下单时间</span><span class="v">2026-09-29 15:42:10</span></div>
+        </div>
+      </div>
+      <div class="foot"><div class="btn green">继续支付</div><div class="home"></div></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
