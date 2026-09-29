@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>提现记录 · 中台优化</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:#f0f2f5;color:#1f2329;font-size:13px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:13px;color:inherit}
+input,select,textarea{font-family:inherit;font-size:13px;outline:none}
+.page{padding:16px 20px 60px;min-width:1280px}
+.num{font-variant-numeric:tabular-nums;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:12.5px}
+.muted{color:#8f959e}
+.link{color:#4265f4;cursor:pointer}
+.link:hover{text-decoration:underline}
+
+/* 优化说明 */
+.note-card{background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:12px 16px;margin-bottom:12px;font-size:12px;line-height:1.8;color:#5c4b00}
+.note-card h4{font-size:13px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.note-card h4 button{color:#8c6d00;font-size:12px}
+.note-card table{border-collapse:collapse;width:100%;margin-top:6px;background:#fff}
+.note-card th,.note-card td{border:1px solid #f5e3a3;padding:5px 8px;text-align:left;vertical-align:top}
+.note-card th{background:#fff7d1;font-weight:500;white-space:nowrap}
+.tag-add{color:#1a7f37;font-weight:600}.tag-del{color:#cf222e;font-weight:600}.tag-mod{color:#0969da;font-weight:600}
+.warn{color:#d46b08;background:#fff7e6;border:1px dashed #ffc069;border-radius:3px;padding:0 5px;font-size:11.5px;white-space:nowrap}
+
+/* 筛选 */
+.filter-card{background:#fff;border-radius:4px;padding:14px 16px 4px;margin-bottom:12px}
+.filter-grid{display:flex;flex-wrap:wrap;gap:12px 20px}
+.f-item{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.f-item label{color:#1f2329;white-space:nowrap;font-size:13px}
+.ctrl{height:32px;border:1px solid #dcdfe6;border-radius:4px;padding:0 10px;background:#fff;color:#1f2329;width:170px}
+.ctrl::placeholder{color:#bbbfc4}
+select.ctrl{appearance:none;background:#fff url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a0a4aa' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center}
+.ctrl:focus{border-color:#4265f4}
+.date-range{display:flex;align-items:center;border:1px solid #dcdfe6;border-radius:4px;height:32px;padding:0 10px;gap:6px;width:320px}
+.date-range input{border:none;width:130px;color:#1f2329}
+.btn{height:32px;padding:0 15px;border-radius:4px;font-size:13px;display:inline-flex;align-items:center;gap:5px;justify-content:center}
+.btn-primary{background:#4265f4;color:#fff}.btn-primary:hover{background:#3355e0}
+.btn-default{background:#fff;border:1px solid #dcdfe6}.btn-default:hover{color:#4265f4;border-color:#4265f4}
+.btn-danger{background:#f5222d;color:#fff}.btn-danger:hover{background:#d9161f}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* 表格 */
+.table-card{background:#fff;border-radius:4px;padding:14px 16px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.tabs{display:flex;gap:4px}
+.tab{height:30px;padding:0 14px;border-radius:4px;color:#646a73;display:inline-flex;align-items:center;gap:6px}
+.tab:hover{background:#f2f3f5}
+.tab.on{background:#eef1fe;color:#4265f4;font-weight:500}
+.tab .cnt{background:#f5222d;color:#fff;border-radius:9px;font-size:11px;padding:0 6px;line-height:16px}
+.tab.on .cnt.plain,.tab .cnt.plain{background:#e5e6eb;color:#646a73}
+.sum-bar{display:none;background:#f7f8fa;border-radius:4px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#646a73;gap:24px}
+.sum-bar.on{display:flex}
+.sum-bar b{color:#1f2329;font-weight:600}
+table.grid{width:100%;border-collapse:collapse}
+.grid th{background:#f5f7fa;text-align:left;font-weight:500;color:#1f2329;font-size:13px;padding:11px 10px;white-space:nowrap;border-bottom:1px solid #ebeef5}
+.grid td{padding:11px 10px;border-bottom:1px solid #ebeef5;vertical-align:middle;white-space:nowrap}
+.grid tbody tr{cursor:pointer}
+.grid tbody tr:hover td{background:#f5f7fa}
+.grid tbody tr.active td{background:#eef1fe}
+.grid .r{text-align:right}
+.sub{font-size:12px;color:#8f959e;margin-top:3px}
+.type-tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:3px;border:1px solid}
+.type-chain{color:#4265f4;border-color:#c5d0fb;background:#f3f5fe}
+.type-p2p{color:#7a3ee8;border-color:#dccbfa;background:#f8f4ff}
+.cty{font-size:11px;color:#8f959e;border:1px solid #e5e6eb;border-radius:3px;padding:0 4px;margin-left:5px}
+.st{display:inline-flex;align-items:center;gap:6px}
+.st i{width:6px;height:6px;border-radius:50%;display:inline-block}
+.st-pending i{background:#fa8c16}.st-pending{color:#d46b08}
+.st-sending i{background:#4265f4}
+.st-done i{background:#52c41a}
+.st-rejected i{background:#bfbfbf}.st-rejected{color:#8f959e}
+.st-failed i{background:#f5222d}.st-failed{color:#cf1322}
+.ops{display:flex;gap:12px}
+.empty{text-align:center;padding:60px 0;color:#8f959e}
+.pager{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:14px;color:#646a73;font-size:12px}
+.pager span.p{min-width:28px;height:28px;border:1px solid #dcdfe6;border-radius:4px;display:inline-flex;align-items:center;justify-content:center}
+.pager span.p.on{border-color:#4265f4;color:#4265f4}
+
+/* 抽屉 */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.2s;z-index:50}
+.mask.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:820px;background:#fff;z-index:51;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column;box-shadow:-6px 0 16px rgba(0,0,0,.08)}
+.drawer.on{transform:none}
+.dw-head{padding:16px 24px;border-bottom:1px solid #ebeef5;display:flex;justify-content:space-between;align-items:flex-start}
+.dw-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+.dw-sub{font-size:12px;color:#8f959e;margin-top:6px;display:flex;gap:6px;align-items:center}
+.x{font-size:20px;color:#8f959e;line-height:1;padding:2px 6px}.x:hover{color:#1f2329}
+.dw-body{flex:1;overflow-y:auto;padding:4px 24px 24px;background:#fff}
+.sec{padding:18px 0;border-bottom:1px solid #f0f1f3}
+.sec:last-child{border-bottom:none}
+.sec-t{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec-t .hint{font-size:12px;font-weight:400;color:#8f959e}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 16px}
+.kv .it{display:flex;gap:8px;min-width:0}
+.kv .k{color:#8f959e;white-space:nowrap;flex-shrink:0}
+.kv .v{color:#1f2329;word-break:break-all}
+.kv .full{grid-column:1/-1}
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.party{border:1px solid #ebeef5;border-radius:4px;overflow:hidden}
+.party h5{background:#f5f7fa;padding:8px 12px;font-size:13px;font-weight:500;display:flex;justify-content:space-between}
+.party .rows{padding:8px 12px}
+.party .row{display:flex;padding:4px 0;font-size:12.5px}
+.party .row .k{width:74px;color:#8f959e;flex-shrink:0}
+.party .row .v{word-break:break-all}
+.legs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.leg{border:1px solid #ebeef5;border-radius:4px;padding:10px 12px}
+.leg .lt{font-size:12px;color:#8f959e;margin-bottom:6px}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:3px;border:1px solid}
+.pill-frozen{color:#d46b08;background:#fff7e6;border-color:#ffd591}
+.pill-wait{color:#646a73;background:#f5f5f5;border-color:#d9d9d9}
+.pill-ok{color:#389e0d;background:#f6ffed;border-color:#b7eb8f}
+.pill-back{color:#0958d9;background:#e6f4ff;border-color:#91caff}
+.pill-no{color:#8f959e;background:#fafafa;border-color:#e5e6eb}
+.leg .ld{font-size:12px;color:#646a73;margin-top:6px;line-height:1.6}
+.alert{border-radius:4px;padding:8px 12px;font-size:12.5px;margin-top:10px}
+.alert-err{background:#fff1f0;border:1px solid #ffccc7;color:#cf1322}
+.alert-info{background:#f3f5fe;border:1px solid #d6defc;color:#3a4a8a}
+.pnl p{line-height:1.9;font-size:12.5px}
+.pnl .grp{margin-bottom:10px}
+.pnl .grp-t{color:#646a73;font-size:12px;margin-bottom:2px}
+.pnl b{color:#4265f4;font-weight:400}
+.pnl b.neg{color:#cf1322}
+.form-row{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
+.form-row>label{width:72px;color:#1f2329;padding-top:5px;flex-shrink:0}
+.form-row>label em{color:#f5222d;font-style:normal;margin-right:2px}
+.radios{display:flex;gap:24px;padding-top:5px}
+.radios label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.radios input{accent-color:#4265f4}
+textarea.ctrl{width:100%;height:76px;padding:8px 10px;resize:vertical}
+.err-tip{color:#f5222d;font-size:12px;margin-top:4px;display:none}
+.audit-rec{background:#f7f8fa;border-radius:4px;padding:12px 14px}
+.dw-foot{border-top:1px solid #ebeef5;padding:12px 24px;display:flex;justify-content:flex-end;gap:10px}
+
+/* 确认弹窗 & toast */
+.cfm-mask{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:60;display:none;align-items:center;justify-content:center}
+.cfm-mask.on{display:flex}
+.cfm{background:#fff;border-radius:6px;width:420px;padding:22px 24px 18px}
+.cfm h3{font-size:15px;margin-bottom:10px}
+.cfm p{color:#646a73;line-height:1.7;font-size:13px}
+.cfm .acts{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#1f2329;color:#fff;padding:8px 16px;border-radius:4px;font-size:13px;z-index:70;opacity:0;transition:.2s;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 优化说明（原型标注，可收起） -->
+  <div class="note-card" id="noteCard">
+    <h4>📌 本次优化说明（原型标注，上线无此区块）<button onclick="toggleNote()" id="noteBtn">收起</button></h4>
+    <div id="noteBody">
+      <table>
+        <tr><th>调整</th><th>字段 / 功能</th><th>原因</th></tr>
+        <tr><td class="tag-del">删除</td><td>列表「用户ID」「ID」</td><td>用户ID 与 UID 值完全相同；ID 为内部主键，放进抽屉</td></tr>
+        <tr><td class="tag-mod">合并</td><td>「内部提现 是/否」→「类型：链上提现 / 站内转账」；筛选项同步</td><td>“是/否”语义不直观</td></tr>
+        <tr><td class="tag-mod">合并</td><td>用户ID / UID / 邮箱 / 手机 与 付款方UID / 邮箱 / 手机 → 统一为「付款方」</td><td>站内转账时两组值完全重复；链上提现时付款方即发起人</td></tr>
+        <tr><td class="tag-mod">合并</td><td>「接收地址/用户」+ 链名称 + 网络 + 收款方UID →「接收方」一列</td><td>链上显示地址+链/网络，站内显示收款方UID；ETH/Ethereum 两列冗余</td></tr>
+        <tr><td class="tag-mod">移入抽屉</td><td>付款方/收款方邮箱与手机号、付款腿/收款腿、是否机审、审核时间、发送次数/时间/失败原因、交易哈希、区块高度</td><td>列表只留定位与判断字段，明细在抽屉看</td></tr>
+        <tr><td class="tag-mod">改名</td><td>「发送数量」→「到账数量」；「流水号」「订单号」统一叫「订单号」；「提现时间」→「创建时间」</td><td>筛选项叫订单号、列表叫流水号，口径不一致</td></tr>
+        <tr><td class="tag-mod">改口径</td><td>付款腿/收款腿去掉红色「缺失」，改成 已冻结 / 待入账 / 已扣款 / 已入账 / 已解冻退回 / 不入账</td><td>待审核时显示「缺失」像是出了故障；按「提交即冻结」规则显示</td></tr>
+        <tr><td class="tag-mod">修数据</td><td>站内转账的发送状态/次数/区块高度显示「—」；未审核的审核时间显示「—」；「已取消 + 未通过」改为「已拒绝」</td><td>现网站内转账显示「提现成功 + 未发送 + 区块高度 0」，自相矛盾；未审核的单子也有审核时间</td></tr>
+        <tr><td class="tag-add">新增</td><td>状态快捷 Tab（含待审核计数）、审核人、审核备注、完成时间、留言（站内）、审核方式筛选</td><td>审核需要留痕；审核员主要处理「待审核」队列</td></tr>
+        <tr><td class="tag-add">新增</td><td>损益里加「站内转入 / 站内转出」统计 <span class="warn">⚠️ 口径待确认</span></td><td>现在入金只统计站外充值，拿站内转账进来的钱去提现，风控看不到钱的来源</td></tr>
+        <tr><td class="tag-mod">交互</td><td>点整行或「详情」都能打开抽屉，任何状态都能打开；审核统一在抽屉底部（去掉原来的站内转账审核弹窗）</td><td>审核站内转账时也要看损益</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 筛选 -->
+  <div class="filter-card">
+    <div class="filter-grid">
+      <div class="f-item"><label>类型</label><select class="ctrl" id="fType"><option value="">全部</option><option value="chain">链上提现</option><option value="p2p">站内转账</option></select></div>
+      <div class="f-item"><label>付款方UID</label><input class="ctrl" id="fPayer" placeholder="请输入"></div>
+      <div class="f-item"><label>收款方UID</label><input class="ctrl" id="fPayee" placeholder="仅站内转账"></div>
+      <div class="f-item"><label>邮箱/手机号</label><input class="ctrl" id="fContact" placeholder="付款方邮箱或手机号"></div>
+      <div class="f-item"><label>国家</label><select class="ctrl" id="fCountry"><option value="">请选择</option><option>CN</option><option>SG</option></select></div>
+      <div class="f-item"><label>币种名称</label><select class="ctrl" id="fCoin"><option value="">请选择</option><option>USDT</option></select></div>
+      <div class="f-item"><label>链名称</label><select class="ctrl" id="fChain"><option value="">请选择</option><option>ETH</option><option>TRON</option></select></div>
+      <div class="f-item"><label>审核方式</label><select class="ctrl" id="fMode"><option value="">请选择</option><option>人工审核</option><option>机审</option></select></div>
+      <div class="f-item"><label>订单号</label><input class="ctrl" id="fOrder" placeholder="请输入"></div>
+      <div class="f-item"><label>创建时间</label><div class="date-range"><span class="muted">🕒</span><input placeholder="开始时间"><span class="muted">-</span><input placeholder="结束时间"></div></div>
+      <div class="f-item"><button class="btn btn-primary" onclick="render()">搜索</button><button class="btn btn-default" onclick="resetFilter()">重置</button></div>
+    </div>
+  </div>
+
+  <!-- 表格 -->
+  <div class="table-card">
+    <div class="toolbar">
+      <div class="tabs" id="tabs"></div>
+      <button class="btn btn-primary" onclick="toggleSum()" id="sumBtn">显示币种合计</button>
+    </div>
+    <div class="sum-bar" id="sumBar"></div>
+    <table class="grid">
+      <thead><tr>
+        <th>订单号</th><th>类型</th><th>付款方</th><th>接收方</th><th>币种</th>
+        <th class="r">数量</th><th class="r">手续费</th><th class="r">到账数量</th>
+        <th>状态</th><th>审核</th><th>创建时间(UTC+8)</th><th>操作</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="pager"><span id="total"></span><span class="p">‹</span><span class="p on">1</span><span class="p">›</span></div>
+  </div>
+</div>
+
+<!-- 抽屉 -->
+<div class="mask" id="mask" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="dw-head">
+    <div>
+      <div class="dw-title" id="dwTitle"></div>
+      <div class="dw-sub" id="dwSub"></div>
+    </div>
+    <button class="x" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="dw-body" id="dwBody"></div>
+  <div class="dw-foot" id="dwFoot"></div>
+</div>
+
+<!-- 二次确认 -->
+<div class="cfm-mask" id="cfmMask">
+  <div class="cfm">
+    <h3 id="cfmTitle"></h3>
+    <p id="cfmText"></p>
+    <div class="acts"><button class="btn btn-default" onclick="closeCfm()">取消</button><button class="btn btn-primary" id="cfmOk">确定</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- 模拟数据 ----------
+const USERS = {
+  '1000260': {uid:'1000260', email:'eslyq607@gmail.com', phone:'13333333333', country:'CN', kyc:'高级认证', name:'bdjdbd', regDays:386},
+  '23':      {uid:'23', email:'ymlqbltj7tkp1he@proton.me', phone:'-', country:'SG', kyc:'初级认证', name:'-', regDays:512},
+  '1009459': {uid:'1009459', email:'000009@qq.com', phone:'-', country:'CN', kyc:'未认证', name:'-', regDays:12},
+  '1006527': {uid:'1006527', email:'0303@qq.com', phone:'-', country:'CN', kyc:'初级认证', name:'-', regDays:47},
+  '1002431': {uid:'1002431', email:'1234@qq.com', phone:'13574102580', country:'CN', kyc:'高级认证', name:'wang**', regDays:203},
+  '1':       {uid:'1', email:'qpm9njwwd56q5c6@gmail.com', phone:'-', country:'SG', kyc:'高级认证', name:'-', regDays:890},
+  '1003318': {uid:'1003318', email:'lucas.t@gmail.com', phone:'-', country:'SG', kyc:'高级认证', name:'Lu***s', regDays:260}
+};
+// status: pending 待审核 / sending 发送中 / done 已完成 / rejected 已拒绝 / failed 发送失败
+let ROWS = [
+  {id:533, order:'21e8deec-bbd0-11f1-8520-32d33bab5af0', type:'p2p', payer:'1000260', payee:'1', coin:'USDT', amount:'1', fee:'0', status:'pending', mode:'人工审核', createdAt:'2026-09-29 14:36:42', memo:'还款'},
+  {id:532, order:'OTCM1790590588213', type:'chain', payer:'23', chain:'TRON', network:'TRON', addr:'TXk9mQ2vE7RwdPf3nU8aLc4ZyHbT1sGo6J', coin:'USDT', amount:'100', fee:'0', status:'rejected', mode:'人工审核', createdAt:'2026-09-28 18:15:31', audit:{by:'ops_amy', at:'2026-09-28 18:16:42', remark:'接收地址命中风险地址库'}, hot:'52810.33'},
+  {id:531, order:'9fc083fc-b806-11f1-9a1e-5e2b0d7c14a2', type:'p2p', payer:'1009459', payee:'1', coin:'USDT', amount:'1', fee:'0', status:'pending', mode:'人工审核', createdAt:'2026-09-24 18:56:41', memo:''},
+  {id:530, order:'64c79cef-b806-11f1-8c33-2a9f41e07b55', type:'p2p', payer:'1006527', payee:'1009459', coin:'USDT', amount:'1', fee:'0', status:'done', mode:'人工审核', createdAt:'2026-09-24 18:55:02', doneAt:'2026-09-24 18:55:28', audit:{by:'ops_lily', at:'2026-09-24 18:55:28', remark:''}, memo:'饭钱'},
+  {id:529, order:'ee4146c6-b805-11f1-a7d0-7e11c93b5f08', type:'p2p', payer:'1002431', payee:'1', coin:'USDT', amount:'1', fee:'0', status:'pending', mode:'人工审核', createdAt:'2026-09-24 18:51:43', memo:''},
+  {id:528, order:'90954537-b805-11f1-b2f4-1c6d8e3a9b70', type:'p2p', payer:'1002431', payee:'1', coin:'USDT', amount:'1', fee:'0', status:'pending', mode:'人工审核', createdAt:'2026-09-24 18:49:06', memo:''},
+  {id:527, order:'8e674460-b803-11f1-8f5a-6b0c2e4d7a19', type:'chain', payer:'1000260', chain:'TRON', network:'TRON', addr:'TQ7nGv3kP9sLw2XhZc5RbF8uJ4mYdE1aTo', coin:'USDT', amount:'10', fee:'1', status:'rejected', mode:'人工审核', createdAt:'2026-09-24 18:34:43', audit:{by:'ops_amy', at:'2026-09-24 18:35:02', remark:'用户申请撤回'}, hot:'52810.33'},
+  {id:526, order:'125a06f3-b803-11f1-819d-46a24ed8633f', type:'chain', payer:'1000260', chain:'ETH', network:'Ethereum', addr:'0x7a3F9c21E4b8D05a6C1e2F93dB47c8A0e5F6B129', coin:'USDT', amount:'5', fee:'0.00001', status:'pending', mode:'人工审核', createdAt:'2026-09-24 18:31:15', hot:'0'},
+  {id:525, order:'099d0659-b7fa-11f1-93c7-0d4e5a6f2b81', type:'chain', payer:'1000260', chain:'ETH', network:'Ethereum', addr:'0x7a3F9c21E4b8D05a6C1e2F93dB47c8A0e5F6B129', coin:'USDT', amount:'11', fee:'0.00001', status:'failed', mode:'人工审核', createdAt:'2026-09-24 17:26:35', audit:{by:'ops_lily', at:'2026-09-24 17:28:10', remark:''}, send:{count:3, reason:'热钱包余额不足', at:'2026-09-24 17:40:02'}, hot:'0'},
+  {id:524, order:'e5928587-b7f9-11f1-80a2-3f7c1d9e6b04', type:'chain', payer:'1003318', chain:'TRON', network:'TRON', addr:'TMa81pZ6cWq3YvRn7Ek2sDxL9gHuF4jBo5', coin:'USDT', amount:'200', fee:'1', status:'done', mode:'机审', createdAt:'2026-09-24 17:25:35', doneAt:'2026-09-24 17:26:58', audit:{by:'系统', at:'2026-09-24 17:25:36', remark:'机审通过'}, send:{count:1, reason:'', at:'2026-09-24 17:25:40', hash:'9c1e5b7a02d44f8e8a3b6c0d91f2e7a54b8c3d6e1f0a9b2c7d4e5f6a8b9c0d1e', height:'67581342'}, hot:'52810.33'},
+  {id:523, order:'c1f40a9e-b7f2-11f1-8d6b-2e9a0c5b7f13', type:'chain', payer:'1002431', chain:'TRON', network:'TRON', addr:'TVb2Kx8mQ5nPw7Ls3Rd9Fy1HcZ4gJt6Eu0', coin:'USDT', amount:'50', fee:'1', status:'sending', mode:'人工审核', createdAt:'2026-09-24 16:58:20', audit:{by:'ops_lily', at:'2026-09-24 17:02:44', remark:''}, send:{count:1, reason:'', at:'2026-09-24 17:02:50', hash:'', height:''}, hot:'52810.33'}
+];
+const STATUS = {pending:'待审核', sending:'发送中', done:'已完成', rejected:'已拒绝', failed:'发送失败'};
+const TAB_KEYS = ['all','pending','sending','done','rejected','failed'];
+let curTab = 'all', showSum = false, curId = null;
+
+// ---------- 工具 ----------
+const $ = id => document.getElementById(id);
+const sub = (a,b) => { const d = Math.max(dec(a),dec(b)); return (Number(a)-Number(b)).toFixed(d).replace(/\.?0+$/,'') || '0'; };
+const dec = s => (String(s).split('.')[1]||'').length;
+const shortOrder = o => o.length > 14 ? o.slice(0,8)+'…'+o.slice(-4) : o;
+const shortAddr = a => a.slice(0,6)+'…'+a.slice(-4);
+const recv = r => sub(r.amount, r.fee);
+const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('on'),1600); }
+function copy(t, e){ if(e) e.stopPropagation(); try{ navigator.clipboard.writeText(t); }catch(_){} toast('已复制'); }
+
+// ---------- 列表 ----------
+function filtered(ignoreTab){
+  const v = id => $(id).value.trim();
+  return ROWS.filter(r => {
+    const p = USERS[r.payer];
+    if (v('fType') && r.type !== v('fType')) return false;
+    if (v('fPayer') && r.payer !== v('fPayer')) return false;
+    if (v('fPayee') && r.payee !== v('fPayee')) return false;
+    if (v('fContact') && !(p.email.includes(v('fContact')) || p.phone.includes(v('fContact')))) return false;
+    if (v('fCountry') && p.country !== v('fCountry')) return false;
+    if (v('fCoin') && r.coin !== v('fCoin')) return false;
+    if (v('fChain') && r.chain !== v('fChain')) return false;
+    if (v('fMode') && r.mode !== v('fMode')) return false;
+    if (v('fOrder') && !r.order.includes(v('fOrder'))) return false;
+    if (!ignoreTab && curTab !== 'all' && r.status !== curTab) return false;
+    return true;
+  });
+}
+function renderTabs(){
+  const base = filtered(true);
+  $('tabs').innerHTML = TAB_KEYS.map(k => {
+    const n = k==='all' ? base.length : base.filter(r=>r.status===k).length;
+    const badge = k==='pending' ? `<span class="cnt">${n}</span>` : `<span class="cnt plain">${n}</span>`;
+    return `<button class="tab ${curTab===k?'on':''}" onclick="setTab('${k}')">${k==='all'?'全部':STATUS[k]}${badge}</button>`;
+  }).join('');
+}
+function setTab(k){ curTab = k; render(); }
+function auditCell(r){
+  if (r.status === 'pending') return `<span class="muted">${r.mode}</span> · <span class="st-pending">未审核</span>`;
+  const res = r.status==='rejected' ? '<span style="color:#cf1322">拒绝</span>' : '<span style="color:#389e0d">通过</span>';
+  return `<div>${r.mode} · ${res}</div><div class="sub">${esc(r.audit.by)} · ${r.audit.at.slice(5,16)}</div>`;
+}
+function render(){
+  renderTabs();
+  const list = filtered();
+  $('total').textContent = `共 ${list.length} 条`;
+  if (!list.length){ $('tbody').innerHTML = `<tr><td colspan="12" class="empty">暂无符合条件的记录</td></tr>`; renderSum(list); return; }
+  $('tbody').innerHTML = list.map(r => {
+    const p = USERS[r.payer];
+    const to = r.type==='chain'
+      ? `<div class="num">${shortAddr(r.addr)} <span class="link" onclick="copy('${r.addr}',event)">复制</span></div><div class="sub">${r.chain} · ${r.network}</div>`
+      : `<div>UID ${r.payee}</div><div class="sub">站内账户</div>`;
+    return `<tr class="${curId===r.id?'active':''}" onclick="openDrawer(${r.id})">
+      <td><span class="num">${shortOrder(r.order)}</span> <span class="link" onclick="copy('${r.order}',event)">复制</span></td>
+      <td><span class="type-tag ${r.type==='chain'?'type-chain':'type-p2p'}">${r.type==='chain'?'链上提现':'站内转账'}</span></td>
+      <td>${p.uid}<span class="cty">${p.country}</span></td>
+      <td>${to}</td>
+      <td>${r.coin}</td>
+      <td class="r num">${r.amount}</td>
+      <td class="r num">${r.fee}</td>
+      <td class="r num">${recv(r)}</td>
+      <td><span class="st st-${r.status}"><i></i>${STATUS[r.status]}</span></td>
+      <td>${auditCell(r)}</td>
+      <td class="num">${r.createdAt}</td>
+      <td><div class="ops">
+        ${r.status==='pending' ? `<span class="link" onclick="event.stopPropagation();openDrawer(${r.id},true)">审核</span>` : ''}
+        <span class="link" onclick="event.stopPropagation();openDrawer(${r.id})">详情</span>
+        <span class="link" onclick="copyInfo(${r.id},event)">复制信息</span>
+      </div></td>
+    </tr>`;
+  }).join('');
+  renderSum(list);
+}
+function renderSum(list){
+  const bar = $('sumBar');
+  bar.classList.toggle('on', showSum);
+  if (!showSum) return;
+  const coins = {};
+  list.forEach(r => { coins[r.coin] = coins[r.coin] || {amt:0, fee:0, n:0}; coins[r.coin].amt += +r.amount; coins[r.coin].fee += +r.fee; coins[r.coin].n++; });
+  bar.innerHTML = Object.keys(coins).length ? Object.entries(coins).map(([c,s]) =>
+    `<span>${c}：${s.n} 笔 · 数量 <b class="num">${+s.amt.toFixed(8)}</b> · 手续费 <b class="num">${+s.fee.toFixed(8)}</b> · 到账 <b class="num">${+(s.amt-s.fee).toFixed(8)}</b></span>`).join('')
+    : '<span>当前筛选无数据</span>';
+}
+function toggleSum(){ showSum = !showSum; $('sumBtn').textContent = showSum ? '隐藏币种合计' : '显示币种合计'; render(); }
+function resetFilter(){ document.querySelectorAll('.filter-card input, .filter-card select').forEach(el => el.value=''); curTab='all'; render(); }
+function copyInfo(id, e){
+  const r = ROWS.find(x=>x.id===id);
+  const to = r.type==='chain' ? `接收地址：${r.addr}（${r.chain}/${r.network}）` : `收款方UID：${r.payee}`;
+  copy(`订单号：${r.order}\n类型：${r.type==='chain'?'链上提现':'站内转账'}\n付款方UID：${r.payer}\n${to}\n币种：${r.coin}\n数量：${r.amount}\n手续费：${r.fee}\n状态：${STATUS[r.status]}`, e);
+}
+function toggleNote(){ const b=$('noteBody'); const h=b.style.display==='none'; b.style.display=h?'':'none'; $('noteBtn').textContent=h?'收起':'展开'; }
+
+// ---------- 抽屉 ----------
+function legs(r){
+  // 站内转账：提交即冻结，通过才扣款入账，拒绝解冻退回（R-22）
+  if (r.status==='pending') return [['pill-frozen','已冻结',`提交时已冻结付款方 ${r.amount} ${r.coin}，审核通过后扣款`],['pill-wait','待入账','审核通过后与扣款同时入账']];
+  if (r.status==='done')    return [['pill-ok','已扣款',`${r.audit.at} 扣款 ${r.amount} ${r.coin}`],['pill-ok','已入账',`${r.audit.at} 入账 ${r.amount} ${r.coin}`]];
+  return [['pill-back','已解冻退回',`${r.audit.at} 冻结金额已全额退回付款方`],['pill-no','不入账','审核拒绝，收款方不入账']];
+}
+function party(title, u){
+  return `<div class="party"><h5><span>${title}</span><span class="muted">UID ${u.uid}</span></h5><div class="rows">
+    <div class="row"><span class="k">邮箱</span><span class="v">${esc(u.email)}</span></div>
+    <div class="row"><span class="k">手机号</span><span class="v">${esc(u.phone)}</span></div>
+    <div class="row"><span class="k">国家</span><span class="v">${u.country}</span></div>
+    <div class="row"><span class="k">实名等级</span><span class="v">${u.kyc}</span></div>
+    <div class="row"><span class="k">注册天数</span><span class="v">${u.regDays} 天</span></div>
+  </div></div>`;
+}
+function pnlSection(r){
+  const u = USERS[r.payer], out = r.type==='chain' ? '提现' : '站内转出';
+  return `<div class="sec pnl">
+    <div class="sec-t">用户损益 <span class="hint">付款方 UID ${u.uid} · 数据截至审核打开时</span></div>
+    <div class="grp"><div class="grp-t">损益来源</div>
+      <p>入金分析：站外充值 <b>0</b> USDT；站内转入 <b>1,200</b> USDT <span class="warn">⚠️ 新增·口径待确认</span></p>
+      <p>划转分析：其他业务转入折合 <b>116,774.16429502</b> USDT</p>
+      <p>行情分析：所持币种较上次出金行情损益 <b class="neg">-95.00001</b> USDT</p></div>
+    <div class="grp"><div class="grp-t">资产信息</div>
+      <p>本次出金（${out}）<b>${r.amount}</b> ${r.coin}，折合 <b>${r.amount}</b> USDT</p>
+      <p>损益情况 <b>623,462.868898242</b> USDT；完成后余额 <b>623,462.868898242</b> USDT</p>
+      <p>上次出金时间 <b>2026-09-23 15:14:45</b>，上次出金 <b>100</b> USDT，上次出金完成后余额 <b>0</b> USDT</p></div>
+    <div class="grp"><div class="grp-t">用户基本信息</div>
+      <p>用户UID <b>${u.uid}</b>，注册 <b>${u.regDays}</b> 天，实名认证等级 <b>${u.kyc}</b>，姓名 <b>${esc(u.name)}</b>，国家 <b>${u.country}</b></p>
+      <p>累计充值 <b>0</b> 次，<b>0</b> USDT；最近一笔充值 <b>-</b></p>
+      <p>累计链上提现 <b>1</b> 次，<b>100</b> USDT；最近一笔 <b>2026-09-23 15:14:45 · 100 USDT</b></p>
+      <p>累计站内转出 <b>3</b> 次，<b>3</b> USDT；累计站内转入 <b>2</b> 次，<b>1,200</b> USDT <span class="warn">⚠️ 新增·口径待确认</span></p>
+      <p>累计币币交易 <b>94</b> 次，<b>10,191.80442099</b> USDT；累计合约交易 <b>762</b> 次，<b>4,848,116.85263966</b> USDT</p></div>
+  </div>`;
+}
+function openDrawer(id, focusAudit){
+  const r = ROWS.find(x=>x.id===id); curId = id;
+  const isChain = r.type==='chain';
+  $('dwTitle').innerHTML = `${isChain?'提现详情':'转账详情'} <span class="type-tag ${isChain?'type-chain':'type-p2p'}">${isChain?'链上提现':'站内转账'}</span> <span class="st st-${r.status}" style="font-size:13px;font-weight:400"><i></i>${STATUS[r.status]}</span>`;
+  $('dwSub').innerHTML = `订单号 <span class="num">${r.order}</span> <span class="link" onclick="copy('${r.order}')">复制</span><span style="margin-left:10px">记录ID ${r.id}</span>`;
+
+  const kv = (k, v, full) => `<div class="it${full?' full':''}"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  const items = isChain
+    ? [kv('币种', r.coin), kv('链名称', r.chain), kv('网络', r.network),
+       kv('提现数量', `<span class="num">${r.amount}</span>`), kv('手续费', `<span class="num">${r.fee}</span>`), kv('到账数量', `<span class="num">${recv(r)}</span>`)]
+    : [kv('币种', r.coin), kv('转账数量', `<span class="num">${r.amount}</span>`), kv('手续费', '免手续费'), kv('到账数量', `<span class="num">${recv(r)}</span>`)];
+  items.push(kv('创建时间', `<span class="num">${r.createdAt}</span>`), kv('完成时间', `<span class="num">${r.doneAt||'—'}</span>`));
+  items.push(isChain ? kv('接收地址', `<span class="num">${r.addr}</span> <span class="link" onclick="copy('${r.addr}')">复制</span>`, true)
+                     : kv('留言', r.memo ? esc(r.memo) : '<span class="muted">—</span>', true));
+  const order = `<div class="sec"><div class="sec-t">订单信息</div><div class="kv">${items.join('')}</div></div>`;
+
+  const parties = `<div class="sec"><div class="sec-t">付款方 / 收款方</div><div class="parties">
+    ${party('付款方', USERS[r.payer])}
+    ${isChain ? `<div class="party"><h5><span>收款方</span><span class="muted">站外地址</span></h5><div class="rows">
+        <div class="row"><span class="k">接收地址</span><span class="v num">${r.addr}</span></div>
+        <div class="row"><span class="k">链 / 网络</span><span class="v">${r.chain} / ${r.network}</span></div></div></div>`
+      : party('收款方', USERS[r.payee])}
+  </div></div>`;
+
+  let fund;
+  if (isChain){
+    const s = r.send || {}, low = Number(r.hot) < Number(recv(r));
+    const noSend = r.status==='pending' || r.status==='rejected';
+    fund = `<div class="sec"><div class="sec-t">链上发送</div><div class="kv">
+      <div class="it"><span class="k">发送状态</span><span class="v">${noSend?'未发送':(r.status==='sending'?'发送中':r.status==='done'?'发送成功':'<span style="color:#cf1322">发送失败</span>')}</span></div>
+      <div class="it"><span class="k">发送次数</span><span class="v">${s.count??0}</span></div>
+      <div class="it"><span class="k">发送时间</span><span class="v num">${s.at||'—'}</span></div>
+      <div class="it full"><span class="k">失败原因</span><span class="v">${s.reason?`<span style="color:#cf1322">${esc(s.reason)}</span>`:'—'}</span></div>
+      <div class="it full"><span class="k">交易哈希</span><span class="v num">${s.hash?`${s.hash} <span class="link" onclick="copy('${s.hash}')">复制</span>`:'—'}</span></div>
+      <div class="it"><span class="k">区块高度</span><span class="v num">${s.height||'—'}</span></div>
+      <div class="it"><span class="k">热钱包余额</span><span class="v num" style="${low?'color:#cf1322':''}">${r.hot} ${r.coin}</span></div>
+    </div>
+    ${low && (r.status==='pending'||r.status==='failed') ? `<div class="alert alert-err">热钱包（${r.chain}-${r.coin}）余额不足，审核通过后将无法发送，请先补充热钱包余额</div>` : ''}
+    </div>`;
+  } else {
+    const [a,b] = legs(r);
+    fund = `<div class="sec"><div class="sec-t">资金状态 <span class="hint">站内转账不上链，无发送信息</span></div><div class="legs">
+      <div class="leg"><div class="lt">付款腿 · UID ${r.payer}</div><span class="pill ${a[0]}">${a[1]}</span><div class="ld">${a[2]}</div></div>
+      <div class="leg"><div class="lt">收款腿 · UID ${r.payee}</div><span class="pill ${b[0]}">${b[1]}</span><div class="ld">${b[2]}</div></div>
+    </div></div>`;
+  }
+
+  let audit;
+  if (r.status==='pending'){
+    audit = `<div class="sec" id="auditSec"><div class="sec-t">审核 <span class="hint">${r.mode}</span></div>
+      <div class="form-row"><label><em>*</em>审核结果</label><div class="radios">
+        <label><input type="radio" name="res" value="pass" checked onchange="onRes()">通过</label>
+        <label><input type="radio" name="res" value="reject" onchange="onRes()">拒绝</label></div></div>
+      <div class="form-row"><label id="rmkLabel">审核备注</label><div style="flex:1">
+        <textarea class="ctrl" id="rmk" maxlength="200" placeholder="请输入备注"></textarea>
+        <div class="err-tip" id="rmkErr">拒绝时请填写拒绝原因</div>
+        <div class="sub" id="rmkHint" style="display:none"><span class="warn">⚠️ 待确认</span> 拒绝原因是否必填、是否向用户展示（台账 Q-07④）</div>
+      </div></div>
+    </div>`;
+  } else {
+    const res = r.status==='rejected' ? '<span style="color:#cf1322">拒绝</span>' : '<span style="color:#389e0d">通过</span>';
+    audit = `<div class="sec"><div class="sec-t">审核记录</div><div class="audit-rec kv">
+      <div class="it"><span class="k">审核方式</span><span class="v">${r.mode}</span></div>
+      <div class="it"><span class="k">审核结果</span><span class="v">${res}</span></div>
+      <div class="it"><span class="k">审核人</span><span class="v">${esc(r.audit.by)}</span></div>
+      <div class="it"><span class="k">审核时间</span><span class="v num">${r.audit.at}</span></div>
+      <div class="it full"><span class="k">审核备注</span><span class="v">${r.audit.remark?esc(r.audit.remark):'—'}</span></div>
+    </div></div>`;
+  }
+
+  $('dwBody').innerHTML = order + parties + fund + pnlSection(r) + audit;
+  $('dwFoot').innerHTML = r.status==='pending'
+    ? `<button class="btn btn-default" onclick="closeDrawer()">取消</button><button class="btn btn-primary" id="submitBtn" onclick="submitAudit()">确定</button>`
+    : `<button class="btn btn-default" onclick="closeDrawer()">关闭</button>`;
+  $('mask').classList.add('on'); $('drawer').classList.add('on');
+  $('dwBody').scrollTop = 0;
+  if (focusAudit) setTimeout(()=>{ const s=$('auditSec'); if(s) $('dwBody').scrollTo({top:s.offsetTop-10, behavior:'smooth'}); }, 260);
+  render();
+}
+function closeDrawer(){ $('mask').classList.remove('on'); $('drawer').classList.remove('on'); curId=null; render(); }
+function resVal(){ return document.querySelector('input[name=res]:checked').value; }
+function onRes(){
+  const rej = resVal()==='reject';
+  $('rmkLabel').innerHTML = rej ? '<em>*</em>拒绝原因' : '审核备注';
+  $('rmk').placeholder = rej ? '请填写拒绝原因' : '请输入备注';
+  $('rmkHint').style.display = rej ? '' : 'none';
+  $('rmkErr').style.display = 'none';
+  $('submitBtn').className = rej ? 'btn btn-danger' : 'btn btn-primary';
+}
+function submitAudit(){
+  const r = ROWS.find(x=>x.id===curId), rej = resVal()==='reject', rmk = $('rmk').value.trim();
+  if (rej && !rmk){ $('rmkErr').style.display='block'; $('rmk').focus(); return; }
+  const isChain = r.type==='chain';
+  let text;
+  if (rej) text = isChain ? `拒绝后提现单关闭，${r.amount} ${r.coin} 退回用户账户。` : `拒绝后冻结的 ${r.amount} ${r.coin} 将全额退回付款方 UID ${r.payer}，收款方不入账。`;
+  else text = isChain ? `通过后将向 ${shortAddr(r.addr)} 发送 ${recv(r)} ${r.coin}，链上发送不可撤回。${Number(r.hot)<Number(recv(r))?'<br><span style="color:#cf1322">热钱包余额不足，通过后将发送失败。</span>':''}`
+                      : `通过后将从 UID ${r.payer} 扣款 ${r.amount} ${r.coin}，同时入账 UID ${r.payee}，不可撤销。`;
+  $('cfmTitle').textContent = rej ? '确认拒绝？' : '确认通过？';
+  $('cfmText').innerHTML = text;
+  $('cfmOk').className = rej ? 'btn btn-danger' : 'btn btn-primary';
+  $('cfmOk').onclick = () => {
+    const now = '2026-09-29 15:02:17';
+    r.audit = {by:'ops_rhys', at:now, remark:rmk};
+    if (rej) r.status = 'rejected';
+    else if (isChain){
+      const low = Number(r.hot) < Number(recv(r));
+      r.status = low ? 'failed' : 'sending';
+      r.send = {count:1, reason: low?'热钱包余额不足':'', at:now, hash:'', height:''};
+    } else { r.status = 'done'; r.doneAt = now; }
+    closeCfm(); toast(rej ? '已拒绝' : '审核通过'); openDrawer(r.id);
+  };
+  $('cfmMask').classList.add('on');
+}
+function closeCfm(){ $('cfmMask').classList.remove('on'); }
+document.addEventListener('keydown', e => { if (e.key==='Escape'){ if ($('cfmMask').classList.contains('on')) closeCfm(); else closeDrawer(); } });
+
+render();
+</script>
+</body>
+</html>
