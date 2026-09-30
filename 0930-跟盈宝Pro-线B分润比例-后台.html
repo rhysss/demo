@@ -136,11 +136,6 @@ select:focus,.inp:focus{border-color:var(--blue)}
         </tr></thead>
         <tbody id="ratioBody"></tbody>
       </table>
-      <div class="actbar">
-        <button class="btn pri" id="saveRatioBtn" onclick="openRatioConfirm()">保存比例（次日 00:00 UTC 生效）</button>
-        <button class="btn" onclick="resetRatio()">恢复为生效中</button>
-        <span id="ratioHint"></span>
-      </div>
     </div>
 
     <!-- ③ 试算 -->
@@ -156,6 +151,12 @@ select:focus,.inp:focus{border-color:var(--blue)}
       </div>
       <div class="calc"><table><thead><tr><th>去向</th><th>计算</th><th style="text-align:right">金额</th></tr></thead><tbody id="calcBody"></tbody></table></div>
       <div class="empty">⚠️ 数值待确认：到账金额精度与舍入方式（当前演示为保留 2 位、四舍五入）</div>
+    </div>
+
+    <div class="actbar" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--bd);flex-wrap:wrap">
+        <button class="btn pri" id="saveRatioBtn" onclick="openRatioConfirm()">保存比例（次日 00:00 UTC 生效）</button>
+        <button class="btn" onclick="resetRatio()">恢复为生效中</button>
+        <span id="ratioHint"></span>
     </div>
 
   </div></div>
