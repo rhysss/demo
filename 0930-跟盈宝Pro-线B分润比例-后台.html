@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>线B分润比例 · 跟盈宝Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#1677ff;--blue-h:#4096ff;--bd:#f0f0f0;--bd2:#d9d9d9;--tx:#1f1f1f;--tx2:#595959;--tx3:#8c8c8c;--bg:#f5f5f5;--th:#f5f8ff;--red:#ff4d4f;--green:#52c41a;--orange:#fa8c16}
+body{font:14px/1.5715 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;color:var(--tx);background:var(--bg);display:flex;min-height:100vh}
+.side{width:14px;background:#001529;flex:none}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{background:#fff;height:56px;display:flex;align-items:center;padding:0 24px;gap:20px;border-bottom:1px solid var(--bd)}
+.top .fold{font-size:18px;color:var(--tx2);cursor:pointer}
+.crumb{color:var(--tx3);font-size:16px}.crumb b{color:var(--tx2);font-weight:400}
+.tabs{background:#fff;display:flex;border-bottom:1px solid var(--bd);padding-left:12px}
+.tabs div{padding:10px 24px;font-size:14px;color:var(--tx);border-right:1px solid var(--bd);display:flex;align-items:center;gap:8px;cursor:default}
+.tabs div::before{content:"";width:7px;height:7px;border-radius:50%;background:#d9d9d9}
+.tabs .on{color:var(--blue);background:#f0f5ff}.tabs .on::before{background:var(--blue)}
+.content{padding:16px 16px 60px}
+.card{background:#fff;padding:20px 24px;border-radius:4px;max-width:1100px}
+.status{display:flex;flex-direction:column;gap:6px;padding:12px 16px;border-radius:4px;background:#f6ffed;border:1px solid #b7eb8f;margin-bottom:24px}
+.status .row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.status .k{font-weight:600;flex:none}
+.status .pend{background:#fffbe6;border:1px solid #ffe58f;margin:4px -8px -4px;padding:8px;border-radius:4px}
+.sec{margin-top:28px}.sec:first-of-type{margin-top:0}
+.sec h3{font-size:15px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:12px}
+.sec .desc{font-size:12px;color:var(--tx3);margin-bottom:12px}
+.sec .desc b{color:var(--tx2)}
+table{width:100%;border-collapse:collapse;border:1px solid var(--bd)}
+th{background:var(--th);text-align:left;font-weight:500;padding:14px 12px;border-bottom:1px solid var(--bd);border-right:1px solid var(--bd);font-size:14px}
+th small{display:block;font-weight:400;color:var(--tx3);font-size:12px}
+td{padding:12px;border-bottom:1px solid var(--bd);border-right:1px solid var(--bd);vertical-align:middle}
+td .sub{font-size:12px;color:var(--tx3);margin-top:4px}
+.btn{height:32px;padding:0 15px;border-radius:4px;border:1px solid var(--bd2);background:#fff;color:var(--tx);cursor:pointer;font-size:14px;white-space:nowrap}
+.btn:hover{color:var(--blue-h);border-color:var(--blue-h)}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}.btn.pri:hover{background:var(--blue-h)}
+.btn.pri:disabled{background:#f5f5f5;border-color:var(--bd2);color:#bfbfbf;cursor:not-allowed}
+.btn.sm{height:24px;padding:0 8px;font-size:12px}
+.btn.link{border:none;background:none;color:var(--blue);padding:0 4px;height:auto}
+.btn.link:hover{color:var(--blue-h)}
+.btn.link.danger{color:var(--red)}
+.btn.link:disabled{color:#bfbfbf;cursor:not-allowed}
+.actbar{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:12px;color:var(--tx3)}
+.actbar .warn{color:var(--orange)}
+.tag{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:4px;font-size:12px;border:1px solid;white-space:nowrap}
+.tag.coin{background:#fafafa;border-color:var(--bd2);color:var(--tx);font-weight:600;font-size:13px}
+.tag.coin i{font-style:normal;font-weight:400;color:var(--tx3);font-size:12px}
+.tag.coin .x{cursor:pointer;color:var(--tx3);font-weight:400;margin-left:2px}.tag.coin .x:hover{color:var(--red)}
+.tag.coin.new{background:#f6ffed;border-color:#b7eb8f}
+.tag.coin.del{background:#fff1f0;border-color:#ffa39e;text-decoration:line-through;color:var(--tx3)}
+.tag.o{color:#d46b08;background:#fff7e6;border-color:#ffd591}
+.tag.g{color:#389e0d;background:#f6ffed;border-color:#b7eb8f}
+.tag.b{color:#0958d9;background:#e6f4ff;border-color:#91caff}
+.tag.p{color:#531dab;background:#f9f0ff;border-color:#d3adf7}
+.tag.r{color:#cf1322;background:#fff1f0;border-color:#ffa39e}
+.coins{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.empty{color:var(--tx3);font-size:12px}
+.num{display:inline-flex;align-items:center;gap:6px}
+.num input{width:110px;height:32px;border:1px solid var(--bd2);border-radius:4px;padding:0 10px;text-align:center;font-size:14px;outline:none;font-variant-numeric:tabular-nums}
+.num input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(5,145,255,.1)}
+.num input.chg{border-color:#faad14;background:#fffbe6}
+.num input.err{border-color:var(--red)}
+.num input:disabled{background:#f5f5f5;color:#bfbfbf}
+.sum{font-variant-numeric:tabular-nums;color:var(--tx3)}
+.sum.bad{color:var(--red);font-weight:500}
+.bar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:#f0f0f0;margin-top:8px;width:160px}
+.bar span{display:block;height:100%}
+.c0{background:#8c8c8c}.c1{background:#722ed1}.c2{background:#1677ff}
+.old{font-size:11px;color:var(--tx3);margin-top:2px;text-align:center}
+tr.dim td{background:#fafafa}
+select,.inp{height:32px;border:1px solid var(--bd2);border-radius:4px;padding:0 10px;font-size:14px;background:#fff;outline:none}
+select:focus,.inp:focus{border-color:var(--blue)}
+.calc{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.calc table{max-width:700px}
+.tabnum{font-variant-numeric:tabular-nums;text-align:right}
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;padding-top:100px;z-index:10}
+.mask.show{display:flex}
+.modal{background:#fff;border-radius:8px;width:520px;max-width:calc(100vw - 32px);box-shadow:0 6px 16px rgba(0,0,0,.08)}
+.modal h4{font-size:16px;font-weight:600;padding:16px 24px;border-bottom:1px solid var(--bd)}
+.modal .bd{padding:20px 24px;font-size:14px}
+.modal .ft{padding:10px 16px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:8px}
+.fitem{margin-bottom:16px}.fitem label{display:block;margin-bottom:6px}.fitem label em{color:var(--red);font-style:normal;margin-right:4px}
+.fitem .hint{font-size:12px;color:var(--tx3);margin-top:4px}
+.fitem .hint.r{color:var(--red)}
+.opts{border:1px solid var(--bd2);border-radius:4px;max-height:220px;overflow:auto;margin-top:6px}
+.opt{padding:6px 12px;display:flex;justify-content:space-between;cursor:pointer}
+.opt:hover{background:#f5f5f5}.opt.sel{background:#e6f4ff;font-weight:600}
+.opt.dis{color:#bfbfbf;cursor:not-allowed;background:none}
+.opt small{color:var(--tx3);font-weight:400}
+.diff td,.diff th{padding:8px 10px;font-size:13px}
+.diff .up{color:#cf1322}.diff .same{color:var(--tx3)}
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.12);padding:9px 16px;border-radius:8px;display:none;z-index:20;font-size:14px}
+.toast.show{display:block}
+.toast::before{content:"✓";color:var(--green);margin-right:8px;font-weight:700}
+.toast.e::before{content:"!";color:var(--red)}
+.confirm-text{font-size:13px;color:var(--tx2);line-height:1.8}
+.confirm-text b{color:var(--tx)}
+</style>
+</head>
+<body>
+<div class="side"></div>
+<div class="main">
+  <div class="top"><span class="fold">«</span><span class="crumb">理财管理 / 跟盈宝Pro / <b>线B分润比例</b></span></div>
+  <div class="tabs"><div>首页</div><div>功能开关</div><div>产品配置</div><div class="on">线B分润比例 ×</div><div>订单查询</div></div>
+
+  <div class="content"><div class="card">
+
+    <div class="status" id="status"></div>
+
+    <!-- ① 类别 -->
+    <div class="sec">
+      <h3>① 币种类别 <button class="btn sm" onclick="openAddCat()">＋ 新增类别</button></h3>
+      <div class="desc">下级申购的币属于哪个类别，决定分润按下方哪一行分。一个代币只能属于一个类别。<b>归类保存后立即生效</b>（不同于下方比例要到次日 0 点）。</div>
+      <table>
+        <thead><tr><th style="width:170px">类别</th><th>包含代币</th><th style="width:160px">操作</th></tr></thead>
+        <tbody id="catBody"></tbody>
+      </table>
+      <div class="actbar">
+        <button class="btn pri" id="saveCatBtn" onclick="saveCats()">保存归类（立即生效）</button>
+        <span id="catHint"></span>
+      </div>
+    </div>
+
+    <!-- ② 比例 -->
+    <div class="sec">
+      <h3>② 分润怎么分（按下级申购币种类别）</h3>
+      <div class="desc">每一行 = 该类别下级申购产生的<b>整笔分润</b>如何拆分：一部分以申购币种原币直接到账，其余换成 p 代币。<b>每行合计必须等于 100%</b>。比例保存后 <b>次日 00:00 UTC</b> 生效。</div>
+      <table>
+        <thead><tr>
+          <th style="width:180px">下级申购币种</th>
+          <th>申购币种<small>原币直接到账</small></th>
+          <th>pXstocks<small>换成 pXstocks</small></th>
+          <th>p100XT<small>换成 p100XT</small></th>
+          <th style="width:200px">说明</th>
+        </tr></thead>
+        <tbody id="ratioBody"></tbody>
+      </table>
+      <div class="actbar">
+        <button class="btn pri" id="saveRatioBtn" onclick="openRatioConfirm()">保存比例（次日 00:00 UTC 生效）</button>
+        <button class="btn" onclick="resetRatio()">恢复为生效中</button>
+        <span id="ratioHint"></span>
+      </div>
+    </div>
+
+    <!-- ③ 试算 -->
+    <div class="sec">
+      <h3>③ 算一笔看看</h3>
+      <div class="desc">按<b>当前页面编辑中</b>的归类与比例试算，不影响线上。</div>
+      <div class="calc">
+        假设某一级拿到分润
+        <input class="inp" id="cAmt" type="number" value="100" min="0" style="width:130px" oninput="renderCalc()">
+        下级申购的是
+        <select id="cCoin" onchange="renderCalc()"></select>
+        <span class="empty" id="cCat"></span>
+      </div>
+      <div class="calc"><table><thead><tr><th>去向</th><th>计算</th><th style="text-align:right">金额</th></tr></thead><tbody id="calcBody"></tbody></table></div>
+      <div class="empty">⚠️ 数值待确认：到账金额精度与舍入方式（当前演示为保留 2 位、四舍五入）</div>
+    </div>
+
+  </div></div>
+</div>
+
+<!-- 添加代币 -->
+<div class="mask" id="mCoin"><div class="modal">
+  <h4>添加代币到「<span id="mCoinCat"></span>」</h4>
+  <div class="bd">
+    <div class="fitem">
+      <label><em>*</em>选择代币</label>
+      <input class="inp" id="coinSearch" placeholder="搜索币名或币种 ID，如 BTC" style="width:100%" oninput="renderOpts()">
+      <div class="opts" id="coinOpts"></div>
+      <div class="hint">数据来自平台币种列表。已在其他类别的代币需先从原类别移除。</div>
+    </div>
+  </div>
+  <div class="ft"><button class="btn" onclick="closeM('mCoin')">取消</button><button class="btn pri" id="mCoinOk" onclick="confirmAddCoin()" disabled>添加</button></div>
+</div></div>
+
+<!-- 新增类别 -->
+<div class="mask" id="mCat"><div class="modal">
+  <h4>新增类别</h4>
+  <div class="bd">
+    <div class="fitem">
+      <label><em>*</em>类别名称</label>
+      <input class="inp" id="catName" placeholder="如：主流币类" style="width:100%" maxlength="20" oninput="checkCatName()">
+      <div class="hint" id="catNameHint">新增后会在 ② 中自动出现一行，默认 100% 原币直接到账，可再调整。</div>
+    </div>
+  </div>
+  <div class="ft"><button class="btn" onclick="closeM('mCat')">取消</button><button class="btn pri" id="mCatOk" onclick="confirmAddCat()" disabled>确定</button></div>
+</div></div>
+
+<!-- 通用确认 -->
+<div class="mask" id="mConf"><div class="modal">
+  <h4 id="mConfT"></h4>
+  <div class="bd" id="mConfB"></div>
+  <div class="ft"><button class="btn" onclick="closeM('mConf')">取消</button><button class="btn pri" id="mConfOk">确定</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- 模拟数据 ----------
+const PLATFORM_COINS = [
+  {sym:'BTC',id:1},{sym:'ETH',id:2},{sym:'SOL',id:5},{sym:'BNB',id:8},{sym:'USDC',id:12},
+  {sym:'USDT',id:55},{sym:'PUSD',id:57},{sym:'100XT',id:59},{sym:'XSTOCKS',id:62},{sym:'P100XT',id:65},{sym:'PXSTOCKS',id:66}
+];
+const TARGETS = ['orig','px','p1']; // 原币 / pXstocks / p100XT
+let uid = 10;
+// 生效中（线上）
+let liveCats = [
+  {id:1,name:'USDT 类',coins:['USDT']},
+  {id:2,name:'100XT 类',coins:['100XT']},
+  {id:3,name:'xStocks 类',coins:['XSTOCKS']},
+  {id:4,name:'美股代币类',coins:['PUSD','P100XT','PXSTOCKS']}
+];
+let liveRatio = {1:{orig:100,px:0,p1:0},2:{orig:100,px:0,p1:0},3:{orig:100,px:0,p1:0},4:{orig:100,px:0,p1:0}};
+let pending = null; // {ratio, at}
+// 编辑中
+let cats = clone(liveCats);
+let ratio = clone(liveRatio);
+// 截图标注示例值（未保存）
+ratio[2] = {orig:50,px:25,p1:25};
+
+function clone(o){return JSON.parse(JSON.stringify(o))}
+const $ = id => document.getElementById(id);
+const fmt = n => (Math.round(n*100)/100).toFixed(2);
+const catOf = (list,sym) => list.find(c=>c.coins.includes(sym));
+const baseRatio = () => pending ? pending.ratio : liveRatio;
+
+// ---------- 状态条 ----------
+function ratioSummary(r, list){
+  return list.map(c=>{const x=r[c.id]; if(!x) return ''; return `${c.name} ${x.orig}/${x.px}/${x.p1}`}).filter(Boolean).join('；');
+}
+function renderStatus(){
+  let h = `<div class="row"><span class="k">生效中</span><span>2026-09-30 00:00 UTC（北京时间 2026/9/30 08:00:00）起</span></div>
+  <div class="row" style="font-size:12px;color:var(--tx2)"><span class="k" style="visibility:hidden">生效中</span>原币 / pXstocks / p100XT（%）：${ratioSummary(liveRatio, liveCats)}</div>`;
+  if(pending){
+    h += `<div class="pend"><div class="row"><span class="k" style="color:#d48806">待生效</span><span>${pending.at} 起 · 原币 / pXstocks / p100XT（%）：${ratioSummary(pending.ratio, liveCats)}</span>
+    <button class="btn link danger" onclick="cancelPending()">撤销待生效</button></div></div>`;
+  }
+  $('status').innerHTML = h;
+}
+
+// ---------- ① 类别 ----------
+function catDirty(){ return JSON.stringify(cats)!==JSON.stringify(liveCats) }
+function renderCats(){
+  const liveAll = liveCats.flatMap(c=>c.coins.map(s=>s+'@'+c.id));
+  const nowAll = cats.flatMap(c=>c.coins.map(s=>s+'@'+c.id));
+  $('catBody').innerHTML = cats.map(c=>{
+    const isNewCat = !liveCats.find(l=>l.id===c.id);
+    const removed = (liveCats.find(l=>l.id===c.id)?.coins||[]).filter(s=>!c.coins.includes(s));
+    const tags = c.coins.map(s=>{
+      const id = PLATFORM_COINS.find(p=>p.sym===s).id;
+      const isNew = !liveAll.includes(s+'@'+c.id);
+      return `<span class="tag coin ${isNew?'new':''}">${s}<i>#${id}</i><span class="x" title="移出" onclick="removeCoin(${c.id},'${s}')">×</span></span>`;
+    }).join('') + removed.map(s=>`<span class="tag coin del">${s}</span>`).join('');
+    return `<tr>
+      <td><b>${c.name}</b>${isNewCat?' <span class="tag g">新增</span>':''}<div class="sub">${c.coins.length} 个代币</div></td>
+      <td><div class="coins">${tags || '<span class="empty">暂无代币，② 中本行不起作用</span>'}</div></td>
+      <td><button class="btn link" onclick="openAddCoin(${c.id})">＋ 添加代币</button>
+          <button class="btn link danger" ${c.coins.length?'disabled title="请先移出全部代币"':''} onclick="delCat(${c.id})">删除类别</button></td>
+    </tr>`;
+  }).join('');
+  const d = catDirty();
+  $('saveCatBtn').disabled = !d;
+  $('catHint').innerHTML = d ? '<span class="warn">有未保存的归类改动（绿色 = 新加入，删除线 = 将移出）</span>' : '归类与线上一致';
+}
+function removeCoin(cid, sym){
+  const c = cats.find(x=>x.id===cid);
+  c.coins = c.coins.filter(s=>s!==sym);
+  renderAll();
+}
+function delCat(cid){
+  const c = cats.find(x=>x.id===cid);
+  confirmBox('删除类别', `<div class="confirm-text">确定删除「<b>${c.name}</b>」？② 中对应的比例行将一并删除。</div>`, ()=>{
+    cats = cats.filter(x=>x.id!==cid); delete ratio[cid]; renderAll();
+  });
+}
+
+// 添加代币
+let addCid=null, addSym=null;
+function openAddCoin(cid){
+  addCid=cid; addSym=null; $('coinSearch').value='';
+  $('mCoinCat').textContent = cats.find(c=>c.id===cid).name;
+  renderOpts(); $('mCoinOk').disabled=true; $('mCoin').classList.add('show'); $('coinSearch').focus();
+}
+function renderOpts(){
+  const q = $('coinSearch').value.trim().toUpperCase();
+  const list = PLATFORM_COINS.filter(p=>!q || p.sym.includes(q) || String(p.id)===q);
+  $('coinOpts').innerHTML = list.map(p=>{
+    const inCat = catOf(cats,p.sym);
+    const dis = !!inCat;
+    return `<div class="opt ${dis?'dis':''} ${addSym===p.sym?'sel':''}" ${dis?'':`onclick="pickCoin('${p.sym}')"`}>
+      <span>${p.sym} <small>#${p.id}</small></span><small>${inCat? (inCat.id===addCid?'已在本类别':'已在「'+inCat.name+'」') : ''}</small></div>`;
+  }).join('') || '<div class="opt dis">无匹配代币</div>';
+}
+function pickCoin(s){ addSym=s; $('mCoinOk').disabled=false; renderOpts(); }
+function confirmAddCoin(){
+  cats.find(c=>c.id===addCid).coins.push(addSym);
+  closeM('mCoin'); renderAll(); toast(`已加入 ${addSym}，保存归类后生效`);
+}
+
+// 新增类别
+function openAddCat(){ $('catName').value=''; checkCatName(); $('mCat').classList.add('show'); $('catName').focus(); }
+function checkCatName(){
+  const v = $('catName').value.trim(), dup = cats.some(c=>c.name===v);
+  $('mCatOk').disabled = !v || dup;
+  const h=$('catNameHint');
+  if(dup){h.textContent='类别名称已存在';h.className='hint r'} else {h.textContent='新增后会在 ② 中自动出现一行，默认 100% 原币直接到账，可再调整。';h.className='hint'}
+}
+function confirmAddCat(){
+  const id = ++uid;
+  cats.push({id,name:$('catName').value.trim(),coins:[]});
+  ratio[id] = {orig:100,px:0,p1:0};
+  closeM('mCat'); renderAll(); toast('类别已添加，记得添加代币并保存');
+}
+function saveCats(){
+  const moved=[];
+  const liveAll = {}; liveCats.forEach(c=>c.coins.forEach(s=>liveAll[s]=c.name));
+  const nowAll = {}; cats.forEach(c=>c.coins.forEach(s=>nowAll[s]=c.name));
+  new Set([...Object.keys(liveAll),...Object.keys(nowAll)]).forEach(s=>{
+    if(liveAll[s]!==nowAll[s]) moved.push(`<tr><td><b>${s}</b></td><td>${liveAll[s]||'<span class="empty">未归类</span>'}</td><td>${nowAll[s]||'<span class="r" style="color:#cf1322">移出（未归类）</span>'}</td></tr>`);
+  });
+  const newCats = cats.filter(c=>!liveCats.find(l=>l.id===c.id));
+  const hasUnassignedNewCat = newCats.length;
+  const body = `<div class="confirm-text">保存后<b>立即生效</b>，影响此后产生的分润。</div>
+    ${moved.length?`<table class="diff" style="margin-top:12px"><thead><tr><th>代币</th><th>原类别</th><th>新类别</th></tr></thead><tbody>${moved.join('')}</tbody></table>`:''}
+    ${hasUnassignedNewCat?`<div class="confirm-text" style="margin-top:10px">新增类别：${newCats.map(c=>'<b>'+c.name+'</b>').join('、')}。其比例需在 ② 保存后次日 00:00 UTC 生效，<b>生效前按 ⚠️ 待确认规则处理</b>。</div>`:''}
+    ${Object.keys(liveAll).some(s=>!nowAll[s])?`<div class="confirm-text" style="margin-top:10px;color:#cf1322">有代币被移出且未归入任何类别，⚠️ 未归类代币的分润处理方式待确认。</div>`:''}`;
+  confirmBox('确认保存归类', body, ()=>{
+    // 新类别在线上比例中先占位（与编辑值一致，仅演示）
+    newCats.forEach(c=>{ if(!liveRatio[c.id]) liveRatio[c.id] = {orig:100,px:0,p1:0}; });
+    Object.keys(liveRatio).forEach(k=>{ if(!cats.find(c=>c.id==k)) delete liveRatio[k]; });
+    liveCats = clone(cats); renderAll(); toast('归类已保存，立即生效');
+  });
+}
+
+// ---------- ② 比例 ----------
+const sumOf = r => Math.round((+r.orig + +r.px + +r.p1)*100)/100;
+function ratioValid(){ return cats.every(c=>sumOf(ratio[c.id])===100) }
+function ratioDirty(){ const b=baseRatio(); return cats.some(c=>TARGETS.some(t=>+ratio[c.id][t] !== +(b[c.id]?.[t] ?? -1))) }
+function renderRatio(){
+  const b = baseRatio();
+  $('ratioBody').innerHTML = cats.map(c=>{
+    const r = ratio[c.id], s = sumOf(r), empty = !c.coins.length;
+    const cells = TARGETS.map(t=>{
+      const old = b[c.id]?.[t], chg = old!==undefined && +r[t]!==+old;
+      return `<td><span class="num"><input type="number" min="0" max="100" step="0.01" value="${r[t]}" class="${chg?'chg':''} ${s!==100?'err':''}"
+        oninput="setR(${c.id},'${t}',this.value)" onblur="renderAll()"> %</span>${chg?`<div class="old" style="text-align:left">原 ${old}%</div>`:''}</td>`;
+    }).join('');
+    let tag;
+    if(s!==100) tag = `<span class="sum bad">合计 ${s}%，需等于 100%</span>`;
+    else if(+r.orig===100) tag = `<span class="tag g">全额原币</span>`;
+    else if(+r.orig===0) tag = `<span class="tag p">全部换 p 代币</span>`;
+    else tag = `<span class="tag b">部分：原币 ${r.orig}%</span>`;
+    return `<tr class="${empty?'dim':''}">
+      <td>${c.name}<div class="sub">${empty?'暂无代币，本行不起作用':'包含：'+c.coins.join('、')}</div></td>
+      ${cells}
+      <td>${tag}${s===100?`<div class="sum" style="font-size:12px;margin-top:4px">合计 100%</div>`:''}
+        <div class="bar"><span class="c0" style="width:${r.orig}%"></span><span class="c1" style="width:${r.px}%"></span><span class="c2" style="width:${r.p1}%"></span></div></td>
+    </tr>`;
+  }).join('');
+  const v = ratioValid(), d = ratioDirty();
+  $('saveRatioBtn').disabled = !v || !d;
+  $('ratioHint').innerHTML = !v ? '<span style="color:#cf1322">有行合计不等于 100%，无法保存</span>'
+    : d ? '<span class="warn">有未保存的比例改动（黄框）</span>'
+    : (pending ? '与待生效版本一致' : '与生效中一致');
+}
+function setR(cid,t,v){
+  let n = v===''?0:Math.max(0,Math.min(100,+v));
+  ratio[cid][t] = Math.round(n*100)/100;
+  // 只刷新合计/说明，不重绘输入框以免丢焦点
+  const row = [...$('ratioBody').rows][cats.findIndex(c=>c.id===cid)];
+  const r = ratio[cid], s = sumOf(r);
+  row.querySelectorAll('input').forEach(i=>i.classList.toggle('err', s!==100));
+  const last = row.cells[4];
+  last.innerHTML = (s!==100?`<span class="sum bad">合计 ${s}%，需等于 100%</span>`:`<span class="sum">合计 100%</span>`) +
+    `<div class="bar"><span class="c0" style="width:${r.orig}%"></span><span class="c1" style="width:${r.px}%"></span><span class="c2" style="width:${r.p1}%"></span></div>`;
+  $('saveRatioBtn').disabled = !ratioValid() || !ratioDirty();
+  renderCalc();
+}
+function resetRatio(){ ratio = clone(liveRatio); cats.forEach(c=>{ if(!ratio[c.id]) ratio[c.id]={orig:100,px:0,p1:0} }); renderAll(); }
+function openRatioConfirm(){
+  const b = baseRatio();
+  const names = {orig:'原币',px:'pXstocks',p1:'p100XT'};
+  const rows = cats.map(c=>{
+    const o=b[c.id], n=ratio[c.id];
+    const same = o && TARGETS.every(t=>+o[t]===+n[t]);
+    return `<tr><td>${c.name}</td><td class="${same?'same':''}">${o?`${o.orig} / ${o.px} / ${o.p1}`:'—'}</td><td class="${same?'same':'up'}">${n.orig} / ${n.px} / ${n.p1}</td></tr>`;
+  }).join('');
+  confirmBox('确认保存比例', `<div class="confirm-text">新比例将于 <b>2026-10-01 00:00 UTC</b>（北京时间 10/1 08:00）生效，之前仍按生效中比例执行。${pending?'<br>当前已有待生效版本，保存后将<b>覆盖</b>它。':''}</div>
+    <table class="diff" style="margin-top:12px"><thead><tr><th>类别</th><th>${pending?'待生效':'生效中'}（原币/pX/p100XT %）</th><th>保存后</th></tr></thead><tbody>${rows}</tbody></table>`,
+    ()=>{ pending = {ratio:clone(ratio), at:'2026-10-01 00:00 UTC（北京时间 2026/10/1 08:00:00）'}; renderAll(); toast('已保存，次日 00:00 UTC 生效'); });
+}
+function cancelPending(){
+  confirmBox('撤销待生效', '<div class="confirm-text">撤销后将继续按生效中比例执行，编辑区恢复为生效中比例。</div>', ()=>{
+    pending=null; resetRatio(); toast('已撤销待生效版本');
+  });
+}
+
+// ---------- ③ 试算 ----------
+function renderCalcOpts(){
+  const sel = $('cCoin'), cur = sel.value;
+  const all = cats.flatMap(c=>c.coins);
+  sel.innerHTML = all.map(s=>`<option value="${s}">${s}</option>`).join('');
+  if(all.includes(cur)) sel.value = cur;
+}
+function renderCalc(){
+  const amt = +$('cAmt').value || 0, sym = $('cCoin').value;
+  const c = catOf(cats, sym);
+  if(!c){ $('cCat').textContent=''; $('calcBody').innerHTML='<tr><td colspan="3" class="empty">暂无可试算的代币</td></tr>'; return; }
+  $('cCat').textContent = `（属于「${c.name}」）`;
+  const r = ratio[c.id], s = sumOf(r);
+  if(s!==100){ $('calcBody').innerHTML=`<tr><td colspan="3" style="color:#cf1322">「${c.name}」合计 ${s}%，不等于 100%，无法试算</td></tr>`; return; }
+  const rows = [
+    ['原币直接到账（'+sym+'）', r.orig, 'c0'], ['换成 pXstocks', r.px, 'c1'], ['换成 p100XT', r.p1, 'c2']
+  ];
+  $('calcBody').innerHTML = rows.map(([n,p,cl])=>`<tr class="${+p===0?'dim':''}"><td><span class="bar" style="display:inline-block;width:8px;height:8px;margin:0 6px 0 0;border-radius:2px"><span class="${cl}" style="width:100%"></span></span>${n}</td><td>${fmt(amt)} × ${p}%</td><td class="tabnum">${fmt(amt*p/100)}</td></tr>`).join('')
+    + `<tr><td><b>合计</b></td><td></td><td class="tabnum"><b>${fmt(amt)}</b></td></tr>`;
+}
+
+// ---------- 通用 ----------
+function confirmBox(t, body, ok){
+  $('mConfT').textContent=t; $('mConfB').innerHTML=body;
+  $('mConfOk').onclick=()=>{ closeM('mConf'); ok(); };
+  $('mConf').classList.add('show');
+}
+function closeM(id){ $(id).classList.remove('show') }
+let tt; function toast(m,e){ const el=$('toast'); el.textContent=m; el.className='toast show'+(e?' e':''); clearTimeout(tt); tt=setTimeout(()=>el.className='toast',2200); }
+document.querySelectorAll('.mask').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('show') }));
+function renderAll(){ renderStatus(); renderCats(); renderRatio(); renderCalcOpts(); renderCalc(); }
+renderAll();
+</script>
+</body>
+</html>
