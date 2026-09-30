@@ -110,8 +110,8 @@ select:focus,.inp:focus{border-color:var(--blue)}
 
     <!-- ① 类别 -->
     <div class="sec">
-      <h3>① 币种类别 <button class="btn sm" onclick="openAddCat()">＋ 新增类别</button></h3>
-      <div class="desc">下级申购的币属于哪个类别，决定分润按下方哪一行分。一个代币只能属于一个类别。<b>归类保存后立即生效</b>（不同于下方比例要到次日 0 点）。</div>
+      <h3>① 币种类别</h3>
+      <div class="desc">固定两个类别：<b>全部发放</b> = 整笔分润以申购币种原币发放；<b>部分发放</b> = 按 ② 的比例部分原币发放、其余换成 p 代币。一个代币只能属于一个类别。<b>归类保存后立即生效</b>（不同于下方比例要到次日 0 点）。</div>
       <table>
         <thead><tr><th style="width:170px">类别</th><th>包含代币</th><th style="width:160px">操作</th></tr></thead>
         <tbody id="catBody"></tbody>
@@ -125,10 +125,10 @@ select:focus,.inp:focus{border-color:var(--blue)}
     <!-- ② 比例 -->
     <div class="sec">
       <h3>② 分润怎么分（按下级申购币种类别）</h3>
-      <div class="desc">每一行 = 该类别下级申购产生的<b>整笔分润</b>如何拆分：一部分以申购币种原币直接到账，其余换成 p 代币。<b>每行合计必须等于 100%</b>。比例保存后 <b>次日 00:00 UTC</b> 生效。</div>
+      <div class="desc">每一行 = 该类别下级申购产生的<b>整笔分润</b>如何拆分。<b>全部发放</b>固定 100% 原币；<b>部分发放</b>配置原币与 p 代币的比例，<b>合计必须等于 100%</b>。比例保存后 <b>次日 00:00 UTC</b> 生效。</div>
       <table>
         <thead><tr>
-          <th style="width:180px">下级申购币种</th>
+          <th style="width:180px">类别</th>
           <th>申购币种<small>原币直接到账</small></th>
           <th>pXstocks<small>换成 pXstocks</small></th>
           <th>p100XT<small>换成 p100XT</small></th>
@@ -169,23 +169,10 @@ select:focus,.inp:focus{border-color:var(--blue)}
       <label><em>*</em>选择代币</label>
       <input class="inp" id="coinSearch" placeholder="搜索币名或币种 ID，如 BTC" style="width:100%" oninput="renderOpts()">
       <div class="opts" id="coinOpts"></div>
-      <div class="hint">数据来自平台币种列表。已在其他类别的代币需先从原类别移除。</div>
+      <div class="hint">数据来自平台币种列表。选择已在另一类别的代币，会将其移到本类别。</div>
     </div>
   </div>
   <div class="ft"><button class="btn" onclick="closeM('mCoin')">取消</button><button class="btn pri" id="mCoinOk" onclick="confirmAddCoin()" disabled>添加</button></div>
-</div></div>
-
-<!-- 新增类别 -->
-<div class="mask" id="mCat"><div class="modal">
-  <h4>新增类别</h4>
-  <div class="bd">
-    <div class="fitem">
-      <label><em>*</em>类别名称</label>
-      <input class="inp" id="catName" placeholder="如：主流币类" style="width:100%" maxlength="20" oninput="checkCatName()">
-      <div class="hint" id="catNameHint">新增后会在 ② 中自动出现一行，默认 100% 原币直接到账，可再调整。</div>
-    </div>
-  </div>
-  <div class="ft"><button class="btn" onclick="closeM('mCat')">取消</button><button class="btn pri" id="mCatOk" onclick="confirmAddCat()" disabled>确定</button></div>
 </div></div>
 
 <!-- 通用确认 -->
@@ -204,15 +191,13 @@ const PLATFORM_COINS = [
   {sym:'USDT',id:55},{sym:'PUSD',id:57},{sym:'100XT',id:59},{sym:'XSTOCKS',id:62},{sym:'P100XT',id:65},{sym:'PXSTOCKS',id:66}
 ];
 const TARGETS = ['orig','px','p1']; // 原币 / pXstocks / p100XT
-let uid = 10;
 // 生效中（线上）
 let liveCats = [
-  {id:1,name:'USDT 类',coins:['USDT']},
-  {id:2,name:'100XT 类',coins:['100XT']},
-  {id:3,name:'xStocks 类',coins:['XSTOCKS']},
-  {id:4,name:'美股代币类',coins:['PUSD','P100XT','PXSTOCKS']}
+  {id:1,name:'全部发放',coins:['USDT','PUSD','XSTOCKS','P100XT','PXSTOCKS']},
+  {id:2,name:'部分发放',coins:['100XT']}
 ];
-let liveRatio = {1:{orig:100,px:0,p1:0},2:{orig:100,px:0,p1:0},3:{orig:100,px:0,p1:0},4:{orig:100,px:0,p1:0}};
+const FIXED = 1; // 全部发放：固定 100% 原币
+let liveRatio = {1:{orig:100,px:0,p1:0},2:{orig:100,px:0,p1:0}};
 let pending = null; // {ratio, at}
 // 编辑中
 let cats = clone(liveCats);
@@ -246,7 +231,6 @@ function renderCats(){
   const liveAll = liveCats.flatMap(c=>c.coins.map(s=>s+'@'+c.id));
   const nowAll = cats.flatMap(c=>c.coins.map(s=>s+'@'+c.id));
   $('catBody').innerHTML = cats.map(c=>{
-    const isNewCat = !liveCats.find(l=>l.id===c.id);
     const removed = (liveCats.find(l=>l.id===c.id)?.coins||[]).filter(s=>!c.coins.includes(s));
     const tags = c.coins.map(s=>{
       const id = PLATFORM_COINS.find(p=>p.sym===s).id;
@@ -254,10 +238,9 @@ function renderCats(){
       return `<span class="tag coin ${isNew?'new':''}">${s}<i>#${id}</i><span class="x" title="移出" onclick="removeCoin(${c.id},'${s}')">×</span></span>`;
     }).join('') + removed.map(s=>`<span class="tag coin del">${s}</span>`).join('');
     return `<tr>
-      <td><b>${c.name}</b>${isNewCat?' <span class="tag g">新增</span>':''}<div class="sub">${c.coins.length} 个代币</div></td>
-      <td><div class="coins">${tags || '<span class="empty">暂无代币，② 中本行不起作用</span>'}</div></td>
-      <td><button class="btn link" onclick="openAddCoin(${c.id})">＋ 添加代币</button>
-          <button class="btn link danger" ${c.coins.length?'disabled title="请先移出全部代币"':''} onclick="delCat(${c.id})">删除类别</button></td>
+      <td><b>${c.name}</b><div class="sub">${c.id===FIXED?'100% 原币':'原币 + p 代币'} · ${c.coins.length} 个代币</div></td>
+      <td><div class="coins">${tags || '<span class="empty">暂无代币，本类别不起作用</span>'}</div></td>
+      <td><button class="btn link" onclick="openAddCoin(${c.id})">＋ 添加代币</button></td>
     </tr>`;
   }).join('');
   const d = catDirty();
@@ -269,13 +252,6 @@ function removeCoin(cid, sym){
   c.coins = c.coins.filter(s=>s!==sym);
   renderAll();
 }
-function delCat(cid){
-  const c = cats.find(x=>x.id===cid);
-  confirmBox('删除类别', `<div class="confirm-text">确定删除「<b>${c.name}</b>」？② 中对应的比例行将一并删除。</div>`, ()=>{
-    cats = cats.filter(x=>x.id!==cid); delete ratio[cid]; renderAll();
-  });
-}
-
 // 添加代币
 let addCid=null, addSym=null;
 function openAddCoin(cid){
@@ -288,31 +264,19 @@ function renderOpts(){
   const list = PLATFORM_COINS.filter(p=>!q || p.sym.includes(q) || String(p.id)===q);
   $('coinOpts').innerHTML = list.map(p=>{
     const inCat = catOf(cats,p.sym);
-    const dis = !!inCat;
+    const dis = inCat && inCat.id===addCid;
     return `<div class="opt ${dis?'dis':''} ${addSym===p.sym?'sel':''}" ${dis?'':`onclick="pickCoin('${p.sym}')"`}>
-      <span>${p.sym} <small>#${p.id}</small></span><small>${inCat? (inCat.id===addCid?'已在本类别':'已在「'+inCat.name+'」') : ''}</small></div>`;
+      <span>${p.sym} <small>#${p.id}</small></span><small>${dis?'已在本类别':inCat?'当前在「'+inCat.name+'」，选择后移入本类别':''}</small></div>`;
   }).join('') || '<div class="opt dis">无匹配代币</div>';
 }
 function pickCoin(s){ addSym=s; $('mCoinOk').disabled=false; renderOpts(); }
 function confirmAddCoin(){
+  const from = catOf(cats, addSym);
+  if(from) from.coins = from.coins.filter(s=>s!==addSym);
   cats.find(c=>c.id===addCid).coins.push(addSym);
-  closeM('mCoin'); renderAll(); toast(`已加入 ${addSym}，保存归类后生效`);
+  closeM('mCoin'); renderAll(); toast(from?`已将 ${addSym} 从「${from.name}」移入，保存归类后生效`:`已加入 ${addSym}，保存归类后生效`);
 }
 
-// 新增类别
-function openAddCat(){ $('catName').value=''; checkCatName(); $('mCat').classList.add('show'); $('catName').focus(); }
-function checkCatName(){
-  const v = $('catName').value.trim(), dup = cats.some(c=>c.name===v);
-  $('mCatOk').disabled = !v || dup;
-  const h=$('catNameHint');
-  if(dup){h.textContent='类别名称已存在';h.className='hint r'} else {h.textContent='新增后会在 ② 中自动出现一行，默认 100% 原币直接到账，可再调整。';h.className='hint'}
-}
-function confirmAddCat(){
-  const id = ++uid;
-  cats.push({id,name:$('catName').value.trim(),coins:[]});
-  ratio[id] = {orig:100,px:0,p1:0};
-  closeM('mCat'); renderAll(); toast('类别已添加，记得添加代币并保存');
-}
 function saveCats(){
   const moved=[];
   const liveAll = {}; liveCats.forEach(c=>c.coins.forEach(s=>liveAll[s]=c.name));
@@ -320,16 +284,10 @@ function saveCats(){
   new Set([...Object.keys(liveAll),...Object.keys(nowAll)]).forEach(s=>{
     if(liveAll[s]!==nowAll[s]) moved.push(`<tr><td><b>${s}</b></td><td>${liveAll[s]||'<span class="empty">未归类</span>'}</td><td>${nowAll[s]||'<span class="r" style="color:#cf1322">移出（未归类）</span>'}</td></tr>`);
   });
-  const newCats = cats.filter(c=>!liveCats.find(l=>l.id===c.id));
-  const hasUnassignedNewCat = newCats.length;
   const body = `<div class="confirm-text">保存后<b>立即生效</b>，影响此后产生的分润。</div>
     ${moved.length?`<table class="diff" style="margin-top:12px"><thead><tr><th>代币</th><th>原类别</th><th>新类别</th></tr></thead><tbody>${moved.join('')}</tbody></table>`:''}
-    ${hasUnassignedNewCat?`<div class="confirm-text" style="margin-top:10px">新增类别：${newCats.map(c=>'<b>'+c.name+'</b>').join('、')}。其比例需在 ② 保存后次日 00:00 UTC 生效，<b>生效前按 ⚠️ 待确认规则处理</b>。</div>`:''}
     ${Object.keys(liveAll).some(s=>!nowAll[s])?`<div class="confirm-text" style="margin-top:10px;color:#cf1322">有代币被移出且未归入任何类别，⚠️ 未归类代币的分润处理方式待确认。</div>`:''}`;
   confirmBox('确认保存归类', body, ()=>{
-    // 新类别在线上比例中先占位（与编辑值一致，仅演示）
-    newCats.forEach(c=>{ if(!liveRatio[c.id]) liveRatio[c.id] = {orig:100,px:0,p1:0}; });
-    Object.keys(liveRatio).forEach(k=>{ if(!cats.find(c=>c.id==k)) delete liveRatio[k]; });
     liveCats = clone(cats); renderAll(); toast('归类已保存，立即生效');
   });
 }
@@ -341,17 +299,16 @@ function ratioDirty(){ const b=baseRatio(); return cats.some(c=>TARGETS.some(t=>
 function renderRatio(){
   const b = baseRatio();
   $('ratioBody').innerHTML = cats.map(c=>{
-    const r = ratio[c.id], s = sumOf(r), empty = !c.coins.length;
-    const cells = TARGETS.map(t=>{
+    const r = ratio[c.id], s = sumOf(r), empty = !c.coins.length, fixed = c.id===FIXED;
+    const cells = fixed ? TARGETS.map(t=>`<td><span class="num"><input type="number" value="${r[t]}" disabled> %</span></td>`).join('') : TARGETS.map(t=>{
       const old = b[c.id]?.[t], chg = old!==undefined && +r[t]!==+old;
       return `<td><span class="num"><input type="number" min="0" max="100" step="0.01" value="${r[t]}" class="${chg?'chg':''} ${s!==100?'err':''}"
         oninput="setR(${c.id},'${t}',this.value)" onblur="renderAll()"> %</span>${chg?`<div class="old" style="text-align:left">原 ${old}%</div>`:''}</td>`;
     }).join('');
     let tag;
     if(s!==100) tag = `<span class="sum bad">合计 ${s}%，需等于 100%</span>`;
-    else if(+r.orig===100) tag = `<span class="tag g">全额原币</span>`;
-    else if(+r.orig===0) tag = `<span class="tag p">全部换 p 代币</span>`;
-    else tag = `<span class="tag b">部分：原币 ${r.orig}%</span>`;
+    else if(fixed) tag = `<span class="tag g">固定 100% 原币，不可改</span>`;
+    else tag = `<span class="tag b">原币 ${r.orig}%，其余换 p 代币</span>`;
     return `<tr class="${empty?'dim':''}">
       <td>${c.name}<div class="sub">${empty?'暂无代币，本行不起作用':'包含：'+c.coins.join('、')}</div></td>
       ${cells}
