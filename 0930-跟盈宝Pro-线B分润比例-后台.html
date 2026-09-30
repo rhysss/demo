@@ -125,7 +125,7 @@ select:focus,.inp:focus{border-color:var(--blue)}
     <!-- ② 比例 -->
     <div class="sec">
       <h3>② 分润怎么分（按下级申购币种类别）</h3>
-      <div class="desc">每一行 = 该类别下级申购产生的<b>整笔分润</b>如何拆分。一部分以申购币种原币直接到账，其余换成 p 代币，<b>每行合计必须等于 100%</b>。比例保存后 <b>次日 00:00 UTC</b> 生效。</div>
+      <div class="desc">每一行 = 该类别下级申购产生的<b>整笔分润</b>如何拆分。一部分以申购币种原币直接到账，换成 p 代币，<b>每行合计不超过 100%</b>（不足 100% 的部分为未分配）。比例保存后 <b>次日 00:00 UTC</b> 生效。</div>
       <table>
         <thead><tr>
           <th style="width:180px">类别</th>
@@ -255,7 +255,7 @@ function renderCats(){
     return `<tr>
       <td><b>${c.name}</b>${isNewCat?' <span class="tag g">新增</span>':''}<div class="sub">原币 ${ratio[c.id].orig}% · ${c.coins.length} 个代币</div></td>
       <td><div class="coins">${tags || '<span class="empty">暂无代币，本类别不起作用</span>'}</div></td>
-      <td><button class="btn link" onclick="openAddCoin(${c.id})">＋ 添加代币</button>${isNewCat?`<br><button class="btn link danger" onclick="undoCat(${c.id})">撤销新增</button>`:''}</td>
+      <td><button class="btn link" onclick="openAddCoin(${c.id})">＋ 添加代币</button><br><button class="btn link danger" ${cats.length<=1?'disabled title="至少保留一个类别"':''} onclick="delCat(${c.id})">删除分类</button></td>
     </tr>`;
   }).join('');
   const d = catDirty();
@@ -306,10 +306,17 @@ function confirmAddCat(){
   ratio[id] = {orig:100,px:0,p1:0};
   closeM('mCat'); renderAll(); toast('分类已添加，已同步到 ②');
 }
-function undoCat(cid){
-  const c = cats.find(x=>x.id===cid);
-  c.coins.forEach(s=>{ const home = liveCats.find(l=>l.coins.includes(s)); if(home) cats.find(x=>x.id===home.id).coins.push(s); });
-  cats = cats.filter(x=>x.id!==cid); delete ratio[cid]; renderAll();
+function delCat(cid){
+  if(cats.length<=1) return toast('至少保留一个类别', true);
+  const c = cats.find(x=>x.id===cid), others = cats.filter(x=>x.id!==cid);
+  const body = `<div class="confirm-text">确定删除「<b>${c.name}</b>」？② 中对应的比例行会一并删除。</div>` + (c.coins.length ? `
+    <div class="fitem" style="margin:14px 0 0"><label><em>*</em>该分类下 ${c.coins.length} 个代币（${c.coins.join('、')}）移到</label>
+    <select id="delTo" style="width:100%">${others.map(o=>`<option value="${o.id}">${o.name}</option>`).join('')}</select></div>` : '');
+  confirmBox('删除分类', body, ()=>{
+    if(c.coins.length){ const to = cats.find(x=>x.id==$('delTo').value); to.coins.push(...c.coins); }
+    cats = cats.filter(x=>x.id!==cid); delete ratio[cid];
+    renderAll(); toast('已删除，保存归类后生效');
+  });
 }
 function saveCats(){
   const moved=[];
@@ -319,20 +326,35 @@ function saveCats(){
     if(liveAll[s]!==nowAll[s]) moved.push(`<tr><td><b>${s}</b></td><td>${liveAll[s]||'<span class="empty">未归类</span>'}</td><td>${nowAll[s]||'<span class="r" style="color:#cf1322">移出（未归类）</span>'}</td></tr>`);
   });
   const newCats = cats.filter(c=>!liveCats.find(l=>l.id===c.id));
+  const delCats = liveCats.filter(l=>!cats.find(c=>c.id===l.id));
   const body = `<div class="confirm-text">保存后<b>立即生效</b>，影响此后产生的分润。</div>
     ${moved.length?`<table class="diff" style="margin-top:12px"><thead><tr><th>代币</th><th>原类别</th><th>新类别</th></tr></thead><tbody>${moved.join('')}</tbody></table>`:''}
     ${newCats.length?`<div class="confirm-text" style="margin-top:10px">新增分类：${newCats.map(c=>'<b>'+c.name+'</b>').join('、')}。其比例在 ② 保存后次日 00:00 UTC 生效，<b>生效前暂按 100% 原币发放</b>（⚠️ 待确认）。</div>`:''}
+    ${delCats.length?`<div class="confirm-text" style="margin-top:10px">删除分类：${delCats.map(c=>'<b>'+c.name+'</b>').join('、')}，其比例（含待生效版本）一并删除。</div>`:''}
     ${Object.keys(liveAll).some(s=>!nowAll[s])?`<div class="confirm-text" style="margin-top:10px;color:#cf1322">有代币被移出且未归入任何类别，⚠️ 未归类代币的分润处理方式待确认。</div>`:''}`;
   confirmBox('确认保存归类', body, ()=>{
     newCats.forEach(c=>{ liveRatio[c.id] = {orig:100,px:0,p1:0}; if(pending && !pending.ratio[c.id]) pending.ratio[c.id] = {orig:100,px:0,p1:0}; });
+    delCats.forEach(c=>{ delete liveRatio[c.id]; if(pending) delete pending.ratio[c.id]; });
     liveCats = clone(cats); renderAll(); toast('归类已保存，立即生效');
   });
 }
 
 // ---------- ② 比例 ----------
 const sumOf = r => Math.round((+r.orig + +r.px + +r.p1)*100)/100;
-const hasUnsavedCat = () => cats.some(c=>!liveCats.find(l=>l.id===c.id));
-function ratioValid(){ return cats.every(c=>sumOf(ratio[c.id])===100) }
+// 分类有增删未保存时，不允许保存比例
+const hasUnsavedCat = () => cats.map(c=>c.id).join() !== liveCats.map(c=>c.id).join();
+function ratioValid(){ return cats.every(c=>sumOf(ratio[c.id])<=100) }
+const barHtml = r => `<div class="bar"><span class="c0" style="width:${r.orig}%"></span><span class="c1" style="width:${r.px}%"></span><span class="c2" style="width:${r.p1}%"></span></div>`;
+function noteHtml(r){
+  const s = sumOf(r), left = Math.round((100-s)*100)/100;
+  let tag;
+  if(s>100) return `<span class="sum bad">合计 ${s}%，不能超过 100%</span>` + barHtml(r);
+  if(left>0) tag = `<span class="tag o">未分配 ${left}%</span>`;
+  else if(+r.orig===100) tag = `<span class="tag g">全额原币</span>`;
+  else if(+r.orig===0) tag = `<span class="tag p">全部换 p 代币</span>`;
+  else tag = `<span class="tag b">原币 ${r.orig}%，其余换 p 代币</span>`;
+  return tag + `<div class="sum" style="font-size:12px;margin-top:4px">合计 ${s}%</div>` + barHtml(r);
+}
 function ratioDirty(){ const b=baseRatio(); return cats.some(c=>TARGETS.some(t=>+ratio[c.id][t] !== +(b[c.id]?.[t] ?? -1))) }
 function renderRatio(){
   const b = baseRatio();
@@ -340,25 +362,19 @@ function renderRatio(){
     const r = ratio[c.id], s = sumOf(r), empty = !c.coins.length;
     const cells = TARGETS.map(t=>{
       const old = b[c.id]?.[t], chg = old!==undefined && +r[t]!==+old;
-      return `<td><span class="num"><input type="number" min="0" max="100" step="0.01" value="${r[t]}" class="${chg?'chg':''} ${s!==100?'err':''}"
+      return `<td><span class="num"><input type="number" min="0" max="100" step="0.01" value="${r[t]}" class="${chg?'chg':''} ${s>100?'err':''}"
         oninput="setR(${c.id},'${t}',this.value)" onblur="renderAll()"> %</span>${chg?`<div class="old" style="text-align:left">原 ${old}%</div>`:''}</td>`;
     }).join('');
-    let tag;
-    if(s!==100) tag = `<span class="sum bad">合计 ${s}%，需等于 100%</span>`;
-    else if(+r.orig===100) tag = `<span class="tag g">全额原币</span>`;
-    else if(+r.orig===0) tag = `<span class="tag p">全部换 p 代币</span>`;
-    else tag = `<span class="tag b">原币 ${r.orig}%，其余换 p 代币</span>`;
     return `<tr class="${empty?'dim':''}">
       <td>${c.name}<div class="sub">${empty?'暂无代币，本行不起作用':'包含：'+c.coins.join('、')}</div></td>
       ${cells}
-      <td>${tag}${s===100?`<div class="sum" style="font-size:12px;margin-top:4px">合计 100%</div>`:''}
-        <div class="bar"><span class="c0" style="width:${r.orig}%"></span><span class="c1" style="width:${r.px}%"></span><span class="c2" style="width:${r.p1}%"></span></div></td>
+      <td>${noteHtml(r)}</td>
     </tr>`;
   }).join('');
   const v = ratioValid(), d = ratioDirty(), nc = hasUnsavedCat();
   $('saveRatioBtn').disabled = !v || !d || nc;
-  $('ratioHint').innerHTML = nc ? '<span class="warn">有新增分类未保存，请先在 ① 保存归类</span>'
-    : !v ? '<span style="color:#cf1322">有行合计不等于 100%，无法保存</span>'
+  $('ratioHint').innerHTML = nc ? '<span class="warn">有分类增删未保存，请先在 ① 保存归类</span>'
+    : !v ? '<span style="color:#cf1322">有行合计超过 100%，无法保存</span>'
     : d ? '<span class="warn">有未保存的比例改动（黄框）</span>'
     : (pending ? '与待生效版本一致' : '与生效中一致');
 }
@@ -368,10 +384,8 @@ function setR(cid,t,v){
   // 只刷新合计/说明，不重绘输入框以免丢焦点
   const row = [...$('ratioBody').rows][cats.findIndex(c=>c.id===cid)];
   const r = ratio[cid], s = sumOf(r);
-  row.querySelectorAll('input').forEach(i=>i.classList.toggle('err', s!==100));
-  const last = row.cells[4];
-  last.innerHTML = (s!==100?`<span class="sum bad">合计 ${s}%，需等于 100%</span>`:`<span class="sum">合计 100%</span>`) +
-    `<div class="bar"><span class="c0" style="width:${r.orig}%"></span><span class="c1" style="width:${r.px}%"></span><span class="c2" style="width:${r.p1}%"></span></div>`;
+  row.querySelectorAll('input').forEach(i=>i.classList.toggle('err', s>100));
+  row.cells[4].innerHTML = noteHtml(r);
   $('saveRatioBtn').disabled = !ratioValid() || !ratioDirty() || hasUnsavedCat();
   renderCalc();
 }
@@ -407,10 +421,12 @@ function renderCalc(){
   if(!c){ $('cCat').textContent=''; $('calcBody').innerHTML='<tr><td colspan="3" class="empty">暂无可试算的代币</td></tr>'; return; }
   $('cCat').textContent = `（属于「${c.name}」）`;
   const r = ratio[c.id], s = sumOf(r);
-  if(s!==100){ $('calcBody').innerHTML=`<tr><td colspan="3" style="color:#cf1322">「${c.name}」合计 ${s}%，不等于 100%，无法试算</td></tr>`; return; }
+  if(s>100){ $('calcBody').innerHTML=`<tr><td colspan="3" style="color:#cf1322">「${c.name}」合计 ${s}%，超过 100%，无法试算</td></tr>`; return; }
+  const left = Math.round((100-s)*100)/100;
   const rows = [
     ['原币直接到账（'+sym+'）', r.orig, 'c0'], ['换成 pXstocks', r.px, 'c1'], ['换成 p100XT', r.p1, 'c2']
   ];
+  if(left>0) rows.push(['未分配（⚠️ 去向待确认）', left, '']);
   $('calcBody').innerHTML = rows.map(([n,p,cl])=>`<tr class="${+p===0?'dim':''}"><td><span class="bar" style="display:inline-block;width:8px;height:8px;margin:0 6px 0 0;border-radius:2px"><span class="${cl}" style="width:100%"></span></span>${n}</td><td>${fmt(amt)} × ${p}%</td><td class="tabnum">${fmt(amt*p/100)}</td></tr>`).join('')
     + `<tr><td><b>合计</b></td><td></td><td class="tabnum"><b>${fmt(amt)}</b></td></tr>`;
 }
