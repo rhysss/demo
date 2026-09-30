@@ -245,7 +245,7 @@ function renderCats(){
   const nowAll = cats.flatMap(c=>c.coins.map(s=>s+'@'+c.id));
   $('catBody').innerHTML = cats.map(c=>{
     const isNewCat = !liveCats.find(l=>l.id===c.id);
-    const removed = (liveCats.find(l=>l.id===c.id)?.coins||[]).filter(s=>!c.coins.includes(s));
+    const removed = (liveCats.find(l=>l.id===c.id)?.coins||[]).filter(s=>!c.coins.includes(s) && !catOf(cats,s)); // 移到其他类别的直接消失，只保留被移出且未归类的
     const tags = c.coins.map(s=>{
       const id = PLATFORM_COINS.find(p=>p.sym===s).id;
       const isNew = !liveAll.includes(s+'@'+c.id);
@@ -259,7 +259,7 @@ function renderCats(){
   }).join('');
   const d = catDirty();
   $('saveCatBtn').disabled = !d;
-  $('catHint').innerHTML = d ? '<span class="warn">有未保存的归类改动（绿色 = 新加入，删除线 = 将移出）</span>' : '归类与线上一致';
+  $('catHint').innerHTML = d ? '<span class="warn">有未保存的归类改动（绿色 = 新加入，删除线 = 移出后未归类）</span>' : '归类与线上一致';
 }
 function removeCoin(cid, sym){
   const c = cats.find(x=>x.id===cid);
