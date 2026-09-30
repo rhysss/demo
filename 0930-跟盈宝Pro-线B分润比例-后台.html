@@ -178,7 +178,7 @@ select:focus,.inp:focus{border-color:var(--blue)}
 
 <!-- 添加分类 -->
 <div class="mask" id="mCat"><div class="modal">
-  <h4>添加分类</h4>
+  <h4 id="mCatT">添加分类</h4>
   <div class="bd">
     <div class="fitem">
       <label><em>*</em>分类名称</label>
@@ -253,7 +253,7 @@ function renderCats(){
       return `<span class="tag coin ${isNew?'new':''}">${s}<i>#${id}</i><span class="x" title="移出" onclick="removeCoin(${c.id},'${s}')">×</span></span>`;
     }).join('') + removed.map(s=>`<span class="tag coin del">${s}</span>`).join('');
     return `<tr>
-      <td><b>${c.name}</b>${isNewCat?' <span class="tag g">新增</span>':''}<div class="sub">原币 ${ratio[c.id].orig}% · ${c.coins.length} 个代币</div></td>
+      <td><b>${c.name}</b> <button class="btn link" style="font-size:12px" title="编辑名称" onclick="openEditCat(${c.id})">✎ 编辑</button>${renamedFrom(c)}${isNewCat?' <span class="tag g">新增</span>':''}<div class="sub">原币 ${ratio[c.id].orig}% · ${c.coins.length} 个代币</div></td>
       <td><div class="coins">${tags || '<span class="empty">暂无代币，本类别不起作用</span>'}</div></td>
       <td><button class="btn link" onclick="openAddCoin(${c.id})">＋ 添加代币</button><br><button class="btn link danger" ${cats.length<=1?'disabled title="至少保留一个类别"':''} onclick="delCat(${c.id})">删除分类</button></td>
     </tr>`;
@@ -292,15 +292,20 @@ function confirmAddCoin(){
   closeM('mCoin'); renderAll(); toast(from?`已将 ${addSym} 从「${from.name}」移入，保存归类后生效`:`已加入 ${addSym}，保存归类后生效`);
 }
 
+function renamedFrom(c){ const l = liveCats.find(x=>x.id===c.id); return l && l.name!==c.name ? `<div class="sub" style="color:#d46b08">原名：${l.name}</div>` : ''; }
 // 添加分类
-function openAddCat(){ $('catName').value=''; checkCatName(); $('mCat').classList.add('show'); $('catName').focus(); }
+let editCid = null; // null = 添加，否则为编辑名称
+function openAddCat(){ editCid=null; $('mCatT').textContent='添加分类'; $('catName').value=''; checkCatName(); $('mCat').classList.add('show'); $('catName').focus(); }
+function openEditCat(cid){ editCid=cid; $('mCatT').textContent='编辑分类名称'; $('catName').value=cats.find(c=>c.id===cid).name; checkCatName(); $('mCat').classList.add('show'); $('catName').select(); }
 function checkCatName(){
-  const v = $('catName').value.trim(), dup = cats.some(c=>c.name===v), h = $('catNameHint');
-  $('mCatOk').disabled = !v || dup;
+  const v = $('catName').value.trim(), dup = cats.some(c=>c.name===v && c.id!==editCid), h = $('catNameHint');
+  const same = editCid && cats.find(c=>c.id===editCid).name===v;
+  $('mCatOk').disabled = !v || dup || same;
   if(dup){ h.textContent='分类名称已存在'; h.className='hint r' }
-  else { h.textContent='添加后会同步出现在 ②，默认 100% 原币直接到账，可再调整。'; h.className='hint' }
+  else { h.textContent = editCid ? '仅修改名称，不影响代币归属和比例；保存归类后生效。' : '添加后会同步出现在 ②，默认 100% 原币直接到账，可再调整。'; h.className='hint' }
 }
 function confirmAddCat(){
+  if(editCid){ cats.find(c=>c.id===editCid).name = $('catName').value.trim(); closeM('mCat'); renderAll(); toast('名称已修改，保存归类后生效'); return; }
   const id = ++uid;
   cats.push({id, name:$('catName').value.trim(), coins:[]});
   ratio[id] = {orig:100,px:0,p1:0};
@@ -320,14 +325,16 @@ function delCat(cid){
 }
 function saveCats(){
   const moved=[];
-  const liveAll = {}; liveCats.forEach(c=>c.coins.forEach(s=>liveAll[s]=c.name));
-  const nowAll = {}; cats.forEach(c=>c.coins.forEach(s=>nowAll[s]=c.name));
+  const liveAll = {}; liveCats.forEach(c=>c.coins.forEach(s=>liveAll[s]=c));
+  const nowAll = {}; cats.forEach(c=>c.coins.forEach(s=>nowAll[s]=c));
   new Set([...Object.keys(liveAll),...Object.keys(nowAll)]).forEach(s=>{
-    if(liveAll[s]!==nowAll[s]) moved.push(`<tr><td><b>${s}</b></td><td>${liveAll[s]||'<span class="empty">未归类</span>'}</td><td>${nowAll[s]||'<span class="r" style="color:#cf1322">移出（未归类）</span>'}</td></tr>`);
+    if(liveAll[s]?.id!==nowAll[s]?.id) moved.push(`<tr><td><b>${s}</b></td><td>${liveAll[s]?.name||'<span class="empty">未归类</span>'}</td><td>${nowAll[s]?.name||'<span class="r" style="color:#cf1322">移出（未归类）</span>'}</td></tr>`);
   });
   const newCats = cats.filter(c=>!liveCats.find(l=>l.id===c.id));
   const delCats = liveCats.filter(l=>!cats.find(c=>c.id===l.id));
+  const renamed = cats.filter(c=>{ const l=liveCats.find(x=>x.id===c.id); return l && l.name!==c.name; });
   const body = `<div class="confirm-text">保存后<b>立即生效</b>，影响此后产生的分润。</div>
+    ${renamed.length?`<div class="confirm-text" style="margin-top:10px">名称修改：${renamed.map(c=>liveCats.find(x=>x.id===c.id).name+' → <b>'+c.name+'</b>').join('；')}</div>`:''}
     ${moved.length?`<table class="diff" style="margin-top:12px"><thead><tr><th>代币</th><th>原类别</th><th>新类别</th></tr></thead><tbody>${moved.join('')}</tbody></table>`:''}
     ${newCats.length?`<div class="confirm-text" style="margin-top:10px">新增分类：${newCats.map(c=>'<b>'+c.name+'</b>').join('、')}。其比例在 ② 保存后次日 00:00 UTC 生效，<b>生效前暂按 100% 原币发放</b>（⚠️ 待确认）。</div>`:''}
     ${delCats.length?`<div class="confirm-text" style="margin-top:10px">删除分类：${delCats.map(c=>'<b>'+c.name+'</b>').join('、')}，其比例（含待生效版本）一并删除。</div>`:''}
