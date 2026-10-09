@@ -274,7 +274,7 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
     <table>
       <tr><th>触点</th><th>本方案</th><th>竞品依据</th><th>待确认</th></tr>
       <tr><td>通知</td><td>站内信 + 铃铛红点；内容：合约、方向、减仓张数、成交价、已实现盈亏、手续费、剩余持仓、挂单处理结果</td><td>五家都会事后通知；OKX / Bybit 还发短信和邮件，模板原文均未公开</td><td><span class="warn">⚠️ 是否加发邮件 / 短信 / App 推送</span></td></tr>
-      <tr><td>当前持仓</td><td>只是仓位变小，不加临时标记</td><td>五家均未见部分减仓后的剩余仓位标记</td><td><span class="warn">⚠️ Q8 ADL 指示灯本期不做（建议）</span></td></tr>
+      <tr><td>当前持仓</td><td>✅ 不加任何 ADL 标记：部分减仓只是数量变少，全部减仓则仓位从列表消失（已确认）</td><td>五家均未见部分减仓后的剩余仓位标记</td><td><span class="warn">⚠️ Q8 事前 ADL 指示灯本期不做（建议）</span></td></tr>
       <tr><td>历史委托 / 成交记录</td><td>ADL 产生独立的系统订单，订单类型显示「ADL」标签，悬浮显示说明</td><td>Binance / OKX / Bybit / Bitget 均把 ADL 和普通平仓、强平分开标识</td><td>—</td></tr>
       <tr><td>仓位历史</td><td>平仓类型区分「ADL 部分减仓 / ADL 全部平仓」</td><td>OKX 仓位历史类型 5、6</td><td>—</td></tr>
       <tr><td>挂单</td><td>演示为撤销该仓位的全部平仓 / 止盈止损委托，状态「已撤销 · 因 ADL」</td><td>Bybit / Gate 明确撤销被 ADL 用户的所有活动委托</td><td><span class="warn">⚠️ Q7</span></td></tr>
