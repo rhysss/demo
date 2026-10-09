@@ -6,46 +6,52 @@
 <title>中台 ADL 减仓 PRD V1.0</title>
 <style>
   :root{
-    --green:#0ECB81; --green-deep:#0a9c63; --green-soft:#e6faf1;
-    --dark:#0f2f22; --gray:#6b7280; --line:#e7ece9; --bg:#f4f7f5; --code:#f2f5f3;
+    --pri:#a78bfa; --pri-deep:#7c3aed; --pri-soft:#f3efff;
+    --dark:#2e1065; --gray:#6b7280; --line:#ece7f8; --bg:#f7f5fd; --code:#f4f1fc;
     --red:#e5484d;
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:#22302b;
+  body{margin:0;background:var(--bg);color:#2a2540;
     font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
     line-height:1.75;font-size:15px;}
   .wrap{max-width:980px;margin:0 auto;padding:0 0 80px;}
-  .doc{background:#fff;margin:24px;border-radius:14px;box-shadow:0 4px 24px rgba(20,60,45,.07);padding:48px 54px;}
-  .cover{border-left:5px solid var(--green);padding:6px 0 6px 18px;margin-bottom:14px;}
+  .doc{background:#fff;margin:24px;border-radius:14px;box-shadow:0 4px 24px rgba(76,29,149,.07);padding:48px 54px;}
+  .cover{border-left:5px solid var(--pri);padding:6px 0 6px 18px;margin-bottom:14px;}
   .cover h1{font-size:28px;margin:0 0 6px;font-weight:800;color:var(--dark);letter-spacing:-.5px;}
-  .cover .ver{color:var(--green-deep);font-weight:700;font-size:14px;}
+  .cover .ver{color:var(--pri-deep);font-weight:700;font-size:14px;}
   .cover .sub{color:var(--gray);font-size:13px;margin-top:6px;}
-  .cover .sub a{color:var(--green-deep);}
-  h2{font-size:21px;font-weight:800;color:var(--dark);margin:40px 0 8px;padding-bottom:8px;border-bottom:2px solid var(--green);}
+  .cover .sub a{color:var(--pri-deep);}
+  h2{font-size:21px;font-weight:800;color:var(--dark);margin:40px 0 8px;padding-bottom:8px;border-bottom:2px solid var(--pri);}
   h3{font-size:17px;font-weight:700;color:var(--dark);margin:26px 0 4px;}
-  h4{font-size:15px;font-weight:700;color:#33463e;margin:18px 0 4px;}
+  h4{font-size:15px;font-weight:700;color:#3b2a63;margin:18px 0 4px;}
   p{margin:8px 0;}
-  strong{color:#11201a;font-weight:700;}
-  a{color:var(--green-deep);}
+  strong{color:#1e1238;font-weight:700;}
+  a{color:var(--pri-deep);}
   ul,ol{padding-left:22px;margin:8px 0;}
   li{margin:4px 0;}
   blockquote{margin:14px 0;padding:12px 16px;background:#fff8e6;border-left:4px solid #f0b429;border-radius:0 8px 8px 0;color:#7a5b00;font-size:14px;}
   blockquote p{margin:4px 0;}
   table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px;display:block;overflow-x:auto;}
   th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top;}
-  th{background:var(--green-soft);color:var(--dark);font-weight:700;white-space:nowrap;}
-  tr:nth-child(even) td{background:#fafefb;}
-  code{background:var(--code);padding:2px 6px;border-radius:5px;font-size:13px;font-family:'SF Mono',Menlo,Consolas,monospace;color:var(--green-deep);}
+  th{background:var(--pri-soft);color:var(--dark);font-weight:700;white-space:nowrap;}
+  tr:nth-child(even) td{background:#fcfbff;}
+  code{background:var(--code);padding:2px 6px;border-radius:5px;font-size:13px;font-family:'SF Mono',Menlo,Consolas,monospace;color:var(--pri-deep);}
   .mermaid{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;margin:16px 0;text-align:center;}
   .tag-td{display:inline-block;background:#fdecec;color:var(--red);font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;white-space:nowrap;}
   .tag-as{display:inline-block;background:#eef2ff;color:#4f46e5;font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;white-space:nowrap;}
-  .tag-new{display:inline-block;background:var(--green-soft);color:var(--green-deep);font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;}
+  .tag-new{display:inline-block;background:var(--pri-soft);color:var(--pri-deep);font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;}
   .tag-mod{display:inline-block;background:#e8f0fe;color:#1a56db;font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;}
-  .shot{border:2px dashed #c9d6cf;border-radius:10px;background:#f8fbf9;color:#7c8b84;text-align:center;padding:34px 16px;margin:14px 0;font-size:13.5px;}
-  .shot b{color:#33463e;}
-  .toc{background:var(--green-soft);border-radius:10px;padding:16px 22px;margin:18px 0 8px;font-size:14px;}
+  .fig{margin:16px 0 18px;text-align:center}
+  .fig img{max-width:100%;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 12px rgba(76,29,149,.08);background:#fff}
+  .fig figcaption{font-size:12.5px;color:var(--gray);margin-top:6px}
+  .fig.narrow img{max-width:640px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .phones{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
+  .phones .fig{margin:8px 0}
+  .phones img{border-radius:22px}
+  .toc{background:var(--pri-soft);border-radius:10px;padding:16px 22px;margin:18px 0 8px;font-size:14px;}
   .toc b{color:var(--dark);}
-  .toc a{display:inline-block;margin:2px 14px 2px 0;color:var(--green-deep);text-decoration:none;}
+  .toc a{display:inline-block;margin:2px 14px 2px 0;color:var(--pri-deep);text-decoration:none;}
   .toc a:hover{text-decoration:underline;}
   .clist{border-radius:10px;padding:4px 18px;margin:12px 0;background:#fff6e6;border:1px solid #f3d9a0;}
   .api{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:10px;padding:4px 18px 10px;margin:14px 0;}
@@ -56,7 +62,7 @@
 
 <div class="cover">
   <h1>中台 ADL 减仓 PRD</h1>
-  <div class="ver">版本 V1.0 · 2026-10-09 · 修订人 Rhys</div>
+  <div class="ver">版本 V1.1 · 2026-10-09 · 修订人 Rhys</div>
   <div class="sub">需求类型：0→1 · 规模 L ｜ 配套原型：<a href="https://forclaudecode.vercel.app/1009-中台ADL减仓.html">1009-中台ADL减仓.html</a> ｜ 规则来源：规则台账_ADL减仓 v1.0（R01–R19）</div>
 </div>
 
@@ -227,7 +233,7 @@ flowchart LR
 <p>原型地址：<a href="https://forclaudecode.vercel.app/1009-中台ADL减仓.html">1009-中台ADL减仓.html</a>（顶部可切换「中台」与「用户端 · App + Web」）。</p>
 
 <h4>3.3.1 中台 · 当前持仓列表</h4>
-<div class="shot"><b>【截图占位】中台 · 当前持仓列表（含「ADL 档位」列与「ADL减仓」按钮）</b><br>截图由 PM 从原型截取后替换</div>
+<figure class="fig"><img src="中台ADL减仓_PRD_assets/01_admin_list.jpg" alt="图 1　当前持仓列表（已按「ADL 档位」降序；亮满 5 格且浮盈的仓位「ADL减仓」可点，第 5 行为亮满 5 格但浮亏，置灰）" loading="lazy"><figcaption>图 1　当前持仓列表（已按「ADL 档位」降序；亮满 5 格且浮盈的仓位「ADL减仓」可点，第 5 行为亮满 5 格但浮亏，置灰）</figcaption></figure>
 <table>
   <tr><th>区域</th><th>元素</th><th>说明</th></tr>
   <tr><td>筛选区</td><td>合约标的 / UID / 订单 ID / 保证金模式、重置 / 指标编辑 / 查询 / 导出</td><td>不变</td></tr>
@@ -242,7 +248,7 @@ flowchart LR
 </table>
 
 <h4>3.3.2 中台 · ADL 减仓弹窗</h4>
-<div class="shot"><b>【截图占位】ADL 减仓弹窗（含有平仓挂单时的提示）</b></div>
+<figure class="fig narrow"><img src="中台ADL减仓_PRD_assets/02_adl_modal.jpg" alt="图 2　ADL 减仓弹窗（输入 100 张；该仓位有平仓挂单，显示撤单提示）" loading="lazy"><figcaption>图 2　ADL 减仓弹窗（输入 100 张；该仓位有平仓挂单，显示撤单提示）</figcaption></figure>
 <table>
   <tr><th>区域</th><th>元素</th><th>说明</th></tr>
   <tr><td>标题</td><td>「ADL 减仓」+ 标签「用户端展示为『ADL 自动减仓』」</td><td>提醒运营该操作对用户的呈现方式。</td></tr>
@@ -263,7 +269,7 @@ flowchart LR
 </table>
 
 <h4>3.3.3 中台 · 二次确认与执行结果</h4>
-<div class="shot"><b>【截图占位】二次确认弹窗 / 成功提示 / 失败提示</b></div>
+<div class="row2"><figure class="fig"><img src="中台ADL减仓_PRD_assets/03_confirm.jpg" alt="图 3　二次确认" loading="lazy"><figcaption>图 3　二次确认</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/05_fail.jpg" alt="图 4　执行失败（系统异常）" loading="lazy"><figcaption>图 4　执行失败（系统异常）</figcaption></figure></div><figure class="fig"><img src="中台ADL减仓_PRD_assets/04_success.jpg" alt="图 5　执行成功：顶部提示 + 该行高亮，持仓量 / 自动减仓量同步刷新" loading="lazy"><figcaption>图 5　执行成功：顶部提示 + 该行高亮，持仓量 / 自动减仓量同步刷新</figcaption></figure>
 <table>
   <tr><th>状态</th><th>表现</th></tr>
   <tr><td>二次确认</td><td>文案：「即将对 UID xxx 的 BTCUSDT 多仓执行 ADL 减仓 100 张（0.01 BTC）（全部平仓时追加『全部平仓』），按执行时标记价成交（当前 xxx）。操作执行后不可撤销；用户端在历史委托 / 成交记录 / 仓位历史中以『ADL』标签展示；操作人 xxx 将记入订单明细」。按钮：返回修改 / 确认执行。</td></tr>
@@ -276,7 +282,7 @@ flowchart LR
 </table>
 
 <h4>3.3.4 中台 · 订单 ID 明细</h4>
-<div class="shot"><b>【截图占位】订单 ID 明细（含 ADL 记录与「操作人」列）</b></div>
+<figure class="fig"><img src="中台ADL减仓_PRD_assets/06_orders.jpg" alt="图 6　订单 ID 明细：第 2 行为 ADL 记录，操作人为运营账号" loading="lazy"><figcaption>图 6　订单 ID 明细：第 2 行为 ADL 记录，操作人为运营账号</figcaption></figure>
 <table>
   <tr><th>元素</th><th>说明</th></tr>
   <tr><td>现有列</td><td>序号 / 持仓 ID / 订单 ID / 下单方向 / 成交数量 / 价格 / 是否成交 / 成交均价，<strong>全部保持现状</strong>。ADL 记录的下单方向沿用现有值（卖出平多 / 买入平空），价格与成交均价为执行时标记价格。</td></tr>
@@ -284,7 +290,7 @@ flowchart LR
 </table>
 
 <h4>3.3.5 用户端 · App / Web</h4>
-<div class="shot"><b>【截图占位】用户端 App + Web：ADL 前 / 部分 ADL 后 / 全部 ADL 后</b></div>
+<p><strong>App</strong>（从左到右：ADL 前 → 部分 ADL 后 → 全部 ADL 后 → 部分 ADL 后的历史委托；虚线框为变化项，原型标注，非实际 UI）</p><div class="phones"><figure class="fig"><img src="中台ADL减仓_PRD_assets/11_app_before.jpg" alt="图 7　ADL 前" loading="lazy"><figcaption>图 7　ADL 前</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/12_app_partial.jpg" alt="图 8　部分 ADL 后" loading="lazy"><figcaption>图 8　部分 ADL 后</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/13_app_full.jpg" alt="图 9　全部 ADL 后" loading="lazy"><figcaption>图 9　全部 ADL 后</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/14_app_partial_hist.jpg" alt="图 10　历史委托" loading="lazy"><figcaption>图 10　历史委托</figcaption></figure></div><p><strong>Web</strong></p><figure class="fig"><img src="中台ADL减仓_PRD_assets/07_web_before.jpg" alt="图 11　ADL 前 · 当前持仓（含止盈 95,000）" loading="lazy"><figcaption>图 11　ADL 前 · 当前持仓（含止盈 95,000）</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/08_web_partial.jpg" alt="图 12　部分 ADL 后 · 当前持仓：数量变为 0.0008 BTC，止盈被撤，无任何 ADL 标记" loading="lazy"><figcaption>图 12　部分 ADL 后 · 当前持仓：数量变为 0.0008 BTC，止盈被撤，无任何 ADL 标记</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/09_web_partial_hist.jpg" alt="图 13　部分 ADL 后 · 历史委托：ADL 记录 + 「已撤销 · 因 ADL」" loading="lazy"><figcaption>图 13　部分 ADL 后 · 历史委托：ADL 记录 + 「已撤销 · 因 ADL」</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/10_web_full_phist.jpg" alt="图 14　全部 ADL 后 · 仓位历史：「ADL 全部平仓」" loading="lazy"><figcaption>图 14　全部 ADL 后 · 仓位历史：「ADL 全部平仓」</figcaption></figure>
 <p>App 与 Web 规则一致，以下以一笔 0.0108 BTC 的多仓被减 0.01 BTC 为例。</p>
 <table>
   <tr><th>位置</th><th>部分 ADL 后</th><th>全部 ADL 后</th></tr>
@@ -412,6 +418,7 @@ flowchart LR
 <table>
   <tr><th>版本</th><th>日期</th><th>阶段</th><th>变更摘要</th><th>变更原因</th></tr>
   <tr><td>V1.0</td><td>2026-10-09</td><td>初稿（评审前）</td><td>基于原型与规则台账 v1.0（R01–R19）产出完整 PRD</td><td>中台 ADL 减仓需求立项，准备评审会</td></tr>
+  <tr><td>V1.1</td><td>2026-10-09</td><td>初稿（评审前）</td><td>3.3 全部截图占位替换为原型截图（图 1–14）；文档主题色改为淡紫色</td><td>PM 要求补齐原型截图、调整配色</td></tr>
 </table>
 
 </div></div>
@@ -419,8 +426,8 @@ flowchart LR
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
 <script>
   mermaid.initialize({startOnLoad:true, theme:'base', themeVariables:{
-    primaryColor:'#e6faf1', primaryBorderColor:'#0ECB81', primaryTextColor:'#0f2f22',
-    lineColor:'#0a9c63', fontSize:'14px'
+    primaryColor:'#f3efff', primaryBorderColor:'#a78bfa', primaryTextColor:'#2e1065',
+    lineColor:'#7c3aed', actorBkg:'#f3efff', actorBorder:'#a78bfa', signalColor:'#7c3aed', labelBoxBkgColor:'#f3efff', noteBkgColor:'#faf7ff', fontSize:'14px'
   }});
 </script>
 </body>
