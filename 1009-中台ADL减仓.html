@@ -74,6 +74,9 @@ table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%
 .unit{color:#fa8c16}
 .op{display:flex;gap:6px}
 .op .btn{height:28px;min-width:0;padding:0 12px;font-size:12px}
+.adl-lt{display:inline-flex;gap:2px;vertical-align:-2px;margin-right:6px}
+.adl-lt b{width:4px;height:13px;border-radius:1px;background:#dcdfe6}
+.adl-lt b.on{background:#3b82f6}
 .adl-qty-hl{color:#fa8c16;font-weight:600}
 .state-box{height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#a0a4aa;gap:8px}
 .skeleton td{color:transparent}
@@ -273,8 +276,9 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
     <div id="noteBody">
       <table>
         <tr><th>类型</th><th>位置</th><th>说明</th><th>待确认</th></tr>
-        <tr><td class="tag-add">新增</td><td>操作列「ADL减仓」按钮</td><td>和「平仓」并列。<b>回报率 &gt; 50%</b> 的仓位可点，其余置灰（恰好 50% 不可点）；同一仓位可多次减仓</td><td>✅ Q4 门槛 50% <span class="warn">⚠️ 写死还是后台可配置待确认</span></td></tr>
+        <tr><td class="tag-add">新增</td><td>操作列「ADL减仓」按钮</td><td>和「平仓」并列。只有 <b>ADL 指示灯亮满 5 格</b> 的仓位可点，其余置灰；同一仓位可多次减仓</td><td>✅ 指示灯 5 格（替换原「回报率 &gt; 50%」）</td></tr>
         <tr><td class="tag-add">新增</td><td>ADL 减仓弹窗</td><td>输入减仓数量（张 / 币）→ 预览成交价 / 预计已实现盈亏 / 剩余持仓 → 二次确认 → 执行（不填写减仓原因）</td><td>✅ Q1 不产生对手仓位，盈亏计入平台账户<br>✅ Q2 按执行时标记价成交<br>✅ Q3 被减仓用户不收手续费</td></tr>
+        <tr><td class="tag-add">新增</td><td>「ADL 档位」列</td><td>展示该仓位当前的 ADL 指示灯格数（与用户端看到的一致），支持排序，方便运营找到亮满 5 格的仓位</td><td>灯数沿用现有计算逻辑（原型为模拟数据）</td></tr>
         <tr><td class="tag-mod">调整</td><td>「未实现盈亏」「回报率」列</td><td>支持点表头排序，方便运营找浮盈高的仓位</td><td>—</td></tr>
         <tr><td class="tag-mod">调整</td><td>「持仓量/可平量」列（已有）</td><td>表头可切换单位：张 / 币（币 = 张 × 合约面值，如 BTCUSDT 1 张 = 0.0001 BTC）；「自动减仓量」列跟随同一单位</td><td>—</td></tr>
         <tr><td class="tag-add">新增</td><td>ADL 弹窗 · 减仓数量</td><td>输入框可切换 张 / 币，默认跟随列表当前单位；切换时自动换算已输入的数值；两种单位都支持小数</td><td>✅ 小数位数沿用各合约现有数量精度配置</td></tr>
@@ -328,6 +332,7 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
           <th class="sort" data-k="upnl">未实现盈亏(U)<i>⇅</i><span class="new-dot">排序</span></th>
           <th>已实现盈亏(U)</th>
           <th class="sort" data-k="roe">回报率<i>⇅</i><span class="new-dot">排序</span></th>
+          <th class="sort" data-k="light">ADL 档位<i>⇅</i><span class="new-dot">新增</span></th>
           <th>自动减仓量</th><th>账户类型</th><th>标签</th>
           <th class="sr" style="width:170px">操作</th>
         </tr></thead>
@@ -351,14 +356,12 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
   <div class="e-note" id="aNote"></div>
  </div>
  <div class="e-pend">
-  <h4>📋 还需确认的事项（同步自规则台账 v0.7）</h4>
+  <h4>📋 还需确认的事项（同步自规则台账 v0.8）</h4>
   <table>
    <tr><th>编号</th><th>归属</th><th>待确认事项</th><th>当前原型做法</th></tr>
    <tr><td>P05</td><td>用户端</td><td>暂定不发任何通知；后续评估是否加发邮件</td><td>不发任何通知</td></tr>
    <tr><td>P07</td><td>资金</td><td>全仓模式下 ADL 会不会让其他仓位的强平价变差？我的推导是「不会，只会变安全」，需研发确认计算口径</td><td>—</td></tr>
-   <tr><td>P10</td><td>中台 + 用户端</td><td>现有 ADL 指示灯与手动减仓可能对不上（见对话中的举例说明）</td><td>未处理</td></tr>
-   <tr><td>P12</td><td>中台</td><td>「回报率 &gt; 50%」这个门槛是写死，还是做成运营后台可配置</td><td>写死 50%</td></tr>
-   <tr><td>P13</td><td>中台</td><td>「减仓数量大于可用就报错」里的「可用」，指执行时的<b>持仓量</b>还是<b>可平量</b></td><td>按持仓量</td></tr>
+   <tr><td>P14</td><td>中台</td><td>运营打开弹窗时仓位亮 5 格，到点「确认执行」时已掉到 4 格：继续执行，还是报错拒绝</td><td>未处理（按打开时判断）</td></tr>
   </table>
  </div>
  <div class="e-row">
@@ -484,7 +487,9 @@ let rows=[
   {uid:'11252067',sym:'XRPUSDT',pid:'526074656436797696',open:'2025-08-14 07:33:20',mm:'全仓',side:'L',entry:3.21,qty:1,avail:1,lev:50,rpnl:-164.3614,adl:0,acct:'散户'},
   {uid:'11255198',sym:'LTCUSDT',pid:'559860531846988032',open:'2025-11-15 20:59:05',mm:'全仓',side:'S',entry:106.00,qty:35,avail:35,lev:10,rpnl:0.0566,adl:0,acct:'合伙人'},
 ];
-rows.forEach((r,i)=>{r.oid='查看详情';r.upd='2026-10-09 08:00:00';r.orders=[{oid:String(BigInt(r.pid)+7n),dir:r.side==='L'?'买入开多':'卖出开空',type:'开仓',qty:r.qty,price:r.entry,avg:r.entry,op:'--',time:r.open}]});
+const LIGHTS=[4,3,5,4,1,5,3,1,5,2,5,1,1,2]; // 模拟现有 ADL 指示灯格数
+const ltHtml=n=>`<span class="adl-lt">${[1,2,3,4,5].map(i=>`<b class="${i<=n?'on':''}"></b>`).join('')}</span>${n} / 5`;
+rows.forEach((r,i)=>{r.light=LIGHTS[i];r.oid='查看详情';r.upd='2026-10-09 08:00:00';r.orders=[{oid:String(BigInt(r.pid)+7n),dir:r.side==='L'?'买入开多':'卖出开空',type:'开仓',qty:r.qty,price:r.entry,avg:r.entry,op:'--',time:r.open}]});
 
 let sortK=null,sortDir=-1,view=rows.slice(),curRow=null;
 
@@ -501,7 +506,7 @@ function calc(r){
   const value=r.qty*s*m, margin=r.entry*r.qty*s/r.lev, upnl=dir*(m-r.entry)*r.qty*s;
   const bk=r.side==='L'?r.entry*(1-1/r.lev):r.entry*(1+1/r.lev);
   const liq=r.side==='L'?Math.max(0,r.entry*(1-1/r.lev+0.005)):r.entry*(1+1/r.lev-0.005);
-  return {value,margin,upnl,roe:margin?upnl/margin:0,bk,liq,mark:m};
+  return {value,margin,upnl,roe:margin?upnl/margin:0,bk,liq,mark:m,light:r.light};
 }
 
 function render(){
@@ -509,9 +514,9 @@ function render(){
   let list=view.slice();
   if(sortK){list.sort((a,b)=>(calc(a)[sortK]-calc(b)[sortK])*sortDir)}
   document.getElementById('total').textContent=`共 ${list.length} 条记录`;
-  if(!list.length){tb.innerHTML=`<tr><td colspan="26"><div class="state-box"><div style="font-size:30px">📭</div>暂无数据</div></td></tr>`;return}
+  if(!list.length){tb.innerHTML=`<tr><td colspan="27"><div class="state-box"><div style="font-size:30px">📭</div>暂无数据</div></td></tr>`;return}
   tb.innerHTML=list.map((r,i)=>{
-    const c=calc(r),pd=PD[r.sym],canAdl=c.roe>0.5;
+    const c=calc(r),pd=PD[r.sym],canAdl=r.light===5;
     return `<tr data-pid="${r.pid}">
       <td class="sl" style="left:0"><input type="checkbox"></td>
       <td class="sl" style="left:40px">${i+1}</td>
@@ -533,12 +538,13 @@ function render(){
       <td class="num ${cls(c.upnl)}">${sgn(c.upnl)}</td>
       <td class="num ${cls(r.rpnl)}">${sgn(r.rpnl)}</td>
       <td class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</td>
+      <td class="num">${ltHtml(r.light)}</td>
       <td class="num ${r.adl?'adl-qty-hl':''}">${r.adl?qt(r,r.adl,listUnit):'0'}</td>
       <td>${r.acct}</td>
       <td class="muted">-- ✎</td>
       <td class="sr"><div class="op">
         <button class="btn btn-danger">平 仓</button>
-        <button class="btn btn-orange" ${canAdl?'':'disabled title="回报率 > 50% 的仓位才可执行 ADL 减仓"'} onclick="openAdl('${r.pid}')">ADL减仓</button>
+        <button class="btn btn-orange" ${canAdl?'':'disabled title="ADL 指示灯亮满 5 格的仓位才可执行 ADL 减仓"'} onclick="openAdl('${r.pid}')">ADL减仓</button>
       </div></td>
     </tr>`}).join('');
 }
@@ -553,7 +559,7 @@ document.querySelectorAll('.sort').forEach(th=>th.onclick=()=>{
 function query(){
   const sym=fSym.value,uid=fUid.value.trim(),oid=fOid.value.trim(),mm=fMm.value;
   const tb=document.getElementById('tbody');
-  tb.innerHTML=Array.from({length:6}).map(()=>`<tr class="skeleton">${Array.from({length:26}).map(()=>'<td><span class="bar"></span></td>').join('')}</tr>`).join('');
+  tb.innerHTML=Array.from({length:6}).map(()=>`<tr class="skeleton">${Array.from({length:27}).map(()=>'<td><span class="bar"></span></td>').join('')}</tr>`).join('');
   setTimeout(()=>{
     view=rows.filter(r=>(!sym||r.sym===sym)&&(!uid||r.uid.includes(uid))&&(!mm||r.mm===mm)&&(!oid||r.orders.some(o=>o.oid.includes(oid))));
     render();
@@ -578,7 +584,7 @@ function fillInfo(){
   $('adlInfo').innerHTML=[
     ['UID',r.uid],['合约',r.sym],['方向',`<span class="${r.side==='L'?'side-l':'side-s'}">${r.side==='L'?'多仓':'空仓'}</span> · ${r.mm} ${r.lev}x`],['持仓 ID',`<span class="num" style="font-size:11.5px">${r.pid}</span>`],
     ['开仓均价',`<span class="num">${fmt(r.entry,pd)}</span>`],['标记价格',`<span class="num">${fmt(c.mark,pd)}</span>`],['持仓量 / 可平量',`<span class="num">${qn(r,r.qty,'张')} / ${qn(r,r.avail,'张')} 张<br><span class="muted">${qn(r,r.qty,'币')} / ${qn(r,r.avail,'币')} ${COIN[r.sym]}</span></span>`],['累计已 ADL',`<span class="num">${qt(r,r.adl,'张')}<br><span class="muted">${qt(r,r.adl,'币')}</span></span>`],
-    ['未实现盈亏',`<span class="num ${cls(c.upnl)}">${sgn(c.upnl)} U</span>`],['回报率',`<span class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</span>`],['已实现盈亏',`<span class="num ${cls(r.rpnl)}">${sgn(r.rpnl)} U</span>`],['账户类型',r.acct],
+    ['未实现盈亏',`<span class="num ${cls(c.upnl)}">${sgn(c.upnl)} U</span>`],['回报率',`<span class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</span>`],['已实现盈亏',`<span class="num ${cls(r.rpnl)}">${sgn(r.rpnl)} U</span>`],['ADL 档位',ltHtml(r.light)],['账户类型',r.acct],
   ].map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
   const d=mUnit==='张'?ZDEC:cdec(r.sym),min=mUnit==='张'?Math.pow(10,-ZDEC):Math.pow(10,-ZDEC)*SIZE[r.sym];
   $('qtyHint').innerHTML=`可减范围 ${fq(min,d)} ~ ${qt(r,r.qty,mUnit)}，最多 ${d} 位小数（按合约数量精度配置）`;
@@ -690,7 +696,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['cfmMask','adlMask
 
 /* ---------- 用户端 App + Web ---------- */
 const A={entry:82510.63,mark:88433.72,lev:10,mmr:0.005,cs:0.0001};
-const AS={before:{z:108,light:4,ord:1},partial:{z:8,light:2,ord:0},full:{z:0,light:0,ord:0}};
+const AS={before:{z:108,light:5,ord:1},partial:{z:8,light:5,ord:0},full:{z:0,light:0,ord:0}};
 const ADLZ={partial:100,full:108};
 const TIP_U='<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span>';
 let aState='before',aHTab='ord',uT='pos';
@@ -722,8 +728,8 @@ function aRender(){
   $('aPosTab').textContent=`持仓 (${st.z?1:0})`;$('aOrdTab').textContent=`订单 (${st.ord})`;
   $('aBody').innerHTML=st.z?aCard(st):`<div class="ph-row"><span class="ph-tog"><i></i>隐藏其它合约</span></div><div class="ph-empty">📄<br><br>暂无持仓</div>`;
   const notes={
-   before:`<b>① ADL 前</b>：持有 0.0108 BTC（逐仓 10x，回报率 71.79% &gt; 50%，可被 ADL），挂 1 张止盈单（触发价 95,000）。App 指示灯亮 4 格（示意）。`,
-   partial:`<b>② 部分 ADL 后</b>（App 中虚线框为变化项）：持仓量 0.0108 → 0.0008 BTC（App 显示 955.08 → 70.75 USDT）；未实现盈亏只剩剩余部分；逐仓保证金按比例释放，释放的保证金和已实现盈亏<b>立即回到交易账户可用</b>；指示灯重新排名；止盈单被撤，委托 1 → 0。开仓均价、收益率、强平价、保证金率不变。<b>仓位区不加任何 ADL 标记</b>（R08），<b>不发站内信</b>（R09）；用户只能在历史委托 / 成交记录 / 仓位历史中看到「ADL」标签。`,
+   before:`<b>① ADL 前</b>：持有 0.0108 BTC（逐仓 10x），挂 1 张止盈单（触发价 95,000）。App 指示灯<b>亮满 5 格</b>，所以中台可以对它执行 ADL。`,
+   partial:`<b>② 部分 ADL 后</b>（App 中虚线框为变化项）：持仓量 0.0108 → 0.0008 BTC（App 显示 955.08 → 70.75 USDT）；未实现盈亏只剩剩余部分；逐仓保证金按比例释放，释放的保证金和已实现盈亏<b>立即回到交易账户可用</b>；指示灯按现有逻辑重新计算（回报率、杠杆不变，示意仍为 5 格，可再次被减）；止盈单被撤，委托 1 → 0。开仓均价、收益率、强平价、保证金率不变。<b>仓位区不加任何 ADL 标记</b>（R08），<b>不发站内信</b>（R09）；用户只能在历史委托 / 成交记录 / 仓位历史中看到「ADL」标签。`,
    full:`<b>③ 全部 ADL 后</b>：仓位从当前持仓消失（Web / App 都显示「暂无持仓」）；止盈单被撤；ADL 记录只出现在历史委托 / 成交记录 / 仓位历史中。`};
   $('aNote').innerHTML=notes[aState];
   aHRender();uRender();
