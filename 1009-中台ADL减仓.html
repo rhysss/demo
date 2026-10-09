@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>中台 ADL 减仓</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:#f0f2f5;color:#1f2329;font-size:13px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:13px;color:inherit}
+input,select,textarea{font-family:inherit;font-size:13px;outline:none}
+.page{padding:16px 20px 60px;min-width:1280px}
+.num{font-variant-numeric:tabular-nums;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:12.5px}
+.muted{color:#8f959e}
+.link{color:#4265f4;cursor:pointer}
+.link:hover{text-decoration:underline}
+.up{color:#0ecb81}.down{color:#f6465d}
+
+/* 说明卡 */
+.note-card{background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:12px 16px;margin-bottom:12px;font-size:12px;line-height:1.8;color:#5c4b00}
+.note-card h4{font-size:13px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.note-card h4 button{color:#8c6d00;font-size:12px}
+.note-card table{border-collapse:collapse;width:100%;margin-top:6px;background:#fff}
+.note-card th,.note-card td{border:1px solid #f5e3a3;padding:5px 8px;text-align:left;vertical-align:top}
+.note-card th{background:#fff7d1;font-weight:500;white-space:nowrap}
+.tag-add{color:#1a7f37;font-weight:600}.tag-mod{color:#0969da;font-weight:600}
+.warn{color:#d46b08;background:#fff7e6;border:1px dashed #ffc069;border-radius:3px;padding:0 5px;font-size:11.5px;white-space:nowrap}
+.new-dot{display:inline-block;font-size:10px;line-height:14px;padding:0 4px;border-radius:3px;background:#e6f4ea;color:#1a7f37;margin-left:4px;font-weight:600;vertical-align:1px}
+
+/* 演示控制 */
+.demo-bar{display:flex;align-items:center;gap:14px;background:#fff;border:1px dashed #c9cdd4;border-radius:4px;padding:8px 14px;margin-bottom:12px;font-size:12px;color:#646a73}
+.demo-bar b{color:#1f2329}
+.demo-bar label{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+
+/* 筛选 */
+.card{background:#fff;border-radius:4px;padding:16px 20px}
+.title{font-size:15px;font-weight:600;margin-bottom:14px}
+.filter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0 16px}
+.f-item label{display:block;color:#1f2329;margin-bottom:6px}
+.ctrl{height:34px;border:1px solid #dcdfe6;border-radius:4px;padding:0 10px;background:#fff;color:#1f2329;width:100%}
+.ctrl::placeholder{color:#bbbfc4}
+select.ctrl{appearance:none;background:#fff url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a0a4aa' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center}
+.ctrl:focus{border-color:#4265f4}
+.f-row2{display:flex;justify-content:space-between;align-items:center;margin:14px 0}
+.btns{display:flex;gap:10px}
+.btn{height:34px;min-width:100px;padding:0 15px;border-radius:2px;font-size:13px;display:inline-flex;align-items:center;gap:5px;justify-content:center}
+.btn-gray{background:#eef0f3;color:#1f2329}
+.btn-purple{background:#8a5cf6;color:#fff}
+.btn-blue{background:#4265f4;color:#fff}
+.btn-teal{background:#16b59a;color:#fff}
+.btn-default{background:#fff;border:1px solid #dcdfe6;min-width:80px}
+.btn-default:hover{color:#4265f4;border-color:#4265f4}
+.btn-danger{background:#f5222d;color:#fff;min-width:80px}
+.btn-orange{background:#fa8c16;color:#fff;min-width:80px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* 表格 */
+.tbl-wrap{overflow-x:auto;border:1px solid #ebeef5;position:relative}
+table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%}
+.grid th,.grid td{height:42px;padding:0 10px;white-space:nowrap;border-bottom:1px solid #f0f1f3;text-align:left;background:#fff}
+.grid th{background:#f5f6f8;color:#646a73;font-weight:500;font-size:12px;height:40px}
+.grid tr:hover td{background:#f7f9ff}
+.grid .sl{position:sticky;z-index:2}
+.grid th.sl{z-index:3}
+.grid .sl-last{box-shadow:4px 0 6px -4px rgba(0,0,0,.12)}
+.grid .sr{position:sticky;right:0;z-index:2;box-shadow:-4px 0 6px -4px rgba(0,0,0,.12)}
+.grid th.sr{z-index:3}
+.grid tr.flash td{animation:flash 2s ease}
+@keyframes flash{0%,40%{background:#fff4e0}100%{background:#fff}}
+.sort{cursor:pointer;user-select:none}
+.sort i{font-style:normal;font-size:10px;color:#c0c4cc;margin-left:3px}
+.sort.on i{color:#4265f4}
+.side-l{color:#0ecb81}.side-s{color:#a259ff}
+.unit{color:#fa8c16}
+.op{display:flex;gap:6px}
+.op .btn{height:28px;min-width:0;padding:0 12px;font-size:12px}
+.adl-qty-hl{color:#fa8c16;font-weight:600}
+.state-box{height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#a0a4aa;gap:8px}
+.skeleton td{color:transparent}
+.skeleton td span.bar{display:inline-block;height:10px;width:70%;border-radius:3px;background:linear-gradient(90deg,#f0f1f3 25%,#e4e6ea 37%,#f0f1f3 63%);background-size:400% 100%;animation:sk 1.2s infinite}
+@keyframes sk{0%{background-position:100% 50%}100%{background-position:0 50%}}
+.pager{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:12px;color:#646a73;font-size:12px}
+
+/* 弹窗 */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.mask.show{display:flex}
+.modal{background:#fff;border-radius:4px;width:620px;max-height:92vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.modal.wide{width:1100px}
+.modal.sm{width:440px}
+.m-hd{display:flex;justify-content:space-between;align-items:center;padding:18px 22px 12px}
+.m-hd h3{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
+.m-hd .x{font-size:20px;color:#a0a4aa;line-height:1}
+.m-bd{padding:4px 22px 16px}
+.m-ft{display:flex;justify-content:flex-end;gap:10px;padding:12px 22px 18px;border-top:1px solid #f0f1f3}
+.adl-tag{font-size:11px;font-weight:600;color:#fa8c16;background:#fff7e6;border:1px solid #ffd591;border-radius:3px;padding:0 6px;line-height:18px}
+.info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 14px;background:#f7f8fa;border-radius:4px;padding:12px 14px;margin-bottom:16px}
+.info-grid .k{color:#8f959e;font-size:12px;margin-bottom:2px}
+.info-grid .v{font-size:13px}
+.form-row{margin-bottom:14px}
+.form-row>label{display:block;margin-bottom:6px;font-weight:500}
+.form-row>label .req{color:#f5222d;margin-right:2px}
+.qty-box{display:flex;align-items:center;border:1px solid #dcdfe6;border-radius:4px;height:36px;padding-right:6px}
+.qty-box:focus-within{border-color:#4265f4}
+.qty-box.err{border-color:#f5222d}
+.qty-box input{flex:1;border:none;height:100%;padding:0 10px;font-size:14px}
+.qty-box .u{color:#8f959e;margin:0 8px}
+.qty-box .all{color:#4265f4;font-size:12px;padding:3px 8px;border-left:1px solid #ebeef5}
+.hint{font-size:12px;color:#8f959e;margin-top:5px}
+.err-msg{font-size:12px;color:#f5222d;margin-top:5px}
+textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
+.preview{border:1px solid #ebeef5;border-radius:4px}
+.preview .pr{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #f5f6f8;font-size:12.5px}
+.preview .pr:last-child{border-bottom:none}
+.preview .pr .k{color:#646a73}
+.alert{border-radius:4px;padding:8px 12px;font-size:12px;line-height:1.7;margin-top:12px}
+.alert-warn{background:#fff7e6;border:1px solid #ffd591;color:#ad4e00}
+.alert-err{background:#fff1f0;border:1px solid #ffa39e;color:#a8071a}
+.alert-info{background:#f0f5ff;border:1px solid #adc6ff;color:#1d39c4}
+.confirm-txt{font-size:13.5px;line-height:1.9}
+.confirm-txt b{color:#fa8c16}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 订单明细 */
+.sub-tbl{width:100%;border-collapse:collapse;border:1px solid #ebeef5}
+.sub-tbl th,.sub-tbl td{padding:0 12px;height:40px;text-align:left;border-bottom:1px solid #f0f1f3;white-space:nowrap}
+.sub-tbl th{background:#f5f6f8;color:#646a73;font-weight:500;font-size:12px}
+
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.15);border-radius:4px;padding:10px 18px;font-size:13px;z-index:100;display:none;align-items:center;gap:8px}
+.toast.show{display:flex}
+.toast .ic{width:16px;height:16px;border-radius:50%;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="note-card" id="noteCard">
+    <h4><span>📌 本次改动说明（中台 · 当前持仓列表）</span><button onclick="document.getElementById('noteBody').hidden=!document.getElementById('noteBody').hidden">收起/展开</button></h4>
+    <div id="noteBody">
+      <table>
+        <tr><th>类型</th><th>位置</th><th>说明</th><th>待确认</th></tr>
+        <tr><td class="tag-add">新增</td><td>操作列「ADL减仓」按钮</td><td>和「平仓」并列。仅浮盈仓位（未实现盈亏 &gt; 0）可点，亏损仓位置灰</td><td><span class="warn">⚠️ Q4 可减门槛待确认</span></td></tr>
+        <tr><td class="tag-add">新增</td><td>ADL 减仓弹窗</td><td>输入减仓数量（张）→ 预览成交价 / 预计已实现盈亏 / 剩余持仓 → 填写减仓原因 → 二次确认 → 执行</td><td>✅ Q1 不产生对手仓位，盈亏计入平台账户<br>✅ Q2 按执行时标记价成交<br><span class="warn">⚠️ Q3 手续费</span> <span class="warn">⚠️ Q9 原因必填</span></td></tr>
+        <tr><td class="tag-mod">调整</td><td>「未实现盈亏」「回报率」列</td><td>支持点表头排序，方便运营找浮盈高的仓位</td><td>—</td></tr>
+        <tr><td class="tag-mod">调整</td><td>「自动减仓量」列（已有）</td><td>记录该仓位累计被 ADL 减掉的张数，执行成功后实时累加</td><td>—</td></tr>
+        <tr><td class="tag-mod">调整</td><td>订单 ID 明细弹窗</td><td>新增「订单类型」（开仓 / 平仓 / ADL减仓）和「操作人」两列，ADL 记录可追溯</td><td>✅ Q5 单人操作，无需复核</td></tr>
+        <tr><td class="tag-mod">调整</td><td>可减数量上限</td><td>按「持仓量」而非「可平量」：超出可平量的部分需先处理该仓位的平仓挂单</td><td><span class="warn">⚠️ Q7 挂单处理方式</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="demo-bar">
+    <b>🎛 演示控制</b>
+    <span>执行结果模拟：</span>
+    <label><input type="radio" name="sim" value="ok" checked> 成功</label>
+    <label><input type="radio" name="sim" value="fail"> 执行失败</label>
+    <label><input type="radio" name="sim" value="changed"> 执行前仓位已减少</label>
+    <label><input type="radio" name="sim" value="gone"> 执行前仓位已不存在</label>
+  </div>
+
+  <div class="card">
+    <div class="title">当前持仓列表</div>
+    <div class="filter-grid">
+      <div class="f-item"><label>合约标的</label>
+        <select class="ctrl" id="fSym"><option value="">全部</option><option>BTCUSDT</option><option>XRPUSDT</option><option>BNBUSDT</option><option>TRXUSDT</option><option>LTCUSDT</option></select></div>
+      <div class="f-item"><label>UID</label><input class="ctrl" id="fUid" placeholder="请输入 UID"></div>
+      <div class="f-item"><label>订单 ID</label><input class="ctrl" id="fOid" placeholder="请输入订单 ID"></div>
+      <div class="f-item"><label>保证金模式</label>
+        <select class="ctrl" id="fMm"><option value="">全部</option><option>全仓</option><option>逐仓</option></select></div>
+    </div>
+    <div class="f-row2">
+      <span class="link" style="font-size:12px;color:#8f959e">筛选 ▾</span>
+      <div class="btns">
+        <button class="btn btn-gray" onclick="resetFilter()">重 置</button>
+        <button class="btn btn-purple">指标编辑</button>
+        <button class="btn btn-blue" onclick="query()">查 询</button>
+        <button class="btn btn-teal">导出</button>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="grid">
+        <thead><tr>
+          <th class="sl" style="left:0;width:40px"><input type="checkbox"></th>
+          <th class="sl" style="left:40px;width:56px">序号</th>
+          <th class="sl" style="left:96px;width:110px">持仓用户 UID</th>
+          <th class="sl" style="left:206px;width:100px">合约标的</th>
+          <th class="sl sl-last" style="left:306px;width:180px">持仓 ID</th>
+          <th>订单 ID</th><th>开仓时间</th><th>更新时间</th><th>保证金模式</th><th>仓位模式</th><th>持仓方向</th>
+          <th>开仓均价(U)</th><th>持仓量/可平量(张)</th><th>仓位价值(U)</th><th>杠杆倍数</th><th>仓位保证金(U)</th>
+          <th>强平价格(U)</th><th>标记价格(U)</th><th>破产价格(U)</th>
+          <th class="sort" data-k="upnl">未实现盈亏(U)<i>⇅</i><span class="new-dot">排序</span></th>
+          <th>已实现盈亏(U)</th>
+          <th class="sort" data-k="roe">回报率<i>⇅</i><span class="new-dot">排序</span></th>
+          <th>自动减仓量(张)</th><th>账户类型</th><th>标签</th>
+          <th class="sr" style="width:170px">操作</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="pager"><span id="total">共 0 条记录</span><span>20条/页</span></div>
+  </div>
+</div>
+
+<!-- ADL 减仓弹窗 -->
+<div class="mask" id="adlMask">
+  <div class="modal">
+    <div class="m-hd"><h3>ADL 减仓 <span class="adl-tag">用户端展示为「ADL 自动减仓」</span></h3><button class="x" onclick="closeAdl()">×</button></div>
+    <div class="m-bd">
+      <div class="info-grid" id="adlInfo"></div>
+      <div class="form-row">
+        <label><span class="req">*</span>减仓数量</label>
+        <div class="qty-box" id="qtyBox">
+          <input id="qtyIn" class="num" placeholder="请输入要减仓的张数" autocomplete="off">
+          <span class="u">张</span>
+          <button class="all" onclick="fillAll()">全部</button>
+        </div>
+        <div class="hint" id="qtyHint"></div>
+        <div class="err-msg" id="qtyErr" hidden></div>
+      </div>
+      <div class="form-row">
+        <label>执行预览</label>
+        <div class="preview" id="preview"></div>
+        <div class="alert alert-warn" id="overAvail" hidden></div>
+      </div>
+      <div class="form-row">
+        <label><span class="req">*</span>减仓原因 <span class="warn">⚠️ Q9 是否强制填写待确认</span></label>
+        <textarea class="ctrl" id="reason" placeholder="仅内部留痕，用户不可见。例：BTCUSDT 保险基金低于水位，按浮盈排序减仓"></textarea>
+        <div class="err-msg" id="reasonErr" hidden>请填写减仓原因（至少 5 个字）</div>
+      </div>
+      <div class="alert alert-err" id="execErr" hidden></div>
+    </div>
+    <div class="m-ft">
+      <button class="btn btn-default" onclick="closeAdl()">取消</button>
+      <button class="btn btn-orange" id="adlSubmit" onclick="toConfirm()" disabled>确认减仓</button>
+    </div>
+  </div>
+</div>
+
+<!-- 二次确认 -->
+<div class="mask" id="cfmMask">
+  <div class="modal sm">
+    <div class="m-hd"><h3>⚠️ 确认执行 ADL 减仓</h3><button class="x" onclick="closeCfm()">×</button></div>
+    <div class="m-bd"><div class="confirm-txt" id="cfmTxt"></div></div>
+    <div class="m-ft">
+      <button class="btn btn-default" onclick="closeCfm()">返回修改</button>
+      <button class="btn btn-orange" id="cfmBtn" onclick="execute()">确认执行</button>
+    </div>
+  </div>
+</div>
+
+<!-- 订单 ID 明细 -->
+<div class="mask" id="ordMask">
+  <div class="modal wide">
+    <div class="m-hd"><h3 style="border-bottom:3px solid #4265f4;padding-bottom:6px">订单 ID 明细</h3><button class="x" onclick="hide('ordMask')">×</button></div>
+    <div class="m-bd">
+      <button class="btn btn-teal" style="margin-bottom:14px">导出</button>
+      <table class="sub-tbl">
+        <thead><tr><th>序号</th><th>持仓 ID</th><th>订单 ID</th><th>下单方向</th><th>订单类型<span class="new-dot">新增</span></th><th>成交数量</th><th>价格</th><th>是否成交</th><th>成交均价</th><th>操作人<span class="new-dot">新增</span></th><th>时间</th></tr></thead>
+        <tbody id="ordBody"></tbody>
+      </table>
+      <div class="pager"><span id="ordTotal"></span><span>20条/页</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="ic" id="toastIc">✓</span><span id="toastTxt"></span></div>
+
+<script>
+const SIZE={BTCUSDT:0.0001,XRPUSDT:0.1,BNBUSDT:0.01,TRXUSDT:1,LTCUSDT:0.001};
+const MARK={BTCUSDT:118520.4,XRPUSDT:2.9471,BNBUSDT:1021.36,TRXUSDT:0.3127,LTCUSDT:97.84};
+const PD={BTCUSDT:2,XRPUSDT:4,BNBUSDT:2,TRXUSDT:5,LTCUSDT:2};
+const OPERATOR='admin_rhys';
+
+let rows=[
+  {uid:'11255508',sym:'BTCUSDT',pid:'565391542391423232',open:'2025-11-30 19:24:08',mm:'全仓',side:'L',entry:91207.09,qty:1,avail:1,lev:100,rpnl:-1.3547,adl:0,acct:'散户'},
+  {uid:'11250299',sym:'XRPUSDT',pid:'558304393783427328',open:'2025-11-11 08:47:50',mm:'全仓',side:'L',entry:2.13,qty:12293,avail:12293,lev:10,rpnl:-255.9593,adl:0,acct:'散户'},
+  {uid:'11250299',sym:'BTCUSDT',pid:'568102198655860992',open:'2025-12-08 06:55:19',mm:'全仓',side:'L',entry:89544.60,qty:22,avail:22,lev:100,rpnl:-28.0034,adl:0,acct:'散户'},
+  {uid:'11250299',sym:'BTCUSDT',pid:'561914405634195712',open:'2025-11-21 05:07:14',mm:'全仓',side:'L',entry:86710.14,qty:23,avail:23,lev:100,rpnl:-32.1132,adl:0,acct:'散户'},
+  {uid:'11249499',sym:'BTCUSDT',pid:'479014481440030976',open:'2025-04-06 10:52:32',mm:'全仓',side:'L',entry:83348.06,qty:1,avail:1,lev:1,rpnl:-3.4843,adl:0,acct:'散户'},
+  {uid:'11250299',sym:'BTCUSDT',pid:'567157831539638528',open:'2025-12-05 16:22:44',mm:'全仓',side:'L',entry:92053.77,qty:108,avail:80,lev:100,rpnl:-138.5167,adl:0,acct:'散户'},
+  {uid:'11249927',sym:'BTCUSDT',pid:'558380547395567872',open:'2025-11-11 11:04:57',mm:'全仓',side:'L',entry:106673.87,qty:81,avail:81,lev:50,rpnl:-696.6668,adl:0,acct:'散户'},
+  {uid:'11255661',sym:'BNBUSDT',pid:'570021717536162048',open:'2025-12-13 14:02:48',mm:'全仓',side:'L',entry:885.56,qty:2,avail:2,lev:2,rpnl:1.0276,adl:0,acct:'散户'},
+  {uid:'11250299',sym:'BTCUSDT',pid:'561901383297548544',open:'2025-11-21 04:15:29',mm:'全仓',side:'L',entry:86408.70,qty:115,avail:115,lev:100,rpnl:-155.3751,adl:0,acct:'散户'},
+  {uid:'11255196',sym:'TRXUSDT',pid:'557806754344222976',open:'2025-11-09 21:04:54',mm:'全仓',side:'L',entry:0.28,qty:90,avail:90,lev:10,rpnl:4.0743,adl:0,acct:'散户'},
+  {uid:'11250299',sym:'BTCUSDT',pid:'562596589512704256',open:'2025-11-23 02:17:59',mm:'全仓',side:'L',entry:84522.86,qty:124,avail:124,lev:100,rpnl:-166.5624,adl:0,acct:'散户'},
+  {uid:'11249893',sym:'BTCUSDT',pid:'475383375247458560',open:'2025-03-27 11:21:59',mm:'逐仓',side:'L',entry:87450.00,qty:1,avail:1,lev:1,rpnl:-2.4005,adl:0,acct:'散户'},
+  {uid:'11252067',sym:'XRPUSDT',pid:'526074656436797696',open:'2025-08-14 07:33:20',mm:'全仓',side:'L',entry:3.21,qty:1,avail:1,lev:50,rpnl:-164.3614,adl:0,acct:'散户'},
+  {uid:'11255198',sym:'LTCUSDT',pid:'559860531846988032',open:'2025-11-15 20:59:05',mm:'全仓',side:'S',entry:106.00,qty:35,avail:35,lev:10,rpnl:0.0566,adl:0,acct:'合伙人'},
+];
+rows.forEach((r,i)=>{r.oid='查看详情';r.upd='2026-10-09 08:00:00';r.orders=[{oid:String(BigInt(r.pid)+7n),dir:r.side==='L'?'开多':'开空',type:'开仓',qty:r.qty,price:r.entry,avg:r.entry,op:'用户',time:r.open}]});
+
+let sortK=null,sortDir=-1,view=rows.slice(),curRow=null;
+
+const fmt=(n,d=2)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sgn=(n,d=4)=>(n>0?'+':'')+fmt(n,d);
+const cls=n=>n>0?'up':n<0?'down':'';
+function calc(r){
+  const s=SIZE[r.sym],m=MARK[r.sym],dir=r.side==='L'?1:-1;
+  const value=r.qty*s*m, margin=r.entry*r.qty*s/r.lev, upnl=dir*(m-r.entry)*r.qty*s;
+  const bk=r.side==='L'?r.entry*(1-1/r.lev):r.entry*(1+1/r.lev);
+  const liq=r.side==='L'?Math.max(0,r.entry*(1-1/r.lev+0.005)):r.entry*(1+1/r.lev-0.005);
+  return {value,margin,upnl,roe:margin?upnl/margin:0,bk,liq,mark:m};
+}
+
+function render(){
+  const tb=document.getElementById('tbody');
+  let list=view.slice();
+  if(sortK){list.sort((a,b)=>(calc(a)[sortK]-calc(b)[sortK])*sortDir)}
+  document.getElementById('total').textContent=`共 ${list.length} 条记录`;
+  if(!list.length){tb.innerHTML=`<tr><td colspan="26"><div class="state-box"><div style="font-size:30px">📭</div>暂无数据</div></td></tr>`;return}
+  tb.innerHTML=list.map((r,i)=>{
+    const c=calc(r),pd=PD[r.sym],canAdl=c.upnl>0;
+    return `<tr data-pid="${r.pid}">
+      <td class="sl" style="left:0"><input type="checkbox"></td>
+      <td class="sl" style="left:40px">${i+1}</td>
+      <td class="sl num" style="left:96px">${r.uid}</td>
+      <td class="sl" style="left:206px">${r.sym}</td>
+      <td class="sl sl-last num" style="left:306px">${r.pid}</td>
+      <td><span class="link" onclick="openOrders('${r.pid}')">查看详情</span></td>
+      <td class="num">${r.open}</td><td class="num">${r.upd}</td>
+      <td>${r.mm}</td><td>开平仓模式</td>
+      <td class="${r.side==='L'?'side-l':'side-s'}">${r.side==='L'?'多仓':'空仓'}</td>
+      <td class="num">${fmt(r.entry,pd)}</td>
+      <td class="num">${fmt(r.qty,0)} / ${fmt(r.avail,0)} <span class="unit">张</span></td>
+      <td class="num">${fmt(c.value)}</td>
+      <td class="num">${r.lev}</td>
+      <td class="num">${fmt(c.margin)}</td>
+      <td class="num">${fmt(c.liq,pd)}</td>
+      <td class="num">${fmt(c.mark,pd)}</td>
+      <td class="num">${fmt(c.bk,pd)}</td>
+      <td class="num ${cls(c.upnl)}">${sgn(c.upnl)}</td>
+      <td class="num ${cls(r.rpnl)}">${sgn(r.rpnl)}</td>
+      <td class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</td>
+      <td class="num ${r.adl?'adl-qty-hl':''}">${fmt(r.adl,0)}</td>
+      <td>${r.acct}</td>
+      <td class="muted">-- ✎</td>
+      <td class="sr"><div class="op">
+        <button class="btn btn-danger">平 仓</button>
+        <button class="btn btn-orange" ${canAdl?'':'disabled title="仅浮盈仓位（未实现盈亏 > 0）可执行 ADL 减仓（⚠️ Q4 门槛待确认）"'} onclick="openAdl('${r.pid}')">ADL减仓</button>
+      </div></td>
+    </tr>`}).join('');
+}
+
+document.querySelectorAll('.sort').forEach(th=>th.onclick=()=>{
+  const k=th.dataset.k;
+  if(sortK===k){sortDir=sortDir===-1?1:-1}else{sortK=k;sortDir=-1}
+  document.querySelectorAll('.sort').forEach(t=>{t.classList.toggle('on',t.dataset.k===sortK);t.querySelector('i').textContent=t.dataset.k===sortK?(sortDir===-1?'↓':'↑'):'⇅'});
+  render();
+});
+
+function query(){
+  const sym=fSym.value,uid=fUid.value.trim(),oid=fOid.value.trim(),mm=fMm.value;
+  const tb=document.getElementById('tbody');
+  tb.innerHTML=Array.from({length:6}).map(()=>`<tr class="skeleton">${Array.from({length:26}).map(()=>'<td><span class="bar"></span></td>').join('')}</tr>`).join('');
+  setTimeout(()=>{
+    view=rows.filter(r=>(!sym||r.sym===sym)&&(!uid||r.uid.includes(uid))&&(!mm||r.mm===mm)&&(!oid||r.orders.some(o=>o.oid.includes(oid))));
+    render();
+  },500);
+}
+function resetFilter(){fSym.value='';fUid.value='';fOid.value='';fMm.value='';sortK=null;document.querySelectorAll('.sort').forEach(t=>{t.classList.remove('on');t.querySelector('i').textContent='⇅'});query()}
+
+const $=id=>document.getElementById(id);
+function show(id){$(id).classList.add('show')}
+function hide(id){$(id).classList.remove('show')}
+
+/* ---------- ADL 减仓 ---------- */
+function openAdl(pid){
+  curRow=rows.find(r=>r.pid===pid); if(!curRow)return;
+  $('qtyIn').value='';$('reason').value='';
+  $('qtyErr').hidden=true;$('reasonErr').hidden=true;$('execErr').hidden=true;$('qtyBox').classList.remove('err');
+  fillInfo();updatePreview();show('adlMask');setTimeout(()=>$('qtyIn').focus(),50);
+}
+function fillInfo(){
+  const r=curRow,c=calc(r),pd=PD[r.sym];
+  $('adlInfo').innerHTML=[
+    ['UID',r.uid],['合约',r.sym],['方向',`<span class="${r.side==='L'?'side-l':'side-s'}">${r.side==='L'?'多仓':'空仓'}</span> · ${r.mm} ${r.lev}x`],['持仓 ID',`<span class="num" style="font-size:11.5px">${r.pid}</span>`],
+    ['开仓均价',`<span class="num">${fmt(r.entry,pd)}</span>`],['标记价格',`<span class="num">${fmt(c.mark,pd)}</span>`],['持仓量 / 可平量',`<span class="num">${fmt(r.qty,0)} / ${fmt(r.avail,0)} 张</span>`],['累计已 ADL',`<span class="num">${fmt(r.adl,0)} 张</span>`],
+    ['未实现盈亏',`<span class="num ${cls(c.upnl)}">${sgn(c.upnl)} U</span>`],['回报率',`<span class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</span>`],['已实现盈亏',`<span class="num ${cls(r.rpnl)}">${sgn(r.rpnl)} U</span>`],['账户类型',r.acct],
+  ].map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+  $('qtyHint').textContent=`可减范围 1 ~ ${fmt(r.qty,0)} 张，需为整数`;
+}
+function fillAll(){$('qtyIn').value=curRow.qty;updatePreview()}
+function parseQty(){
+  const raw=$('qtyIn').value.trim();
+  if(raw==='')return{err:null,n:null};
+  if(!/^\d+$/.test(raw))return{err:'请输入正整数张数'};
+  const n=Number(raw);
+  if(n<=0)return{err:'减仓数量须大于 0'};
+  if(n>curRow.qty)return{err:`超过当前持仓量 ${fmt(curRow.qty,0)} 张`};
+  return{err:null,n};
+}
+function updatePreview(){
+  const r=curRow,c=calc(r),pd=PD[r.sym],s=SIZE[r.sym],dir=r.side==='L'?1:-1;
+  const {err,n}=parseQty();
+  $('qtyErr').hidden=!err;$('qtyErr').textContent=err||'';$('qtyBox').classList.toggle('err',!!err);
+  const ok=n&&!err;
+  const pnl=ok?dir*(c.mark-r.entry)*n*s:null;
+  const left=ok?r.qty-n:null;
+  $('preview').innerHTML=`
+    <div class="pr"><span class="k">成交价格</span><span><span class="num">${fmt(c.mark,pd)}</span> <span class="muted">（执行时实时标记价）</span></span></div>
+    <div class="pr"><span class="k">对手方</span><span class="muted">无对手仓位，直接结算；盈亏由平台账户承接</span></div>
+    <div class="pr"><span class="k">本次减仓价值</span><span class="num">${ok?fmt(n*s*c.mark)+' U':'--'}</span></div>
+    <div class="pr"><span class="k">预计已实现盈亏</span><span class="num ${ok?cls(pnl):''}">${ok?sgn(pnl)+' U':'--'}</span></div>
+    <div class="pr"><span class="k">手续费</span><span><span class="num">0.00 U</span> <span class="warn">⚠️ Q3 免收/收取待确认</span></span></div>
+    <div class="pr"><span class="k">减仓后剩余持仓</span><span class="num">${ok?(left===0?'<b style="color:#f5222d">0 张（仓位全部平掉）</b>':fmt(left,0)+' 张'):'--'}</span></div>`;
+  const over=ok&&n>r.avail;
+  $('overAvail').hidden=!over;
+  if(over)$('overAvail').innerHTML=`减仓数量超出可平量 <b>${fmt(n-r.avail,0)}</b> 张（该仓位有 ${fmt(r.qty-r.avail,0)} 张被平仓挂单占用）。执行时将先撤销该仓位上的平仓挂单再减仓。<span class="warn">⚠️ Q7 挂单处理方式待确认</span>`;
+  $('adlSubmit').disabled=!ok;
+}
+$('qtyIn').addEventListener('input',updatePreview);
+$('reason').addEventListener('input',()=>{if($('reason').value.trim().length>=5)$('reasonErr').hidden=true});
+function closeAdl(){hide('adlMask');curRow=null}
+
+function toConfirm(){
+  const {n}=parseQty();
+  if($('reason').value.trim().length<5){$('reasonErr').hidden=false;$('reason').focus();return}
+  const r=curRow,c=calc(r),pd=PD[r.sym];
+  $('cfmTxt').innerHTML=`即将对 UID <b>${r.uid}</b> 的 <b>${r.sym} ${r.side==='L'?'多仓':'空仓'}</b> 执行 ADL 减仓 <b>${fmt(n,0)} 张</b>${n===r.qty?'（<b>全部平仓</b>）':''}，按执行时标记价成交（当前 ${fmt(c.mark,pd)}）。<br><br>· 操作执行后<b>不可撤销</b><br>· 用户端将以「ADL 自动减仓」展示，并收到通知<br>· 操作人 ${OPERATOR} 将记入订单明细`;
+  $('cfmBtn').disabled=false;$('cfmBtn').innerHTML='确认执行';
+  show('cfmMask');
+}
+function closeCfm(){hide('cfmMask')}
+
+function execute(){
+  const sim=document.querySelector('input[name=sim]:checked').value;
+  const btn=$('cfmBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> 执行中…';
+  setTimeout(()=>{
+    hide('cfmMask');
+    const r=curRow,{n}=parseQty();
+    if(sim==='fail'){
+      $('execErr').hidden=false;$('execErr').innerHTML='<b>执行失败</b>：撮合服务响应超时，本次未产生任何成交，仓位未变动。可稍后重试。';return;
+    }
+    if(sim==='gone'){
+      rows=rows.filter(x=>x!==r);view=view.filter(x=>x!==r);closeAdl();render();
+      toast('该仓位已不存在（已被用户平仓或强平），列表已刷新，本次未执行','err');return;
+    }
+    if(sim==='changed'){
+      r.qty=Math.max(1,Math.floor(r.qty/2));r.avail=Math.min(r.avail,r.qty);
+      document.querySelector('input[name=sim][value=ok]').checked=true;
+      fillInfo();updatePreview();render();
+      $('execErr').hidden=false;$('execErr').innerHTML=`<b>仓位已变动</b>：执行前该仓位持仓量变为 ${fmt(r.qty,0)} 张${n>r.qty?`，小于输入的 ${fmt(n,0)} 张`:''}。本次未执行，请核对后重新提交。`;return;
+    }
+    const c=calc(r),s=SIZE[r.sym],dir=r.side==='L'?1:-1,pnl=dir*(c.mark-r.entry)*n*s;
+    const cancelled=Math.max(0,n-r.avail);
+    r.orders.push({oid:String(BigInt(r.pid)+BigInt(r.orders.length*13+101)),dir:r.side==='L'?'平多':'平空',type:'ADL减仓',qty:n,price:c.mark,avg:c.mark,op:OPERATOR,time:'2026-10-09 '+new Date().toTimeString().slice(0,8)});
+    r.qty-=n;r.avail=Math.max(0,Math.min(r.avail,r.qty));r.adl+=n;r.rpnl+=pnl;r.upd='2026-10-09 '+new Date().toTimeString().slice(0,8);
+    const full=r.qty===0;
+    if(full){rows=rows.filter(x=>x!==r);view=view.filter(x=>x!==r)}
+    const pid=r.pid;closeAdl();render();
+    if(!full){const tr=document.querySelector(`tr[data-pid="${pid}"]`);tr&&tr.classList.add('flash')}
+    toast(full?`ADL 减仓成功：${fmt(n,0)} 张 @ ${fmt(c.mark,PD[r.sym])}，仓位已全部平掉，已从当前持仓移除`:`ADL 减仓成功：${fmt(n,0)} 张 @ ${fmt(c.mark,PD[r.sym])}，已实现盈亏 ${sgn(pnl)} U${cancelled?`，已撤销平仓挂单 ${cancelled} 张`:''}`,'ok');
+  },900);
+}
+
+/* ---------- 订单明细 ---------- */
+const allOrders={};rows.forEach(r=>allOrders[r.pid]=r);
+function openOrders(pid){
+  const r=allOrders[pid];
+  $('ordBody').innerHTML=r.orders.map((o,i)=>`<tr>
+    <td>${i+1}</td><td class="num">${pid}</td><td class="num">${o.oid}</td><td>${o.dir}</td>
+    <td>${o.type==='ADL减仓'?'<span class="adl-tag">ADL减仓</span>':o.type}</td>
+    <td class="num">${fmt(o.qty,0)}</td><td class="num">${fmt(o.price,PD[r.sym])}</td><td>是</td><td class="num">${fmt(o.avg,PD[r.sym])}</td>
+    <td>${o.op}</td><td class="num">${o.time}</td></tr>`).join('');
+  $('ordTotal').textContent=`共 ${r.orders.length} 条记录`;
+  show('ordMask');
+}
+
+let tt;
+function toast(t,type){
+  $('toastTxt').textContent=t;$('toastIc').textContent=type==='err'?'!':'✓';$('toastIc').style.background=type==='err'?'#f5222d':'#0ecb81';
+  $('toast').classList.add('show');clearTimeout(tt);tt=setTimeout(()=>$('toast').classList.remove('show'),3500);
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){['cfmMask','adlMask','ordMask'].forEach(hide)}});
+render();
+</script>
+</body>
+</html>
