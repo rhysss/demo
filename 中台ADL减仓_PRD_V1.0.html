@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中台 ADL 减仓 PRD V1.0</title>
+<style>
+  :root{
+    --green:#0ECB81; --green-deep:#0a9c63; --green-soft:#e6faf1;
+    --dark:#0f2f22; --gray:#6b7280; --line:#e7ece9; --bg:#f4f7f5; --code:#f2f5f3;
+    --red:#e5484d;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:#22302b;
+    font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
+    line-height:1.75;font-size:15px;}
+  .wrap{max-width:980px;margin:0 auto;padding:0 0 80px;}
+  .doc{background:#fff;margin:24px;border-radius:14px;box-shadow:0 4px 24px rgba(20,60,45,.07);padding:48px 54px;}
+  .cover{border-left:5px solid var(--green);padding:6px 0 6px 18px;margin-bottom:14px;}
+  .cover h1{font-size:28px;margin:0 0 6px;font-weight:800;color:var(--dark);letter-spacing:-.5px;}
+  .cover .ver{color:var(--green-deep);font-weight:700;font-size:14px;}
+  .cover .sub{color:var(--gray);font-size:13px;margin-top:6px;}
+  .cover .sub a{color:var(--green-deep);}
+  h2{font-size:21px;font-weight:800;color:var(--dark);margin:40px 0 8px;padding-bottom:8px;border-bottom:2px solid var(--green);}
+  h3{font-size:17px;font-weight:700;color:var(--dark);margin:26px 0 4px;}
+  h4{font-size:15px;font-weight:700;color:#33463e;margin:18px 0 4px;}
+  p{margin:8px 0;}
+  strong{color:#11201a;font-weight:700;}
+  a{color:var(--green-deep);}
+  ul,ol{padding-left:22px;margin:8px 0;}
+  li{margin:4px 0;}
+  blockquote{margin:14px 0;padding:12px 16px;background:#fff8e6;border-left:4px solid #f0b429;border-radius:0 8px 8px 0;color:#7a5b00;font-size:14px;}
+  blockquote p{margin:4px 0;}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px;display:block;overflow-x:auto;}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top;}
+  th{background:var(--green-soft);color:var(--dark);font-weight:700;white-space:nowrap;}
+  tr:nth-child(even) td{background:#fafefb;}
+  code{background:var(--code);padding:2px 6px;border-radius:5px;font-size:13px;font-family:'SF Mono',Menlo,Consolas,monospace;color:var(--green-deep);}
+  .mermaid{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;margin:16px 0;text-align:center;}
+  .tag-td{display:inline-block;background:#fdecec;color:var(--red);font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;white-space:nowrap;}
+  .tag-as{display:inline-block;background:#eef2ff;color:#4f46e5;font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;white-space:nowrap;}
+  .tag-new{display:inline-block;background:var(--green-soft);color:var(--green-deep);font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;}
+  .tag-mod{display:inline-block;background:#e8f0fe;color:#1a56db;font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;}
+  .shot{border:2px dashed #c9d6cf;border-radius:10px;background:#f8fbf9;color:#7c8b84;text-align:center;padding:34px 16px;margin:14px 0;font-size:13.5px;}
+  .shot b{color:#33463e;}
+  .toc{background:var(--green-soft);border-radius:10px;padding:16px 22px;margin:18px 0 8px;font-size:14px;}
+  .toc b{color:var(--dark);}
+  .toc a{display:inline-block;margin:2px 14px 2px 0;color:var(--green-deep);text-decoration:none;}
+  .toc a:hover{text-decoration:underline;}
+  .clist{border-radius:10px;padding:4px 18px;margin:12px 0;background:#fff6e6;border:1px solid #f3d9a0;}
+  .api{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:10px;padding:4px 18px 10px;margin:14px 0;}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="doc">
+
+<div class="cover">
+  <h1>中台 ADL 减仓 PRD</h1>
+  <div class="ver">版本 V1.0 · 2026-10-09 · 修订人 Rhys</div>
+  <div class="sub">需求类型：0→1 · 规模 L ｜ 配套原型：<a href="https://forclaudecode.vercel.app/1009-中台ADL减仓.html">1009-中台ADL减仓.html</a> ｜ 规则来源：规则台账_ADL减仓 v1.0（R01–R19）</div>
+</div>
+
+<div class="toc">
+  <b>目录</b><br>
+  <a href="#s1">一、需求分析</a><a href="#s2">二、产品概述</a><a href="#s3">三、需求说明</a><a href="#s4">四、数据埋点</a><a href="#s5">五、API 相关调整</a><a href="#s6">待确认项</a><a href="#s7">版本历史</a>
+</div>
+
+<!-- ============ 一 ============ -->
+<h2 id="s1">一、需求分析</h2>
+
+<h3>1.1 背景</h3>
+<p>平台需要一种可控的风险处置手段：当个别用户的盈利仓位给平台带来较大风险敞口时，由运营在中台对该仓位进行<strong>手动减仓</strong>。对用户侧，这笔减仓以行业通行的「ADL 自动减仓」形式呈现。</p>
+<p>本需求包含两部分：</p>
+<ul>
+  <li><strong>中台</strong>：在「当前持仓列表」上，运营可对满足条件的仓位输入数量执行 ADL 减仓。</li>
+  <li><strong>用户端（App / Web）</strong>：被减部分在历史委托、成交记录、仓位历史中以「ADL」标识展示。</li>
+</ul>
+
+<h3>1.2 用户分析</h3>
+<table>
+  <tr><th>角色</th><th>诉求</th><th>本期满足方式</th></tr>
+  <tr><td>运营 / 风控（使用方）</td><td>快速找到风险最高的盈利仓位，按需减掉指定数量；操作可追溯</td><td>持仓列表新增「ADL 档位」并支持排序；减仓弹窗张 / 币双单位输入与执行预览；订单明细记录操作人</td></tr>
+  <tr><td>被减仓用户（影响方）</td><td>知道仓位为什么变少、按什么价格成交、盈亏多少</td><td>历史委托 / 成交记录 / 仓位历史中的「ADL」标签与说明；不收手续费</td></tr>
+</table>
+
+<h3>1.3 竞品分析</h3>
+<p>调研对象：Binance、OKX、Bybit、Bitget（附 Gate）。来源为各家官方帮助中心与官方接口文档；界面文案未经真机截图核实。</p>
+<table>
+  <tr><th>维度</th><th>行业做法</th><th>本方案</th></tr>
+  <tr><td>事前提示</td><td>五家持仓上均有 5 格 ADL 指示灯</td><td>沿用平台现有指示灯，并作为可减门槛</td></tr>
+  <tr><td>仓位区事后展示</td><td>五家均不在剩余仓位上加标记，部分减仓只是数量变少</td><td>一致：不加任何标记</td></tr>
+  <tr><td>历史记录标识</td><td>四家都把 ADL 和普通平仓、强平分开标识；OKX 仓位历史区分「ADL 未全平 / 全平」</td><td>历史委托、成交记录标「ADL」；仓位历史区分「ADL 部分减仓 / ADL 全部平仓」</td></tr>
+  <tr><td>成交价</td><td>Binance / Bybit / Gate 用破产价；OKX 通常用标记价格</td><td>执行时的标记价格（与 OKX 一致）</td></tr>
+  <tr><td>手续费</td><td>仅 Bybit 收被减方 Maker 费，其余免收</td><td>不收</td></tr>
+  <tr><td>挂单处理</td><td>Bybit / Gate 撤销被减用户的活动委托</td><td>撤销该仓位全部平仓类挂单</td></tr>
+  <tr><td>事后通知</td><td>五家至少发邮件，部分加发短信 / App 推送</td><td>本期不发任何通知 <span class="tag-td">⚠️ P05 后续评估邮件</span></td></tr>
+</table>
+<p>完整调研见《ADL前端展示竞品调研.md》。</p>
+
+<!-- ============ 二 ============ -->
+<h2 id="s2">二、产品概述</h2>
+
+<h3>2.1 产品逻辑</h3>
+<h4>2.1.1 中台操作流程</h4>
+<div class="mermaid">
+flowchart TD
+  A[运营进入「当前持仓列表」] --> B[按「ADL 档位」/ 回报率 / 未实现盈亏排序]
+  B --> C{仓位是否同时满足<br/>指示灯亮满 5 格 且 未实现盈亏 &gt; 0}
+  C -- 否 --> C1[「ADL减仓」按钮置灰<br/>悬浮提示不满足的原因]
+  C -- 是 --> D[点击「ADL减仓」打开弹窗]
+  D --> E[输入减仓数量（张 / 币可切换）]
+  E --> F{数量校验}
+  F -- 不通过 --> E
+  F -- 通过 --> G[查看执行预览] --> H[点击「确认减仓」] --> I[二次确认弹窗]
+  I -- 返回修改 --> E
+  I -- 确认执行 --> J{执行时校验}
+  J -- 数量大于当前持仓量 --> K1[报错：本次未执行，请重新输入]
+  J -- 仓位已不存在 --> K2[提示并刷新列表]
+  J -- 系统异常 --> K3[报错：未成交，仓位不变，可重试]
+  J -- 通过 --> L[撤销该仓位全部平仓类挂单] --> M[按执行时标记价格成交] --> N[成功提示，列表刷新]
+</div>
+
+<h4>2.1.2 执行时的资金与仓位变化（泳道）</h4>
+<div class="mermaid">
+sequenceDiagram
+  participant 运营 as 运营（中台）
+  participant 系统 as 系统
+  participant 用户 as 用户仓位 / 交易账户
+  participant 平台 as 平台账户
+  运营->>系统: 确认执行 ADL 减仓（数量 N）
+  系统->>系统: 校验仓位存在、N ≤ 当前持仓量
+  系统->>用户: 撤销该仓位全部平仓类挂单
+  系统->>用户: 按执行时标记价格平掉 N，不收手续费
+  系统->>用户: 释放对应保证金 + 已实现盈亏，立即回到交易账户可用
+  系统->>平台: 该笔盈亏由平台账户承接（不产生对手仓位）
+  系统->>运营: 返回成交数量、成交价、已实现盈亏、撤单情况
+</div>
+
+<h4>2.1.3 仓位状态</h4>
+<div class="mermaid">
+stateDiagram-v2
+  [*] --> 持有中
+  持有中 --> 持有中: 部分 ADL（剩余仓位仍可再次被减）
+  持有中 --> 已平仓: 全部 ADL
+  持有中 --> 已平仓: 用户自行平仓 / 强平
+  已平仓 --> [*]
+</div>
+
+<h3>2.2 功能架构</h3>
+<table>
+  <tr><th>端</th><th>模块</th><th>功能点</th></tr>
+  <tr><td rowspan="4">中台</td><td>当前持仓列表</td><td>新增「ADL 档位」列；「未实现盈亏」「回报率」「ADL 档位」可排序；「持仓量/可平量」张 / 币切换；操作列新增「ADL减仓」</td></tr>
+  <tr><td>ADL 减仓弹窗</td><td>仓位信息、数量输入（张 / 币、小数、全部）、执行预览、挂单提示</td></tr>
+  <tr><td>二次确认与结果</td><td>二次确认、执行中、成功 / 失败反馈</td></tr>
+  <tr><td>订单 ID 明细</td><td>新增「操作人」列</td></tr>
+  <tr><td rowspan="2">用户端（App / Web）</td><td>当前持仓 / 当前委托</td><td>无新增元素：仓位数量变少或消失，平仓类挂单被撤</td></tr>
+  <tr><td>历史委托 / 成交记录 / 仓位历史</td><td>ADL 标签 + 说明；撤单原因「因 ADL」；仓位历史区分部分 / 全部</td></tr>
+</table>
+
+<h3>2.3 术语解释</h3>
+<table>
+  <tr><th>术语</th><th>说明</th></tr>
+  <tr><td>ADL（自动减仓）</td><td>对用户展示的名称。本需求中实际由运营在中台手动发起。</td></tr>
+  <tr><td>ADL 指示灯（呼吸灯）/ ADL 档位</td><td>平台现有的 1–5 格指示，表示仓位被 ADL 的排队位置，格数越多越靠前。灯数沿用现有计算逻辑；中台「ADL 档位」与用户端看到的格数一致。</td></tr>
+  <tr><td>张 / 币</td><td>数量的两种单位。币数量 = 张数 × 合约面值（如 BTCUSDT 1 张 = 0.0001 BTC）。</td></tr>
+  <tr><td>持仓量 / 可平量</td><td>可平量 = 持仓量 − 被平仓挂单占用的数量。ADL 的上限按持仓量计算。</td></tr>
+  <tr><td>平仓类挂单</td><td>该仓位上的止盈止损单、只减仓委托等平仓方向的未成交委托。</td></tr>
+  <tr><td>标记价格</td><td>平台用于计算未实现盈亏和强平的参考价格。ADL 按<strong>执行那一刻</strong>的标记价格成交。</td></tr>
+  <tr><td>平台账户</td><td>承接 ADL 所产生盈亏的平台自有账户。</td></tr>
+</table>
+
+<h3>2.4 重要信息 Checklist</h3>
+<table>
+  <tr><th>#</th><th>规则</th><th>台账</th></tr>
+  <tr><td>1</td><td>可减条件：ADL 指示灯亮满 5 格 <strong>且</strong> 未实现盈亏 &gt; 0，两个条件同时满足</td><td>R13</td></tr>
+  <tr><td>2</td><td>成交价：执行时的实时标记价格（不是运营打开弹窗时的价格）</td><td>R04</td></tr>
+  <tr><td>3</td><td>被减部分不产生对手仓位，系统直接结算平仓，盈亏由平台账户承接</td><td>R03</td></tr>
+  <tr><td>4</td><td>被减仓用户不收手续费</td><td>R12</td></tr>
+  <tr><td>5</td><td>释放的保证金和已实现盈亏立即可用，回到交易账户</td><td>R16</td></tr>
+  <tr><td>6</td><td>执行后撤销该仓位全部平仓类挂单</td><td>R14</td></tr>
+  <tr><td>7</td><td>数量上限 = 执行时的持仓量；超出报错、不执行；同一仓位可多次减仓</td><td>R13 / R17</td></tr>
+  <tr><td>8</td><td>数量支持张 / 币切换与小数，小数位数沿用各合约现有数量精度配置</td><td>R07 / R18</td></tr>
+  <tr><td>9</td><td>单人操作，无需复核，不填减仓原因；追溯依赖订单明细「操作人」</td><td>R05 / R10 / R11</td></tr>
+  <tr><td>10</td><td>不限定使用场景</td><td>R15</td></tr>
+  <tr><td>11</td><td>用户端仓位区不加任何 ADL 标记；不发站内信</td><td>R08 / R09</td></tr>
+  <tr><td>12</td><td>用户端 ADL 数量统一用币单位显示（如 0.01 BTC）</td><td>R19</td></tr>
+</table>
+
+<h3>2.5 上线节奏</h3>
+<p>一期上线本文全部范围（中台 + App + Web 同步）。邮件通知（P05）视上线后客服咨询量再评估。</p>
+
+<!-- ============ 三 ============ -->
+<h2 id="s3">三、需求说明</h2>
+
+<h3>3.1 功能列表</h3>
+<table>
+  <tr><th>编号</th><th>端</th><th>功能</th><th>类型</th><th>优先级</th></tr>
+  <tr><td>F1</td><td>中台</td><td>持仓列表新增「ADL 档位」列（可排序）</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
+  <tr><td>F2</td><td>中台</td><td>操作列新增「ADL减仓」按钮及可点条件</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
+  <tr><td>F3</td><td>中台</td><td>ADL 减仓弹窗：仓位信息、数量输入、执行预览、挂单提示</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
+  <tr><td>F4</td><td>中台</td><td>二次确认、执行与结果反馈</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
+  <tr><td>F5</td><td>中台</td><td>订单 ID 明细新增「操作人」列</td><td><span class="tag-mod">调整</span></td><td>P0</td></tr>
+  <tr><td>F6</td><td>中台</td><td>「未实现盈亏」「回报率」支持排序</td><td><span class="tag-mod">调整</span></td><td>P1</td></tr>
+  <tr><td>F7</td><td>中台</td><td>「持仓量/可平量」张 / 币切换，「自动减仓量」跟随</td><td><span class="tag-mod">调整</span></td><td>P1</td></tr>
+  <tr><td>F8</td><td>App / Web</td><td>历史委托、成交记录显示「ADL」标签及说明</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
+  <tr><td>F9</td><td>App / Web</td><td>仓位历史区分「ADL 部分减仓 / ADL 全部平仓」</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
+  <tr><td>F10</td><td>App / Web</td><td>被撤挂单显示「已撤销 · 因 ADL」</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
+</table>
+
+<h3>3.2 页面交互流程</h3>
+<div class="mermaid">
+flowchart LR
+  subgraph 中台
+    L[当前持仓列表] -->|点 ADL减仓| M[ADL 减仓弹窗] -->|确认减仓| C[二次确认] -->|确认执行| R[执行结果提示]
+    R --> L
+    L -->|订单 ID · 查看详情| O[订单 ID 明细]
+  end
+  subgraph 用户端
+    P[当前持仓：数量变少 / 消失] --- H[历史委托：ADL 标签 + 被撤挂单]
+    H --- T[成交记录：ADL 标签]
+    T --- PH[仓位历史：ADL 部分减仓 / 全部平仓]
+  end
+  R -. 同步 .-> P
+</div>
+
+<h3>3.3 原型及说明</h3>
+<p>原型地址：<a href="https://forclaudecode.vercel.app/1009-中台ADL减仓.html">1009-中台ADL减仓.html</a>（顶部可切换「中台」与「用户端 · App + Web」）。</p>
+
+<h4>3.3.1 中台 · 当前持仓列表</h4>
+<div class="shot"><b>【截图占位】中台 · 当前持仓列表（含「ADL 档位」列与「ADL减仓」按钮）</b><br>截图由 PM 从原型截取后替换</div>
+<table>
+  <tr><th>区域</th><th>元素</th><th>说明</th></tr>
+  <tr><td>筛选区</td><td>合约标的 / UID / 订单 ID / 保证金模式、重置 / 指标编辑 / 查询 / 导出</td><td>不变</td></tr>
+  <tr><td rowspan="5">列表</td><td>「持仓量/可平量」<span class="tag-mod">调整</span></td><td>表头有「张 | 币」切换，默认张。切到币时显示币数量（如 0.0108 / 0.008 BTC）。「自动减仓量」列跟随同一单位；订单 ID 明细不跟随。</td></tr>
+  <tr><td>「未实现盈亏」「回报率」<span class="tag-mod">调整</span></td><td>点表头排序：降序 → 升序 → 再次点击切回降序。</td></tr>
+  <tr><td>「ADL 档位」<span class="tag-new">新增</span></td><td>位于「回报率」之后。显示 5 格竖条 + 「x / 5」，格数与用户端指示灯一致；可排序。</td></tr>
+  <tr><td>「自动减仓量」（已有）</td><td>该仓位累计被 ADL 减掉的数量，每次执行成功后累加。</td></tr>
+  <tr><td>其余列</td><td>不变。</td></tr>
+  <tr><td rowspan="3">操作列</td><td>「平仓」</td><td>不变。</td></tr>
+  <tr><td>「ADL减仓」<span class="tag-new">新增</span>：可点</td><td>指示灯亮满 5 格 <strong>且</strong> 未实现盈亏 &gt; 0。</td></tr>
+  <tr><td>「ADL减仓」：置灰</td><td>悬浮提示按原因区分：灯未亮满 →「ADL 指示灯亮满 5 格的仓位才可执行 ADL 减仓」；亮满但未实现盈亏 ≤ 0 →「该仓位未实现盈亏 ≤ 0，不可执行 ADL 减仓」。</td></tr>
+</table>
+
+<h4>3.3.2 中台 · ADL 减仓弹窗</h4>
+<div class="shot"><b>【截图占位】ADL 减仓弹窗（含有平仓挂单时的提示）</b></div>
+<table>
+  <tr><th>区域</th><th>元素</th><th>说明</th></tr>
+  <tr><td>标题</td><td>「ADL 减仓」+ 标签「用户端展示为『ADL 自动减仓』」</td><td>提醒运营该操作对用户的呈现方式。</td></tr>
+  <tr><td>仓位信息（只读）</td><td>UID、合约、方向（多 / 空 · 保证金模式 · 杠杆）、持仓 ID、开仓均价、标记价格、持仓量 / 可平量（张和币两行）、累计已 ADL、未实现盈亏、回报率、已实现盈亏、ADL 档位、账户类型</td><td>打开弹窗时的快照，用于判断。</td></tr>
+  <tr><td rowspan="5">减仓数量</td><td>输入框（必填）</td><td>可输入整数或小数。</td></tr>
+  <tr><td>单位切换「张 | 币」</td><td>币按钮显示合约币种（如 BTC）。默认跟随列表当前单位。切换时，已输入的合法数值自动换算（如 50.5 张 ⇄ 0.00505 BTC）。</td></tr>
+  <tr><td>「全部」</td><td>按当前单位填入全部持仓量。</td></tr>
+  <tr><td>范围提示</td><td>「可减范围 最小单位 ~ 持仓量，最多 N 位小数（按合约数量精度配置）」。</td></tr>
+  <tr><td>换算提示</td><td>输入合法时显示另一单位的换算值，如「≈ 50.5 张」。</td></tr>
+  <tr><td rowspan="6">执行预览</td><td>成交价格</td><td>当前标记价格，注明「执行时实时标记价」。</td></tr>
+  <tr><td>对手方</td><td>固定文案：「无对手仓位，直接结算；盈亏由平台账户承接」。</td></tr>
+  <tr><td>本次减仓价值</td><td>减仓数量 × 合约面值 × 当前标记价格。</td></tr>
+  <tr><td>预计已实现盈亏</td><td>按当前标记价格估算，正绿负红。</td></tr>
+  <tr><td>手续费</td><td>固定 0，注明「被减仓用户不收手续费」。</td></tr>
+  <tr><td>减仓后剩余持仓</td><td>张和币同时显示；减完时显示「0（仓位全部平掉）」。</td></tr>
+  <tr><td>挂单提示</td><td>黄色提示条</td><td>仅当该仓位有平仓挂单占用时显示：「该仓位有平仓挂单占用 X 张（Y BTC）。执行 ADL 后，该仓位的全部平仓类挂单将被撤销。」</td></tr>
+  <tr><td>按钮</td><td>取消 / 确认减仓</td><td>数量合法前「确认减仓」不可点。</td></tr>
+</table>
+
+<h4>3.3.3 中台 · 二次确认与执行结果</h4>
+<div class="shot"><b>【截图占位】二次确认弹窗 / 成功提示 / 失败提示</b></div>
+<table>
+  <tr><th>状态</th><th>表现</th></tr>
+  <tr><td>二次确认</td><td>文案：「即将对 UID xxx 的 BTCUSDT 多仓执行 ADL 减仓 100 张（0.01 BTC）（全部平仓时追加『全部平仓』），按执行时标记价成交（当前 xxx）。操作执行后不可撤销；用户端在历史委托 / 成交记录 / 仓位历史中以『ADL』标签展示；操作人 xxx 将记入订单明细」。按钮：返回修改 / 确认执行。</td></tr>
+  <tr><td>执行中</td><td>「确认执行」显示加载并禁用，防止重复提交。</td></tr>
+  <tr><td>成功 · 部分减仓</td><td>关闭弹窗，顶部提示「ADL 减仓成功：100 张（0.01 BTC）@ 成交价，已实现盈亏 +xx U（有挂单时追加『已撤销该仓位全部平仓挂单（X 张）』）」。该行高亮闪烁，持仓量、可平量、自动减仓量、已实现盈亏、更新时间同步刷新。</td></tr>
+  <tr><td>成功 · 全部减仓</td><td>提示「……仓位已全部平掉，已从当前持仓移除」，该行从列表消失。</td></tr>
+  <tr><td>失败 · 数量大于当前持仓量</td><td>弹窗内红色提示：「执行失败：减仓数量 X 大于该仓位当前持仓量 Y（仓位在此期间已变动），本次未执行。请重新输入。」弹窗信息刷新为最新持仓。</td></tr>
+  <tr><td>失败 · 仓位已不存在</td><td>关闭弹窗，提示「该仓位已不存在（已被用户平仓或强平），列表已刷新，本次未执行」。</td></tr>
+  <tr><td>失败 · 系统异常</td><td>弹窗内红色提示：「执行失败：系统响应超时，本次未产生任何成交，仓位未变动。可稍后重试。」</td></tr>
+</table>
+
+<h4>3.3.4 中台 · 订单 ID 明细</h4>
+<div class="shot"><b>【截图占位】订单 ID 明细（含 ADL 记录与「操作人」列）</b></div>
+<table>
+  <tr><th>元素</th><th>说明</th></tr>
+  <tr><td>现有列</td><td>序号 / 持仓 ID / 订单 ID / 下单方向 / 成交数量 / 价格 / 是否成交 / 成交均价，<strong>全部保持现状</strong>。ADL 记录的下单方向沿用现有值（卖出平多 / 买入平空），价格与成交均价为执行时标记价格。</td></tr>
+  <tr><td>「操作人」<span class="tag-new">新增</span></td><td>ADL 减仓记录显示执行的运营账号；用户自己下的单显示「--」。</td></tr>
+</table>
+
+<h4>3.3.5 用户端 · App / Web</h4>
+<div class="shot"><b>【截图占位】用户端 App + Web：ADL 前 / 部分 ADL 后 / 全部 ADL 后</b></div>
+<p>App 与 Web 规则一致，以下以一笔 0.0108 BTC 的多仓被减 0.01 BTC 为例。</p>
+<table>
+  <tr><th>位置</th><th>部分 ADL 后</th><th>全部 ADL 后</th></tr>
+  <tr><td>当前持仓</td><td>仓位仍在，数量变为 0.0008 BTC。未实现盈亏、保证金按剩余部分显示；开仓均价、收益率不变。<strong>不加任何 ADL 标记</strong>。指示灯按现有逻辑重新计算。</td><td>仓位消失；无其他仓位时显示「暂无持仓」。</td></tr>
+  <tr><td>当前委托</td><td>该仓位的平仓类挂单全部消失，委托数相应减少。</td><td>同左。</td></tr>
+  <tr><td>历史委托</td><td colspan="2">新增一条 ADL 记录：订单类型显示「ADL」标签，方向「平多 / 平空」，委托价「--」，成交均价为标记价格，数量用币单位，状态「已成交」。被撤的挂单状态显示「已撤销 · 因 ADL」。</td></tr>
+  <tr><td>成交记录</td><td colspan="2">新增一条 ADL 成交：「ADL」标签，成交价为标记价格，数量用币单位，手续费 0，角色「--」，显示已实现盈亏。</td></tr>
+  <tr><td>仓位历史</td><td>平仓类型「ADL 部分减仓」，已平仓量 / 最大持仓（如 0.01 / 0.0108 BTC），平仓时间显示「--」，平仓盈亏。</td><td>平仓类型「ADL 全部平仓」，平仓时间为执行时间。</td></tr>
+  <tr><td>「ADL」标签说明</td><td colspan="2">Web 鼠标悬浮 / App 点击 ⓘ 时显示：「自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。」<span class="tag-td">⚠️ P17 文案待确认</span></td></tr>
+  <tr><td>通知</td><td colspan="2">本期不发站内信、邮件、短信、推送 <span class="tag-td">⚠️ P05</span></td></tr>
+</table>
+
+<h3>3.4 边界 Case</h3>
+<table>
+  <tr><th>#</th><th>场景</th><th>系统行为</th><th>依据</th></tr>
+  <tr><td>1</td><td>指示灯未亮满 5 格</td><td>「ADL减仓」置灰，悬浮提示灯数要求</td><td>R13</td></tr>
+  <tr><td>2</td><td>亮满 5 格但未实现盈亏 ≤ 0（含恰好为 0）</td><td>置灰，悬浮提示未实现盈亏要求</td><td>R13</td></tr>
+  <tr><td>3</td><td>数量为空</td><td>「确认减仓」不可点</td><td>—</td></tr>
+  <tr><td>4</td><td>输入非数字、0 或负数</td><td>提示「请输入大于 0 的数字」/「减仓数量须大于 0」</td><td>—</td></tr>
+  <tr><td>5</td><td>小数位数超过合约精度</td><td>提示「张数最多支持 N 位小数」或「BTC 数量最多支持 N 位小数」</td><td>R18</td></tr>
+  <tr><td>6</td><td>数量 &gt; 持仓量（输入时）</td><td>提示「超过当前持仓量 X」，不可提交</td><td>R17</td></tr>
+  <tr><td>7</td><td>数量恰好 = 持仓量</td><td>允许；二次确认标注「全部平仓」；成功后仓位从列表移除，用户端仓位历史为「ADL 全部平仓」</td><td>—</td></tr>
+  <tr><td>8</td><td>数量 &gt; 可平量但 ≤ 持仓量</td><td>允许；执行前撤销全部平仓类挂单</td><td>R14 / R17</td></tr>
+  <tr><td>9</td><td>仓位有平仓挂单，减仓数量 ≤ 可平量</td><td>仍撤销该仓位全部平仓类挂单</td><td>R14</td></tr>
+  <tr><td>10</td><td>打开弹窗后用户自行平仓或另一运营已减，执行时数量 &gt; 当前持仓量</td><td>报错、不执行，弹窗刷新为最新持仓</td><td>R17</td></tr>
+  <tr><td>11</td><td>打开弹窗后仓位被平掉 / 强平</td><td>提示仓位已不存在，刷新列表，不执行</td><td>—</td></tr>
+  <tr><td>12</td><td>打开弹窗时满足条件，执行时灯数掉到 4 格或未实现盈亏 ≤ 0</td><td>推荐：执行时再检查一次，不满足则报错「仓位已不满足 ADL 条件」，不执行</td><td><span class="tag-td">⚠️ P14</span></td></tr>
+  <tr><td>13</td><td>仓位正处于强平流程中，或合约处于暂停交易 / 结算 / 下架状态</td><td>推荐：拒绝执行，提示「当前仓位 / 合约状态不支持 ADL 减仓」</td><td><span class="tag-td">⚠️ P15</span></td></tr>
+  <tr><td>14</td><td>系统异常 / 超时</td><td>不产生成交，仓位不变，可重试</td><td>—</td></tr>
+  <tr><td>15</td><td>重复点击「确认执行」</td><td>执行中按钮禁用，只提交一次</td><td>—</td></tr>
+  <tr><td>16</td><td>同一仓位多次 ADL</td><td>允许；每次生成独立的委托和成交记录，「自动减仓量」累计</td><td>R13</td></tr>
+  <tr><td>17</td><td>同一仓位既有 ADL 又有用户自己的平仓，用户端仓位历史的平仓类型</td><td>推荐：取最近一次平仓的类型（OKX 做法）</td><td><span class="tag-td">⚠️ P18</span></td></tr>
+  <tr><td>18</td><td>双向持仓，同一合约同时有多仓和空仓</td><td>按持仓 ID 分别判断、分别操作，互不影响</td><td>R01</td></tr>
+  <tr><td>19</td><td>逐仓仓位被部分 ADL</td><td>保证金按比例释放，连同已实现盈亏立即回到交易账户可用；剩余仓位的强平价基本不变</td><td>R16</td></tr>
+  <tr><td>20</td><td>全仓仓位被部分 ADL</td><td>释放的保证金和已实现盈亏立即可用；对同账户其他仓位强平价的影响见 P07（推导为只会更安全）</td><td>R16 · <span class="tag-td">⚠️ P07</span></td></tr>
+  <tr><td>21</td><td>标记价格在打开弹窗到执行之间变化</td><td>以执行那一刻的标记价格成交；预览值仅供参考</td><td>R04</td></tr>
+  <tr><td>22</td><td>被全部 ADL 的用户想立即重新开仓</td><td>不做任何限制，沿用现有开仓逻辑</td><td>—</td></tr>
+  <tr><td>23</td><td>切换单位时输入框为空或数值非法</td><td>只切换单位，不换算</td><td>R07</td></tr>
+</table>
+
+<!-- ============ 四 ============ -->
+<h2 id="s4">四、数据埋点</h2>
+<table>
+  <tr><th>#</th><th>端</th><th>事件</th><th>触发时机</th><th>上报参数（业务描述）</th></tr>
+  <tr><td>E1</td><td>中台</td><td>持仓列表排序</td><td>点击「未实现盈亏」「回报率」「ADL 档位」表头</td><td>排序字段、排序方向、操作人</td></tr>
+  <tr><td>E2</td><td>中台</td><td>列表单位切换</td><td>点击「持仓量/可平量」表头的张 / 币</td><td>切换后的单位、操作人</td></tr>
+  <tr><td>E3</td><td>中台</td><td>打开 ADL 减仓弹窗</td><td>点击可点状态的「ADL减仓」</td><td>UID、合约、方向、持仓 ID、ADL 档位、未实现盈亏、回报率、持仓量、操作人</td></tr>
+  <tr><td>E4</td><td>中台</td><td>悬浮置灰按钮</td><td>鼠标悬停在置灰的「ADL减仓」上</td><td>持仓 ID、置灰原因（灯数不足 / 未实现盈亏 ≤ 0）</td></tr>
+  <tr><td>E5</td><td>中台</td><td>弹窗内单位切换</td><td>点击弹窗中的张 / 币</td><td>持仓 ID、切换后的单位、切换时是否已有输入</td></tr>
+  <tr><td>E6</td><td>中台</td><td>点击「全部」</td><td>点击弹窗中的「全部」</td><td>持仓 ID、当前单位</td></tr>
+  <tr><td>E7</td><td>中台</td><td>提交减仓</td><td>点击「确认减仓」进入二次确认</td><td>持仓 ID、输入数量、单位、是否全部减仓、是否有平仓挂单</td></tr>
+  <tr><td>E8</td><td>中台</td><td>二次确认操作</td><td>点击「返回修改」或「确认执行」</td><td>持仓 ID、选择结果</td></tr>
+  <tr><td>E9</td><td>中台</td><td>ADL 执行结果</td><td>执行完成（成功或失败）</td><td>持仓 ID、UID、合约、结果、失败原因（超持仓量 / 仓位不存在 / 条件不满足 / 状态不支持 / 系统异常）、成交数量、成交价、已实现盈亏、撤销挂单数量、是否全部减仓、操作人、耗时</td></tr>
+  <tr><td>E10</td><td>中台</td><td>取消弹窗</td><td>点击「取消」/ 关闭弹窗</td><td>持仓 ID、是否已输入数量</td></tr>
+  <tr><td>E11</td><td>App / Web</td><td>查看 ADL 说明</td><td>Web 悬浮 / App 点击「ADL」标签的 ⓘ</td><td>端、所在页面（历史委托 / 成交记录 / 仓位历史）、UID</td></tr>
+  <tr><td>E12</td><td>App / Web</td><td>浏览含 ADL 记录的历史页</td><td>打开历史委托 / 成交记录 / 仓位历史，且列表中有 ADL 记录</td><td>端、页面、UID、ADL 记录条数</td></tr>
+</table>
+
+<!-- ============ 五 ============ -->
+<h2 id="s5">五、API 相关调整</h2>
+<blockquote><p>以下为建议的接口变动，字段名仅作示意，以研发定稿为准。</p></blockquote>
+
+<div class="api">
+<h4>5.1 中台 · 当前持仓列表查询（调整）</h4>
+<ul>
+  <li>返回新增 <code>adlLevel</code>（1–5，取现有 ADL 指示灯计算结果，与用户端一致）。</li>
+  <li>排序参数支持 <code>unrealizedPnl</code> / <code>roe</code> / <code>adlLevel</code>，方向 <code>asc</code> / <code>desc</code>。</li>
+  <li>返回 <code>contractSize</code>（合约面值）与 <code>qtyPrecision</code>（张数精度，取合约现有配置），供前端做张 / 币换算与小数校验。</li>
+  <li>返回 <code>adlEnabled</code>（是否可点）及 <code>adlDisabledReason</code>（<code>LEVEL_NOT_5</code> / <code>PNL_NOT_POSITIVE</code>），服务端统一判断。</li>
+</ul>
+</div>
+
+<div class="api">
+<h4>5.2 中台 · ADL 减仓执行（新增）</h4>
+<ul>
+  <li>入参：<code>positionId</code>、<code>quantity</code>（统一以「张」提交，前端负责币 → 张换算并按精度取整）。操作人从登录态获取。</li>
+  <li>服务端校验（按顺序）：仓位存在 → 仓位 / 合约状态允许（P15）→ <code>adlLevel == 5</code> 且未实现盈亏 &gt; 0（P14）→ <code>quantity &gt; 0</code> 且符合精度 → <code>quantity ≤ 当前持仓量</code>。</li>
+  <li>执行（同一事务）：撤销该仓位全部平仓类挂单（撤单原因 <code>ADL_CANCEL</code>）→ 以执行时标记价格生成系统平仓单并成交（来源 <code>ADL</code>，<code>operator</code> = 运营账号，手续费 0）→ 释放保证金与已实现盈亏入交易账户 → 平台账户记录对应盈亏（无对手仓位）。</li>
+  <li>返回：成交数量、成交价、已实现盈亏、撤销挂单数量、是否全部平仓、剩余持仓量。</li>
+  <li>错误码：<code>QTY_EXCEEDS_POSITION</code>、<code>POSITION_NOT_FOUND</code>、<code>ADL_CONDITION_NOT_MET</code>、<code>POSITION_STATUS_NOT_ALLOWED</code>、<code>INVALID_QTY</code>、<code>SYSTEM_ERROR</code>。</li>
+  <li>幂等：前端提交时带请求 ID，防止重复提交导致重复减仓。</li>
+</ul>
+</div>
+
+<div class="api">
+<h4>5.3 中台 · 订单 ID 明细（调整）</h4>
+<ul><li>每条订单新增 <code>operator</code>：ADL 订单为运营账号，用户订单为空（前端显示「--」）。其余字段不变。</li></ul>
+</div>
+
+<div class="api">
+<h4>5.4 用户端 · 历史委托 / 成交记录 / 仓位历史（调整）</h4>
+<ul>
+  <li>历史委托与成交记录：订单来源新增 <code>ADL</code>，前端据此显示「ADL」标签；ADL 成交的 <code>fee = 0</code>，<code>role</code> 为空。</li>
+  <li>撤单原因新增 <code>ADL_CANCEL</code>，前端显示「已撤销 · 因 ADL」。</li>
+  <li>仓位历史平仓类型新增 <code>ADL_PARTIAL</code>（部分减仓）/ <code>ADL_FULL</code>（全部平仓）。</li>
+  <li>ADL 相关数量返回币数量，或返回张数加 <code>contractSize</code> 由前端换算，统一以币单位展示。</li>
+</ul>
+</div>
+
+<div class="api">
+<h4>5.5 资金流水 / 对账（调整）</h4>
+<ul>
+  <li>用户交易账户流水新增类型「ADL 已实现盈亏」。</li>
+  <li>平台账户流水新增类型「ADL 承接盈亏」，关联持仓 ID、订单 ID、操作人，供财务按日对账（R03：无对手仓位，多空持仓总量不再对等）。</li>
+</ul>
+</div>
+
+<!-- ============ 待确认 ============ -->
+<h2 id="s6">待确认项</h2>
+<div class="clist">
+<table>
+  <tr><th>编号</th><th>事项</th><th>推荐</th><th>影响章节</th></tr>
+  <tr><td>P05</td><td>是否发邮件 / 短信 / App 推送（站内信已确定不发）</td><td>暂不发，上线后看客服咨询量再评估</td><td>1.3、3.3.5</td></tr>
+  <tr><td>P07</td><td>全仓 ADL 对同账户其他仓位强平价的影响</td><td>推导为只会更安全，需研发确认全仓权益是否按标记价计算未实现盈亏</td><td>3.4 #20</td></tr>
+  <tr><td>P14</td><td>执行时灯数不足 5 格或未实现盈亏 ≤ 0，是继续执行还是报错</td><td>报错拒绝</td><td>3.4 #12、5.2</td></tr>
+  <tr><td>P15</td><td>仓位强平中、合约暂停交易 / 结算 / 下架时能否执行</td><td>拒绝执行</td><td>3.4 #13、5.2</td></tr>
+  <tr><td>P16</td><td>哪些中台角色能看到和使用「ADL减仓」</td><td>与现有「平仓」按钮权限一致</td><td>3.3.1</td></tr>
+  <tr><td>P17</td><td>用户端「ADL」标签的说明文案</td><td>见 3.3.5，需 PM / 客服确认</td><td>3.3.5</td></tr>
+  <tr><td>P18</td><td>同一仓位既有 ADL 又有普通平仓时，仓位历史的平仓类型怎么显示</td><td>取最近一次平仓的类型</td><td>3.4 #17</td></tr>
+</table>
+</div>
+
+<!-- ============ 版本 ============ -->
+<h2 id="s7">版本历史</h2>
+<table>
+  <tr><th>版本</th><th>日期</th><th>阶段</th><th>变更摘要</th><th>变更原因</th></tr>
+  <tr><td>V1.0</td><td>2026-10-09</td><td>初稿（评审前）</td><td>基于原型与规则台账 v1.0（R01–R19）产出完整 PRD</td><td>中台 ADL 减仓需求立项，准备评审会</td></tr>
+</table>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({startOnLoad:true, theme:'base', themeVariables:{
+    primaryColor:'#e6faf1', primaryBorderColor:'#0ECB81', primaryTextColor:'#0f2f22',
+    lineColor:'#0a9c63', fontSize:'14px'
+  }});
+</script>
+</body>
+</html>
