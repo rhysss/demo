@@ -276,7 +276,7 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
     <div id="noteBody">
       <table>
         <tr><th>类型</th><th>位置</th><th>说明</th><th>待确认</th></tr>
-        <tr><td class="tag-add">新增</td><td>操作列「ADL减仓」按钮</td><td>和「平仓」并列。只有 <b>ADL 指示灯亮满 5 格</b> 的仓位可点，其余置灰；同一仓位可多次减仓</td><td>✅ 指示灯 5 格（替换原「回报率 &gt; 50%」）</td></tr>
+        <tr><td class="tag-add">新增</td><td>操作列「ADL减仓」按钮</td><td>和「平仓」并列。须<b>同时满足</b>：① ADL 指示灯亮满 5 格；② 未实现盈亏 &gt; 0（防止极端行情下亏损仓位也亮 5 格被误减）。不满足的置灰；同一仓位可多次减仓</td><td>✅ 指示灯 5 格 + 浮盈保护</td></tr>
         <tr><td class="tag-add">新增</td><td>ADL 减仓弹窗</td><td>输入减仓数量（张 / 币）→ 预览成交价 / 预计已实现盈亏 / 剩余持仓 → 二次确认 → 执行（不填写减仓原因）</td><td>✅ Q1 不产生对手仓位，盈亏计入平台账户<br>✅ Q2 按执行时标记价成交<br>✅ Q3 被减仓用户不收手续费</td></tr>
         <tr><td class="tag-add">新增</td><td>「ADL 档位」列</td><td>展示该仓位当前的 ADL 指示灯格数（与用户端看到的一致），支持排序，方便运营找到亮满 5 格的仓位</td><td>灯数沿用现有计算逻辑（原型为模拟数据）</td></tr>
         <tr><td class="tag-mod">调整</td><td>「未实现盈亏」「回报率」列</td><td>支持点表头排序，方便运营找浮盈高的仓位</td><td>—</td></tr>
@@ -361,7 +361,7 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
    <tr><th>编号</th><th>归属</th><th>待确认事项</th><th>当前原型做法</th></tr>
    <tr><td>P05</td><td>用户端</td><td>暂定不发任何通知；后续评估是否加发邮件</td><td>不发任何通知</td></tr>
    <tr><td>P07</td><td>资金</td><td>全仓模式下 ADL 会不会让其他仓位的强平价变差？我的推导是「不会，只会变安全」，需研发确认计算口径</td><td>—</td></tr>
-   <tr><td>P14</td><td>中台</td><td>运营打开弹窗时仓位亮 5 格，到点「确认执行」时已掉到 4 格：继续执行，还是报错拒绝</td><td>未处理（按打开时判断）</td></tr>
+   <tr><td>P14</td><td>中台</td><td>运营打开弹窗时仓位亮 5 格，到点「确认执行」时已掉到 4 格，或未实现盈亏已变为 ≤ 0：继续执行，还是报错拒绝</td><td>未处理（按打开时判断）</td></tr>
   </table>
  </div>
  <div class="e-row">
@@ -487,7 +487,7 @@ let rows=[
   {uid:'11252067',sym:'XRPUSDT',pid:'526074656436797696',open:'2025-08-14 07:33:20',mm:'全仓',side:'L',entry:3.21,qty:1,avail:1,lev:50,rpnl:-164.3614,adl:0,acct:'散户'},
   {uid:'11255198',sym:'LTCUSDT',pid:'559860531846988032',open:'2025-11-15 20:59:05',mm:'全仓',side:'S',entry:106.00,qty:35,avail:35,lev:10,rpnl:0.0566,adl:0,acct:'合伙人'},
 ];
-const LIGHTS=[4,3,5,4,1,5,3,1,5,2,5,1,1,2]; // 模拟现有 ADL 指示灯格数
+const LIGHTS=[4,3,5,4,1,5,3,1,5,2,5,1,5,2]; // 第 13 行为「亏损但亮 5 格」示例 // 模拟现有 ADL 指示灯格数
 const ltHtml=n=>`<span class="adl-lt">${[1,2,3,4,5].map(i=>`<b class="${i<=n?'on':''}"></b>`).join('')}</span>${n} / 5`;
 rows.forEach((r,i)=>{r.light=LIGHTS[i];r.oid='查看详情';r.upd='2026-10-09 08:00:00';r.orders=[{oid:String(BigInt(r.pid)+7n),dir:r.side==='L'?'买入开多':'卖出开空',type:'开仓',qty:r.qty,price:r.entry,avg:r.entry,op:'--',time:r.open}]});
 
@@ -516,7 +516,7 @@ function render(){
   document.getElementById('total').textContent=`共 ${list.length} 条记录`;
   if(!list.length){tb.innerHTML=`<tr><td colspan="27"><div class="state-box"><div style="font-size:30px">📭</div>暂无数据</div></td></tr>`;return}
   tb.innerHTML=list.map((r,i)=>{
-    const c=calc(r),pd=PD[r.sym],canAdl=r.light===5;
+    const c=calc(r),pd=PD[r.sym],canAdl=r.light===5&&c.upnl>0,why=r.light!==5?'ADL 指示灯亮满 5 格的仓位才可执行 ADL 减仓':'该仓位未实现盈亏 ≤ 0，不可执行 ADL 减仓';
     return `<tr data-pid="${r.pid}">
       <td class="sl" style="left:0"><input type="checkbox"></td>
       <td class="sl" style="left:40px">${i+1}</td>
@@ -544,7 +544,7 @@ function render(){
       <td class="muted">-- ✎</td>
       <td class="sr"><div class="op">
         <button class="btn btn-danger">平 仓</button>
-        <button class="btn btn-orange" ${canAdl?'':'disabled title="ADL 指示灯亮满 5 格的仓位才可执行 ADL 减仓"'} onclick="openAdl('${r.pid}')">ADL减仓</button>
+        <button class="btn btn-orange" ${canAdl?'':`disabled title="${why}"`} onclick="openAdl('${r.pid}')">ADL减仓</button>
       </div></td>
     </tr>`}).join('');
 }
