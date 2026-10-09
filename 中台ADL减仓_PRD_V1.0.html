@@ -50,6 +50,16 @@
   .phones .fig{margin:8px 0}
   .phones img{border-radius:22px}
   .row2>*,.phones>*{min-width:0}
+  .fig img{cursor:zoom-in;transition:box-shadow .15s}
+  .fig img:hover{box-shadow:0 4px 20px rgba(76,29,149,.22)}
+  .lb{position:fixed;inset:0;background:rgba(20,12,40,.86);z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px}
+  .lb.show{display:flex}
+  .lb-box{max-width:100%;max-height:calc(100vh - 96px);overflow:auto;border-radius:8px}
+  .lb-box img{display:block;max-width:calc(100vw - 56px);max-height:calc(100vh - 96px);cursor:zoom-in;background:#fff;border-radius:8px}
+  .lb.full .lb-box img{max-width:none;max-height:none;cursor:zoom-out}
+  .lb-cap{color:#e9e3ff;font-size:13px;margin-top:12px;text-align:center}
+  .lb-x{position:absolute;top:14px;right:20px;color:#fff;font-size:30px;line-height:1;background:none;border:none;cursor:pointer;opacity:.8}
+  .lb-x:hover{opacity:1}
   @media (max-width:760px){.doc{padding:28px 20px;margin:12px}.phones{grid-template-columns:1fr 1fr}.row2{grid-template-columns:1fr}}
   .toc{background:var(--pri-soft);border-radius:10px;padding:16px 22px;margin:18px 0 8px;font-size:14px;}
   .toc b{color:var(--dark);}
@@ -424,6 +434,22 @@ flowchart LR
 </table>
 
 </div></div>
+
+<div class="lb" id="lb" onclick="if(event.target===this)lbClose()">
+  <button class="lb-x" onclick="lbClose()" aria-label="关闭">×</button>
+  <div class="lb-box"><img id="lbImg" alt=""></div>
+  <div class="lb-cap" id="lbCap"></div>
+</div>
+<script>
+  const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg');
+  document.querySelectorAll('.fig img').forEach(img=>img.addEventListener('click',()=>{
+    lbImg.src=img.src;document.getElementById('lbCap').textContent=img.alt+'（点击图片切换原始尺寸，Esc 或点空白处关闭）';
+    lb.classList.remove('full');lb.classList.add('show');document.body.style.overflow='hidden';
+  }));
+  lbImg.addEventListener('click',()=>lb.classList.toggle('full'));
+  function lbClose(){lb.classList.remove('show','full');document.body.style.overflow=''}
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')lbClose()});
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
 <script>
