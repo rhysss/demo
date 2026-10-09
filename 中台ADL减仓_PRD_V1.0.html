@@ -49,6 +49,8 @@
   .phones{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
   .phones .fig{margin:8px 0}
   .phones img{border-radius:22px}
+  .row2>*,.phones>*{min-width:0}
+  @media (max-width:760px){.doc{padding:28px 20px;margin:12px}.phones{grid-template-columns:1fr 1fr}.row2{grid-template-columns:1fr}}
   .toc{background:var(--pri-soft);border-radius:10px;padding:16px 22px;margin:18px 0 8px;font-size:14px;}
   .toc b{color:var(--dark);}
   .toc a{display:inline-block;margin:2px 14px 2px 0;color:var(--pri-deep);text-decoration:none;}
