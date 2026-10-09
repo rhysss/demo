@@ -129,9 +129,66 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
 .toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.15);border-radius:4px;padding:10px 18px;font-size:13px;z-index:100;display:none;align-items:center;gap:8px}
 .toast.show{display:flex}
 .toast .ic{width:16px;height:16px;border-radius:50%;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center}
+
+/* 顶部视图切换 */
+.view-switch{position:sticky;top:0;z-index:40;display:flex;gap:2px;background:#1f2329;padding:6px 20px}
+.view-switch button{color:#a0a4aa;padding:6px 16px;border-radius:3px;font-size:13px}
+.view-switch button.on{background:#fff;color:#1f2329;font-weight:600}
+
+/* ===== 用户端（暗色） ===== */
+.u-root{--bg:#0b0e11;--panel:#181a20;--line:#2b3139;--tx:#eaecef;--tx2:#848e9c;--tx3:#5e6673;--yel:#fcd535;--up:#2ebd85;--down:#f6465d;--adl:#f0a020;
+  background:var(--bg);color:var(--tx);min-height:100vh;padding:0 0 60px;min-width:1280px;font-size:12px}
+.u-root .num{font-family:'SF Mono',Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:12px}
+.u-note{margin:12px 20px;background:#1e2026;border:1px solid #3a3420;border-radius:6px;padding:12px 16px;line-height:1.8;color:#c9b77a}
+.u-note h4{font-size:13px;color:var(--yel);margin-bottom:4px}
+.u-note table{border-collapse:collapse;width:100%;margin-top:6px}
+.u-note th,.u-note td{border:1px solid #3a3420;padding:5px 8px;text-align:left;vertical-align:top;color:#d9cfa8}
+.u-note th{background:#26241c;font-weight:500;white-space:nowrap}
+.u-note .warn{background:#2e2410;border-color:#8a6a1f;color:#f0b44a}
+.u-top{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+.u-top .logo{font-weight:700;font-size:16px;color:var(--yel)}
+.u-top .sym{display:flex;align-items:center;gap:18px}
+.u-top .sym b{font-size:16px}
+.bell{position:relative;width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--tx)}
+.bell:hover{background:#2b3139}
+.bell .dot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--down)}
+.ntf{position:absolute;top:44px;right:0;width:380px;background:#1e2329;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none;z-index:30}
+.ntf.show{display:block}
+.ntf-hd{display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}
+.ntf-hd span{font-size:12px;color:var(--tx2);font-weight:400}
+.ntf-item{padding:12px 16px;border-bottom:1px solid var(--line);line-height:1.7;cursor:pointer}
+.ntf-item:hover{background:#2b3139}
+.ntf-item .t{font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.ntf-item .t i{width:6px;height:6px;border-radius:50%;background:var(--down);display:inline-block}
+.ntf-item .c{color:var(--tx2)}
+.ntf-item .c b{color:var(--tx);font-weight:500}
+.ntf-item .time{color:var(--tx3);margin-top:4px}
+.u-panel{margin:12px 20px;background:var(--panel);border-radius:8px}
+.u-tabs{display:flex;gap:24px;padding:0 16px;border-bottom:1px solid var(--line);height:44px;align-items:flex-end}
+.u-tabs button{color:var(--tx2);font-size:14px;padding-bottom:10px;border-bottom:2px solid transparent;font-weight:500}
+.u-tabs button.on{color:var(--tx);border-bottom-color:var(--yel)}
+.u-tbl{width:100%;border-collapse:collapse}
+.u-tbl th{color:var(--tx2);font-weight:400;text-align:left;padding:10px 16px 8px;white-space:nowrap}
+.u-tbl td{padding:10px 16px;border-top:1px solid #20242b;white-space:nowrap;vertical-align:middle}
+.u-tbl tr.hl td{background:rgba(240,160,32,.06)}
+.u-up{color:var(--up)}.u-down{color:var(--down)}
+.adl-chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--adl);background:rgba(240,160,32,.12);border-radius:2px;padding:0 5px;line-height:18px;cursor:help;position:relative}
+.adl-chip .tip{display:none;position:absolute;left:0;top:22px;width:300px;background:#2b3139;color:var(--tx);font-weight:400;white-space:normal;line-height:1.7;padding:10px 12px;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.5);z-index:20}
+.adl-chip:hover .tip{display:block}
+.adl-chip .tip a{color:var(--yel)}
+.u-empty{height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--tx3);gap:8px}
+.u-btn{height:24px;padding:0 10px;border-radius:3px;background:#2b3139;color:var(--tx);font-size:12px}
+.u-link{color:var(--yel);cursor:pointer}
+.u-warn{color:#f0b44a;background:#2e2410;border:1px dashed #8a6a1f;border-radius:3px;padding:0 5px;font-size:11px;white-space:nowrap}
+.side-tag-l{color:var(--up)}.side-tag-s{color:var(--down)}
 </style>
 </head>
 <body>
+<div class="view-switch">
+  <button class="on" data-v="viewAdmin" onclick="switchView(this)">中台 · 当前持仓列表</button>
+  <button data-v="viewUser" onclick="switchView(this)">用户端 · Web 合约（被 ADL 后）</button>
+</div>
+<div id="viewAdmin">
 <div class="page">
 
   <div class="note-card" id="noteCard">
@@ -199,6 +256,83 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
       </table>
     </div>
     <div class="pager"><span id="total">共 0 条记录</span><span>20条/页</span></div>
+  </div>
+</div>
+
+</div>
+
+<div id="viewUser" class="u-root" hidden>
+  <div class="u-note">
+    <h4>📌 用户端展示说明（依据：ADL前端展示竞品调研.md）</h4>
+    <table>
+      <tr><th>触点</th><th>本方案</th><th>竞品依据</th><th>待确认</th></tr>
+      <tr><td>通知</td><td>站内信 + 铃铛红点；内容：合约、方向、减仓张数、成交价、已实现盈亏、手续费、剩余持仓、挂单处理结果</td><td>五家都会事后通知；OKX / Bybit 还发短信和邮件，模板原文均未公开</td><td><span class="warn">⚠️ 是否加发邮件 / 短信 / App 推送</span></td></tr>
+      <tr><td>当前持仓</td><td>只是仓位变小，不加临时标记</td><td>五家均未见部分减仓后的剩余仓位标记</td><td><span class="warn">⚠️ Q8 ADL 指示灯本期不做（建议）</span></td></tr>
+      <tr><td>历史委托 / 成交记录</td><td>ADL 产生独立的系统订单，订单类型显示「ADL」标签，悬浮显示说明</td><td>Binance / OKX / Bybit / Bitget 均把 ADL 和普通平仓、强平分开标识</td><td>—</td></tr>
+      <tr><td>仓位历史</td><td>平仓类型区分「ADL 部分减仓 / ADL 全部平仓」</td><td>OKX 仓位历史类型 5、6</td><td>—</td></tr>
+      <tr><td>挂单</td><td>演示为撤销该仓位的全部平仓 / 止盈止损委托，状态「已撤销 · 因 ADL」</td><td>Bybit / Gate 明确撤销被 ADL 用户的所有活动委托</td><td><span class="warn">⚠️ Q7</span></td></tr>
+      <tr><td>手续费</td><td>显示 0</td><td>除 Bybit 外都免收</td><td><span class="warn">⚠️ Q3</span></td></tr>
+    </table>
+  </div>
+
+  <div class="u-top">
+    <div class="sym"><span class="logo">合约</span><b>BTCUSDT 永续</b><span class="num u-up">118,520.40</span><span style="color:var(--tx2)">标记价格 <span class="num" style="color:var(--tx)">118,520.40</span></span></div>
+    <div style="position:relative">
+      <button class="bell" onclick="document.getElementById('ntf').classList.toggle('show');this.querySelector('.dot')&&this.querySelector('.dot').remove()">🔔<span class="dot"></span></button>
+      <div class="ntf" id="ntf">
+        <div class="ntf-hd">通知<span>全部已读</span></div>
+        <div class="ntf-item" onclick="uTab('hist')">
+          <div class="t"><i></i>自动减仓（ADL）通知</div>
+          <div class="c">您的 <b>BTCUSDT 永续 多仓</b> 已被自动减仓 <b>100 张</b>，成交价 <b>118,520.40 USDT</b>（标记价格），已实现盈亏 <b class="u-up">+264.67 USDT</b>，手续费 0。剩余持仓 <b>8 张</b>。该仓位的平仓委托已撤销（20 张）。<span class="u-link">查看详情 →</span></div>
+          <div class="time">2026-10-09 14:32:05</div>
+        </div>
+        <div class="ntf-item"><div class="t">资金费率结算</div><div class="c">BTCUSDT 永续资金费用 -0.0312 USDT</div><div class="time">2026-10-09 08:00:00</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="u-panel">
+    <div class="u-tabs" id="uTabs">
+      <button data-t="pos" class="on">当前持仓(1)</button>
+      <button data-t="open">当前委托(0)</button>
+      <button data-t="hist">历史委托</button>
+      <button data-t="fill">成交记录</button>
+      <button data-t="phist">仓位历史</button>
+    </div>
+    <div data-p="pos">
+      <table class="u-tbl"><thead><tr><th>合约</th><th>持仓量</th><th>开仓均价</th><th>标记价格</th><th>强平价格</th><th>保证金</th><th>未实现盈亏(回报率)</th><th>止盈/止损</th><th>操作</th></tr></thead>
+      <tbody><tr>
+        <td><b>BTCUSDT 永续</b> <span class="side-tag-l">多</span> <span style="color:var(--tx2)">全仓 100x</span></td>
+        <td class="num">8 张</td><td class="num">92,053.77</td><td class="num">118,520.40</td><td class="num">91,593.50</td><td class="num">0.74 USDT</td>
+        <td class="num u-up">+21.17 USDT (+2,875.15%)</td><td style="color:var(--tx3)">-- / --</td>
+        <td><button class="u-btn">市价</button> <button class="u-btn">限价</button></td>
+      </tr></tbody></table>
+    </div>
+    <div data-p="open" hidden><div class="u-empty"><div style="font-size:28px">📄</div>暂无委托</div></div>
+    <div data-p="hist" hidden>
+      <table class="u-tbl"><thead><tr><th>时间</th><th>合约</th><th>订单类型</th><th>方向</th><th>委托价</th><th>成交均价</th><th>委托量</th><th>成交量</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td class="num">2026-10-09 14:32:05</td><td>BTCUSDT 永续</td><td><span class="adl-chip">ADL ⓘ<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><a>了解 ADL →</a><br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span></span></td><td class="side-tag-s">平多</td><td class="num">--</td><td class="num">118,520.40</td><td class="num">100 张</td><td class="num">100 张</td><td>已成交</td></tr>
+        <tr><td class="num">2026-10-09 14:32:05</td><td>BTCUSDT 永续</td><td>限价 · 只减仓</td><td class="side-tag-s">平多</td><td class="num">125,000.00</td><td class="num">--</td><td class="num">20 张</td><td class="num">0 张</td><td>已撤销 <span style="color:var(--adl)">· 因 ADL</span> <span class="u-warn">⚠️ Q7</span></td></tr>
+        <tr><td class="num">2025-12-05 16:22:44</td><td>BTCUSDT 永续</td><td>市价</td><td class="side-tag-l">开多</td><td class="num">--</td><td class="num">92,053.77</td><td class="num">108 张</td><td class="num">108 张</td><td>已成交</td></tr>
+      </tbody></table>
+    </div>
+    <div data-p="fill" hidden>
+      <table class="u-tbl"><thead><tr><th>时间</th><th>合约</th><th>订单类型</th><th>方向</th><th>成交价</th><th>成交量</th><th>手续费</th><th>角色</th><th>已实现盈亏</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td class="num">2026-10-09 14:32:05</td><td>BTCUSDT 永续</td><td><span class="adl-chip">ADL ⓘ<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><a>了解 ADL →</a><br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span></span></td><td class="side-tag-s">平多</td><td class="num">118,520.40</td><td class="num">100 张</td><td class="num">0 USDT <span class="u-warn">⚠️ Q3</span></td><td style="color:var(--tx3)">--</td><td class="num u-up">+264.67 USDT</td></tr>
+        <tr><td class="num">2025-12-05 16:22:44</td><td>BTCUSDT 永续</td><td>市价</td><td class="side-tag-l">开多</td><td class="num">92,053.77</td><td class="num">108 张</td><td class="num">0.4971 USDT</td><td>Taker</td><td class="num">--</td></tr>
+      </tbody></table>
+    </div>
+    <div data-p="phist" hidden>
+      <table class="u-tbl"><thead><tr><th>合约</th><th>平仓类型</th><th>开仓时间</th><th>平仓时间</th><th>开仓均价</th><th>平仓均价</th><th>已平仓量 / 最大持仓</th><th>平仓盈亏</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td><b>BTCUSDT 永续</b> <span class="side-tag-l">多</span></td><td><span class="adl-chip">ADL 部分减仓 ⓘ<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><a>了解 ADL →</a><br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span></span></td><td class="num">2025-12-05 16:22:44</td><td class="num">--</td><td class="num">92,053.77</td><td class="num">118,520.40</td><td class="num">100 / 108 张</td><td class="num u-up">+264.67 USDT</td></tr>
+        <tr><td><b>LTCUSDT 永续</b> <span class="side-tag-s">空</span></td><td><span class="adl-chip">ADL 全部平仓 ⓘ<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><a>了解 ADL →</a><br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span></span></td><td class="num">2025-11-15 20:59:05</td><td class="num">2026-10-08 11:20:47</td><td class="num">106.00</td><td class="num">97.84</td><td class="num">35 / 35 张</td><td class="num u-up">+0.29 USDT</td></tr>
+        <tr><td><b>ETHUSDT 永续</b> <span class="side-tag-l">多</span></td><td>全部平仓</td><td class="num">2026-09-20 10:02:11</td><td class="num">2026-09-28 18:45:30</td><td class="num">4,210.50</td><td class="num">4,388.20</td><td class="num">10 / 10 张</td><td class="num u-up">+17.77 USDT</td></tr>
+      </tbody></table>
+      <div style="padding:8px 16px;color:var(--tx3)">部分减仓时「平仓时间」显示 --，仓位全部平掉后补全（沿用 Binance 仓位历史口径）</div>
+    </div>
   </div>
 </div>
 
@@ -473,6 +607,9 @@ function toast(t,type){
   $('toast').classList.add('show');clearTimeout(tt);tt=setTimeout(()=>$('toast').classList.remove('show'),3500);
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){['cfmMask','adlMask','ordMask'].forEach(hide)}});
+function switchView(b){document.querySelectorAll('.view-switch button').forEach(x=>x.classList.toggle('on',x===b));['viewAdmin','viewUser'].forEach(id=>document.getElementById(id).hidden=id!==b.dataset.v)}
+function uTab(t){document.querySelectorAll('#uTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t);document.getElementById('ntf').classList.remove('show')}
+document.querySelectorAll('#uTabs button').forEach(b=>b.onclick=()=>uTab(b.dataset.t));
 render();
 </script>
 </body>
