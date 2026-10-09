@@ -208,11 +208,11 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
 .lights .tip{display:none;position:absolute;left:-60px;top:20px;width:220px;background:#2b2d34;color:#ddd;font-size:11px;line-height:1.6;padding:8px 10px;border-radius:6px;z-index:5;font-weight:400}
 .lights:hover .tip{display:block}
 .pc .pnl{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
-.pc .k{color:#7d818b;font-size:12px}
+.pc .k{color:#7d818b;font-size:12px;white-space:nowrap}
 .pc .big{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
-.pc .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 6px;margin-bottom:14px}
+.pc .grid3{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px 6px;margin-bottom:14px}
 .pc .grid3>div:nth-child(3n+2){text-align:center}.pc .grid3>div:nth-child(3n){text-align:right}
-.pc .v{font-size:15px;margin-top:3px;font-variant-numeric:tabular-nums}
+.pc .v{white-space:nowrap;font-size:15px;margin-top:3px;font-variant-numeric:tabular-nums}
 .pc .ops{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .pc .ops span{background:#22242a;border-radius:6px;text-align:center;padding:10px 0;font-size:13px}
 .a-up{color:#1db9a3}.a-down{color:#8b63e8}
@@ -245,7 +245,16 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
 .e-note{flex:1;background:#17181c;border:1px solid #2a2c33;border-radius:8px;padding:10px 14px;line-height:1.75;color:#aeb2bb}
 .e-note b{color:#fff;font-weight:500}
 .e-note .warn{color:#f0b44a;background:#2e2410;border:1px dashed #8a6a1f;border-radius:3px;padding:0 5px;font-size:11px;white-space:nowrap}
-.e-row{display:flex;gap:24px;align-items:flex-start}
+.e-row{display:flex;flex-direction:column;gap:20px;align-items:stretch}
+.e-app{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.e-app .e-cap{border:1px solid #2a2c33;border-radius:8px;width:100%}
+.e-pend{background:#17181c;border:1px solid #3a3420;border-radius:8px;padding:12px 16px;margin-bottom:14px}
+.e-pend h4{font-size:13px;color:#fcd535;margin-bottom:8px}
+.e-pend table{border-collapse:collapse;width:100%;font-size:12px}
+.e-pend th,.e-pend td{border:1px solid #2e2a1c;padding:6px 10px;text-align:left;vertical-align:top;color:#d4d6db;line-height:1.6}
+.e-pend th{background:#211f17;color:#c9b77a;font-weight:500;white-space:nowrap}
+.e-pend td:first-child{white-space:nowrap;color:#f0b44a}
+.e-pend .rec{color:#1db9a3}
 .e-web{flex:1;min-width:0;min-height:0;padding:0;border-radius:8px;border:1px solid #2a2c33;overflow:hidden}
 .e-web .u-panel{margin:12px}
 .e-cap{padding:8px 14px;background:#17181c;color:#7d818b;border-bottom:1px solid #2b3139}
@@ -341,6 +350,22 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
   </div>
   <div class="e-note" id="aNote"></div>
  </div>
+ <div class="e-pend">
+  <h4>📋 还需确认的事项（同步自规则台账 v0.6）</h4>
+  <table>
+   <tr><th>编号</th><th>归属</th><th>待确认事项</th><th>当前原型做法 / 推荐</th></tr>
+   <tr><td>P01 · Q3</td><td>资金</td><td>被减仓用户收不收手续费：免收 / 按 Maker / 按 Taker</td><td>原型显示 0；<span class="rec">推荐免收</span>（除 Bybit 外竞品都免收）</td></tr>
+   <tr><td>P02 · Q4</td><td>中台</td><td>哪些仓位可以减：任意浮盈仓位，还是需满足收益率 / 排名门槛（门槛数值待提供）</td><td>原型：未实现盈亏 &gt; 0 才可点</td></tr>
+   <tr><td>P04 · Q7</td><td>中台 + 用户端</td><td>该仓位上的平仓挂单（止盈止损、只减仓单）怎么处理：全部撤销 / 等比缩减 / 只撤超出部分</td><td>原型：全部撤销，状态「已撤销 · 因 ADL」；<span class="rec">推荐全部撤销</span>（Bybit / Gate 做法）</td></tr>
+   <tr><td>P05</td><td>用户端</td><td>站内信已定不发；邮件 / 短信 / App 推送是否也都不发</td><td>原型：不发任何通知</td></tr>
+   <tr><td>P06 · Q9</td><td>风控 / 客服</td><td>是否限定使用场景（如保险基金低于水位才可用）；用户追问「为什么减我」时的客服统一口径</td><td>原型：不限场景</td></tr>
+   <tr><td>P07</td><td>资金</td><td>减仓释放的保证金和已实现盈亏是否立即可用；全仓是否影响其他仓位强平价；逐仓释放的保证金回到哪个账户</td><td>原型：逐仓按比例释放（示意）</td></tr>
+   <tr><td>P08</td><td>中台</td><td>两名运营同时操作同一仓位时，后提交的一方怎么处理</td><td>原型：执行前校验仓位，有变动则拒绝并提示</td></tr>
+   <tr><td>P09</td><td>中台</td><td>张数、币数量各支持几位小数；按合约现有数量精度配置，还是统一写死</td><td>原型：张 2 位，币 = 张精度 × 面值（BTC 6 位）</td></tr>
+   <tr><td>P10</td><td>中台 + 用户端</td><td>现有 ADL 指示灯与手动减仓可能对不上：a. 不处理；b. 只允许减指示灯 ≥ N 格的仓位；c. 中台加「ADL 档位」列仅供参考</td><td>原型：未处理</td></tr>
+   <tr><td>P11</td><td>用户端</td><td>历史记录里 ADL 数量的单位：币 / USDT / 跟随用户单位设置</td><td>原型：Web 用张，App 用 BTC</td></tr>
+  </table>
+ </div>
  <div class="e-row">
   <div class="e-web u-root">
    <div class="e-cap">Web · 合约交易页（仓位区）</div>
@@ -355,6 +380,8 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
    </div>
   </div>
 
+  <div class="e-app">
+  <div class="e-cap">App · 合约页（持仓区）</div>
   <div class="phone">
    <div class="ph-scroll">
     <div class="ph-status"><span>13:40</span><span style="font-size:12px">📶 🔋</span></div>
@@ -370,6 +397,7 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
     <div id="aHBody" style="overflow-y:auto;flex:1"></div>
    </div>
    <div class="ph-nav"><span>⌂<br>首页</span><span>◎<br>探索</span><span class="on">▤<br>合约</span><span>⟳<br>流动池</span><span>▣<br>资产</span></div>
+  </div>
   </div>
  </div>
 </div>
