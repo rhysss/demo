@@ -144,30 +144,10 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
 .u-root{--bg:#0b0e11;--panel:#181a20;--line:#2b3139;--tx:#eaecef;--tx2:#848e9c;--tx3:#5e6673;--yel:#fcd535;--up:#2ebd85;--down:#f6465d;--adl:#f0a020;
   background:var(--bg);color:var(--tx);min-height:100vh;padding:0 0 60px;min-width:1280px;font-size:12px}
 .u-root .num{font-family:'SF Mono',Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:12px}
-.u-note{margin:12px 20px;background:#1e2026;border:1px solid #3a3420;border-radius:6px;padding:12px 16px;line-height:1.8;color:#c9b77a}
-.u-note h4{font-size:13px;color:var(--yel);margin-bottom:4px}
-.u-note table{border-collapse:collapse;width:100%;margin-top:6px}
-.u-note th,.u-note td{border:1px solid #3a3420;padding:5px 8px;text-align:left;vertical-align:top;color:#d9cfa8}
-.u-note th{background:#26241c;font-weight:500;white-space:nowrap}
-.u-note .warn{background:#2e2410;border-color:#8a6a1f;color:#f0b44a}
 .u-top{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--line);background:var(--panel)}
 .u-top .logo{font-weight:700;font-size:16px;color:var(--yel)}
 .u-top .sym{display:flex;align-items:center;gap:18px}
 .u-top .sym b{font-size:16px}
-.bell{position:relative;width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--tx)}
-.bell:hover{background:#2b3139}
-.bell .dot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--down)}
-.ntf{position:absolute;top:44px;right:0;width:380px;background:#1e2329;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none;z-index:30}
-.ntf.show{display:block}
-.ntf-hd{display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}
-.ntf-hd span{font-size:12px;color:var(--tx2);font-weight:400}
-.ntf-item{padding:12px 16px;border-bottom:1px solid var(--line);line-height:1.7;cursor:pointer}
-.ntf-item:hover{background:#2b3139}
-.ntf-item .t{font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:4px}
-.ntf-item .t i{width:6px;height:6px;border-radius:50%;background:var(--down);display:inline-block}
-.ntf-item .c{color:var(--tx2)}
-.ntf-item .c b{color:var(--tx);font-weight:500}
-.ntf-item .time{color:var(--tx3);margin-top:4px}
 .u-panel{margin:12px 20px;background:var(--panel);border-radius:8px}
 .u-tabs{display:flex;gap:24px;padding:0 16px;border-bottom:1px solid var(--line);height:44px;align-items:flex-end}
 .u-tabs button{color:var(--tx2);font-size:14px;padding-bottom:10px;border-bottom:2px solid transparent;font-weight:500}
@@ -241,11 +221,6 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
 .ph-nav{position:absolute;bottom:0;left:0;right:0;height:64px;background:#0e0f13;border-top:1px solid #1f2127;display:flex;justify-content:space-around;align-items:center;font-size:11px;color:#6b6f78}
 .ph-nav span{display:flex;flex-direction:column;align-items:center;gap:3px}
 .ph-nav span.on{color:#fff}
-.ph-push{position:absolute;top:48px;left:10px;right:10px;background:rgba(40,42,48,.97);border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.55;z-index:10;box-shadow:0 6px 20px rgba(0,0,0,.5);cursor:pointer;display:none}
-.ph-push.show{display:block;animation:pushin .4s ease}
-@keyframes pushin{from{transform:translateY(-20px);opacity:0}to{transform:none;opacity:1}}
-.ph-push .h{display:flex;justify-content:space-between;color:#9a9ea7;font-size:11px;margin-bottom:2px}
-.ph-push b{color:#fff}
 /* 历史页 */
 .ph-page{position:absolute;inset:0;background:#0e0f13;z-index:8;display:none;flex-direction:column}
 .ph-page.show{display:flex}
@@ -261,13 +236,25 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
 .hc .kv div{display:flex;justify-content:space-between}
 .hc .kv .k{color:#7d818b}
 .adl-b{font-size:11px;font-weight:600;color:#f0a020;background:rgba(240,160,32,.14);border-radius:2px;padding:0 5px;line-height:17px;margin-left:6px}
+
+.e-top{display:flex;gap:16px;align-items:flex-start;margin-bottom:14px}
+.e-top .st{display:flex;gap:8px;align-items:center;background:#17181c;border:1px solid #2a2c33;border-radius:8px;padding:10px 14px;flex-shrink:0}
+.e-top .st .lbl{color:#fcd535;font-weight:600;margin-right:4px}
+.e-top .st button{padding:7px 12px;border-radius:6px;background:#22242a;color:#c9ccd3;font-size:13px;border:1px solid transparent}
+.e-top .st button.on{border-color:#1db9a3;color:#fff;background:#1a2b29}
+.e-note{flex:1;background:#17181c;border:1px solid #2a2c33;border-radius:8px;padding:10px 14px;line-height:1.75;color:#aeb2bb}
+.e-note b{color:#fff;font-weight:500}
+.e-note .warn{color:#f0b44a;background:#2e2410;border:1px dashed #8a6a1f;border-radius:3px;padding:0 5px;font-size:11px;white-space:nowrap}
+.e-row{display:flex;gap:24px;align-items:flex-start}
+.e-web{flex:1;min-width:0;min-height:0;padding:0;border-radius:8px;border:1px solid #2a2c33;overflow:hidden}
+.e-web .u-panel{margin:12px}
+.e-cap{padding:8px 14px;background:#17181c;color:#7d818b;border-bottom:1px solid #2b3139}
 </style>
 </head>
 <body>
 <div class="view-switch">
   <button class="on" data-v="viewAdmin" onclick="switchView(this)">中台 · 当前持仓列表</button>
-  <button data-v="viewApp" onclick="switchView(this)">用户端 · App 持仓（ADL 前后对比）</button>
-  <button data-v="viewUser" onclick="switchView(this)">用户端 · Web 合约（被 ADL 后）</button>
+  <button data-v="viewEnd" onclick="switchView(this)">用户端 · App + Web（ADL 前后对比）</button>
 </div>
 <div id="viewAdmin">
 <div class="page">
@@ -280,10 +267,10 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
         <tr><td class="tag-add">新增</td><td>操作列「ADL减仓」按钮</td><td>和「平仓」并列。仅浮盈仓位（未实现盈亏 &gt; 0）可点，亏损仓位置灰</td><td><span class="warn">⚠️ Q4 可减门槛待确认</span></td></tr>
         <tr><td class="tag-add">新增</td><td>ADL 减仓弹窗</td><td>输入减仓数量（张）→ 预览成交价 / 预计已实现盈亏 / 剩余持仓 → 填写减仓原因 → 二次确认 → 执行</td><td>✅ Q1 不产生对手仓位，盈亏计入平台账户<br>✅ Q2 按执行时标记价成交<br><span class="warn">⚠️ Q3 手续费</span> <span class="warn">⚠️ Q9 原因必填</span></td></tr>
         <tr><td class="tag-mod">调整</td><td>「未实现盈亏」「回报率」列</td><td>支持点表头排序，方便运营找浮盈高的仓位</td><td>—</td></tr>
-        <tr><td class="tag-mod">调整</td><td>「持仓量/可平量」列（已有）</td><td>表头可切换单位：张 / 币（币 = 张 × 合约面值，如 BTCUSDT 1 张 = 0.0001 BTC）；「自动减仓量」列和订单明细的成交数量跟随同一单位</td><td>—</td></tr>
+        <tr><td class="tag-mod">调整</td><td>「持仓量/可平量」列（已有）</td><td>表头可切换单位：张 / 币（币 = 张 × 合约面值，如 BTCUSDT 1 张 = 0.0001 BTC）；「自动减仓量」列跟随同一单位</td><td>—</td></tr>
         <tr><td class="tag-add">新增</td><td>ADL 弹窗 · 减仓数量</td><td>输入框可切换 张 / 币，默认跟随列表当前单位；切换时自动换算已输入的数值；两种单位都支持小数</td><td><span class="warn">⚠️ 小数位数待确认（原型暂按张 2 位，币 = 张精度 × 面值）</span></td></tr>
         <tr><td class="tag-mod">调整</td><td>「自动减仓量」列（已有）</td><td>记录该仓位累计被 ADL 减掉的数量，执行成功后实时累加</td><td>—</td></tr>
-        <tr><td class="tag-mod">调整</td><td>订单 ID 明细弹窗</td><td>新增「订单类型」（开仓 / 平仓 / ADL减仓）和「操作人」两列，ADL 记录可追溯</td><td>✅ Q5 单人操作，无需复核</td></tr>
+        <tr><td class="tag-mod">调整</td><td>订单 ID 明细弹窗</td><td>只新增「操作人」一列：ADL 减仓记录显示执行的运营账号，用户自己下的单显示「--」；其余列不变</td><td>✅ Q5 单人操作，无需复核</td></tr>
         <tr><td class="tag-mod">调整</td><td>可减数量上限</td><td>按「持仓量」而非「可平量」：超出可平量的部分需先处理该仓位的平仓挂单</td><td><span class="warn">⚠️ Q7 挂单处理方式</span></td></tr>
       </table>
     </div>
@@ -344,26 +331,27 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
 
 </div>
 
-<div id="viewApp" class="a-root" hidden>
- <div class="a-wrap">
-  <div class="a-ctrl">
-   <div class="box">
-    <h4>🎛 切换状态</h4>
-    <div class="st" id="aSt">
-     <button data-s="before" class="on">① ADL 前（持有 0.0108 BTC，挂有止盈单）</button>
-     <button data-s="partial">② 部分 ADL 后（被减 0.01 BTC，剩 0.0008 BTC）</button>
-     <button data-s="full">③ 全部 ADL 后（仓位全部被减）</button>
-    </div>
+<div id="viewEnd" class="a-root" hidden>
+ <div class="e-top">
+  <div class="st" id="aSt">
+   <span class="lbl">🎛 状态</span>
+   <button data-s="before" class="on">① ADL 前</button>
+   <button data-s="partial">② 部分 ADL 后（减 100 张 / 0.01 BTC）</button>
+   <button data-s="full">③ 全部 ADL 后</button>
+  </div>
+  <div class="e-note" id="aNote"></div>
+ </div>
+ <div class="e-row">
+  <div class="e-web u-root">
+   <div class="e-cap">Web · 合约交易页（仓位区）</div>
+   <div class="u-top">
+    <div class="sym"><span class="logo">合约</span><b>BTCUSDT 永续</b><span class="num u-up">88,433.72</span><span style="color:var(--tx2)">标记价格 <span class="num" style="color:var(--tx)">88,433.72</span></span></div>
    </div>
-   <div class="box" id="aNote"></div>
-   <div class="box">
-    <h4>📌 依据</h4>
-    <ul>
-     <li>界面按现有 App 持仓页复刻，<b>仓位区不新增任何 ADL 元素</b>（R08）</li>
-     <li>盘口 / 下单区本次无改动，用占位块表示</li>
-     <li>点右上角 📋 进入历史页，查看 ADL 标签（历史页结构为示意，以现有历史页为准）</li>
-     <li>数值为演示数据：标记价调成 88,433.72，让仓位处于浮盈状态（只有浮盈仓位会被 ADL）</li>
-    </ul>
+   <div class="u-panel">
+    <div class="u-tabs" id="uTabs">
+     <button data-t="pos" class="on">当前持仓</button><button data-t="open">当前委托</button><button data-t="hist">历史委托</button><button data-t="fill">成交记录</button><button data-t="phist">仓位历史</button>
+    </div>
+    <div id="uBody" style="overflow-x:auto"></div>
    </div>
   </div>
 
@@ -375,10 +363,6 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
     <div class="ph-tabs"><span class="on" id="aPosTab">持仓 (1)</span><span id="aOrdTab">订单 (1)</span><span class="hist" onclick="aHist(true)">📋</span></div>
     <div id="aBody"></div>
    </div>
-   <div class="ph-push" id="aPush" onclick="aHist(true,'fill')">
-    <div class="h"><span>🔔 站内信</span><span>刚刚</span></div>
-    <div id="aPushTxt"></div>
-   </div>
    <div class="ph-page" id="aHist">
     <div class="ph-status"><span>13:41</span><span style="font-size:12px">📶 🔋</span></div>
     <div class="bar"><span class="back" onclick="aHist(false)">‹</span>历史记录</div>
@@ -388,81 +372,6 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
    <div class="ph-nav"><span>⌂<br>首页</span><span>◎<br>探索</span><span class="on">▤<br>合约</span><span>⟳<br>流动池</span><span>▣<br>资产</span></div>
   </div>
  </div>
-</div>
-
-<div id="viewUser" class="u-root" hidden>
-  <div class="u-note">
-    <h4>📌 用户端展示说明（依据：ADL前端展示竞品调研.md）</h4>
-    <table>
-      <tr><th>触点</th><th>本方案</th><th>竞品依据</th><th>待确认</th></tr>
-      <tr><td>通知</td><td>站内信 + 铃铛红点；内容：合约、方向、减仓张数、成交价、已实现盈亏、手续费、剩余持仓、挂单处理结果</td><td>五家都会事后通知；OKX / Bybit 还发短信和邮件，模板原文均未公开</td><td><span class="warn">⚠️ 是否加发邮件 / 短信 / App 推送</span></td></tr>
-      <tr><td>当前持仓</td><td>✅ 不加任何 ADL 标记：部分减仓只是数量变少，全部减仓则仓位从列表消失（已确认）</td><td>五家均未见部分减仓后的剩余仓位标记</td><td><span class="warn">⚠️ Q8 事前 ADL 指示灯本期不做（建议）</span></td></tr>
-      <tr><td>历史委托 / 成交记录</td><td>ADL 产生独立的系统订单，订单类型显示「ADL」标签，悬浮显示说明</td><td>Binance / OKX / Bybit / Bitget 均把 ADL 和普通平仓、强平分开标识</td><td>—</td></tr>
-      <tr><td>仓位历史</td><td>平仓类型区分「ADL 部分减仓 / ADL 全部平仓」</td><td>OKX 仓位历史类型 5、6</td><td>—</td></tr>
-      <tr><td>挂单</td><td>演示为撤销该仓位的全部平仓 / 止盈止损委托，状态「已撤销 · 因 ADL」</td><td>Bybit / Gate 明确撤销被 ADL 用户的所有活动委托</td><td><span class="warn">⚠️ Q7</span></td></tr>
-      <tr><td>手续费</td><td>显示 0</td><td>除 Bybit 外都免收</td><td><span class="warn">⚠️ Q3</span></td></tr>
-    </table>
-  </div>
-
-  <div class="u-top">
-    <div class="sym"><span class="logo">合约</span><b>BTCUSDT 永续</b><span class="num u-up">118,520.40</span><span style="color:var(--tx2)">标记价格 <span class="num" style="color:var(--tx)">118,520.40</span></span></div>
-    <div style="position:relative">
-      <button class="bell" onclick="document.getElementById('ntf').classList.toggle('show');this.querySelector('.dot')&&this.querySelector('.dot').remove()">🔔<span class="dot"></span></button>
-      <div class="ntf" id="ntf">
-        <div class="ntf-hd">通知<span>全部已读</span></div>
-        <div class="ntf-item" onclick="uTab('hist')">
-          <div class="t"><i></i>自动减仓（ADL）通知</div>
-          <div class="c">您的 <b>BTCUSDT 永续 多仓</b> 已被自动减仓 <b>100 张</b>，成交价 <b>118,520.40 USDT</b>（标记价格），已实现盈亏 <b class="u-up">+264.67 USDT</b>，手续费 0。剩余持仓 <b>8 张</b>。该仓位的平仓委托已撤销（20 张）。<span class="u-link">查看详情 →</span></div>
-          <div class="time">2026-10-09 14:32:05</div>
-        </div>
-        <div class="ntf-item"><div class="t">资金费率结算</div><div class="c">BTCUSDT 永续资金费用 -0.0312 USDT</div><div class="time">2026-10-09 08:00:00</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="u-panel">
-    <div class="u-tabs" id="uTabs">
-      <button data-t="pos" class="on">当前持仓(1)</button>
-      <button data-t="open">当前委托(0)</button>
-      <button data-t="hist">历史委托</button>
-      <button data-t="fill">成交记录</button>
-      <button data-t="phist">仓位历史</button>
-    </div>
-    <div data-p="pos">
-      <table class="u-tbl"><thead><tr><th>合约</th><th>持仓量</th><th>开仓均价</th><th>标记价格</th><th>强平价格</th><th>保证金</th><th>未实现盈亏(回报率)</th><th>止盈/止损</th><th>操作</th></tr></thead>
-      <tbody><tr>
-        <td><b>BTCUSDT 永续</b> <span class="side-tag-l">多</span> <span style="color:var(--tx2)">全仓 100x</span></td>
-        <td class="num">8 张</td><td class="num">92,053.77</td><td class="num">118,520.40</td><td class="num">91,593.50</td><td class="num">0.74 USDT</td>
-        <td class="num u-up">+21.17 USDT (+2,875.15%)</td><td style="color:var(--tx3)">-- / --</td>
-        <td><button class="u-btn">市价</button> <button class="u-btn">限价</button></td>
-      </tr></tbody></table>
-    </div>
-    <div data-p="open" hidden><div class="u-empty"><div style="font-size:28px">📄</div>暂无委托</div></div>
-    <div data-p="hist" hidden>
-      <table class="u-tbl"><thead><tr><th>时间</th><th>合约</th><th>订单类型</th><th>方向</th><th>委托价</th><th>成交均价</th><th>委托量</th><th>成交量</th><th>状态</th></tr></thead>
-      <tbody>
-        <tr class="hl"><td class="num">2026-10-09 14:32:05</td><td>BTCUSDT 永续</td><td><span class="adl-chip">ADL ⓘ<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><a>了解 ADL →</a><br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span></span></td><td class="side-tag-s">平多</td><td class="num">--</td><td class="num">118,520.40</td><td class="num">100 张</td><td class="num">100 张</td><td>已成交</td></tr>
-        <tr><td class="num">2026-10-09 14:32:05</td><td>BTCUSDT 永续</td><td>限价 · 只减仓</td><td class="side-tag-s">平多</td><td class="num">125,000.00</td><td class="num">--</td><td class="num">20 张</td><td class="num">0 张</td><td>已撤销 <span style="color:var(--adl)">· 因 ADL</span> <span class="u-warn">⚠️ Q7</span></td></tr>
-        <tr><td class="num">2025-12-05 16:22:44</td><td>BTCUSDT 永续</td><td>市价</td><td class="side-tag-l">开多</td><td class="num">--</td><td class="num">92,053.77</td><td class="num">108 张</td><td class="num">108 张</td><td>已成交</td></tr>
-      </tbody></table>
-    </div>
-    <div data-p="fill" hidden>
-      <table class="u-tbl"><thead><tr><th>时间</th><th>合约</th><th>订单类型</th><th>方向</th><th>成交价</th><th>成交量</th><th>手续费</th><th>角色</th><th>已实现盈亏</th></tr></thead>
-      <tbody>
-        <tr class="hl"><td class="num">2026-10-09 14:32:05</td><td>BTCUSDT 永续</td><td><span class="adl-chip">ADL ⓘ<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><a>了解 ADL →</a><br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span></span></td><td class="side-tag-s">平多</td><td class="num">118,520.40</td><td class="num">100 张</td><td class="num">0 USDT <span class="u-warn">⚠️ Q3</span></td><td style="color:var(--tx3)">--</td><td class="num u-up">+264.67 USDT</td></tr>
-        <tr><td class="num">2025-12-05 16:22:44</td><td>BTCUSDT 永续</td><td>市价</td><td class="side-tag-l">开多</td><td class="num">92,053.77</td><td class="num">108 张</td><td class="num">0.4971 USDT</td><td>Taker</td><td class="num">--</td></tr>
-      </tbody></table>
-    </div>
-    <div data-p="phist" hidden>
-      <table class="u-tbl"><thead><tr><th>合约</th><th>平仓类型</th><th>开仓时间</th><th>平仓时间</th><th>开仓均价</th><th>平仓均价</th><th>已平仓量 / 最大持仓</th><th>平仓盈亏</th></tr></thead>
-      <tbody>
-        <tr class="hl"><td><b>BTCUSDT 永续</b> <span class="side-tag-l">多</span></td><td><span class="adl-chip">ADL 部分减仓 ⓘ<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><a>了解 ADL →</a><br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span></span></td><td class="num">2025-12-05 16:22:44</td><td class="num">--</td><td class="num">92,053.77</td><td class="num">118,520.40</td><td class="num">100 / 108 张</td><td class="num u-up">+264.67 USDT</td></tr>
-        <tr><td><b>LTCUSDT 永续</b> <span class="side-tag-s">空</span></td><td><span class="adl-chip">ADL 全部平仓 ⓘ<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><a>了解 ADL →</a><br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span></span></td><td class="num">2025-11-15 20:59:05</td><td class="num">2026-10-08 11:20:47</td><td class="num">106.00</td><td class="num">97.84</td><td class="num">35 / 35 张</td><td class="num u-up">+0.29 USDT</td></tr>
-        <tr><td><b>ETHUSDT 永续</b> <span class="side-tag-l">多</span></td><td>全部平仓</td><td class="num">2026-09-20 10:02:11</td><td class="num">2026-09-28 18:45:30</td><td class="num">4,210.50</td><td class="num">4,388.20</td><td class="num">10 / 10 张</td><td class="num u-up">+17.77 USDT</td></tr>
-      </tbody></table>
-      <div style="padding:8px 16px;color:var(--tx3)">部分减仓时「平仓时间」显示 --，仓位全部平掉后补全（沿用 Binance 仓位历史口径）</div>
-    </div>
-  </div>
 </div>
 
 <!-- ADL 减仓弹窗 -->
@@ -520,7 +429,7 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
     <div class="m-bd">
       <button class="btn btn-teal" style="margin-bottom:14px">导出</button>
       <table class="sub-tbl">
-        <thead><tr><th>序号</th><th>持仓 ID</th><th>订单 ID</th><th>下单方向</th><th>订单类型<span class="new-dot">新增</span></th><th>成交数量</th><th>价格</th><th>是否成交</th><th>成交均价</th><th>操作人<span class="new-dot">新增</span></th><th>时间</th></tr></thead>
+        <thead><tr><th>序号</th><th>持仓 ID</th><th>订单 ID</th><th>下单方向</th><th>成交数量</th><th>价格</th><th>是否成交</th><th>成交均价</th><th>操作人<span class="new-dot">新增</span></th></tr></thead>
         <tbody id="ordBody"></tbody>
       </table>
       <div class="pager"><span id="ordTotal"></span><span>20条/页</span></div>
@@ -557,7 +466,7 @@ let rows=[
   {uid:'11252067',sym:'XRPUSDT',pid:'526074656436797696',open:'2025-08-14 07:33:20',mm:'全仓',side:'L',entry:3.21,qty:1,avail:1,lev:50,rpnl:-164.3614,adl:0,acct:'散户'},
   {uid:'11255198',sym:'LTCUSDT',pid:'559860531846988032',open:'2025-11-15 20:59:05',mm:'全仓',side:'S',entry:106.00,qty:35,avail:35,lev:10,rpnl:0.0566,adl:0,acct:'合伙人'},
 ];
-rows.forEach((r,i)=>{r.oid='查看详情';r.upd='2026-10-09 08:00:00';r.orders=[{oid:String(BigInt(r.pid)+7n),dir:r.side==='L'?'开多':'开空',type:'开仓',qty:r.qty,price:r.entry,avg:r.entry,op:'用户',time:r.open}]});
+rows.forEach((r,i)=>{r.oid='查看详情';r.upd='2026-10-09 08:00:00';r.orders=[{oid:String(BigInt(r.pid)+7n),dir:r.side==='L'?'买入开多':'卖出开空',type:'开仓',qty:r.qty,price:r.entry,avg:r.entry,op:'--',time:r.open}]});
 
 let sortK=null,sortDir=-1,view=rows.slice(),curRow=null;
 
@@ -707,7 +616,7 @@ function toConfirm(){
   const {n}=parseQty();
   if($('reason').value.trim().length<5){$('reasonErr').hidden=false;$('reason').focus();return}
   const r=curRow,c=calc(r),pd=PD[r.sym];
-  $('cfmTxt').innerHTML=`即将对 UID <b>${r.uid}</b> 的 <b>${r.sym} ${r.side==='L'?'多仓':'空仓'}</b> 执行 ADL 减仓 <b>${qb(r,n)}</b>${n===r.qty?'（<b>全部平仓</b>）':''}，按执行时标记价成交（当前 ${fmt(c.mark,pd)}）。<br><br>· 操作执行后<b>不可撤销</b><br>· 用户端将以「ADL 自动减仓」展示，并收到通知<br>· 操作人 ${OPERATOR} 将记入订单明细`;
+  $('cfmTxt').innerHTML=`即将对 UID <b>${r.uid}</b> 的 <b>${r.sym} ${r.side==='L'?'多仓':'空仓'}</b> 执行 ADL 减仓 <b>${qb(r,n)}</b>${n===r.qty?'（<b>全部平仓</b>）':''}，按执行时标记价成交（当前 ${fmt(c.mark,pd)}）。<br><br>· 操作执行后<b>不可撤销</b><br>· 用户端在历史委托 / 成交记录 / 仓位历史中以「ADL」标签展示<br>· 操作人 ${OPERATOR} 将记入订单明细`;
   $('cfmBtn').disabled=false;$('cfmBtn').innerHTML='确认执行';
   show('cfmMask');
 }
@@ -734,7 +643,7 @@ function execute(){
     }
     const c=calc(r),s=SIZE[r.sym],dir=r.side==='L'?1:-1,pnl=dir*(c.mark-r.entry)*n*s;
     const cancelled=rz(Math.max(0,n-r.avail));
-    r.orders.push({oid:String(BigInt(r.pid)+BigInt(r.orders.length*13+101)),dir:r.side==='L'?'平多':'平空',type:'ADL减仓',qty:n,price:c.mark,avg:c.mark,op:OPERATOR,time:'2026-10-09 '+new Date().toTimeString().slice(0,8)});
+    r.orders.push({oid:String(BigInt(r.pid)+BigInt(r.orders.length*13+101)),dir:r.side==='L'?'卖出平多':'买入平空',type:'ADL减仓',qty:n,price:c.mark,avg:c.mark,op:OPERATOR,time:'2026-10-09 '+new Date().toTimeString().slice(0,8)});
     r.qty=rz(r.qty-n);r.avail=rz(Math.max(0,Math.min(r.avail,r.qty)));r.adl=rz(r.adl+n);r.rpnl+=pnl;r.upd='2026-10-09 '+new Date().toTimeString().slice(0,8);
     const full=r.qty<=0;
     if(full){rows=rows.filter(x=>x!==r);view=view.filter(x=>x!==r)}
@@ -749,10 +658,9 @@ const allOrders={};rows.forEach(r=>allOrders[r.pid]=r);
 function openOrders(pid){
   const r=allOrders[pid];
   $('ordBody').innerHTML=r.orders.map((o,i)=>`<tr>
-    <td>${i+1}</td><td class="num">${pid}</td><td class="num">${o.oid}</td><td>${o.dir}</td>
-    <td>${o.type==='ADL减仓'?'<span class="adl-tag">ADL减仓</span>':o.type}</td>
-    <td class="num">${qt(r,o.qty,listUnit)}</td><td class="num">${fmt(o.price,PD[r.sym])}</td><td>是</td><td class="num">${fmt(o.avg,PD[r.sym])}</td>
-    <td>${o.op}</td><td class="num">${o.time}</td></tr>`).join('');
+    <td>${i+1}</td><td class="num">${pid}</td><td class="num">${o.oid}</td><td style="color:${o.dir.startsWith('买入')?'#16b59a':'#8a5cf6'}">${o.dir}</td>
+    <td class="num">${fmt(o.qty,2)}</td><td class="num">${fmt(o.price,PD[r.sym])}</td><td>全部成交</td><td class="num">${fmt(o.avg,PD[r.sym])}</td>
+    <td>${o.op}</td></tr>`).join('');
   $('ordTotal').textContent=`共 ${r.orders.length} 条记录`;
   show('ordMask');
 }
@@ -764,29 +672,30 @@ function toast(t,type){
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){['cfmMask','adlMask','ordMask'].forEach(hide)}});
 
-/* ---------- 用户端 App ---------- */
-const A={entry:82510.63,mark:88433.72,lev:10,mmr:0.005};
-const AS={before:{btc:0.0108,light:4,ord:1},partial:{btc:0.0008,light:2,ord:0},full:{btc:0,light:0,ord:0}};
-const ADL_BTC=0.01;
-let aState='before',aHTab='ord';
+/* ---------- 用户端 App + Web ---------- */
+const A={entry:82510.63,mark:88433.72,lev:10,mmr:0.005,cs:0.0001};
+const AS={before:{z:108,light:4,ord:1},partial:{z:8,light:2,ord:0},full:{z:0,light:0,ord:0}};
+const ADLZ={partial:100,full:108};
+const TIP_U='<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span>';
+let aState='before',aHTab='ord',uT='pos';
 const af=(n,d=2)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const bz=z=>+(z*A.cs).toFixed(6);
+function pm(z){const q=bz(z),val=q*A.mark,margin=A.entry*q/A.lev,up=(A.mark-A.entry)*q;return{q,val,margin,up,roe:up/margin*100,liq:A.entry*(1-1/A.lev+A.mmr),mr:(margin+up)/(val*A.mmr)*100}}
 function aCard(st){
-  const q=st.btc,val=q*A.mark,margin=A.entry*q/A.lev,up=(A.mark-A.entry)*q,roe=up/margin*100;
-  const liq=A.entry*(1-1/A.lev+A.mmr),mr=(margin+up)/(val*A.mmr)*100;
-  const ch=aState==='partial'?' chg-flag':'';
+  const m=pm(st.z),ch=aState==='partial'?' chg-flag':'';
   const lt=[1,2,3,4,5].map(i=>`<b class="${i<=st.light?'on':''}"></b>`).join('');
   return `<div class="ph-row"><span class="ph-tog"><i></i>隐藏其它合约</span><span class="ph-btn">全部平仓</span></div>
   <div class="pc">
    <div class="t"><span>BTCUSDT →|</span><span style="font-size:16px;color:#aaa">⇪</span></div>
    <div class="tags"><span class="tg tg-l">多</span><span class="tg tg-m">逐仓</span><span class="tg tg-x">10x</span><span class="lights${ch}">${lt}<span class="tip">现有 ADL 指示灯，按现有排名逻辑计算。部分减仓后仓位重新参与排名，亮灯数可能变化（示意）</span></span></div>
-   <div class="pnl"><div><div class="k">未实现盈亏 (USDT)</div><div class="big a-up${ch}">+${af(up,6)}</div></div><div style="text-align:right"><div class="k">收益率</div><div class="big a-up" style="font-size:20px">+${af(roe)}%</div></div></div>
+   <div class="pnl"><div><div class="k">未实现盈亏 (USDT)</div><div class="big a-up${ch}">+${af(m.up,6)}</div></div><div style="text-align:right"><div class="k">收益率</div><div class="big a-up" style="font-size:20px">+${af(m.roe)}%</div></div></div>
    <div class="grid3">
-    <div><div class="k">持仓量/总量 (USDT)</div><div class="v${ch}">${af(val)} / ${af(val)}</div></div>
+    <div><div class="k">持仓量/总量 (USDT)</div><div class="v${ch}">${af(m.val)} / ${af(m.val)}</div></div>
     <div><div class="k">开仓均价</div><div class="v">${af(A.entry)}</div></div>
     <div><div class="k">标记价格</div><div class="v">${af(A.mark)}</div></div>
-    <div><div class="k">保证金 (USDT)</div><div class="v${ch}">${af(margin)} ⊕</div></div>
-    <div><div class="k">预估强平价 ⓘ</div><div class="v">${af(liq)}</div></div>
-    <div><div class="k">保证金率</div><div class="v">${af(mr)}%</div></div>
+    <div><div class="k">保证金 (USDT)</div><div class="v${ch}">${af(m.margin)} ⊕</div></div>
+    <div><div class="k">预估强平价 ⓘ</div><div class="v">${af(m.liq)}</div></div>
+    <div><div class="k">保证金率</div><div class="v">${af(m.mr)}%</div></div>
    </div>
    <div class="ops"><span>止盈/止损</span><span>反手开仓</span><span>平仓</span></div>
   </div>`;
@@ -794,48 +703,57 @@ function aCard(st){
 function aRender(){
   const st=AS[aState];
   document.querySelectorAll('#aSt button').forEach(b=>b.classList.toggle('on',b.dataset.s===aState));
-  $('aPosTab').textContent=`持仓 (${st.btc?1:0})`;$('aOrdTab').textContent=`订单 (${st.ord})`;
-  $('aBody').innerHTML=st.btc?aCard(st):`<div class="ph-row"><span class="ph-tog"><i></i>隐藏其它合约</span></div><div class="ph-empty">📄<br><br>暂无持仓</div>`;
-  const pnl=(A.mark-A.entry)*(aState==='full'?0.0108:ADL_BTC);
-  const qty=aState==='full'?0.0108:ADL_BTC;
-  $('aPushTxt').innerHTML=`<b>自动减仓（ADL）通知</b><br>您的 BTCUSDT 多仓已被自动减仓 <b>${qty} BTC</b>，成交价 <b>${af(A.mark)}</b>（标记价格），已实现盈亏 <b style="color:#1db9a3">+${af(pnl)} USDT</b>，手续费 0。${aState==='full'?'仓位已全部平仓。':'剩余持仓 0.0008 BTC。'}该仓位止盈委托已撤销。`;
-  const push=$('aPush');push.classList.remove('show');if(aState!=='before'){void push.offsetWidth;push.classList.add('show')}
+  $('aPosTab').textContent=`持仓 (${st.z?1:0})`;$('aOrdTab').textContent=`订单 (${st.ord})`;
+  $('aBody').innerHTML=st.z?aCard(st):`<div class="ph-row"><span class="ph-tog"><i></i>隐藏其它合约</span></div><div class="ph-empty">📄<br><br>暂无持仓</div>`;
   const notes={
-   before:`<h4>① ADL 前</h4><ul><li>持仓 1 个，订单 1 个（止盈单）</li><li>ADL 指示灯亮 4 格（示意）</li></ul>`,
-   partial:`<h4>② 部分 ADL 后：仓位区变化（虚线框为变化项）</h4><ul>
-     <li><b>持仓量/总量</b>：955.08 → 70.75 USDT</li>
-     <li><b>未实现盈亏</b>：只剩余仓位那部分</li>
-     <li><b>保证金</b>：逐仓按比例释放 <span class="warn">⚠️ P07</span></li>
-     <li><b>指示灯</b>：重新排名，亮灯数可能变化</li>
-     <li>开仓均价、收益率、预估强平价、保证金率<b>不变</b></li>
-     <li><b>订单 (1) → (0)</b>：止盈单被撤 <span class="warn">⚠️ Q7</span></li>
-     <li>站内信推送，点击跳转到成交记录</li>
-     <li>仓位卡片上<b>没有任何 ADL 标记</b>（R08）</li></ul>`,
-   full:`<h4>③ 全部 ADL 后</h4><ul><li>持仓 (0)，卡片消失，显示「暂无持仓」</li><li>订单 (0)：止盈单被撤 <span class="warn">⚠️ Q7</span></li><li>只能通过站内信和历史页看到 ADL 记录</li></ul>`};
+   before:`<b>① ADL 前</b>：持有 108 张（0.0108 BTC，逐仓 10x），挂 1 张止盈单（触发价 95,000）。App 指示灯亮 4 格（示意）。`,
+   partial:`<b>② 部分 ADL 后</b>（App 中虚线框为变化项）：持仓量 108 → 8 张（955.08 → 70.75 USDT）；未实现盈亏只剩剩余部分；逐仓保证金按比例释放 <span class="warn">⚠️ P07</span>；指示灯重新排名；止盈单被撤，委托 1 → 0 <span class="warn">⚠️ Q7</span>。开仓均价、收益率、强平价、保证金率不变。<b>仓位区不加任何 ADL 标记</b>（R08），<b>不发站内信</b>（R09）；用户只能在历史委托 / 成交记录 / 仓位历史中看到「ADL」标签。`,
+   full:`<b>③ 全部 ADL 后</b>：仓位从当前持仓消失（Web / App 都显示「暂无持仓」）；止盈单被撤 <span class="warn">⚠️ Q7</span>；ADL 记录只出现在历史委托 / 成交记录 / 仓位历史中。`};
   $('aNote').innerHTML=notes[aState];
-  aHRender();
+  aHRender();uRender();
 }
-function aHist(show,tab){ if(tab){aHTab=tab} $('aHist').classList.toggle('show',show); $('aPush').classList.remove('show'); aHRender() }
+function aHist(show,tab){if(tab)aHTab=tab;$('aHist').classList.toggle('show',show);aHRender()}
 function aHRender(){
   document.querySelectorAll('#aHTabs span').forEach(s=>s.classList.toggle('on',s.dataset.h===aHTab));
-  const done=aState!=='before',qty=aState==='full'?0.0108:ADL_BTC,pnl=(A.mark-A.entry)*qty;
+  const done=aState!=='before',z=ADLZ[aState]||0,q=bz(z),pnl=(A.mark-A.entry)*q;
   const adlOrd=`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#8b63e8;font-weight:400;font-size:12px">平多</span><span class="adl-b">ADL</span></span><span class="st">已成交</span></div>
-    <div class="kv"><div><span class="k">委托价</span><span>--</span></div><div><span class="k">成交均价</span><span>${af(A.mark)}</span></div><div><span class="k">数量 (BTC)</span><span>${qty}</span></div><div><span class="k">手续费</span><span>0 USDT</span></div><div><span class="k">时间</span><span>10-09 13:40:12</span></div></div></div>`;
+    <div class="kv"><div><span class="k">委托价</span><span>--</span></div><div><span class="k">成交均价</span><span>${af(A.mark)}</span></div><div><span class="k">数量 (BTC)</span><span>${q}</span></div><div><span class="k">手续费</span><span>0 USDT</span></div><div><span class="k">时间</span><span>10-09 13:40:12</span></div></div></div>`;
   const tpCancel=`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#8b63e8;font-weight:400;font-size:12px">止盈 · 平多</span></span><span class="st">已撤销 · 因 ADL</span></div>
     <div class="kv"><div><span class="k">触发价</span><span>95,000.00</span></div><div><span class="k">数量 (BTC)</span><span>0.0108</span></div><div><span class="k">时间</span><span>10-09 13:40:12</span></div></div></div>`;
   const openOrd=`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#1db9a3;font-weight:400;font-size:12px">开多</span></span><span class="st">已成交</span></div>
     <div class="kv"><div><span class="k">委托类型</span><span>市价</span></div><div><span class="k">成交均价</span><span>${af(A.entry)}</span></div><div><span class="k">数量 (BTC)</span><span>0.0108</span></div><div><span class="k">时间</span><span>10-02 09:15:40</span></div></div></div>`;
   const posH=done?`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#1db9a3;font-weight:400;font-size:12px">多 · 逐仓 10x</span><span class="adl-b">${aState==='full'?'ADL 全部平仓':'ADL 部分减仓'}</span></span></div>
-    <div class="kv"><div><span class="k">开仓均价</span><span>${af(A.entry)}</span></div><div><span class="k">平仓均价</span><span>${af(A.mark)}</span></div><div><span class="k">已平 / 最大持仓</span><span>${qty} / 0.0108</span></div><div><span class="k">平仓盈亏</span><span class="a-up">+${af(pnl)}</span></div><div><span class="k">平仓时间</span><span>${aState==='full'?'10-09 13:40:12':'--'}</span></div></div></div>`:'';
-  const H={ord:(done?adlOrd+tpCancel:'')+openOrd, fill:(done?adlOrd.replace('已成交','<span class="a-up">+'+af(pnl)+' USDT</span>'):'')+openOrd.replace('已成交',''), pos:posH||'<div class="ph-empty">暂无仓位历史</div>'};
+    <div class="kv"><div><span class="k">开仓均价</span><span>${af(A.entry)}</span></div><div><span class="k">平仓均价</span><span>${af(A.mark)}</span></div><div><span class="k">已平 / 最大持仓</span><span>${q} / 0.0108</span></div><div><span class="k">平仓盈亏</span><span class="a-up">+${af(pnl)}</span></div><div><span class="k">平仓时间</span><span>${aState==='full'?'10-09 13:40:12':'--'}</span></div></div></div>`:'';
+  const H={ord:(done?adlOrd+tpCancel:'')+openOrd,fill:(done?adlOrd.replace('已成交','<span class="a-up">+'+af(pnl)+' USDT</span>'):'')+openOrd.replace('已成交',''),pos:posH||'<div class="ph-empty">暂无仓位历史</div>'};
   $('aHBody').innerHTML=H[aHTab];
+}
+function uRender(){
+  const st=AS[aState],done=aState!=='before',z=ADLZ[aState]||0,pnl=(A.mark-A.entry)*bz(z),m=pm(st.z);
+  document.querySelectorAll('#uTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.t===uT);if(b.dataset.t==='pos')b.textContent=`当前持仓(${st.z?1:0})`;if(b.dataset.t==='open')b.textContent=`当前委托(${st.ord})`});
+  const chip=t=>`<span class="adl-chip">${t} ⓘ${TIP_U}</span>`;
+  const empty=t=>`<div class="u-empty"><div style="font-size:28px">📄</div>${t}</div>`;
+  let h='';
+  if(uT==='pos'){h=st.z?`<table class="u-tbl"><thead><tr><th>合约</th><th>持仓量</th><th>开仓均价</th><th>标记价格</th><th>强平价格</th><th>保证金</th><th>未实现盈亏(回报率)</th><th>止盈/止损</th><th>操作</th></tr></thead><tbody><tr>
+     <td><b>BTCUSDT 永续</b> <span class="side-tag-l">多</span> <span style="color:var(--tx2)">逐仓 10x</span></td><td class="num">${st.z} 张</td><td class="num">${af(A.entry)}</td><td class="num">${af(A.mark)}</td><td class="num">${af(m.liq)}</td><td class="num">${af(m.margin)} USDT</td>
+     <td class="num u-up">+${af(m.up)} USDT (+${af(m.roe)}%)</td><td class="num" style="color:${st.ord?'var(--tx)':'var(--tx3)'}">${st.ord?'95,000.00 / --':'-- / --'}</td><td><button class="u-btn">市价</button> <button class="u-btn">限价</button></td></tr></tbody></table>`:empty('暂无持仓')}
+  if(uT==='open'){h=st.ord?`<table class="u-tbl"><thead><tr><th>时间</th><th>合约</th><th>类型</th><th>方向</th><th>触发价</th><th>数量</th><th>操作</th></tr></thead><tbody><tr><td class="num">2026-10-02 09:16:02</td><td>BTCUSDT 永续</td><td>止盈</td><td class="side-tag-s">平多</td><td class="num">95,000.00</td><td class="num">108 张</td><td><span class="u-link">撤单</span></td></tr></tbody></table>`:empty('暂无委托')}
+  if(uT==='hist'){h=`<table class="u-tbl"><thead><tr><th>时间</th><th>合约</th><th>订单类型</th><th>方向</th><th>委托价</th><th>成交均价</th><th>委托量</th><th>成交量</th><th>状态</th></tr></thead><tbody>
+     ${done?`<tr class="hl"><td class="num">2026-10-09 13:40:12</td><td>BTCUSDT 永续</td><td>${chip('ADL')}</td><td class="side-tag-s">平多</td><td class="num">--</td><td class="num">${af(A.mark)}</td><td class="num">${z} 张</td><td class="num">${z} 张</td><td>已成交</td></tr>
+     <tr><td class="num">2026-10-09 13:40:12</td><td>BTCUSDT 永续</td><td>止盈</td><td class="side-tag-s">平多</td><td class="num">95,000.00</td><td class="num">--</td><td class="num">108 张</td><td class="num">0 张</td><td>已撤销 <span style="color:var(--adl)">· 因 ADL</span> <span class="u-warn">⚠️ Q7</span></td></tr>`:''}
+     <tr><td class="num">2026-10-02 09:15:40</td><td>BTCUSDT 永续</td><td>市价</td><td class="side-tag-l">开多</td><td class="num">--</td><td class="num">${af(A.entry)}</td><td class="num">108 张</td><td class="num">108 张</td><td>已成交</td></tr></tbody></table>`}
+  if(uT==='fill'){h=`<table class="u-tbl"><thead><tr><th>时间</th><th>合约</th><th>订单类型</th><th>方向</th><th>成交价</th><th>成交量</th><th>手续费</th><th>角色</th><th>已实现盈亏</th></tr></thead><tbody>
+     ${done?`<tr class="hl"><td class="num">2026-10-09 13:40:12</td><td>BTCUSDT 永续</td><td>${chip('ADL')}</td><td class="side-tag-s">平多</td><td class="num">${af(A.mark)}</td><td class="num">${z} 张</td><td class="num">0 USDT <span class="u-warn">⚠️ Q3</span></td><td style="color:var(--tx3)">--</td><td class="num u-up">+${af(pnl)} USDT</td></tr>`:''}
+     <tr><td class="num">2026-10-02 09:15:40</td><td>BTCUSDT 永续</td><td>市价</td><td class="side-tag-l">开多</td><td class="num">${af(A.entry)}</td><td class="num">108 张</td><td class="num">0.4456 USDT</td><td>Taker</td><td class="num">--</td></tr></tbody></table>`}
+  if(uT==='phist'){h=done?`<table class="u-tbl"><thead><tr><th>合约</th><th>平仓类型</th><th>开仓时间</th><th>平仓时间</th><th>开仓均价</th><th>平仓均价</th><th>已平仓量 / 最大持仓</th><th>平仓盈亏</th></tr></thead><tbody>
+     <tr class="hl"><td><b>BTCUSDT 永续</b> <span class="side-tag-l">多</span></td><td>${chip(aState==='full'?'ADL 全部平仓':'ADL 部分减仓')}</td><td class="num">2026-10-02 09:15:40</td><td class="num">${aState==='full'?'2026-10-09 13:40:12':'--'}</td><td class="num">${af(A.entry)}</td><td class="num">${af(A.mark)}</td><td class="num">${z} / 108 张</td><td class="num u-up">+${af(pnl)} USDT</td></tr></tbody></table>
+     ${aState==='partial'?'<div style="padding:8px 16px;color:var(--tx3)">部分减仓时「平仓时间」显示 --，仓位全部平掉后补全</div>':''}`:empty('暂无仓位历史')}
+  $('uBody').innerHTML=h;
 }
 document.querySelectorAll('#aSt button').forEach(b=>b.onclick=()=>{aState=b.dataset.s;aRender()});
 document.querySelectorAll('#aHTabs span').forEach(s=>s.onclick=()=>{aHTab=s.dataset.h;aHRender()});
+document.querySelectorAll('#uTabs button').forEach(b=>b.onclick=()=>{uT=b.dataset.t;uRender()});
 aRender();
-function switchView(b){document.querySelectorAll('.view-switch button').forEach(x=>x.classList.toggle('on',x===b));['viewAdmin','viewApp','viewUser'].forEach(id=>document.getElementById(id).hidden=id!==b.dataset.v)}
-function uTab(t){document.querySelectorAll('#uTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t);document.getElementById('ntf').classList.remove('show')}
-document.querySelectorAll('#uTabs button').forEach(b=>b.onclick=()=>uTab(b.dataset.t));
+function switchView(b){document.querySelectorAll('.view-switch button').forEach(x=>x.classList.toggle('on',x===b));['viewAdmin','viewEnd'].forEach(id=>document.getElementById(id).hidden=id!==b.dataset.v)}
 document.querySelectorAll('#listSeg button').forEach(b=>b.onclick=e=>{e.stopPropagation();listUnit=b.dataset.u;syncSeg('listSeg',listUnit);render()});
 document.querySelectorAll('#mSeg button').forEach(b=>b.onclick=()=>setMUnit(b.dataset.u));
 render();
