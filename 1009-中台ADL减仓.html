@@ -186,11 +186,87 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
 .u-link{color:var(--yel);cursor:pointer}
 .u-warn{color:#f0b44a;background:#2e2410;border:1px dashed #8a6a1f;border-radius:3px;padding:0 5px;font-size:11px;white-space:nowrap}
 .side-tag-l{color:var(--up)}.side-tag-s{color:var(--down)}
+
+/* ===== 用户端 App ===== */
+.a-root{background:#0b0c0f;min-height:100vh;padding:16px 20px 60px;min-width:1280px;color:#e8e9ec;font-size:12px}
+.a-wrap{display:flex;gap:28px;align-items:flex-start;justify-content:center}
+.a-ctrl{width:380px;flex-shrink:0}
+.a-ctrl .box{background:#17181c;border:1px solid #2a2c33;border-radius:8px;padding:14px 16px;margin-bottom:12px;line-height:1.8}
+.a-ctrl h4{font-size:13px;color:#fcd535;margin-bottom:6px}
+.a-ctrl .st{display:flex;flex-direction:column;gap:6px}
+.a-ctrl .st button{text-align:left;padding:8px 12px;border-radius:6px;background:#22242a;color:#c9ccd3;font-size:13px;border:1px solid transparent}
+.a-ctrl .st button.on{border-color:#1db9a3;color:#fff;background:#1a2b29}
+.a-ctrl ul{padding-left:16px;color:#aeb2bb}
+.a-ctrl li b{color:#fff;font-weight:500}
+.a-ctrl .warn{color:#f0b44a;background:#2e2410;border:1px dashed #8a6a1f;border-radius:3px;padding:0 5px;font-size:11px;white-space:nowrap}
+.phone{width:390px;height:844px;border-radius:44px;border:10px solid #26282e;background:#0e0f13;overflow:hidden;position:relative;flex-shrink:0;box-shadow:0 20px 60px rgba(0,0,0,.6);font-family:-apple-system,'PingFang SC',sans-serif}
+.ph-scroll{height:100%;overflow-y:auto;padding-bottom:70px}
+.ph-scroll::-webkit-scrollbar{display:none}
+.ph-status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;font-size:15px;font-weight:600}
+.ph-hd{display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px}
+.ph-hd .s{font-size:19px;font-weight:600;display:flex;gap:10px;align-items:center}
+.ph-hd .chg{font-size:16px;color:#1db9a3}
+.ph-hd .ic{display:flex;gap:16px;font-size:18px;color:#ddd}
+.ph-trade{margin:0 16px;height:200px;border-radius:8px;background:repeating-linear-gradient(45deg,#14151a,#14151a 8px,#17181d 8px,#17181d 16px);display:flex;align-items:center;justify-content:center;color:#565a64;font-size:12px}
+.ph-tabs{display:flex;align-items:center;gap:22px;padding:18px 16px 10px;border-bottom:1px solid #1f2127}
+.ph-tabs span{font-size:16px;color:#6b6f78}
+.ph-tabs span.on{color:#fff;font-weight:600}
+.ph-tabs .hist{margin-left:auto;font-size:18px;color:#ccc;cursor:pointer;position:relative}
+.ph-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px}
+.ph-tog{display:flex;align-items:center;gap:8px;color:#c9ccd3;font-size:13px}
+.ph-tog i{width:34px;height:20px;border-radius:10px;background:#3a3c44;position:relative;display:inline-block}
+.ph-tog i:after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff}
+.ph-btn{background:#22242a;border-radius:6px;padding:7px 12px;font-size:13px;color:#e8e9ec}
+.pc{padding:6px 16px 14px;border-bottom:1px solid #1f2127}
+.pc .t{display:flex;justify-content:space-between;align-items:center;font-size:16px;font-weight:600;margin-bottom:10px}
+.pc .tags{display:flex;gap:6px;align-items:center;margin-bottom:12px}
+.pc .tg{font-size:12px;padding:1px 6px;border-radius:2px}
+.tg-l{background:#173a35;color:#1db9a3}.tg-m{background:#2c2e35;color:#b8bcc5}.tg-x{background:#173a35;color:#1db9a3}
+.lights{display:inline-flex;gap:2px;margin-left:4px;cursor:help;position:relative}
+.lights b{width:4px;height:14px;border-radius:1px;background:#3a3c44}
+.lights b.on{background:#3b82f6}
+.lights .tip{display:none;position:absolute;left:-60px;top:20px;width:220px;background:#2b2d34;color:#ddd;font-size:11px;line-height:1.6;padding:8px 10px;border-radius:6px;z-index:5;font-weight:400}
+.lights:hover .tip{display:block}
+.pc .pnl{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+.pc .k{color:#7d818b;font-size:12px}
+.pc .big{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.pc .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 6px;margin-bottom:14px}
+.pc .grid3>div:nth-child(3n+2){text-align:center}.pc .grid3>div:nth-child(3n){text-align:right}
+.pc .v{font-size:15px;margin-top:3px;font-variant-numeric:tabular-nums}
+.pc .ops{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.pc .ops span{background:#22242a;border-radius:6px;text-align:center;padding:10px 0;font-size:13px}
+.a-up{color:#1db9a3}.a-down{color:#8b63e8}
+.chg-flag{outline:1px dashed #f0b44a;outline-offset:2px;border-radius:2px}
+.ph-empty{padding:60px 0;text-align:center;color:#565a64;font-size:13px}
+.ph-nav{position:absolute;bottom:0;left:0;right:0;height:64px;background:#0e0f13;border-top:1px solid #1f2127;display:flex;justify-content:space-around;align-items:center;font-size:11px;color:#6b6f78}
+.ph-nav span{display:flex;flex-direction:column;align-items:center;gap:3px}
+.ph-nav span.on{color:#fff}
+.ph-push{position:absolute;top:48px;left:10px;right:10px;background:rgba(40,42,48,.97);border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.55;z-index:10;box-shadow:0 6px 20px rgba(0,0,0,.5);cursor:pointer;display:none}
+.ph-push.show{display:block;animation:pushin .4s ease}
+@keyframes pushin{from{transform:translateY(-20px);opacity:0}to{transform:none;opacity:1}}
+.ph-push .h{display:flex;justify-content:space-between;color:#9a9ea7;font-size:11px;margin-bottom:2px}
+.ph-push b{color:#fff}
+/* 历史页 */
+.ph-page{position:absolute;inset:0;background:#0e0f13;z-index:8;display:none;flex-direction:column}
+.ph-page.show{display:flex}
+.ph-page .bar{display:flex;align-items:center;gap:12px;padding:6px 16px 10px;font-size:17px;font-weight:600}
+.ph-page .bar .back{font-size:20px;cursor:pointer}
+.ph-htabs{display:flex;gap:20px;padding:4px 16px 10px;border-bottom:1px solid #1f2127}
+.ph-htabs span{font-size:14px;color:#6b6f78;cursor:pointer;padding-bottom:6px}
+.ph-htabs span.on{color:#fff;font-weight:600;border-bottom:2px solid #1db9a3}
+.hc{padding:12px 16px;border-bottom:1px solid #1f2127}
+.hc .t{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:14px;font-weight:600}
+.hc .t .st{font-size:12px;font-weight:400;color:#9a9ea7}
+.hc .kv{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:12px}
+.hc .kv div{display:flex;justify-content:space-between}
+.hc .kv .k{color:#7d818b}
+.adl-b{font-size:11px;font-weight:600;color:#f0a020;background:rgba(240,160,32,.14);border-radius:2px;padding:0 5px;line-height:17px;margin-left:6px}
 </style>
 </head>
 <body>
 <div class="view-switch">
   <button class="on" data-v="viewAdmin" onclick="switchView(this)">中台 · 当前持仓列表</button>
+  <button data-v="viewApp" onclick="switchView(this)">用户端 · App 持仓（ADL 前后对比）</button>
   <button data-v="viewUser" onclick="switchView(this)">用户端 · Web 合约（被 ADL 后）</button>
 </div>
 <div id="viewAdmin">
@@ -266,6 +342,52 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
   </div>
 </div>
 
+</div>
+
+<div id="viewApp" class="a-root" hidden>
+ <div class="a-wrap">
+  <div class="a-ctrl">
+   <div class="box">
+    <h4>🎛 切换状态</h4>
+    <div class="st" id="aSt">
+     <button data-s="before" class="on">① ADL 前（持有 0.0108 BTC，挂有止盈单）</button>
+     <button data-s="partial">② 部分 ADL 后（被减 0.01 BTC，剩 0.0008 BTC）</button>
+     <button data-s="full">③ 全部 ADL 后（仓位全部被减）</button>
+    </div>
+   </div>
+   <div class="box" id="aNote"></div>
+   <div class="box">
+    <h4>📌 依据</h4>
+    <ul>
+     <li>界面按现有 App 持仓页复刻，<b>仓位区不新增任何 ADL 元素</b>（R08）</li>
+     <li>盘口 / 下单区本次无改动，用占位块表示</li>
+     <li>点右上角 📋 进入历史页，查看 ADL 标签（历史页结构为示意，以现有历史页为准）</li>
+     <li>数值为演示数据：标记价调成 88,433.72，让仓位处于浮盈状态（只有浮盈仓位会被 ADL）</li>
+    </ul>
+   </div>
+  </div>
+
+  <div class="phone">
+   <div class="ph-scroll">
+    <div class="ph-status"><span>13:40</span><span style="font-size:12px">📶 🔋</span></div>
+    <div class="ph-hd"><div class="s">☰ BTCUSDT <span class="chg">+7.18%</span></div><div class="ic"><span>📈</span><span>🕯</span><span>▦</span></div></div>
+    <div class="ph-trade">盘口 / 下单区（本次无改动）</div>
+    <div class="ph-tabs"><span class="on" id="aPosTab">持仓 (1)</span><span id="aOrdTab">订单 (1)</span><span class="hist" onclick="aHist(true)">📋</span></div>
+    <div id="aBody"></div>
+   </div>
+   <div class="ph-push" id="aPush" onclick="aHist(true,'fill')">
+    <div class="h"><span>🔔 站内信</span><span>刚刚</span></div>
+    <div id="aPushTxt"></div>
+   </div>
+   <div class="ph-page" id="aHist">
+    <div class="ph-status"><span>13:41</span><span style="font-size:12px">📶 🔋</span></div>
+    <div class="bar"><span class="back" onclick="aHist(false)">‹</span>历史记录</div>
+    <div class="ph-htabs" id="aHTabs"><span data-h="ord" class="on">历史委托</span><span data-h="fill">成交记录</span><span data-h="pos">仓位历史</span></div>
+    <div id="aHBody" style="overflow-y:auto;flex:1"></div>
+   </div>
+   <div class="ph-nav"><span>⌂<br>首页</span><span>◎<br>探索</span><span class="on">▤<br>合约</span><span>⟳<br>流动池</span><span>▣<br>资产</span></div>
+  </div>
+ </div>
 </div>
 
 <div id="viewUser" class="u-root" hidden>
@@ -641,7 +763,77 @@ function toast(t,type){
   $('toast').classList.add('show');clearTimeout(tt);tt=setTimeout(()=>$('toast').classList.remove('show'),3500);
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){['cfmMask','adlMask','ordMask'].forEach(hide)}});
-function switchView(b){document.querySelectorAll('.view-switch button').forEach(x=>x.classList.toggle('on',x===b));['viewAdmin','viewUser'].forEach(id=>document.getElementById(id).hidden=id!==b.dataset.v)}
+
+/* ---------- 用户端 App ---------- */
+const A={entry:82510.63,mark:88433.72,lev:10,mmr:0.005};
+const AS={before:{btc:0.0108,light:4,ord:1},partial:{btc:0.0008,light:2,ord:0},full:{btc:0,light:0,ord:0}};
+const ADL_BTC=0.01;
+let aState='before',aHTab='ord';
+const af=(n,d=2)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+function aCard(st){
+  const q=st.btc,val=q*A.mark,margin=A.entry*q/A.lev,up=(A.mark-A.entry)*q,roe=up/margin*100;
+  const liq=A.entry*(1-1/A.lev+A.mmr),mr=(margin+up)/(val*A.mmr)*100;
+  const ch=aState==='partial'?' chg-flag':'';
+  const lt=[1,2,3,4,5].map(i=>`<b class="${i<=st.light?'on':''}"></b>`).join('');
+  return `<div class="ph-row"><span class="ph-tog"><i></i>隐藏其它合约</span><span class="ph-btn">全部平仓</span></div>
+  <div class="pc">
+   <div class="t"><span>BTCUSDT →|</span><span style="font-size:16px;color:#aaa">⇪</span></div>
+   <div class="tags"><span class="tg tg-l">多</span><span class="tg tg-m">逐仓</span><span class="tg tg-x">10x</span><span class="lights${ch}">${lt}<span class="tip">现有 ADL 指示灯，按现有排名逻辑计算。部分减仓后仓位重新参与排名，亮灯数可能变化（示意）</span></span></div>
+   <div class="pnl"><div><div class="k">未实现盈亏 (USDT)</div><div class="big a-up${ch}">+${af(up,6)}</div></div><div style="text-align:right"><div class="k">收益率</div><div class="big a-up" style="font-size:20px">+${af(roe)}%</div></div></div>
+   <div class="grid3">
+    <div><div class="k">持仓量/总量 (USDT)</div><div class="v${ch}">${af(val)} / ${af(val)}</div></div>
+    <div><div class="k">开仓均价</div><div class="v">${af(A.entry)}</div></div>
+    <div><div class="k">标记价格</div><div class="v">${af(A.mark)}</div></div>
+    <div><div class="k">保证金 (USDT)</div><div class="v${ch}">${af(margin)} ⊕</div></div>
+    <div><div class="k">预估强平价 ⓘ</div><div class="v">${af(liq)}</div></div>
+    <div><div class="k">保证金率</div><div class="v">${af(mr)}%</div></div>
+   </div>
+   <div class="ops"><span>止盈/止损</span><span>反手开仓</span><span>平仓</span></div>
+  </div>`;
+}
+function aRender(){
+  const st=AS[aState];
+  document.querySelectorAll('#aSt button').forEach(b=>b.classList.toggle('on',b.dataset.s===aState));
+  $('aPosTab').textContent=`持仓 (${st.btc?1:0})`;$('aOrdTab').textContent=`订单 (${st.ord})`;
+  $('aBody').innerHTML=st.btc?aCard(st):`<div class="ph-row"><span class="ph-tog"><i></i>隐藏其它合约</span></div><div class="ph-empty">📄<br><br>暂无持仓</div>`;
+  const pnl=(A.mark-A.entry)*(aState==='full'?0.0108:ADL_BTC);
+  const qty=aState==='full'?0.0108:ADL_BTC;
+  $('aPushTxt').innerHTML=`<b>自动减仓（ADL）通知</b><br>您的 BTCUSDT 多仓已被自动减仓 <b>${qty} BTC</b>，成交价 <b>${af(A.mark)}</b>（标记价格），已实现盈亏 <b style="color:#1db9a3">+${af(pnl)} USDT</b>，手续费 0。${aState==='full'?'仓位已全部平仓。':'剩余持仓 0.0008 BTC。'}该仓位止盈委托已撤销。`;
+  const push=$('aPush');push.classList.remove('show');if(aState!=='before'){void push.offsetWidth;push.classList.add('show')}
+  const notes={
+   before:`<h4>① ADL 前</h4><ul><li>持仓 1 个，订单 1 个（止盈单）</li><li>ADL 指示灯亮 4 格（示意）</li></ul>`,
+   partial:`<h4>② 部分 ADL 后：仓位区变化（虚线框为变化项）</h4><ul>
+     <li><b>持仓量/总量</b>：955.08 → 70.75 USDT</li>
+     <li><b>未实现盈亏</b>：只剩余仓位那部分</li>
+     <li><b>保证金</b>：逐仓按比例释放 <span class="warn">⚠️ P07</span></li>
+     <li><b>指示灯</b>：重新排名，亮灯数可能变化</li>
+     <li>开仓均价、收益率、预估强平价、保证金率<b>不变</b></li>
+     <li><b>订单 (1) → (0)</b>：止盈单被撤 <span class="warn">⚠️ Q7</span></li>
+     <li>站内信推送，点击跳转到成交记录</li>
+     <li>仓位卡片上<b>没有任何 ADL 标记</b>（R08）</li></ul>`,
+   full:`<h4>③ 全部 ADL 后</h4><ul><li>持仓 (0)，卡片消失，显示「暂无持仓」</li><li>订单 (0)：止盈单被撤 <span class="warn">⚠️ Q7</span></li><li>只能通过站内信和历史页看到 ADL 记录</li></ul>`};
+  $('aNote').innerHTML=notes[aState];
+  aHRender();
+}
+function aHist(show,tab){ if(tab){aHTab=tab} $('aHist').classList.toggle('show',show); $('aPush').classList.remove('show'); aHRender() }
+function aHRender(){
+  document.querySelectorAll('#aHTabs span').forEach(s=>s.classList.toggle('on',s.dataset.h===aHTab));
+  const done=aState!=='before',qty=aState==='full'?0.0108:ADL_BTC,pnl=(A.mark-A.entry)*qty;
+  const adlOrd=`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#8b63e8;font-weight:400;font-size:12px">平多</span><span class="adl-b">ADL</span></span><span class="st">已成交</span></div>
+    <div class="kv"><div><span class="k">委托价</span><span>--</span></div><div><span class="k">成交均价</span><span>${af(A.mark)}</span></div><div><span class="k">数量 (BTC)</span><span>${qty}</span></div><div><span class="k">手续费</span><span>0 USDT</span></div><div><span class="k">时间</span><span>10-09 13:40:12</span></div></div></div>`;
+  const tpCancel=`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#8b63e8;font-weight:400;font-size:12px">止盈 · 平多</span></span><span class="st">已撤销 · 因 ADL</span></div>
+    <div class="kv"><div><span class="k">触发价</span><span>95,000.00</span></div><div><span class="k">数量 (BTC)</span><span>0.0108</span></div><div><span class="k">时间</span><span>10-09 13:40:12</span></div></div></div>`;
+  const openOrd=`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#1db9a3;font-weight:400;font-size:12px">开多</span></span><span class="st">已成交</span></div>
+    <div class="kv"><div><span class="k">委托类型</span><span>市价</span></div><div><span class="k">成交均价</span><span>${af(A.entry)}</span></div><div><span class="k">数量 (BTC)</span><span>0.0108</span></div><div><span class="k">时间</span><span>10-02 09:15:40</span></div></div></div>`;
+  const posH=done?`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#1db9a3;font-weight:400;font-size:12px">多 · 逐仓 10x</span><span class="adl-b">${aState==='full'?'ADL 全部平仓':'ADL 部分减仓'}</span></span></div>
+    <div class="kv"><div><span class="k">开仓均价</span><span>${af(A.entry)}</span></div><div><span class="k">平仓均价</span><span>${af(A.mark)}</span></div><div><span class="k">已平 / 最大持仓</span><span>${qty} / 0.0108</span></div><div><span class="k">平仓盈亏</span><span class="a-up">+${af(pnl)}</span></div><div><span class="k">平仓时间</span><span>${aState==='full'?'10-09 13:40:12':'--'}</span></div></div></div>`:'';
+  const H={ord:(done?adlOrd+tpCancel:'')+openOrd, fill:(done?adlOrd.replace('已成交','<span class="a-up">+'+af(pnl)+' USDT</span>'):'')+openOrd.replace('已成交',''), pos:posH||'<div class="ph-empty">暂无仓位历史</div>'};
+  $('aHBody').innerHTML=H[aHTab];
+}
+document.querySelectorAll('#aSt button').forEach(b=>b.onclick=()=>{aState=b.dataset.s;aRender()});
+document.querySelectorAll('#aHTabs span').forEach(s=>s.onclick=()=>{aHTab=s.dataset.h;aHRender()});
+aRender();
+function switchView(b){document.querySelectorAll('.view-switch button').forEach(x=>x.classList.toggle('on',x===b));['viewAdmin','viewApp','viewUser'].forEach(id=>document.getElementById(id).hidden=id!==b.dataset.v)}
 function uTab(t){document.querySelectorAll('#uTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t);document.getElementById('ntf').classList.remove('show')}
 document.querySelectorAll('#uTabs button').forEach(b=>b.onclick=()=>uTab(b.dataset.t));
 document.querySelectorAll('#listSeg button').forEach(b=>b.onclick=e=>{e.stopPropagation();listUnit=b.dataset.u;syncSeg('listSeg',listUnit);render()});
