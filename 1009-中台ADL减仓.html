@@ -104,6 +104,11 @@ table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%
 .qty-box.err{border-color:#f5222d}
 .qty-box input{flex:1;border:none;height:100%;padding:0 10px;font-size:14px}
 .qty-box .u{color:#8f959e;margin:0 8px}
+.seg{display:inline-flex;border:1px solid #dcdfe6;border-radius:3px;overflow:hidden;margin-left:6px;vertical-align:middle}
+.seg button{font-size:11px;line-height:18px;padding:0 7px;color:#646a73;background:#fff}
+.seg button.on{background:#4265f4;color:#fff}
+.qty-box .seg{margin:0 6px 0 0}
+.qty-box .seg button{font-size:12px;line-height:24px;padding:0 10px}
 .qty-box .all{color:#4265f4;font-size:12px;padding:3px 8px;border-left:1px solid #ebeef5}
 .hint{font-size:12px;color:#8f959e;margin-top:5px}
 .err-msg{font-size:12px;color:#f5222d;margin-top:5px}
@@ -199,7 +204,9 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
         <tr><td class="tag-add">新增</td><td>操作列「ADL减仓」按钮</td><td>和「平仓」并列。仅浮盈仓位（未实现盈亏 &gt; 0）可点，亏损仓位置灰</td><td><span class="warn">⚠️ Q4 可减门槛待确认</span></td></tr>
         <tr><td class="tag-add">新增</td><td>ADL 减仓弹窗</td><td>输入减仓数量（张）→ 预览成交价 / 预计已实现盈亏 / 剩余持仓 → 填写减仓原因 → 二次确认 → 执行</td><td>✅ Q1 不产生对手仓位，盈亏计入平台账户<br>✅ Q2 按执行时标记价成交<br><span class="warn">⚠️ Q3 手续费</span> <span class="warn">⚠️ Q9 原因必填</span></td></tr>
         <tr><td class="tag-mod">调整</td><td>「未实现盈亏」「回报率」列</td><td>支持点表头排序，方便运营找浮盈高的仓位</td><td>—</td></tr>
-        <tr><td class="tag-mod">调整</td><td>「自动减仓量」列（已有）</td><td>记录该仓位累计被 ADL 减掉的张数，执行成功后实时累加</td><td>—</td></tr>
+        <tr><td class="tag-mod">调整</td><td>「持仓量/可平量」列（已有）</td><td>表头可切换单位：张 / 币（币 = 张 × 合约面值，如 BTCUSDT 1 张 = 0.0001 BTC）；「自动减仓量」列和订单明细的成交数量跟随同一单位</td><td>—</td></tr>
+        <tr><td class="tag-add">新增</td><td>ADL 弹窗 · 减仓数量</td><td>输入框可切换 张 / 币，默认跟随列表当前单位；切换时自动换算已输入的数值；两种单位都支持小数</td><td><span class="warn">⚠️ 小数位数待确认（原型暂按张 2 位，币 = 张精度 × 面值）</span></td></tr>
+        <tr><td class="tag-mod">调整</td><td>「自动减仓量」列（已有）</td><td>记录该仓位累计被 ADL 减掉的数量，执行成功后实时累加</td><td>—</td></tr>
         <tr><td class="tag-mod">调整</td><td>订单 ID 明细弹窗</td><td>新增「订单类型」（开仓 / 平仓 / ADL减仓）和「操作人」两列，ADL 记录可追溯</td><td>✅ Q5 单人操作，无需复核</td></tr>
         <tr><td class="tag-mod">调整</td><td>可减数量上限</td><td>按「持仓量」而非「可平量」：超出可平量的部分需先处理该仓位的平仓挂单</td><td><span class="warn">⚠️ Q7 挂单处理方式</span></td></tr>
       </table>
@@ -244,12 +251,12 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
           <th class="sl" style="left:206px;width:100px">合约标的</th>
           <th class="sl sl-last" style="left:306px;width:180px">持仓 ID</th>
           <th>订单 ID</th><th>开仓时间</th><th>更新时间</th><th>保证金模式</th><th>仓位模式</th><th>持仓方向</th>
-          <th>开仓均价(U)</th><th>持仓量/可平量(张)</th><th>仓位价值(U)</th><th>杠杆倍数</th><th>仓位保证金(U)</th>
+          <th>开仓均价(U)</th><th>持仓量/可平量 <span class="seg" id="listSeg"><button data-u="张" class="on">张</button><button data-u="币">币</button></span></th><th>仓位价值(U)</th><th>杠杆倍数</th><th>仓位保证金(U)</th>
           <th>强平价格(U)</th><th>标记价格(U)</th><th>破产价格(U)</th>
           <th class="sort" data-k="upnl">未实现盈亏(U)<i>⇅</i><span class="new-dot">排序</span></th>
           <th>已实现盈亏(U)</th>
           <th class="sort" data-k="roe">回报率<i>⇅</i><span class="new-dot">排序</span></th>
-          <th>自动减仓量(张)</th><th>账户类型</th><th>标签</th>
+          <th>自动减仓量</th><th>账户类型</th><th>标签</th>
           <th class="sr" style="width:170px">操作</th>
         </tr></thead>
         <tbody id="tbody"></tbody>
@@ -346,10 +353,11 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
         <label><span class="req">*</span>减仓数量</label>
         <div class="qty-box" id="qtyBox">
           <input id="qtyIn" class="num" placeholder="请输入要减仓的张数" autocomplete="off">
-          <span class="u">张</span>
+          <span class="seg" id="mSeg"><button data-u="张" class="on">张</button><button data-u="币">币</button></span>
           <button class="all" onclick="fillAll()">全部</button>
         </div>
         <div class="hint" id="qtyHint"></div>
+        <div class="hint" id="qtyConv" style="color:#4265f4"></div>
         <div class="err-msg" id="qtyErr" hidden></div>
       </div>
       <div class="form-row">
@@ -404,6 +412,11 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
 const SIZE={BTCUSDT:0.0001,XRPUSDT:0.1,BNBUSDT:0.01,TRXUSDT:1,LTCUSDT:0.001};
 const MARK={BTCUSDT:118520.4,XRPUSDT:2.9471,BNBUSDT:1021.36,TRXUSDT:0.3127,LTCUSDT:97.84};
 const PD={BTCUSDT:2,XRPUSDT:4,BNBUSDT:2,TRXUSDT:5,LTCUSDT:2};
+const COIN={BTCUSDT:'BTC',XRPUSDT:'XRP',BNBUSDT:'BNB',TRXUSDT:'TRX',LTCUSDT:'LTC'};
+const ZDEC=2; // 张数小数位 ⚠️ 数值待确认
+const cdec=sym=>ZDEC+Math.round(-Math.log10(SIZE[sym])); // 币数量小数位 = 张精度 × 面值
+const rz=x=>+(+x).toFixed(ZDEC);
+let listUnit='张',mUnit='张';
 const OPERATOR='admin_rhys';
 
 let rows=[
@@ -427,6 +440,11 @@ rows.forEach((r,i)=>{r.oid='查看详情';r.upd='2026-10-09 08:00:00';r.orders=[
 let sortK=null,sortDir=-1,view=rows.slice(),curRow=null;
 
 const fmt=(n,d=2)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fq=(z,d)=>Number(z).toLocaleString('en-US',{maximumFractionDigits:d});
+const qn=(r,z,u)=>u==='张'?fq(z,ZDEC):fq(z*SIZE[r.sym],cdec(r.sym));
+const ul=(r,u)=>u==='张'?'张':COIN[r.sym];
+const qt=(r,z,u)=>qn(r,z,u)+' '+ul(r,u);
+const qb=(r,z)=>`${qt(r,z,'张')}（${qt(r,z,'币')}）`;
 const sgn=(n,d=4)=>(n>0?'+':'')+fmt(n,d);
 const cls=n=>n>0?'up':n<0?'down':'';
 function calc(r){
@@ -456,7 +474,7 @@ function render(){
       <td>${r.mm}</td><td>开平仓模式</td>
       <td class="${r.side==='L'?'side-l':'side-s'}">${r.side==='L'?'多仓':'空仓'}</td>
       <td class="num">${fmt(r.entry,pd)}</td>
-      <td class="num">${fmt(r.qty,0)} / ${fmt(r.avail,0)} <span class="unit">张</span></td>
+      <td class="num">${qn(r,r.qty,listUnit)} / ${qn(r,r.avail,listUnit)} <span class="unit">${ul(r,listUnit)}</span></td>
       <td class="num">${fmt(c.value)}</td>
       <td class="num">${r.lev}</td>
       <td class="num">${fmt(c.margin)}</td>
@@ -466,7 +484,7 @@ function render(){
       <td class="num ${cls(c.upnl)}">${sgn(c.upnl)}</td>
       <td class="num ${cls(r.rpnl)}">${sgn(r.rpnl)}</td>
       <td class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</td>
-      <td class="num ${r.adl?'adl-qty-hl':''}">${fmt(r.adl,0)}</td>
+      <td class="num ${r.adl?'adl-qty-hl':''}">${r.adl?qt(r,r.adl,listUnit):'0'}</td>
       <td>${r.acct}</td>
       <td class="muted">-- ✎</td>
       <td class="sr"><div class="op">
@@ -503,25 +521,40 @@ function openAdl(pid){
   curRow=rows.find(r=>r.pid===pid); if(!curRow)return;
   $('qtyIn').value='';$('reason').value='';
   $('qtyErr').hidden=true;$('reasonErr').hidden=true;$('execErr').hidden=true;$('qtyBox').classList.remove('err');
+  mUnit=listUnit;syncSeg('mSeg',mUnit);
   fillInfo();updatePreview();show('adlMask');setTimeout(()=>$('qtyIn').focus(),50);
 }
 function fillInfo(){
   const r=curRow,c=calc(r),pd=PD[r.sym];
   $('adlInfo').innerHTML=[
     ['UID',r.uid],['合约',r.sym],['方向',`<span class="${r.side==='L'?'side-l':'side-s'}">${r.side==='L'?'多仓':'空仓'}</span> · ${r.mm} ${r.lev}x`],['持仓 ID',`<span class="num" style="font-size:11.5px">${r.pid}</span>`],
-    ['开仓均价',`<span class="num">${fmt(r.entry,pd)}</span>`],['标记价格',`<span class="num">${fmt(c.mark,pd)}</span>`],['持仓量 / 可平量',`<span class="num">${fmt(r.qty,0)} / ${fmt(r.avail,0)} 张</span>`],['累计已 ADL',`<span class="num">${fmt(r.adl,0)} 张</span>`],
+    ['开仓均价',`<span class="num">${fmt(r.entry,pd)}</span>`],['标记价格',`<span class="num">${fmt(c.mark,pd)}</span>`],['持仓量 / 可平量',`<span class="num">${qn(r,r.qty,'张')} / ${qn(r,r.avail,'张')} 张<br><span class="muted">${qn(r,r.qty,'币')} / ${qn(r,r.avail,'币')} ${COIN[r.sym]}</span></span>`],['累计已 ADL',`<span class="num">${qt(r,r.adl,'张')}<br><span class="muted">${qt(r,r.adl,'币')}</span></span>`],
     ['未实现盈亏',`<span class="num ${cls(c.upnl)}">${sgn(c.upnl)} U</span>`],['回报率',`<span class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</span>`],['已实现盈亏',`<span class="num ${cls(r.rpnl)}">${sgn(r.rpnl)} U</span>`],['账户类型',r.acct],
   ].map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
-  $('qtyHint').textContent=`可减范围 1 ~ ${fmt(r.qty,0)} 张，需为整数`;
+  const d=mUnit==='张'?ZDEC:cdec(r.sym),min=mUnit==='张'?Math.pow(10,-ZDEC):Math.pow(10,-ZDEC)*SIZE[r.sym];
+  $('qtyHint').innerHTML=`可减范围 ${fq(min,d)} ~ ${qt(r,r.qty,mUnit)}，最多 ${d} 位小数 <span class="warn">⚠️ 小数位数待确认</span>`;
 }
-function fillAll(){$('qtyIn').value=curRow.qty;updatePreview()}
+function setMUnit(u){
+  if(u===mUnit)return;
+  const r=curRow,raw=$('qtyIn').value.trim(),v=Number(raw);
+  if(raw!==''&&/^\d+(\.\d+)?$/.test(raw)&&v>0){
+    $('qtyIn').value=u==='币'?String(+(v*SIZE[r.sym]).toFixed(cdec(r.sym))):String(rz(v/SIZE[r.sym]));
+  }
+  mUnit=u;syncSeg('mSeg',u);fillInfo();updatePreview();
+}
+function syncSeg(id,u){document.querySelectorAll('#'+id+' button').forEach(b=>{b.classList.toggle('on',b.dataset.u===u);if(id==='mSeg'&&b.dataset.u==='币'&&curRow)b.textContent=COIN[curRow.sym]})}
+function fillAll(){const r=curRow;$('qtyIn').value=mUnit==='张'?String(r.qty):String(+(r.qty*SIZE[r.sym]).toFixed(cdec(r.sym)));updatePreview()}
 function parseQty(){
   const raw=$('qtyIn').value.trim();
   if(raw==='')return{err:null,n:null};
-  if(!/^\d+$/.test(raw))return{err:'请输入正整数张数'};
-  const n=Number(raw);
-  if(n<=0)return{err:'减仓数量须大于 0'};
-  if(n>curRow.qty)return{err:`超过当前持仓量 ${fmt(curRow.qty,0)} 张`};
+  const r=curRow;
+  if(!/^\d+(\.\d+)?$/.test(raw))return{err:'请输入大于 0 的数字'};
+  const d=mUnit==='张'?ZDEC:cdec(r.sym);
+  if((raw.split('.')[1]||'').length>d)return{err:`${mUnit==='张'?'张数':COIN[r.sym]+' 数量'}最多支持 ${d} 位小数`};
+  const v=Number(raw);
+  if(v<=0)return{err:'减仓数量须大于 0'};
+  const n=mUnit==='张'?rz(v):rz(v/SIZE[r.sym]);
+  if(n>r.qty)return{err:`超过当前持仓量 ${qt(r,r.qty,mUnit)}`};
   return{err:null,n};
 }
 function updatePreview(){
@@ -530,17 +563,18 @@ function updatePreview(){
   $('qtyErr').hidden=!err;$('qtyErr').textContent=err||'';$('qtyBox').classList.toggle('err',!!err);
   const ok=n&&!err;
   const pnl=ok?dir*(c.mark-r.entry)*n*s:null;
-  const left=ok?r.qty-n:null;
+  const left=ok?rz(r.qty-n):null;
+  $('qtyConv').textContent=ok?`≈ ${qt(r,n,mUnit==='张'?'币':'张')}`:'';
   $('preview').innerHTML=`
     <div class="pr"><span class="k">成交价格</span><span><span class="num">${fmt(c.mark,pd)}</span> <span class="muted">（执行时实时标记价）</span></span></div>
     <div class="pr"><span class="k">对手方</span><span class="muted">无对手仓位，直接结算；盈亏由平台账户承接</span></div>
     <div class="pr"><span class="k">本次减仓价值</span><span class="num">${ok?fmt(n*s*c.mark)+' U':'--'}</span></div>
     <div class="pr"><span class="k">预计已实现盈亏</span><span class="num ${ok?cls(pnl):''}">${ok?sgn(pnl)+' U':'--'}</span></div>
     <div class="pr"><span class="k">手续费</span><span><span class="num">0.00 U</span> <span class="warn">⚠️ Q3 免收/收取待确认</span></span></div>
-    <div class="pr"><span class="k">减仓后剩余持仓</span><span class="num">${ok?(left===0?'<b style="color:#f5222d">0 张（仓位全部平掉）</b>':fmt(left,0)+' 张'):'--'}</span></div>`;
+    <div class="pr"><span class="k">减仓后剩余持仓</span><span class="num">${ok?(left===0?'<b style="color:#f5222d">0（仓位全部平掉）</b>':qb(r,left)):'--'}</span></div>`;
   const over=ok&&n>r.avail;
   $('overAvail').hidden=!over;
-  if(over)$('overAvail').innerHTML=`减仓数量超出可平量 <b>${fmt(n-r.avail,0)}</b> 张（该仓位有 ${fmt(r.qty-r.avail,0)} 张被平仓挂单占用）。执行时将先撤销该仓位上的平仓挂单再减仓。<span class="warn">⚠️ Q7 挂单处理方式待确认</span>`;
+  if(over)$('overAvail').innerHTML=`减仓数量超出可平量 <b>${qb(r,rz(n-r.avail))}</b>（该仓位有 ${qb(r,rz(r.qty-r.avail))} 被平仓挂单占用）。执行时将先撤销该仓位上的平仓挂单再减仓。<span class="warn">⚠️ Q7 挂单处理方式待确认</span>`;
   $('adlSubmit').disabled=!ok;
 }
 $('qtyIn').addEventListener('input',updatePreview);
@@ -551,7 +585,7 @@ function toConfirm(){
   const {n}=parseQty();
   if($('reason').value.trim().length<5){$('reasonErr').hidden=false;$('reason').focus();return}
   const r=curRow,c=calc(r),pd=PD[r.sym];
-  $('cfmTxt').innerHTML=`即将对 UID <b>${r.uid}</b> 的 <b>${r.sym} ${r.side==='L'?'多仓':'空仓'}</b> 执行 ADL 减仓 <b>${fmt(n,0)} 张</b>${n===r.qty?'（<b>全部平仓</b>）':''}，按执行时标记价成交（当前 ${fmt(c.mark,pd)}）。<br><br>· 操作执行后<b>不可撤销</b><br>· 用户端将以「ADL 自动减仓」展示，并收到通知<br>· 操作人 ${OPERATOR} 将记入订单明细`;
+  $('cfmTxt').innerHTML=`即将对 UID <b>${r.uid}</b> 的 <b>${r.sym} ${r.side==='L'?'多仓':'空仓'}</b> 执行 ADL 减仓 <b>${qb(r,n)}</b>${n===r.qty?'（<b>全部平仓</b>）':''}，按执行时标记价成交（当前 ${fmt(c.mark,pd)}）。<br><br>· 操作执行后<b>不可撤销</b><br>· 用户端将以「ADL 自动减仓」展示，并收到通知<br>· 操作人 ${OPERATOR} 将记入订单明细`;
   $('cfmBtn').disabled=false;$('cfmBtn').innerHTML='确认执行';
   show('cfmMask');
 }
@@ -574,17 +608,17 @@ function execute(){
       r.qty=Math.max(1,Math.floor(r.qty/2));r.avail=Math.min(r.avail,r.qty);
       document.querySelector('input[name=sim][value=ok]').checked=true;
       fillInfo();updatePreview();render();
-      $('execErr').hidden=false;$('execErr').innerHTML=`<b>仓位已变动</b>：执行前该仓位持仓量变为 ${fmt(r.qty,0)} 张${n>r.qty?`，小于输入的 ${fmt(n,0)} 张`:''}。本次未执行，请核对后重新提交。`;return;
+      $('execErr').hidden=false;$('execErr').innerHTML=`<b>仓位已变动</b>：执行前该仓位持仓量变为 ${qt(r,r.qty,mUnit)}${n>r.qty?`，小于输入的 ${qt(r,n,mUnit)}`:''}。本次未执行，请核对后重新提交。`;return;
     }
     const c=calc(r),s=SIZE[r.sym],dir=r.side==='L'?1:-1,pnl=dir*(c.mark-r.entry)*n*s;
-    const cancelled=Math.max(0,n-r.avail);
+    const cancelled=rz(Math.max(0,n-r.avail));
     r.orders.push({oid:String(BigInt(r.pid)+BigInt(r.orders.length*13+101)),dir:r.side==='L'?'平多':'平空',type:'ADL减仓',qty:n,price:c.mark,avg:c.mark,op:OPERATOR,time:'2026-10-09 '+new Date().toTimeString().slice(0,8)});
-    r.qty-=n;r.avail=Math.max(0,Math.min(r.avail,r.qty));r.adl+=n;r.rpnl+=pnl;r.upd='2026-10-09 '+new Date().toTimeString().slice(0,8);
-    const full=r.qty===0;
+    r.qty=rz(r.qty-n);r.avail=rz(Math.max(0,Math.min(r.avail,r.qty)));r.adl=rz(r.adl+n);r.rpnl+=pnl;r.upd='2026-10-09 '+new Date().toTimeString().slice(0,8);
+    const full=r.qty<=0;
     if(full){rows=rows.filter(x=>x!==r);view=view.filter(x=>x!==r)}
     const pid=r.pid;closeAdl();render();
     if(!full){const tr=document.querySelector(`tr[data-pid="${pid}"]`);tr&&tr.classList.add('flash')}
-    toast(full?`ADL 减仓成功：${fmt(n,0)} 张 @ ${fmt(c.mark,PD[r.sym])}，仓位已全部平掉，已从当前持仓移除`:`ADL 减仓成功：${fmt(n,0)} 张 @ ${fmt(c.mark,PD[r.sym])}，已实现盈亏 ${sgn(pnl)} U${cancelled?`，已撤销平仓挂单 ${cancelled} 张`:''}`,'ok');
+    toast(full?`ADL 减仓成功：${qb(r,n)} @ ${fmt(c.mark,PD[r.sym])}，仓位已全部平掉，已从当前持仓移除`:`ADL 减仓成功：${qb(r,n)} @ ${fmt(c.mark,PD[r.sym])}，已实现盈亏 ${sgn(pnl)} U${cancelled?`，已撤销平仓挂单 ${qt(r,cancelled,'张')}`:''}`,'ok');
   },900);
 }
 
@@ -595,7 +629,7 @@ function openOrders(pid){
   $('ordBody').innerHTML=r.orders.map((o,i)=>`<tr>
     <td>${i+1}</td><td class="num">${pid}</td><td class="num">${o.oid}</td><td>${o.dir}</td>
     <td>${o.type==='ADL减仓'?'<span class="adl-tag">ADL减仓</span>':o.type}</td>
-    <td class="num">${fmt(o.qty,0)}</td><td class="num">${fmt(o.price,PD[r.sym])}</td><td>是</td><td class="num">${fmt(o.avg,PD[r.sym])}</td>
+    <td class="num">${qt(r,o.qty,listUnit)}</td><td class="num">${fmt(o.price,PD[r.sym])}</td><td>是</td><td class="num">${fmt(o.avg,PD[r.sym])}</td>
     <td>${o.op}</td><td class="num">${o.time}</td></tr>`).join('');
   $('ordTotal').textContent=`共 ${r.orders.length} 条记录`;
   show('ordMask');
@@ -610,6 +644,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){['cfmMask','adlMask
 function switchView(b){document.querySelectorAll('.view-switch button').forEach(x=>x.classList.toggle('on',x===b));['viewAdmin','viewUser'].forEach(id=>document.getElementById(id).hidden=id!==b.dataset.v)}
 function uTab(t){document.querySelectorAll('#uTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t);document.getElementById('ntf').classList.remove('show')}
 document.querySelectorAll('#uTabs button').forEach(b=>b.onclick=()=>uTab(b.dataset.t));
+document.querySelectorAll('#listSeg button').forEach(b=>b.onclick=e=>{e.stopPropagation();listUnit=b.dataset.u;syncSeg('listSeg',listUnit);render()});
+document.querySelectorAll('#mSeg button').forEach(b=>b.onclick=()=>setMUnit(b.dataset.u));
 render();
 </script>
 </body>
