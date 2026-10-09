@@ -265,7 +265,7 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
       <table>
         <tr><th>类型</th><th>位置</th><th>说明</th><th>待确认</th></tr>
         <tr><td class="tag-add">新增</td><td>操作列「ADL减仓」按钮</td><td>和「平仓」并列。仅浮盈仓位（未实现盈亏 &gt; 0）可点，亏损仓位置灰</td><td><span class="warn">⚠️ Q4 可减门槛待确认</span></td></tr>
-        <tr><td class="tag-add">新增</td><td>ADL 减仓弹窗</td><td>输入减仓数量（张）→ 预览成交价 / 预计已实现盈亏 / 剩余持仓 → 填写减仓原因 → 二次确认 → 执行</td><td>✅ Q1 不产生对手仓位，盈亏计入平台账户<br>✅ Q2 按执行时标记价成交<br><span class="warn">⚠️ Q3 手续费</span> <span class="warn">⚠️ Q9 原因必填</span></td></tr>
+        <tr><td class="tag-add">新增</td><td>ADL 减仓弹窗</td><td>输入减仓数量（张 / 币）→ 预览成交价 / 预计已实现盈亏 / 剩余持仓 → 二次确认 → 执行（不填写减仓原因）</td><td>✅ Q1 不产生对手仓位，盈亏计入平台账户<br>✅ Q2 按执行时标记价成交<br><span class="warn">⚠️ Q3 手续费</span></td></tr>
         <tr><td class="tag-mod">调整</td><td>「未实现盈亏」「回报率」列</td><td>支持点表头排序，方便运营找浮盈高的仓位</td><td>—</td></tr>
         <tr><td class="tag-mod">调整</td><td>「持仓量/可平量」列（已有）</td><td>表头可切换单位：张 / 币（币 = 张 × 合约面值，如 BTCUSDT 1 张 = 0.0001 BTC）；「自动减仓量」列跟随同一单位</td><td>—</td></tr>
         <tr><td class="tag-add">新增</td><td>ADL 弹窗 · 减仓数量</td><td>输入框可切换 张 / 币，默认跟随列表当前单位；切换时自动换算已输入的数值；两种单位都支持小数</td><td><span class="warn">⚠️ 小数位数待确认（原型暂按张 2 位，币 = 张精度 × 面值）</span></td></tr>
@@ -395,11 +395,6 @@ textarea.ctrl{height:64px;padding:8px 10px;resize:vertical}
         <label>执行预览</label>
         <div class="preview" id="preview"></div>
         <div class="alert alert-warn" id="overAvail" hidden></div>
-      </div>
-      <div class="form-row">
-        <label><span class="req">*</span>减仓原因 <span class="warn">⚠️ Q9 是否强制填写待确认</span></label>
-        <textarea class="ctrl" id="reason" placeholder="仅内部留痕，用户不可见。例：BTCUSDT 保险基金低于水位，按浮盈排序减仓"></textarea>
-        <div class="err-msg" id="reasonErr" hidden>请填写减仓原因（至少 5 个字）</div>
       </div>
       <div class="alert alert-err" id="execErr" hidden></div>
     </div>
@@ -550,8 +545,8 @@ function hide(id){$(id).classList.remove('show')}
 /* ---------- ADL 减仓 ---------- */
 function openAdl(pid){
   curRow=rows.find(r=>r.pid===pid); if(!curRow)return;
-  $('qtyIn').value='';$('reason').value='';
-  $('qtyErr').hidden=true;$('reasonErr').hidden=true;$('execErr').hidden=true;$('qtyBox').classList.remove('err');
+  $('qtyIn').value='';
+  $('qtyErr').hidden=true;$('execErr').hidden=true;$('qtyBox').classList.remove('err');
   mUnit=listUnit;syncSeg('mSeg',mUnit);
   fillInfo();updatePreview();show('adlMask');setTimeout(()=>$('qtyIn').focus(),50);
 }
@@ -609,12 +604,10 @@ function updatePreview(){
   $('adlSubmit').disabled=!ok;
 }
 $('qtyIn').addEventListener('input',updatePreview);
-$('reason').addEventListener('input',()=>{if($('reason').value.trim().length>=5)$('reasonErr').hidden=true});
 function closeAdl(){hide('adlMask');curRow=null}
 
 function toConfirm(){
   const {n}=parseQty();
-  if($('reason').value.trim().length<5){$('reasonErr').hidden=false;$('reason').focus();return}
   const r=curRow,c=calc(r),pd=PD[r.sym];
   $('cfmTxt').innerHTML=`即将对 UID <b>${r.uid}</b> 的 <b>${r.sym} ${r.side==='L'?'多仓':'空仓'}</b> 执行 ADL 减仓 <b>${qb(r,n)}</b>${n===r.qty?'（<b>全部平仓</b>）':''}，按执行时标记价成交（当前 ${fmt(c.mark,pd)}）。<br><br>· 操作执行后<b>不可撤销</b><br>· 用户端在历史委托 / 成交记录 / 仓位历史中以「ADL」标签展示<br>· 操作人 ${OPERATOR} 将记入订单明细`;
   $('cfmBtn').disabled=false;$('cfmBtn').innerHTML='确认执行';
