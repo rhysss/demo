@@ -74,7 +74,7 @@
 
 <div class="cover">
   <h1>中台 ADL 减仓 PRD</h1>
-  <div class="ver">版本 V1.3 · 2026-10-11 · 修订人 Rhys</div>
+  <div class="ver">版本 V1.4 · 2026-10-11 · 修订人 Rhys</div>
   <div class="sub">需求类型：0→1 · 规模 L ｜ 配套原型：<a href="https://forclaudecode.vercel.app/1009-中台ADL减仓.html">1009-中台ADL减仓.html</a> ｜ 规则来源：规则台账_ADL减仓 v1.0（R01–R19）</div>
 </div>
 
@@ -285,7 +285,7 @@ flowchart LR
 <div class="row2"><figure class="fig"><img src="中台ADL减仓_PRD_assets/03_confirm.jpg" alt="图 3　二次确认" loading="lazy"><figcaption>图 3　二次确认</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/05_fail.jpg" alt="图 4　执行失败（系统异常）" loading="lazy"><figcaption>图 4　执行失败（系统异常）</figcaption></figure></div><figure class="fig"><img src="中台ADL减仓_PRD_assets/04_success.jpg" alt="图 5　执行成功：顶部提示 + 该行高亮，持仓量 / 自动减仓量同步刷新" loading="lazy"><figcaption>图 5　执行成功：顶部提示 + 该行高亮，持仓量 / 自动减仓量同步刷新</figcaption></figure>
 <table>
   <tr><th>状态</th><th>表现</th></tr>
-  <tr><td>二次确认</td><td>文案：「即将对 UID xxx 的 BTCUSDT 多仓执行 ADL 减仓 100 张（0.01 BTC）（全部平仓时追加『全部平仓』），按执行时标记价成交（当前 xxx）。操作执行后不可撤销；用户端在历史委托 / 成交记录 / 仓位历史中以『ADL』标签展示；操作人 xxx 将记入订单明细」。按钮：返回修改 / 确认执行。</td></tr>
+  <tr><td>二次确认</td><td>文案：「即将对 UID xxx 的 BTCUSDT 多仓执行 ADL 减仓 100 张（0.01 BTC）（全部平仓时追加『全部平仓』），按执行时标记价成交（当前 xxx）。」不附加其他说明。按钮：返回修改 / 确认执行。</td></tr>
   <tr><td>执行中</td><td>「确认执行」显示加载并禁用，防止重复提交。</td></tr>
   <tr><td>成功 · 部分减仓</td><td>关闭弹窗，顶部提示「ADL 减仓成功：100 张（0.01 BTC）@ 成交价，已实现盈亏 +xx U（有挂单时追加『已撤销该仓位全部平仓挂单（X 张）』）」。该行高亮闪烁，持仓量、可平量、自动减仓量、已实现盈亏、更新时间同步刷新。</td></tr>
   <tr><td>成功 · 全部减仓</td><td>提示「……仓位已全部平掉，已从当前持仓移除」，该行从列表消失。</td></tr>
@@ -434,6 +434,7 @@ flowchart LR
   <tr><td>V1.1</td><td>2026-10-09</td><td>初稿（评审前）</td><td>3.3 全部截图占位替换为原型截图（图 1–14）；文档主题色改为淡紫色</td><td>PM 要求补齐原型截图、调整配色</td></tr>
   <tr><td>V1.2</td><td>2026-10-11</td><td>初稿（评审前）</td><td>涨跌色改为中台 / 主站绿涨紫跌，ADL 指示灯改为主站色；减仓弹窗去掉「对手方」字段；输入数量后上方仓位信息联动为减仓后数据；截图全部重截</td><td>业务方（Yuushi）对弹窗的反馈</td></tr>
   <tr><td>V1.3</td><td>2026-10-11</td><td>初稿（评审前）</td><td>减仓弹窗删除标题标签与联动提示行；输入数量后直接显示减仓后数值，不再划线展示原值；持仓量 / 可平量、累计已 ADL 按列表所选单位显示；图 2、图 4 重截</td><td>PM 对弹窗的反馈</td></tr>
+  <tr><td>V1.4</td><td>2026-10-11</td><td>初稿（评审前）</td><td>二次确认弹窗删除三条说明（不可撤销 / 用户端展示方式 / 操作人记录）；图 3 重截</td><td>PM 对二次确认弹窗的反馈</td></tr>
 </table>
 
 </div></div>
