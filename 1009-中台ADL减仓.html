@@ -642,7 +642,7 @@ function closeAdl(){hide('adlMask');curRow=null}
 function toConfirm(){
   const {n}=parseQty();
   const r=curRow,c=calc(r),pd=PD[r.sym];
-  $('cfmTxt').innerHTML=`即将对 UID <b>${r.uid}</b> 的 <b>${r.sym} ${r.side==='L'?'多仓':'空仓'}</b> 执行 ADL 减仓 <b>${qb(r,n)}</b>${n===r.qty?'（<b>全部平仓</b>）':''}，按执行时标记价成交（当前 ${fmt(c.mark,pd)}）。<br><br>· 操作执行后<b>不可撤销</b><br>· 用户端在历史委托 / 成交记录 / 仓位历史中以「ADL」标签展示<br>· 操作人 ${OPERATOR} 将记入订单明细`;
+  $('cfmTxt').innerHTML=`即将对 UID <b>${r.uid}</b> 的 <b>${r.sym} ${r.side==='L'?'多仓':'空仓'}</b> 执行 ADL 减仓 <b>${qb(r,n)}</b>${n===r.qty?'（<b>全部平仓</b>）':''}，按执行时标记价成交（当前 ${fmt(c.mark,pd)}）。`;
   $('cfmBtn').disabled=false;$('cfmBtn').innerHTML='确认执行';
   show('cfmMask');
 }
