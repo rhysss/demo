@@ -74,7 +74,7 @@
 
 <div class="cover">
   <h1>中台 ADL 减仓 PRD</h1>
-  <div class="ver">版本 V2.1 · 2026-10-12 · 修订人 Rhys</div>
+  <div class="ver">版本 V2.2 · 2026-10-12 · 修订人 Rhys</div>
   <div class="sub">需求类型：0→1 · 规模 L ｜ 配套原型：<a href="https://forclaudecode.vercel.app/1009-中台ADL减仓.html">1009-中台ADL减仓.html</a> ｜ 规则来源：规则台账_ADL减仓 v1.0（R01–R19）</div>
 </div>
 
@@ -107,7 +107,7 @@
   <tr><th>维度</th><th>行业做法</th><th>本方案</th></tr>
   <tr><td>事前提示</td><td>五家持仓上均有 5 格 ADL 指示灯</td><td>沿用平台现有指示灯，并作为可减门槛</td></tr>
   <tr><td>仓位区事后展示</td><td>五家均不在剩余仓位上加标记，部分减仓只是数量变少</td><td>一致：不加任何标记</td></tr>
-  <tr><td>历史记录标识</td><td>四家都把 ADL 和普通平仓、强平分开标识；OKX 仓位历史区分「ADL 未全平 / 全平」</td><td>历史委托、成交记录标「ADL」；仓位历史区分「ADL 部分减仓 / ADL 全部平仓」</td></tr>
+  <tr><td>历史记录标识</td><td>四家都把 ADL 和普通平仓、强平分开标识；OKX 仓位历史区分「ADL 未全平 / 全平」</td><td>历史委托、成交记录、历史仓位均标「ADL」；历史仓位沿用现有按仓位聚合的展示方式</td></tr>
   <tr><td>成交价</td><td>Binance / Bybit / Gate 用破产价；OKX 通常用标记价格</td><td>执行时的标记价格（与 OKX 一致）</td></tr>
   <tr><td>手续费</td><td>仅 Bybit 收被减方 Maker 费，其余免收</td><td>不收</td></tr>
   <tr><td>挂单处理</td><td>Bybit / Gate 撤销被减用户的活动委托</td><td>撤销该仓位全部平仓类挂单</td></tr>
@@ -221,7 +221,7 @@ stateDiagram-v2
   <tr><td>F6</td><td>中台</td><td>「未实现盈亏」「回报率」支持排序</td><td><span class="tag-mod">调整</span></td><td>P1</td></tr>
   <tr><td>F7</td><td>中台</td><td>「持仓量/可平量」张 / 币 / USDT 切换，「自动减仓量」跟随</td><td><span class="tag-mod">调整</span></td><td>P1</td></tr>
   <tr><td>F8</td><td>App / Web</td><td>历史委托、成交记录显示「ADL」标签及说明</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
-  <tr><td>F9</td><td>App / Web</td><td>仓位历史区分「ADL 部分减仓 / ADL 全部平仓」</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
+  <tr><td>F9</td><td>App / Web</td><td>历史仓位：发生过 ADL 的仓位显示「ADL」标签</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
   <tr><td>F10</td><td>App / Web</td><td>被撤挂单显示「已撤销 · 因 ADL」</td><td><span class="tag-new">新增</span></td><td>P0</td></tr>
 </table>
 
@@ -236,7 +236,7 @@ flowchart LR
   subgraph 用户端
     P[当前持仓：数量变少 / 消失] --- H[历史委托：ADL 标签 + 被撤挂单]
     H --- T[成交记录：ADL 标签]
-    T --- PH[仓位历史：ADL 部分减仓 / 全部平仓]
+    T --- PH[历史仓位：ADL 标签]
   end
   R -. 同步 .-> P
 </div>
@@ -306,14 +306,14 @@ flowchart LR
 </table>
 
 <h4>3.3.5 用户端 · App / Web</h4>
-<p><strong>App · 合约页持仓区</strong>（ADL 前 → 部分 ADL 后 → 全部 ADL 后；虚线框为变化项，原型标注，非实际 UI）＋ <strong>App · 交易记录</strong>（部分 ADL 后：历史委托 / 历史仓位 / 交易历史 / 资金流水）</p><div class="phones"><figure class="fig"><img src="中台ADL减仓_PRD_assets/11_app_before.jpg" alt="图 7　ADL 前" loading="lazy"><figcaption>图 7　ADL 前</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/12_app_partial.jpg" alt="图 8　部分 ADL 后" loading="lazy"><figcaption>图 8　部分 ADL 后</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/13_app_full.jpg" alt="图 9　全部 ADL 后" loading="lazy"><figcaption>图 9　全部 ADL 后</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/14_app_partial_hist.jpg" alt="图 10　交易记录 · 历史委托" loading="lazy"><figcaption>图 10　交易记录 · 历史委托</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/15_app_partial_pos.jpg" alt="图 10-1　交易记录 · 历史仓位" loading="lazy"><figcaption>图 10-1　交易记录 · 历史仓位</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/16_app_partial_fill.jpg" alt="图 10-2　交易记录 · 交易历史" loading="lazy"><figcaption>图 10-2　交易记录 · 交易历史</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/17_app_flow.jpg" alt="图 10-3　交易记录 · 资金流水（不改动）" loading="lazy"><figcaption>图 10-3　交易记录 · 资金流水（不改动）</figcaption></figure></div><p><strong>Web · 合约页仓位区</strong>（页签：当前持仓 / 当前委托 / 历史仓位 / 历史委托〔限价&amp;市价 · 止盈止损 · 计划委托〕/ 资金流水 / 历史成交）</p><figure class="fig"><img src="中台ADL减仓_PRD_assets/07_web_before.jpg" alt="图 11　ADL 前 · 当前持仓（止盈 95,000）" loading="lazy"><figcaption>图 11　ADL 前 · 当前持仓（止盈 95,000）</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/08_web_partial.jpg" alt="图 12　部分 ADL 后 · 当前持仓：数量变为 8 张，止盈被撤，无任何 ADL 标记" loading="lazy"><figcaption>图 12　部分 ADL 后 · 当前持仓：数量变为 8 张，止盈被撤，无任何 ADL 标记</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/18_web_partial_phist.jpg" alt="图 13　部分 ADL 后 · 历史仓位：「ADL 部分减仓」，平仓时间「--」" loading="lazy"><figcaption>图 13　部分 ADL 后 · 历史仓位：「ADL 部分减仓」，平仓时间「--」</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/09_web_partial_hist.jpg" alt="图 14　部分 ADL 后 · 历史委托 · 限价&市价：订单类型「ADL」" loading="lazy"><figcaption>图 14　部分 ADL 后 · 历史委托 · 限价&市价：订单类型「ADL」</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/19_web_partial_tpsl.jpg" alt="图 15　部分 ADL 后 · 历史委托 · 止盈止损：订单状态「因 ADL 撤销」" loading="lazy"><figcaption>图 15　部分 ADL 后 · 历史委托 · 止盈止损：订单状态「因 ADL 撤销」</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/20_web_partial_fill.jpg" alt="图 16　部分 ADL 后 · 历史成交：「ADL」标签，手续费 0" loading="lazy"><figcaption>图 16　部分 ADL 后 · 历史成交：「ADL」标签，手续费 0</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/10_web_full_phist.jpg" alt="图 17　全部 ADL 后 · 历史仓位：「ADL 全部平仓」" loading="lazy"><figcaption>图 17　全部 ADL 后 · 历史仓位：「ADL 全部平仓」</figcaption></figure><p>App 与 Web 规则一致，页面名称不同：App「交易记录」页的页签为 历史委托 / 历史仓位 / 资金流水 / 交易历史，Web 为 历史仓位 / 历史委托（限价&amp;市价 · 止盈止损 · 计划委托）/ 资金流水 / 历史成交。以下以一笔 0.0108 BTC 的多仓被减 0.01 BTC 为例。ADL 记录中的数量统一用币单位（R19）；同页其他记录保持各端现有单位（App 现有为 USDT）。</p>
+<p><strong>App · 合约页持仓区</strong>（ADL 前 → 部分 ADL 后 → 全部 ADL 后；虚线框为变化项，原型标注，非实际 UI）＋ <strong>App · 交易记录</strong>（部分 ADL 后：历史委托 / 历史仓位 / 交易历史 / 资金流水）</p><div class="phones"><figure class="fig"><img src="中台ADL减仓_PRD_assets/11_app_before.jpg" alt="图 7　ADL 前" loading="lazy"><figcaption>图 7　ADL 前</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/12_app_partial.jpg" alt="图 8　部分 ADL 后" loading="lazy"><figcaption>图 8　部分 ADL 后</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/13_app_full.jpg" alt="图 9　全部 ADL 后" loading="lazy"><figcaption>图 9　全部 ADL 后</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/14_app_partial_hist.jpg" alt="图 10　交易记录 · 历史委托" loading="lazy"><figcaption>图 10　交易记录 · 历史委托</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/15_app_partial_pos.jpg" alt="图 10-1　交易记录 · 历史仓位（「ADL」标签）" loading="lazy"><figcaption>图 10-1　交易记录 · 历史仓位（「ADL」标签）</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/16_app_partial_fill.jpg" alt="图 10-2　交易记录 · 交易历史" loading="lazy"><figcaption>图 10-2　交易记录 · 交易历史</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/17_app_flow.jpg" alt="图 10-3　交易记录 · 资金流水（不改动）" loading="lazy"><figcaption>图 10-3　交易记录 · 资金流水（不改动）</figcaption></figure></div><p><strong>Web · 合约页仓位区</strong>（页签：当前持仓 / 当前委托 / 历史仓位 / 历史委托〔限价&amp;市价 · 止盈止损 · 计划委托〕/ 资金流水 / 历史成交）</p><figure class="fig"><img src="中台ADL减仓_PRD_assets/07_web_before.jpg" alt="图 11　ADL 前 · 当前持仓（止盈 95,000）" loading="lazy"><figcaption>图 11　ADL 前 · 当前持仓（止盈 95,000）</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/08_web_partial.jpg" alt="图 12　部分 ADL 后 · 当前持仓：数量变为 8 张，止盈被撤，无任何 ADL 标记" loading="lazy"><figcaption>图 12　部分 ADL 后 · 当前持仓：数量变为 8 张，止盈被撤，无任何 ADL 标记</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/18_web_partial_phist.jpg" alt="图 13　部分 ADL 后 · 历史仓位：「ADL」标签，平仓时间为 ADL 执行时间" loading="lazy"><figcaption>图 13　部分 ADL 后 · 历史仓位：「ADL」标签，平仓时间为 ADL 执行时间</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/09_web_partial_hist.jpg" alt="图 14　部分 ADL 后 · 历史委托 · 限价&市价：订单类型「ADL」" loading="lazy"><figcaption>图 14　部分 ADL 后 · 历史委托 · 限价&市价：订单类型「ADL」</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/19_web_partial_tpsl.jpg" alt="图 15　部分 ADL 后 · 历史委托 · 止盈止损：订单状态「因 ADL 撤销」" loading="lazy"><figcaption>图 15　部分 ADL 后 · 历史委托 · 止盈止损：订单状态「因 ADL 撤销」</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/20_web_partial_fill.jpg" alt="图 16　部分 ADL 后 · 历史成交：「ADL」标签，手续费 0" loading="lazy"><figcaption>图 16　部分 ADL 后 · 历史成交：「ADL」标签，手续费 0</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/10_web_full_phist.jpg" alt="图 17　全部 ADL 后 · 历史仓位：「ADL」标签，已平仓量 = 持仓数量" loading="lazy"><figcaption>图 17　全部 ADL 后 · 历史仓位：「ADL」标签，已平仓量 = 持仓数量</figcaption></figure><p>App 与 Web 规则一致，页面名称不同：App「交易记录」页的页签为 历史委托 / 历史仓位 / 资金流水 / 交易历史，Web 为 历史仓位 / 历史委托（限价&amp;市价 · 止盈止损 · 计划委托）/ 资金流水 / 历史成交。以下以一笔 0.0108 BTC 的多仓被减 0.01 BTC 为例。ADL 记录中的数量统一用币单位（R19）；同页其他记录保持各端现有单位（App 现有为 USDT）。</p>
 <table>
   <tr><th>位置</th><th>部分 ADL 后</th><th>全部 ADL 后</th></tr>
   <tr><td>当前持仓</td><td>仓位仍在，数量变为 0.0008 BTC。未实现盈亏、保证金按剩余部分显示；开仓均价、收益率不变。<strong>不加任何 ADL 标记</strong>。指示灯按现有逻辑重新计算。</td><td>仓位消失；无其他仓位时显示「暂无持仓」。</td></tr>
   <tr><td>当前委托</td><td>该仓位的平仓类挂单全部消失，委托数相应减少。</td><td>同左。</td></tr>
   <tr><td>历史委托</td><td colspan="2"><strong>App</strong>：新增一张卡片，标题 BTC_USDT，状态「已成交」；标签「卖出（平多）/ 买入（平空）· 逐仓 / 全仓 · 杠杆 · ADL」；「已成交/总数量(BTC)」如 0.01/0.01，进度条满；委托价格「--」；委托时间为执行时间。被撤的平仓挂单状态显示「已撤销 · 因 ADL」。<br><strong>Web</strong>：「限价&amp;市价」子页签新增一行：合约名称「BTC 平多 / 平空」，订单类型「ADL」标签，成交数量/委托数量如「0.01 BTC(100%) / 0.01 BTC」，成交均价为执行时标记价格，触发条件、委托价格「--」，平仓盈亏为本次已实现盈亏，手续费 0，订单状态「全部成交」。被撤的止盈止损单在「止盈止损」子页签中，订单状态显示「因 ADL 撤销」（与现有「用户撤销」并列）。「计划委托」不改动。</td></tr>
   <tr><td>交易历史（App）/ 历史成交（Web）</td><td colspan="2"><strong>App</strong>：卡片标题 BTCUSDT 旁加「ADL」标签；交易品种、成交数量（如 0.01 BTC）、手续费 0、成交价格（执行时标记价格）、时间、成交ID。<br><strong>Web</strong>：交易品种 BTCUSDT 旁加「ADL」标签；成交价格为执行时标记价格；成交数量如 0.01 BTC；手续费 0；时间、成交 ID。</td></tr>
-  <tr><td>历史仓位（App / Web）</td><td>App 标签 / Web 合约名称旁显示「ADL 部分减仓」；平仓均价（Web：开仓均价/平仓均价）、平仓数量（Web：已平仓量/持仓数量，如 0.01 BTC / 0.0108 BTC）、已实现盈亏 / 收益率、开仓时间；平仓时间显示「--」。</td><td>「ADL 全部平仓」，平仓时间为执行时间。</td></tr>
+  <tr><td>历史仓位（App / Web）</td><td colspan="2"><strong>沿用现有展示方式</strong>：一个仓位对应一条记录，每次平仓（含 ADL）后更新这一条——已平仓量累加、平仓均价按加权平均重算、已实现盈亏累加、平仓时间更新为最近一次平仓时间；部分平仓也会展示。发生过 ADL 的仓位，在 Web 合约名称旁 / App 标签行显示「<strong>ADL</strong>」标签。示例（部分 ADL 后）：开仓时间 2026-10-02 09:15:40 / 平仓时间 2026-10-09 13:40:12，已平仓量 / 持仓数量 0.01 BTC / 0.0108 BTC，已实现盈亏 +59.2309（+71.79%）。</td></tr>
   <tr><td>资金流水（App / Web）</td><td colspan="2"><strong>不改动</strong>。ADL 与普通平仓一样，不在资金流水中产生记录（R20）。</td></tr>
   <tr><td>「ADL」标签说明</td><td colspan="2">Web 鼠标悬浮 / App 点击「ADL」标签时显示：「自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。」<span class="tag-td">⚠️ P17 文案待确认</span></td></tr>
   <tr><td>通知</td><td colspan="2">本期不发站内信、邮件、短信、推送 <span class="tag-td">⚠️ P05</span></td></tr>
@@ -328,7 +328,7 @@ flowchart LR
   <tr><td>4</td><td>输入非数字、0 或负数</td><td>提示「请输入大于 0 的数字」/「减仓数量须大于 0」</td><td>—</td></tr>
   <tr><td>5</td><td>小数位数超过合约精度</td><td>提示「张数最多支持 N 位小数」或「BTC 数量最多支持 N 位小数」</td><td>R18</td></tr>
   <tr><td>6</td><td>数量 &gt; 持仓量（输入时）</td><td>提示「超过当前持仓量 X」，不可提交</td><td>R17</td></tr>
-  <tr><td>7</td><td>数量恰好 = 持仓量</td><td>允许；二次确认标注「全部平仓」；成功后仓位从列表移除，用户端仓位历史为「ADL 全部平仓」</td><td>—</td></tr>
+  <tr><td>7</td><td>数量恰好 = 持仓量</td><td>允许；二次确认标注「全部平仓」；成功后仓位从列表移除，用户端历史仓位该条记录带「ADL」标签，已平仓量 = 持仓数量</td><td>—</td></tr>
   <tr><td>8</td><td>数量 &gt; 可平量但 ≤ 持仓量</td><td>允许；执行前撤销全部平仓类挂单</td><td>R14 / R17</td></tr>
   <tr><td>9</td><td>仓位有平仓挂单，减仓数量 ≤ 可平量</td><td>仍撤销该仓位全部平仓类挂单</td><td>R14</td></tr>
   <tr><td>10</td><td>打开弹窗后用户自行平仓或另一运营已减，执行时数量 &gt; 当前持仓量</td><td>报错、不执行，弹窗刷新为最新持仓</td><td>R17</td></tr>
@@ -338,7 +338,7 @@ flowchart LR
   <tr><td>14</td><td>系统异常 / 超时</td><td>不产生成交，仓位不变，可重试</td><td>—</td></tr>
   <tr><td>15</td><td>重复点击「确认执行」</td><td>执行中按钮禁用，只提交一次</td><td>—</td></tr>
   <tr><td>16</td><td>同一仓位多次 ADL</td><td>允许；每次生成独立的委托和成交记录，「自动减仓量」累计</td><td>R13</td></tr>
-  <tr><td>17</td><td>同一仓位既有 ADL 又有用户自己的平仓，用户端仓位历史的平仓类型</td><td>推荐：取最近一次平仓的类型（OKX 做法）</td><td><span class="tag-td">⚠️ P18</span></td></tr>
+  <tr><td>17</td><td>同一仓位既有 ADL 又有用户自己的平仓</td><td>历史仓位仍为一条聚合记录（数量、均价、盈亏合并计算）；只要该仓位发生过 ADL 就显示「ADL」标签</td><td><span class="tag-td">⚠️ P18</span></td></tr>
   <tr><td>18</td><td>双向持仓，同一合约同时有多仓和空仓</td><td>按持仓 ID 分别判断、分别操作，互不影响</td><td>R01</td></tr>
   <tr><td>19</td><td>逐仓仓位被部分 ADL</td><td>保证金按比例释放，连同已实现盈亏立即回到交易账户可用；剩余仓位的强平价基本不变</td><td>R16</td></tr>
   <tr><td>20</td><td>全仓仓位被部分 ADL</td><td>释放的保证金和已实现盈亏立即可用；对同账户其他仓位强平价的影响见 P07（推导为只会更安全）</td><td>R16 · <span class="tag-td">⚠️ P07</span></td></tr>
@@ -427,7 +427,7 @@ flowchart LR
   <tr><td>P15</td><td>仓位强平中、合约暂停交易 / 结算 / 下架时能否执行</td><td>拒绝执行</td><td>3.4 #13、5.2</td></tr>
   <tr><td>P16</td><td>哪些中台角色能看到和使用「ADL减仓」</td><td>与现有「平仓」按钮权限一致</td><td>3.3.1</td></tr>
   <tr><td>P17</td><td>用户端「ADL」标签的说明文案</td><td>见 3.3.5，需 PM / 客服确认</td><td>3.3.5</td></tr>
-  <tr><td>P18</td><td>同一仓位既有 ADL 又有普通平仓时，仓位历史的平仓类型怎么显示</td><td>取最近一次平仓的类型</td><td>3.4 #17</td></tr>
+  <tr><td>P18</td><td>同一仓位既有 ADL 又有普通平仓时，历史仓位的「ADL」标签规则</td><td>只要发生过 ADL 即显示</td><td>3.4 #17</td></tr>
   <tr><td>P21</td><td>USDT 输入的折算规则：按输入时标记价格折算为张数并向下取整、执行按张数；USDT 保留 2 位小数</td><td>按左侧规则</td><td>3.3.2、3.4 #24–25、5.2</td></tr>
 </table>
 </div>
@@ -448,6 +448,7 @@ flowchart LR
   <tr><td>V1.9</td><td>2026-10-12</td><td>初稿（评审前）</td><td>Web 仓位区按现有页面重做（当前持仓 / 当前委托 / 历史仓位 / 历史委托〔限价&amp;市价 · 止盈止损 · 计划委托〕/ 资金流水 / 历史成交）；被撤止盈止损单状态改为「因 ADL 撤销」；Web 截图扩为图 11–17</td><td>PM 提供现有 Web 页面</td></tr>
   <tr><td>V2.0</td><td>2026-10-12</td><td>初稿（评审前）</td><td>中台筛选「订单 ID」改「持仓 ID」、删除「保证金模式」；减仓弹窗删除「账户类型」；列表与弹窗单位改为下拉框并新增 USDT（按标记价折算，新增 P21）；图 1、2、4、5 重截</td><td>PM 反馈</td></tr>
   <tr><td>V2.1</td><td>2026-10-12</td><td>初稿（评审前）</td><td>减仓弹窗重新整理：上方固定为「当前仓位（操作前）」；执行预览分「本次减仓」（成交价、数量、价值、本次减仓预估盈亏、手续费）与「减仓后预估」（剩余持仓、剩余持仓价值、减仓后未实现盈亏、减仓后预估总已实现盈亏，均以「当前 → 减仓后」展示）；图 2、图 4 重截</td><td>业务方反馈：弹窗信息有点乱，希望前后对比更直观</td></tr>
+  <tr><td>V2.2</td><td>2026-10-12</td><td>初稿（评审前）</td><td>历史仓位改为沿用现有按仓位聚合的展示方式（部分平仓也展示、平仓时间为最近一次），ADL 统一显示「ADL」标签，取消「ADL 部分减仓 / 全部平仓」区分；P18 改为标签规则；图 10-1、13、17 重截</td><td>PM 提供现有手动减仓的历史仓位截图</td></tr>
 </table>
 
 </div></div>

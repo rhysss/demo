@@ -854,7 +854,7 @@ function aHRender(){
         +ordCard('已撤销 · 因 ADL','<span class="tg s">卖出</span><span class="tg">逐仓</span><span class="tg b">10x</span><span class="tg">止盈</span>',prog('USDT',0,'1026',false),'95000','2026-10-02 09:16:02'):'')
         +ordCard('已成交','<span class="tg b">买入</span><span class="tg">逐仓</span><span class="tg b">10x</span>',prog('USDT',openNotional,openNotional,true),'市价','2026-10-02 09:15:40');
   const posCard=(tags,cls,price,qty,pr,ot,ct)=>`<div class="tc"><div class="hd"><span>BTC_USDT</span></div><div class="tags">${tags}</div><div class="g2">${kv('平仓均价',price)}${kv('平仓数量',qty)}${kv('已实现盈亏/收益率',pr,cls)}${kv('开仓时间',ot)}${kv('平仓时间',ct)}</div></div>`;
-  H.pos=(done?posCard('<span class="tg b">多</span><span class="tg">逐仓</span><span class="tg b">10x</span>'+adlTag(aState==='full'?'ADL 全部平仓':'ADL 部分减仓'),'a-up',A.mark.toFixed(2),q+' BTC',`+${pnl.toFixed(4)} / +${roe.toFixed(2)}%`,'2026-10-02 09:15:40',aState==='full'?T:'--'):'')
+  H.pos=(done?posCard('<span class="tg b">多</span><span class="tg">逐仓</span><span class="tg b">10x</span>'+adlTag('ADL'),'a-up',A.mark.toFixed(2),q+' BTC',`+${pnl.toFixed(4)} / +${roe.toFixed(2)}%`,'2026-10-02 09:15:40',T):'')
         +posCard('<span class="tg b">多</span><span class="tg">逐仓</span><span class="tg b">26x</span>','a-down','63978.49','176.259825 USDT','-2.1451 / -40.84%','2026-03-30 06:49:18','2026-06-04 08:24:51');
   const flowCard=(amt,time,id)=>`<div class="tc"><div class="hd"><span>BTCUSDT</span></div><div class="g2">${kv('数量',amt+' USDT','a-down')}${kv('类型','资金费用')}${kv('时间',time)}${kv('成交ID',id)}</div></div>`;
   H.flow=`<div class="tc-note">原型标注：资金流水本期不改动。ADL 与普通平仓一样，不在资金流水中产生记录（R20）。</div>`
@@ -880,7 +880,7 @@ function uRender(){
   if(uT==='open'){h=st.ord?`<table class="wt"><thead><tr><th>合约名称</th><th>委托时间</th><th>成交数量/委托数量</th><th>委托价格</th><th>订单状态</th><th>订单 ID</th></tr></thead><tbody><tr>
      <td>${sym('开多')}</td><td>2026-10-02 09:16:02</td><td><span class="pct">0 张(0%)</span><br>108 张</td><td>止盈: <span class="up">95,000</span><br>止损: --</td><td>等待触发</td><td>${cp('678732202145783808')}</td></tr></tbody></table>`:empty('暂无委托')}
   if(uT==='phist'){
-    const adlRow=done?`<tr class="hl"><td>${sym('多')}${chip(full?'ADL 全部平仓':'ADL 部分减仓')}</td><td>${lev(10)}</td><td>2026-10-02 09:15:40<br>${full?T:'--'}</td><td>${af(A.entry)}<br>${af(A.mark)}</td>
+    const adlRow=done?`<tr class="hl"><td>${sym('多')}${chip('ADL')}</td><td>${lev(10)}</td><td>2026-10-02 09:15:40<br>${T}</td><td>${af(A.entry)}<br>${af(A.mark)}</td>
        <td class="up">+${pnl.toFixed(4)}<span class="ic">↗</span><br>(+${roe.toFixed(2)}%)</td><td>${q} BTC<br>0.0108 BTC</td></tr>`:'';
     h=`<table class="wt"><thead><tr><th>合约名称</th><th>仓位模式</th><th>开仓时间/平仓时间</th><th>开仓均价/平仓均价</th><th>已实现盈亏/盈亏率</th><th>已平仓量/持仓数量</th></tr></thead><tbody>${adlRow}
        <tr><td>${sym('多')}</td><td>${lev(26)}</td><td>2026-03-30 06:49:18<br>2026-06-04 08:24:51</td><td>65,000<br>63,978.49</td><td class="dn">-2.1451<span class="ic">↗</span><br>(-40.85%)</td><td>0.0021 BTC<br>0.0021 BTC</td></tr>
