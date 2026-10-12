@@ -253,11 +253,30 @@ table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%
 /* 历史页 */
 .ph-page{position:absolute;inset:0;background:#0e0f13;z-index:8;display:none;flex-direction:column}
 .ph-page.show{display:flex}
-.ph-page .bar{display:flex;align-items:center;gap:12px;padding:6px 16px 10px;font-size:17px;font-weight:600}
-.ph-page .bar .back{font-size:20px;cursor:pointer}
-.ph-htabs{display:flex;gap:20px;padding:4px 16px 10px;border-bottom:1px solid #1f2127}
-.ph-htabs span{font-size:14px;color:#6b6f78;cursor:pointer;padding-bottom:6px}
-.ph-htabs span.on{color:#fff;font-weight:600;border-bottom:2px solid #1db9a3}
+.ph-page .bar{display:flex;align-items:center;gap:18px;padding:14px 18px 18px;font-size:17px;font-weight:700}
+.ph-page .bar .back{font-size:22px;cursor:pointer;font-weight:400}
+.ph-htabs{display:flex;gap:24px;padding:0 16px 14px}
+.ph-htabs span{font-size:15px;color:#a3a6ad;cursor:pointer}
+.ph-htabs span.on{color:#fff;font-weight:700}
+.ph-chips{display:flex;gap:7px;padding:0 16px 6px}
+.ph-chips span{background:#3a3d45;color:#d3d5d9;font-size:12px;border-radius:3px;padding:4px 9px;display:inline-flex;align-items:center;gap:12px}
+.ph-chips span:after{content:'';border:4px solid transparent;border-top:5px solid #c9cbd0;margin-top:4px}
+.tc{padding:14px 16px 16px;border-bottom:1px solid #22242b}
+.tc .hd{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700;margin-bottom:9px}
+.tc .hd .st{font-size:12.5px;font-weight:400;color:#c9cbd0}
+.tc .tags{display:flex;gap:4px;margin-bottom:10px;align-items:center}
+.tc .tg{font-size:11.5px;padding:1px 6px;border-radius:2px;background:#3a3d45;color:#c9cbd0}
+.tc .tg.b{background:#123a37;color:#0fb4a0}.tc .tg.s{background:#2c2347;color:#8e63df}
+.tc .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.tc .k{font-size:11.5px;color:#7d818b;margin-bottom:3px}
+.tc .k b{color:#e8e9ec;font-weight:400}
+.tc .v{font-size:14px;color:#e8e9ec;font-variant-numeric:tabular-nums}
+.tc .prog{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.tc .v.a-up{color:#0fb4a0}.tc .v.a-down{color:#8e63df}
+.tc .bar2{width:84px;height:4px;border-radius:2px;background:#3a3d45;overflow:hidden}
+.tc .bar2 i{display:block;height:100%;background:#8e63df}
+.tc .mt{margin-bottom:10px}
+.tc-note{margin:6px 16px 4px;border:1px dashed #6b5a2a;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#d8c58a;line-height:1.6}
 .hc{padding:12px 16px;border-bottom:1px solid #1f2127}
 .hc .t{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:14px;font-weight:600}
 .hc .t .st{font-size:12px;font-weight:400;color:#9a9ea7}
@@ -419,8 +438,9 @@ table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%
    </div>
    <div class="ph-page" id="aHist">
     <div class="ph-status"><span>13:41</span><span style="font-size:12px">📶 🔋</span></div>
-    <div class="bar"><span class="back" onclick="aHist(false)">‹</span>历史记录</div>
-    <div class="ph-htabs" id="aHTabs"><span data-h="ord" class="on">历史委托</span><span data-h="fill">成交记录</span><span data-h="pos">仓位历史</span></div>
+    <div class="bar"><span class="back" onclick="aHist(false)">‹</span>交易记录</div>
+    <div class="ph-htabs" id="aHTabs"><span data-h="ord" class="on">历史委托</span><span data-h="pos">历史仓位</span><span data-h="flow">资金流水</span><span data-h="fill">交易历史</span></div>
+    <div class="ph-chips" id="aChips"></div>
     <div id="aHBody" style="overflow-y:auto;flex:1"></div>
    </div>
    <div class="ph-nav"><span>⌂<br>首页</span><span>◎<br>探索</span><span class="on">▤<br>合约</span><span>⟳<br>流动池</span><span>▣<br>资产</span></div>
@@ -771,16 +791,27 @@ function aRender(){
 function aHist(show,tab){if(tab)aHTab=tab;$('aHist').classList.toggle('show',show);aHRender()}
 function aHRender(){
   document.querySelectorAll('#aHTabs span').forEach(s=>s.classList.toggle('on',s.dataset.h===aHTab));
-  const done=aState!=='before',z=ADLZ[aState]||0,q=bz(z),pnl=(A.mark-A.entry)*q;
-  const adlOrd=`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#8b63e8;font-weight:400;font-size:12px">平多</span><span class="adl-b">ADL</span></span><span class="st">已成交</span></div>
-    <div class="kv"><div><span class="k">委托价</span><span>--</span></div><div><span class="k">成交均价</span><span>${af(A.mark)}</span></div><div><span class="k">数量 (BTC)</span><span>${q}</span></div><div><span class="k">手续费</span><span>0 USDT</span></div><div><span class="k">时间</span><span>10-09 13:40:12</span></div></div></div>`;
-  const tpCancel=`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#8b63e8;font-weight:400;font-size:12px">止盈 · 平多</span></span><span class="st">已撤销 · 因 ADL</span></div>
-    <div class="kv"><div><span class="k">触发价</span><span>95,000.00</span></div><div><span class="k">数量 (BTC)</span><span>0.0108</span></div><div><span class="k">时间</span><span>10-09 13:40:12</span></div></div></div>`;
-  const openOrd=`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#1db9a3;font-weight:400;font-size:12px">开多</span></span><span class="st">已成交</span></div>
-    <div class="kv"><div><span class="k">委托类型</span><span>市价</span></div><div><span class="k">成交均价</span><span>${af(A.entry)}</span></div><div><span class="k">数量 (BTC)</span><span>0.0108</span></div><div><span class="k">时间</span><span>10-02 09:15:40</span></div></div></div>`;
-  const posH=done?`<div class="hc"><div class="t"><span>BTCUSDT <span style="color:#1db9a3;font-weight:400;font-size:12px">多 · 逐仓 10x</span><span class="adl-b">${aState==='full'?'ADL 全部平仓':'ADL 部分减仓'}</span></span></div>
-    <div class="kv"><div><span class="k">开仓均价</span><span>${af(A.entry)}</span></div><div><span class="k">平仓均价</span><span>${af(A.mark)}</span></div><div><span class="k">已平 / 最大持仓</span><span>${q} / 0.0108</span></div><div><span class="k">平仓盈亏</span><span class="a-up">+${af(pnl)}</span></div><div><span class="k">平仓时间</span><span>${aState==='full'?'10-09 13:40:12':'--'}</span></div></div></div>`:'';
-  const H={ord:(done?adlOrd+tpCancel:'')+openOrd,fill:(done?adlOrd.replace('已成交','<span class="a-up">+'+af(pnl)+' USDT</span>'):'')+openOrd.replace('已成交',''),pos:posH||'<div class="ph-empty">暂无仓位历史</div>'};
+  const CH={ord:['类型','币种','日期'],pos:['币种','交易方向','日期'],flow:['币种','类型','日期'],fill:['币种','日期']};
+  $('aChips').innerHTML=CH[aHTab].map(c=>`<span>${c}</span>`).join('');
+  const done=aState!=='before',z=ADLZ[aState]||0,q=bz(z),pnl=(A.mark-A.entry)*q,roe=(A.mark-A.entry)/A.entry*A.lev*100,T='2026-10-09 13:40:12';
+  const adlTag=t=>`<span class="adl-b" style="margin-left:2px">${t}</span>`;
+  const kv=(k,v,cls='')=>`<div><div class="k">${k}</div><div class="v ${cls}">${v}</div></div>`;
+  const prog=(lab,a,b,full)=>`<div class="k"><b>已成交</b>/总数量(${lab})</div><div class="prog"><span class="v">${a}/${b}</span><span class="bar2"><i style="width:${full?100:0}%"></i></span></div>`;
+  const ordCard=(st,tags,progHtml,price,time)=>`<div class="tc"><div class="hd"><span>BTC_USDT</span><span class="st">${st}</span></div><div class="tags">${tags}</div>${progHtml}<div class="g2">${kv('委托价格',price)}${kv('委托时间',time)}</div></div>`;
+  const openNotional=af(0.0108*A.entry,6).replace(/,/g,'');
+  const H={};
+  H.ord=(done?ordCard('已成交','<span class="tg s">卖出</span><span class="tg">逐仓</span><span class="tg b">10x</span>'+adlTag('ADL'),prog('BTC',q,q,true),'--',T)
+        +ordCard('已撤销 · 因 ADL','<span class="tg s">卖出</span><span class="tg">逐仓</span><span class="tg b">10x</span><span class="tg">止盈</span>',prog('USDT',0,'1026',false),'95000','2026-10-02 09:16:02'):'')
+        +ordCard('已成交','<span class="tg b">买入</span><span class="tg">逐仓</span><span class="tg b">10x</span>',prog('USDT',openNotional,openNotional,true),'市价','2026-10-02 09:15:40');
+  const posCard=(tags,cls,price,qty,pr,ot,ct)=>`<div class="tc"><div class="hd"><span>BTC_USDT</span></div><div class="tags">${tags}</div><div class="g2">${kv('平仓均价',price)}${kv('平仓数量',qty)}${kv('已实现盈亏/收益率',pr,cls)}${kv('开仓时间',ot)}${kv('平仓时间',ct)}</div></div>`;
+  H.pos=(done?posCard('<span class="tg b">多</span><span class="tg">逐仓</span><span class="tg b">10x</span>'+adlTag(aState==='full'?'ADL 全部平仓':'ADL 部分减仓'),'a-up',A.mark.toFixed(2),q+' BTC',`+${pnl.toFixed(4)} / +${roe.toFixed(2)}%`,'2026-10-02 09:15:40',aState==='full'?T:'--'):'')
+        +posCard('<span class="tg b">多</span><span class="tg">逐仓</span><span class="tg b">26x</span>','a-down','63978.49','176.259825 USDT','-2.1451 / -40.84%','2026-03-30 06:49:18','2026-06-04 08:24:51');
+  const flowCard=(amt,time,id)=>`<div class="tc"><div class="hd"><span>BTCUSDT</span></div><div class="g2">${kv('数量',amt+' USDT','a-down')}${kv('类型','资金费用')}${kv('时间',time)}${kv('成交ID',id)}</div></div>`;
+  H.flow=`<div class="tc-note">原型标注：资金流水本期不改动。ADL 与普通平仓一样，不在资金流水中产生记录（R20）。</div>`
+        +flowCard('-0.0075','2026-10-09 08:00:00','679733940931543306')+flowCard('-0.0008','2026-10-09 00:00:00','679613146448544010');
+  const fillCard=(tag,qty,fee,price,time,id)=>`<div class="tc"><div class="hd"><span>BTCUSDT${tag}</span></div><div class="g2">${kv('交易品种','BTCUSDT')}${kv('成交数量',qty)}${kv('手续费',fee)}${kv('成交价格',price)}${kv('时间',time)}${kv('成交ID',id)}</div></div>`;
+  H.fill=(done?fillCard(adlTag('ADL'),q+' BTC','0',af(A.mark),T,'678732191894668611'):'')
+        +fillCard('',openNotional+' USDT','0.4456',af(A.entry),'2026-10-02 09:15:40','678732191894668544');
   $('aHBody').innerHTML=H[aHTab];
 }
 function uRender(){
