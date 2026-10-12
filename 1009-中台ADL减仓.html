@@ -138,6 +138,8 @@ table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%
 .seg button.on{background:var(--blue);color:#fff}
 .qty-box .seg{margin:0 6px 0 0}
 .qty-box .seg button{font-size:12px;line-height:24px;padding:0 10px}
+.usel{appearance:none;height:22px;border:1px solid var(--line-2);border-radius:2px;background:var(--bg-input) url("data:image/svg+xml,%3Csvg width='8' height='5' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h8L4 5z' fill='%23526fff'/%3E%3C/svg%3E") no-repeat right 6px center;color:var(--tx);font-size:11.5px;padding:0 20px 0 7px;margin-left:6px;cursor:pointer;vertical-align:middle}
+.qty-box .usel{height:26px;font-size:12px;margin:0 6px 0 0;min-width:78px}
 .qty-box .all{color:var(--blue);font-size:12px;padding:3px 8px;border-left:1px solid var(--line)}
 .hint{font-size:12px;color:var(--tx-3);margin-top:6px}
 .err-msg{font-size:12px;color:var(--red);margin-top:5px}
@@ -379,9 +381,7 @@ table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%
       <div class="f-item"><label>合约标的</label>
         <select class="ctrl" id="fSym"><option value="">全部</option><option>BTCUSDT</option><option>XRPUSDT</option><option>BNBUSDT</option><option>TRXUSDT</option><option>LTCUSDT</option></select></div>
       <div class="f-item"><label>UID</label><input class="ctrl" id="fUid" placeholder="请输入 UID"></div>
-      <div class="f-item"><label>订单 ID</label><input class="ctrl" id="fOid" placeholder="请输入订单 ID"></div>
-      <div class="f-item"><label>保证金模式</label>
-        <select class="ctrl" id="fMm"><option value="">全部</option><option>全仓</option><option>逐仓</option></select></div>
+      <div class="f-item"><label>持仓 ID</label><input class="ctrl" id="fPid" placeholder="请输入持仓 ID"></div>
     </div>
     <div class="f-row2">
       <span class="flt">筛选 <span style="color:var(--blue)">⌄</span></span>
@@ -402,7 +402,7 @@ table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%
           <th class="sl" style="left:206px;width:100px">合约标的</th>
           <th class="sl sl-last" style="left:306px;width:180px">持仓 ID</th>
           <th>订单 ID</th><th>开仓时间</th><th>更新时间</th><th>保证金模式</th><th>仓位模式</th><th>持仓方向</th>
-          <th>开仓均价(U)</th><th>持仓量/可平量 <span class="seg" id="listSeg"><button data-u="张" class="on">张</button><button data-u="币">币</button></span></th><th>仓位价值(U)</th><th>杠杆倍数</th><th>仓位保证金(U)</th>
+          <th>开仓均价(U)</th><th>持仓量/可平量 <select class="usel" id="listSel"><option value="张">张</option><option value="币">币</option><option value="U">USDT</option></select></th><th>仓位价值(U)</th><th>杠杆倍数</th><th>仓位保证金(U)</th>
           <th>强平价格(U)</th><th>标记价格(U)</th><th>破产价格(U)</th>
           <th class="sort" data-k="upnl">未实现盈亏(U)<i>⇅</i><span class="new-dot">排序</span></th>
           <th>已实现盈亏(U)</th>
@@ -486,7 +486,7 @@ table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%
         <label><span class="req">*</span>减仓数量</label>
         <div class="qty-box" id="qtyBox">
           <input id="qtyIn" class="num" placeholder="请输入要减仓的张数" autocomplete="off">
-          <span class="seg" id="mSeg"><button data-u="张" class="on">张</button><button data-u="币">币</button></span>
+          <select class="usel" id="mSel"><option value="张">张</option><option value="币">币</option><option value="U">USDT</option></select>
           <button class="all" onclick="fillAll()">全部</button>
         </div>
         <div class="hint" id="qtyHint"></div>
@@ -571,8 +571,12 @@ let sortK=null,sortDir=-1,view=rows.slice(),curRow=null;
 
 const fmt=(n,d=2)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fq=(z,d)=>Number(z).toLocaleString('en-US',{maximumFractionDigits:d});
-const qn=(r,z,u)=>u==='张'?fq(z,ZDEC):fq(z*SIZE[r.sym],cdec(r.sym));
-const ul=(r,u)=>u==='张'?'张':COIN[r.sym];
+const UDEC=2; // USDT 小数位 ⚠️ 待确认
+const per=(r,u)=>u==='张'?1:u==='币'?SIZE[r.sym]:SIZE[r.sym]*MARK[r.sym]; // 1 张折合多少该单位（USDT 按当前标记价）
+const udec=(r,u)=>u==='张'?ZDEC:u==='币'?cdec(r.sym):UDEC;
+const qn=(r,z,u)=>fq(z*per(r,u),udec(r,u));
+const ul=(r,u)=>u==='张'?'张':u==='币'?COIN[r.sym]:'USDT';
+const fl=(v,d)=>Math.floor(v*Math.pow(10,d)+1e-9)/Math.pow(10,d);
 const qt=(r,z,u)=>qn(r,z,u)+' '+ul(r,u);
 const qb=(r,z)=>`${qt(r,z,'张')}（${qt(r,z,'币')}）`;
 const sgn=(n,d=4)=>(n>0?'+':'')+fmt(n,d);
@@ -633,15 +637,15 @@ document.querySelectorAll('.sort').forEach(th=>th.onclick=()=>{
 });
 
 function query(){
-  const sym=fSym.value,uid=fUid.value.trim(),oid=fOid.value.trim(),mm=fMm.value;
+  const sym=fSym.value,uid=fUid.value.trim(),pid=fPid.value.trim();
   const tb=document.getElementById('tbody');
   tb.innerHTML=Array.from({length:6}).map(()=>`<tr class="skeleton">${Array.from({length:27}).map(()=>'<td><span class="bar"></span></td>').join('')}</tr>`).join('');
   setTimeout(()=>{
-    view=rows.filter(r=>(!sym||r.sym===sym)&&(!uid||r.uid.includes(uid))&&(!mm||r.mm===mm)&&(!oid||r.orders.some(o=>o.oid.includes(oid))));
+    view=rows.filter(r=>(!sym||r.sym===sym)&&(!uid||r.uid.includes(uid))&&(!pid||r.pid.includes(pid)));
     render();
   },500);
 }
-function resetFilter(){fSym.value='';fUid.value='';fOid.value='';fMm.value='';sortK=null;document.querySelectorAll('.sort').forEach(t=>{t.classList.remove('on');t.querySelector('i').textContent='⇅'});query()}
+function resetFilter(){fSym.value='';fUid.value='';fPid.value='';sortK=null;document.querySelectorAll('.sort').forEach(t=>{t.classList.remove('on');t.querySelector('i').textContent='⇅'});query()}
 
 const $=id=>document.getElementById(id);
 function show(id){$(id).classList.add('show')}
@@ -652,7 +656,7 @@ function openAdl(pid){
   curRow=rows.find(r=>r.pid===pid); if(!curRow)return;
   $('qtyIn').value='';
   $('qtyErr').hidden=true;$('execErr').hidden=true;$('qtyBox').classList.remove('err');
-  mUnit=listUnit;syncSeg('mSeg',mUnit);
+  mUnit=listUnit;syncSeg('mSel',mUnit);
   fillInfo();updatePreview();show('adlMask');setTimeout(()=>$('qtyIn').focus(),50);
 }
 function fillInfo(){
@@ -664,32 +668,34 @@ function fillInfo(){
   $('adlInfo').innerHTML=[
     ['UID',r.uid],['合约',r.sym],['方向',`<span class="${r.side==='L'?'side-l':'side-s'}">${r.side==='L'?'多仓':'空仓'}</span> · ${r.mm} ${r.lev}x`],['持仓 ID',`<span class="num" style="font-size:11.5px">${r.pid}</span>`],
     ['开仓均价',`<span class="num">${fmt(r.entry,pd)}</span>`],['标记价格',`<span class="num">${fmt(c.mark,pd)}</span>`],['持仓量 / 可平量',ch(qtyCell(r.qty,r.avail),left===0?`<span class="num">0 / 0 ${ul(r,mUnit)}</span>`:qtyCell(left,left))],['累计已 ADL',`<span class="num">${qt(r,adl2,mUnit)}</span>`],
-    ['未实现盈亏',ch(`<span class="num ${cls(c.upnl)}">${sgn(c.upnl)} U</span>`,`<span class="num ${cls(up2)}">${sgn(up2)} U</span>`)],['回报率',`<span class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</span>`],['已实现盈亏',ch(`<span class="num ${cls(r.rpnl)}">${sgn(r.rpnl)} U</span>`,`<span class="num ${cls(rp2)}">${sgn(rp2)} U</span>`)],['ADL 档位',ltHtml(r.light)],['账户类型',r.acct],
+    ['未实现盈亏',ch(`<span class="num ${cls(c.upnl)}">${sgn(c.upnl)} U</span>`,`<span class="num ${cls(up2)}">${sgn(up2)} U</span>`)],['回报率',`<span class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</span>`],['已实现盈亏',ch(`<span class="num ${cls(r.rpnl)}">${sgn(r.rpnl)} U</span>`,`<span class="num ${cls(rp2)}">${sgn(rp2)} U</span>`)],['ADL 档位',ltHtml(r.light)],
   ].map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
-  const d=mUnit==='张'?ZDEC:cdec(r.sym),min=mUnit==='张'?Math.pow(10,-ZDEC):Math.pow(10,-ZDEC)*SIZE[r.sym];
-  $('qtyIn').placeholder=mUnit==='张'?'请输入要减仓的张数':`请输入要减仓的 ${COIN[r.sym]} 数量`;
-  $('qtyHint').innerHTML=`可减范围 ${fq(min,d)} ~ ${qt(r,r.qty,mUnit)}，最多 ${d} 位小数（按合约数量精度配置）`;
+  const d=udec(r,mUnit),min=Math.pow(10,-ZDEC)*per(r,mUnit);
+  $('qtyIn').placeholder=mUnit==='张'?'请输入要减仓的张数':`请输入要减仓的 ${ul(r,mUnit)} 数量`;
+  $('qtyHint').innerHTML=`可减范围 ${fq(min,d)} ~ ${qt(r,r.qty,mUnit)}，最多 ${d} 位小数`+(mUnit==='U'?'（按当前标记价折算为张数，向下取整到合约精度）<span class="warn">⚠️ 折算规则待确认</span>':'（按合约数量精度配置）');
 }
 function setMUnit(u){
   if(u===mUnit)return;
   const r=curRow,raw=$('qtyIn').value.trim(),v=Number(raw);
   if(raw!==''&&/^\d+(\.\d+)?$/.test(raw)&&v>0){
-    $('qtyIn').value=u==='币'?String(+(v*SIZE[r.sym]).toFixed(cdec(r.sym))):String(rz(v/SIZE[r.sym]));
+    const z=v/per(r,mUnit);$('qtyIn').value=String(fl(z*per(r,u),udec(r,u)));
   }
-  mUnit=u;syncSeg('mSeg',u);fillInfo();updatePreview();
+  mUnit=u;syncSeg('mSel',u);fillInfo();updatePreview();
 }
-function syncSeg(id,u){document.querySelectorAll('#'+id+' button').forEach(b=>{b.classList.toggle('on',b.dataset.u===u);if(id==='mSeg'&&b.dataset.u==='币'&&curRow)b.textContent=COIN[curRow.sym]})}
-function fillAll(){const r=curRow;$('qtyIn').value=mUnit==='张'?String(r.qty):String(+(r.qty*SIZE[r.sym]).toFixed(cdec(r.sym)));updatePreview()}
+function syncSeg(id,u){const el=$(id);el.value=u;if(id==='mSel'&&curRow)el.querySelector('option[value="币"]').textContent=COIN[curRow.sym]}
+function fillAll(){const r=curRow;$('qtyIn').value=String(fl(r.qty*per(r,mUnit),udec(r,mUnit)));updatePreview()}
 function parseQty(){
   const raw=$('qtyIn').value.trim();
   if(raw==='')return{err:null,n:null};
   const r=curRow;
   if(!/^\d+(\.\d+)?$/.test(raw))return{err:'请输入大于 0 的数字'};
-  const d=mUnit==='张'?ZDEC:cdec(r.sym);
-  if((raw.split('.')[1]||'').length>d)return{err:`${mUnit==='张'?'张数':COIN[r.sym]+' 数量'}最多支持 ${d} 位小数`};
+  const d=udec(r,mUnit);
+  if((raw.split('.')[1]||'').length>d)return{err:`${mUnit==='张'?'张数':ul(r,mUnit)+' 数量'}最多支持 ${d} 位小数`};
   const v=Number(raw);
   if(v<=0)return{err:'减仓数量须大于 0'};
-  const n=mUnit==='张'?rz(v):rz(v/SIZE[r.sym]);
+  let n;
+  if(mUnit==='U'){const fullV=fl(r.qty*per(r,'U'),UDEC);if(v>r.qty*per(r,'U')+1e-9)return{err:`超过当前持仓量 ${qt(r,r.qty,'U')}`};n=v>=fullV?r.qty:fl(v/per(r,'U'),ZDEC);if(n<=0)return{err:`按当前标记价折算不足最小数量 ${fq(Math.pow(10,-ZDEC),ZDEC)} 张`}}
+  else n=mUnit==='张'?rz(v):rz(v/SIZE[r.sym]);
   if(n>r.qty)return{err:`超过当前持仓量 ${qt(r,r.qty,mUnit)}`};
   return{err:null,n};
 }
@@ -701,7 +707,7 @@ function updatePreview(){
   const ok=n&&!err;
   const pnl=ok?dir*(c.mark-r.entry)*n*s:null;
   const left=ok?rz(r.qty-n):null;
-  $('qtyConv').textContent=ok?`≈ ${qt(r,n,mUnit==='张'?'币':'张')}`:'';
+  $('qtyConv').textContent=ok?(mUnit==='张'?`≈ ${qt(r,n,'币')}`:`≈ ${qt(r,n,'张')}`+(mUnit==='U'?`（${qt(r,n,'币')}）`:'')):'';
   $('preview').innerHTML=`
     <div class="pr"><span class="k">成交价格</span><span><span class="num">${fmt(c.mark,pd)}</span> <span class="muted">（执行时实时标记价）</span></span></div>
     <div class="pr"><span class="k">本次减仓价值</span><span class="num">${ok?fmt(n*s*c.mark)+' U':'--'}</span></div>
@@ -886,8 +892,8 @@ document.querySelectorAll('#uTabs button').forEach(b=>b.onclick=()=>{uT=b.datase
 aRender();
 document.querySelectorAll('#themeSw button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#themeSw button').forEach(x=>x.classList.toggle('on',x===b));document.body.classList.toggle('adm-dark',b.dataset.t==='dark')});
 function switchView(b){document.querySelectorAll('.view-switch > button').forEach(x=>x.classList.toggle('on',x===b));['viewAdmin','viewEnd'].forEach(id=>document.getElementById(id).hidden=id!==b.dataset.v)}
-document.querySelectorAll('#listSeg button').forEach(b=>b.onclick=e=>{e.stopPropagation();listUnit=b.dataset.u;syncSeg('listSeg',listUnit);render()});
-document.querySelectorAll('#mSeg button').forEach(b=>b.onclick=()=>setMUnit(b.dataset.u));
+$('listSel').onchange=e=>{listUnit=e.target.value;render()};$('listSel').onclick=e=>e.stopPropagation();
+$('mSel').onchange=e=>setMUnit(e.target.value);
 render();
 </script>
 </body>
