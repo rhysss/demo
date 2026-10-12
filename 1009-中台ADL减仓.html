@@ -196,6 +196,33 @@ table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%
 .u-warn{color:#f0b44a;background:#2e2410;border:1px dashed #8a6a1f;border-radius:3px;padding:0 5px;font-size:11px;white-space:nowrap}
 .side-tag-l{color:var(--up)}.side-tag-s{color:var(--down)}
 
+
+/* ===== Web 仓位区：按现有 Web 截图 ===== */
+.e-web .u-panel{background:#161616;border-radius:0;margin:0}
+.e-web .u-tabs{gap:30px;height:42px;align-items:center;border-bottom:1px solid #2a2a2a;padding:0 14px}
+.e-web .u-tabs button{font-size:13.5px;color:#a3a6ad;padding:0;border:none;font-weight:400}
+.e-web .u-tabs button.on{color:#fff;font-weight:700;border:none}
+.e-web .u-tabs .bdg{display:inline-block;margin-left:5px;background:#2b2b2b;color:#9a9da3;font-size:11px;border-radius:9px;padding:0 8px;line-height:17px;font-weight:400}
+.wsub{display:flex;border-bottom:1px solid #2a2a2a}
+.wsub button{padding:9px 16px;font-size:13px;color:#a3a6ad;border-right:1px solid #2a2a2a}
+.wsub button.on{background:#232323;color:#fff;font-weight:700}
+.wt{width:100%;border-collapse:collapse;font-size:12px}
+.wt th{color:#8a8d93;font-weight:400;text-align:left;padding:14px 14px;border-bottom:1px solid #2a2a2a;white-space:nowrap}
+.wt td{color:#e6e6e6;padding:12px 14px;border-bottom:1px solid #2a2a2a;white-space:nowrap;vertical-align:middle;line-height:1.55;font-variant-numeric:tabular-nums}
+.wt tr.hl td{background:rgba(243,154,55,.05)}
+.wt .sym{font-weight:700;color:#0fb4a0;font-size:11.5px}
+.wt .sym.s{color:#8e63df}
+.wt .sd{display:inline-block;margin-left:4px;font-size:11.5px;padding:0 4px;line-height:18px;background:#12302c;color:#0fb4a0}
+.wt .sd.s{background:#2a2142;color:#8e63df}
+.wt .lev{display:inline-block;border:1px solid #0fb4a0;color:#0fb4a0;font-size:11.5px;padding:0 4px;line-height:17px}
+.wt .lev.s{border-color:#8e63df;color:#8e63df}
+.wt .mode{display:inline-block;border:1px solid #d9d9d9;color:#fff;font-size:11.5px;padding:0 4px;line-height:17px;margin-left:2px}
+.wt .up{color:#0fb4a0}.wt .dn{color:#8e63df}
+.wt .cp{color:#526fff;margin-left:4px;font-size:11px}
+.wt .ic{color:#8a8d93;font-size:10px;margin-left:3px}
+.wt .det{border:1px solid #d9d9d9;color:#fff;padding:5px 12px;font-size:12px;background:transparent}
+.wt .pct{color:#0fb4a0}
+.wt .adl-chip{margin-left:4px}
 /* ===== 用户端 App ===== */
 .a-root{background:#0b0c0f;min-height:100vh;padding:16px 20px 60px;min-width:1280px;color:#e8e9ec;font-size:12px}
 .a-wrap{display:flex;gap:28px;align-items:flex-start;justify-content:center}
@@ -420,7 +447,7 @@ table.grid{border-collapse:separate;border-spacing:0;min-width:2900px;width:100%
    </div>
    <div class="u-panel">
     <div class="u-tabs" id="uTabs">
-     <button data-t="pos" class="on">当前持仓</button><button data-t="open">当前委托</button><button data-t="hist">历史委托</button><button data-t="fill">成交记录</button><button data-t="phist">仓位历史</button>
+     <button data-t="pos" class="on">当前持仓</button><button data-t="open">当前委托</button><button data-t="phist">历史仓位</button><button data-t="hist">历史委托</button><button data-t="flow">资金流水</button><button data-t="fill">历史成交</button>
     </div>
     <div id="uBody" style="overflow-x:auto"></div>
    </div>
@@ -753,7 +780,7 @@ const A={entry:82510.63,mark:88433.72,lev:10,mmr:0.005,cs:0.0001};
 const AS={before:{z:108,light:5,ord:1},partial:{z:8,light:5,ord:0},full:{z:0,light:0,ord:0}};
 const ADLZ={partial:100,full:108};
 const TIP_U='<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span>';
-let aState='before',aHTab='ord',uT='pos';
+let aState='before',aHTab='ord',uT='pos',uSub='lm';
 const af=(n,d=2)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const bz=z=>+(z*A.cs).toFixed(6);
 function pm(z){const q=bz(z),val=q*A.mark,margin=A.entry*q/A.lev,up=(A.mark-A.entry)*q;return{q,val,margin,up,roe:up/margin*100,liq:A.entry*(1-1/A.lev+A.mmr),mr:(margin+up)/(val*A.mmr)*100}}
@@ -815,25 +842,42 @@ function aHRender(){
   $('aHBody').innerHTML=H[aHTab];
 }
 function uRender(){
-  const st=AS[aState],done=aState!=='before',z=ADLZ[aState]||0,pnl=(A.mark-A.entry)*bz(z),m=pm(st.z);
-  document.querySelectorAll('#uTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.t===uT);if(b.dataset.t==='pos')b.textContent=`当前持仓(${st.z?1:0})`;if(b.dataset.t==='open')b.textContent=`当前委托(${st.ord})`});
+  const st=AS[aState],done=aState!=='before',z=ADLZ[aState]||0,q=bz(z),pnl=(A.mark-A.entry)*q,roe=(A.mark-A.entry)/A.entry*A.lev*100,m=pm(st.z),T='2026-10-09 13:40:12',full=aState==='full';
+  const NM={pos:'当前持仓',open:'当前委托',phist:'历史仓位',hist:'历史委托',flow:'资金流水',fill:'历史成交'};
+  document.querySelectorAll('#uTabs button').forEach(b=>{const t=b.dataset.t;b.classList.toggle('on',t===uT);b.innerHTML=NM[t]+(t==='pos'?`<span class="bdg">${st.z?1:0}</span>`:t==='open'?`<span class="bdg">${st.ord}</span>`:'')});
   const chip=t=>`<span class="adl-chip">${t} ⓘ${TIP_U}</span>`;
   const empty=t=>`<div class="u-empty"><div style="font-size:28px">📄</div>${t}</div>`;
+  const sym=(sd,cls='')=>`<span class="sym ${cls}">BTC</span><span class="sd ${cls}">${sd}</span>`;
+  const lev=(x,cls='')=>`<span class="lev ${cls}">${x}x</span><span class="mode">逐仓</span>`;
+  const cp=id=>`${id}<span class="cp">⧉</span>`;
   let h='';
-  if(uT==='pos'){h=st.z?`<table class="u-tbl"><thead><tr><th>合约</th><th>持仓量</th><th>开仓均价</th><th>标记价格</th><th>强平价格</th><th>保证金</th><th>未实现盈亏(回报率)</th><th>止盈/止损</th><th>操作</th></tr></thead><tbody><tr>
-     <td><b>BTCUSDT 永续</b> <span class="side-tag-l">多</span> <span style="color:var(--tx2)">逐仓 10x</span></td><td class="num">${bz(st.z)} BTC</td><td class="num">${af(A.entry)}</td><td class="num">${af(A.mark)}</td><td class="num">${af(m.liq)}</td><td class="num">${af(m.margin)} USDT</td>
-     <td class="num u-up">+${af(m.up)} USDT (+${af(m.roe)}%)</td><td class="num" style="color:${st.ord?'var(--tx)':'var(--tx3)'}">${st.ord?'95,000.00 / --':'-- / --'}</td><td><button class="u-btn">市价</button> <button class="u-btn">限价</button></td></tr></tbody></table>`:empty('暂无持仓')}
-  if(uT==='open'){h=st.ord?`<table class="u-tbl"><thead><tr><th>时间</th><th>合约</th><th>类型</th><th>方向</th><th>触发价</th><th>数量</th><th>操作</th></tr></thead><tbody><tr><td class="num">2026-10-02 09:16:02</td><td>BTCUSDT 永续</td><td>止盈</td><td class="side-tag-s">平多</td><td class="num">95,000.00</td><td class="num">0.0108 BTC</td><td><span class="u-link">撤单</span></td></tr></tbody></table>`:empty('暂无委托')}
-  if(uT==='hist'){h=`<table class="u-tbl"><thead><tr><th>时间</th><th>合约</th><th>订单类型</th><th>方向</th><th>委托价</th><th>成交均价</th><th>委托量</th><th>成交量</th><th>状态</th></tr></thead><tbody>
-     ${done?`<tr class="hl"><td class="num">2026-10-09 13:40:12</td><td>BTCUSDT 永续</td><td>${chip('ADL')}</td><td class="side-tag-s">平多</td><td class="num">--</td><td class="num">${af(A.mark)}</td><td class="num">${bz(z)} BTC</td><td class="num">${bz(z)} BTC</td><td>已成交</td></tr>
-     <tr><td class="num">2026-10-09 13:40:12</td><td>BTCUSDT 永续</td><td>止盈</td><td class="side-tag-s">平多</td><td class="num">95,000.00</td><td class="num">--</td><td class="num">0.0108 BTC</td><td class="num">0 BTC</td><td>已撤销 <span style="color:var(--adl)">· 因 ADL</span></td></tr>`:''}
-     <tr><td class="num">2026-10-02 09:15:40</td><td>BTCUSDT 永续</td><td>市价</td><td class="side-tag-l">开多</td><td class="num">--</td><td class="num">${af(A.entry)}</td><td class="num">0.0108 BTC</td><td class="num">0.0108 BTC</td><td>已成交</td></tr></tbody></table>`}
-  if(uT==='fill'){h=`<table class="u-tbl"><thead><tr><th>时间</th><th>合约</th><th>订单类型</th><th>方向</th><th>成交价</th><th>成交量</th><th>手续费</th><th>角色</th><th>已实现盈亏</th></tr></thead><tbody>
-     ${done?`<tr class="hl"><td class="num">2026-10-09 13:40:12</td><td>BTCUSDT 永续</td><td>${chip('ADL')}</td><td class="side-tag-s">平多</td><td class="num">${af(A.mark)}</td><td class="num">${bz(z)} BTC</td><td class="num">0 USDT</td><td style="color:var(--tx3)">--</td><td class="num u-up">+${af(pnl)} USDT</td></tr>`:''}
-     <tr><td class="num">2026-10-02 09:15:40</td><td>BTCUSDT 永续</td><td>市价</td><td class="side-tag-l">开多</td><td class="num">${af(A.entry)}</td><td class="num">0.0108 BTC</td><td class="num">0.4456 USDT</td><td>Taker</td><td class="num">--</td></tr></tbody></table>`}
-  if(uT==='phist'){h=done?`<table class="u-tbl"><thead><tr><th>合约</th><th>平仓类型</th><th>开仓时间</th><th>平仓时间</th><th>开仓均价</th><th>平仓均价</th><th>已平仓量 / 最大持仓</th><th>平仓盈亏</th></tr></thead><tbody>
-     <tr class="hl"><td><b>BTCUSDT 永续</b> <span class="side-tag-l">多</span></td><td>${chip(aState==='full'?'ADL 全部平仓':'ADL 部分减仓')}</td><td class="num">2026-10-02 09:15:40</td><td class="num">${aState==='full'?'2026-10-09 13:40:12':'--'}</td><td class="num">${af(A.entry)}</td><td class="num">${af(A.mark)}</td><td class="num">${bz(z)} / 0.0108 BTC</td><td class="num u-up">+${af(pnl)} USDT</td></tr></tbody></table>
-     ${aState==='partial'?'<div style="padding:8px 16px;color:var(--tx3)">部分减仓时「平仓时间」显示 --，仓位全部平掉后补全</div>':''}`:empty('暂无仓位历史')}
+  if(uT==='pos'){h=st.z?`<table class="wt"><thead><tr><th>合约名称</th><th>仓位模式</th><th>持仓数量</th><th>开仓均价</th><th>标记价格</th><th>强平价格</th><th>保证金</th><th>未实现盈亏(收益率)</th><th>止盈/止损</th></tr></thead><tbody><tr>
+     <td>${sym('多')}</td><td>${lev(10)}</td><td>${st.z} 张</td><td>${af(A.entry)}</td><td>${af(A.mark)}</td><td>${af(m.liq)}</td><td>${af(m.margin)} USDT</td>
+     <td class="up">+${af(m.up,4)}<br>(+${af(m.roe)}%)</td><td>${st.ord?'止盈: <span class="up">95,000</span><br>止损: --':'-- / --'}</td></tr></tbody></table>`:empty('暂无持仓')}
+  if(uT==='open'){h=st.ord?`<table class="wt"><thead><tr><th>合约名称</th><th>委托时间</th><th>成交数量/委托数量</th><th>委托价格</th><th>订单状态</th><th>订单 ID</th></tr></thead><tbody><tr>
+     <td>${sym('开多')}</td><td>2026-10-02 09:16:02</td><td><span class="pct">0 张(0%)</span><br>108 张</td><td>止盈: <span class="up">95,000</span><br>止损: --</td><td>等待触发</td><td>${cp('678732202145783808')}</td></tr></tbody></table>`:empty('暂无委托')}
+  if(uT==='phist'){
+    const adlRow=done?`<tr class="hl"><td>${sym('多')}${chip(full?'ADL 全部平仓':'ADL 部分减仓')}</td><td>${lev(10)}</td><td>2026-10-02 09:15:40<br>${full?T:'--'}</td><td>${af(A.entry)}<br>${af(A.mark)}</td>
+       <td class="up">+${pnl.toFixed(4)}<span class="ic">↗</span><br>(+${roe.toFixed(2)}%)</td><td>${q} BTC<br>0.0108 BTC</td></tr>`:'';
+    h=`<table class="wt"><thead><tr><th>合约名称</th><th>仓位模式</th><th>开仓时间/平仓时间</th><th>开仓均价/平仓均价</th><th>已实现盈亏/盈亏率</th><th>已平仓量/持仓数量</th></tr></thead><tbody>${adlRow}
+       <tr><td>${sym('多')}</td><td>${lev(26)}</td><td>2026-03-30 06:49:18<br>2026-06-04 08:24:51</td><td>65,000<br>63,978.49</td><td class="dn">-2.1451<span class="ic">↗</span><br>(-40.85%)</td><td>0.0021 BTC<br>0.0021 BTC</td></tr>
+       <tr><td>${sym('空','s')}</td><td>${lev(26,'s')}</td><td>2026-03-02 10:57:00<br>2026-03-02 23:15:26</td><td>66,323.89<br>68,561.33</td><td class="dn">-2.2374<span class="ic">↗</span><br>(-87.7%)</td><td>0.001 BTC<br>0.001 BTC</td></tr></tbody></table>`}
+  if(uT==='hist'){
+    const sub=`<div class="wsub">${[['lm','限价&市价'],['tpsl','止盈止损'],['plan','计划委托']].map(([k,n])=>`<button data-s="${k}" class="${k===uSub?'on':''}" onclick="uSub='${k}';uRender()">${n}</button>`).join('')}</div>`;
+    let t='';
+    if(uSub==='lm'){t=`<table class="wt"><thead><tr><th>合约名称</th><th>仓位模式</th><th>委托时间</th><th>订单类型</th><th>成交数量/委托数量</th><th>成交均价</th><th>触发条件</th><th>委托价格</th><th>平仓盈亏</th><th>手续费</th><th>订单状态</th><th>订单 ID</th><th>操作</th></tr></thead><tbody>
+       ${done?`<tr class="hl"><td>${sym('平多','s')}</td><td>${lev(10)}</td><td>${T}</td><td>${chip('ADL')}</td><td><span class="pct">${q} BTC(100%)</span><br>${q} BTC</td><td>${af(A.mark)}</td><td>--</td><td>--</td><td class="up">+${pnl.toFixed(4)}</td><td>0</td><td>全部成交</td><td>${cp('678732191894668611')}</td><td><button class="det">详情</button></td></tr>`:''}
+       <tr><td>${sym('开多')}</td><td>${lev(10)}</td><td>2026-10-02 09:15:40</td><td>市价</td><td><span class="pct">108 张(100%)</span><br>108 张</td><td>${af(A.entry)}</td><td>--</td><td>市价</td><td>--</td><td>0.4456</td><td>全部成交</td><td>${cp('678732191894668544')}</td><td><button class="det">详情</button></td></tr></tbody></table>`}
+    if(uSub==='tpsl'){t=done?`<table class="wt"><thead><tr><th>合约名称</th><th>委托时间</th><th>成交数量/委托数量</th><th>委托价格</th><th>订单状态</th><th>订单 ID</th></tr></thead><tbody>
+       <tr class="hl"><td>${sym('开多')}</td><td>2026-10-02 09:16:02</td><td><span class="pct">0 张(0%)</span><br>108 张</td><td>止盈: <span class="up">95,000</span><br>止损: --</td><td>因 ADL 撤销</td><td>${cp('678732202145783808')}</td></tr></tbody></table>`:empty('暂无记录')}
+    if(uSub==='plan'){t=empty('暂无记录（本期无改动）')}
+    h=sub+t}
+  if(uT==='flow'){h=`<div style="padding:8px 14px;color:#d8c58a;font-size:12px;border-bottom:1px dashed #4d4220">原型标注：资金流水本期不改动，ADL 不产生资金流水记录（R20）。</div><table class="wt"><thead><tr><th>时间</th><th>币种</th><th>数量</th><th>类型 ▽</th><th>交易品种</th><th>订单 ID</th></tr></thead><tbody>
+     <tr><td>2026-10-09 08:00:00</td><td>USDT</td><td class="dn">-0.00750000</td><td>资金费用</td><td>BTCUSDT</td><td>${cp('679733940931543306')}</td></tr>
+     <tr><td>2026-10-09 00:00:00</td><td>USDT</td><td class="dn">-0.00080000</td><td>资金费用</td><td>BTCUSDT</td><td>${cp('679613146448544010')}</td></tr></tbody></table>`}
+  if(uT==='fill'){h=`<table class="wt"><thead><tr><th>交易品种</th><th>成交价格</th><th>成交数量</th><th>手续费</th><th>时间</th><th>成交 ID</th></tr></thead><tbody>
+     ${done?`<tr class="hl"><td>BTCUSDT${chip('ADL')}</td><td>${af(A.mark)}</td><td>${q} BTC</td><td>0</td><td>${T}</td><td>${cp('678732192808960111')}</td></tr>`:''}
+     <tr><td>BTCUSDT</td><td>${af(A.entry)}</td><td>108 张</td><td>0.4456</td><td>2026-10-02 09:15:40</td><td>${cp('678732192808960066')}</td></tr></tbody></table>`}
   $('uBody').innerHTML=h;
 }
 document.querySelectorAll('#aSt button').forEach(b=>b.onclick=()=>{aState=b.dataset.s;aRender()});
