@@ -224,6 +224,10 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
     <div class="ctl"><span>当前带单</span><div class="seg" id="segRun"></div></div>
     <div class="ctl"><span>已结束</span><div class="seg" id="segEnd"></div></div>
     <div class="ctl"><span>待结算分润</span><div class="seg" id="segPend"></div></div>
+    <h4>我的跟单数据（切换后回到我的跟单）</h4>
+    <div class="ctl"><span>跟随中</span><div class="seg" id="segFon"></div></div>
+    <div class="ctl"><span>已结束</span><div class="seg" id="segFoff"></div></div>
+    <div class="lbl" id="fonTip" style="font-size:11px;margin-top:2px"></div>
     <h4>当前状态</h4>
     <div class="statebox" id="stateBox"></div>
     <div class="seg" style="margin-top:8px" id="segSim"></div>
@@ -279,6 +283,14 @@ const MOCK_ENDED = [
   {name:'ETH 短线', id:'3680227388765019', status:'ended', pnl:-8.32, share:0, start:'2026-10-05', end:'2026-10-09', fol:0, days:4, syms:['ETHUSDT'], pos:[], bal:0},
   {name:'SOL 波段', id:'3680227388765018', status:'ended', pnl:25.60, share:2.56, start:'2026-09-20', end:'2026-10-01', fol:0, days:11, syms:['SOLUSDT'], pos:[], bal:0},
 ];
+const MOCK_FOLLOW_ON = [
+  {key:'m1', name:'ETH 波段策略', who:'Cooony', amt:300, pnl:18.42, on:true, start:'2026-10-02'},
+  {key:'m3', name:'BTC 稳健网格', who:'deltathree', amt:200, pnl:3.10, on:true, start:'2026-09-28'},
+];
+const MOCK_FOLLOW_OFF = [
+  {key:'m4', name:'SOL 趋势追踪', who:'sirni', amt:150, pnl:-12.35, on:false, start:'2026-09-15', end:'2026-10-10'},
+  {key:'m2', name:'黄金短线策略', who:'GoldHunter', amt:100, pnl:1.05, on:false, start:'2026-10-11', end:'2026-10-12'},
+];
 const PRICE = {BTCUSDT:83805.2, ETHUSDT:2471.36, SOLUSDT:142.85};
 const LEV = 2000;        // 带单杠杆 2000x（R12 已确认）
 const MIN_AMT = 100;      // 最低项目资金 / 最低跟单金额 100 USDT（R11 已确认）
@@ -286,7 +298,7 @@ const FOLLOWERS = [['u***82','2026-10-11',300,4.12],['k***07','2026-10-11',50,0.
 
 let S;
 function reset(d){
-  d = d || {run:true, end:true, pend:true};
+  d = {run:true, end:true, pend:true, fon:true, foff:true, ...(d||{})};
   const run = d.run;
   S = {
     role:'lead', exLead:false, data:{...d},
@@ -303,6 +315,7 @@ function reset(d){
     trade:{sym:'BTCUSDT', type:'limit', price:'', qty:''}, tradePid:null,
     np:{name:'', syms:['BTCUSDT'], ratio:'10%', bio:'', amt:''},
   };
+  applyFollows();
   if(run) S.ledger.unshift({t:'2026-10-08 10:00',d:'从资金账户划入',a:220},{t:'2026-10-08 10:01',d:'分配至 ETH 波段',a:-120},{t:'2026-10-11 09:10',d:'分配至 BTC 趋势策略',a:-100});
 }
 function clone(o){return JSON.parse(JSON.stringify(o))}
@@ -407,7 +420,7 @@ function cardHTML(m){
 function mineHTML(){
   const on = S.follows.filter(f=>f.on), off = S.follows.filter(f=>!f.on);
   const list = S.mineTab==='following' ? on : off;
-  const pnl = S.follows.reduce((a,f)=>a+f.pnl,0);
+  const pnl = S.follows.reduce((a,f)=>a+f.pnl,0), upF = on.reduce((a,f)=>a+f.pnl,0);
   const hist = S.exLead ? `<div class="entry" onclick="openHistory()" style="cursor:pointer"><span>历史带单记录</span><span class="chev">${ended().length} 个项目</span></div>` : '';
   const note = isLead() ? `<div class="banner mute" style="margin:12px 0 0"><div><p style="margin:0">你是带单员，不能跟单；可查看跟单账户和历史跟单记录</p></div></div>` : '';
   const rows = list.length ? list.map(f=>`<div class="lcard">
@@ -421,7 +434,7 @@ function mineHTML(){
       <div style="margin:8px 0 2px"><span style="font-size:32px;font-weight:800">${f2(S.followBal)}</span> <span class="lbl">USDT</span></div>
       <div class="lbl" style="margin-bottom:14px">累计盈亏 <b class="${cls(pnl)}" style="font-weight:600">${sign(pnl)}</b></div>
       <div class="grid3" style="border-top:1px solid #E3E5E8;padding-top:14px">
-        <div><div class="lbl">投入资金</div><div class="v">${f2(invested())}</div></div><div><div class="lbl">可用</div><div class="v">${f2(followAvail())}</div></div><div><div class="lbl">未实现盈亏</div><div class="v">0.00</div></div>
+        <div><div class="lbl">投入资金</div><div class="v">${f2(invested())}</div></div><div><div class="lbl">可用</div><div class="v">${f2(followAvail())}</div></div><div><div class="lbl">未实现盈亏</div><div class="v ${cls(upF)}">${sign(upF)}</div></div>
       </div>
     </div>${note}
     <div class="subtabs"><button class="${S.mineTab==='following'?'on':''}" onclick="S.mineTab='following';render()">跟随中 ${on.length}</button><button class="${S.mineTab==='done'?'on':''}" onclick="S.mineTab='done';render()">已结束 ${off.length}</button></div>
@@ -690,7 +703,7 @@ function doFollow(key, max){
 function askStop(key){
   const f=S.follows.find(x=>x.key===key&&x.on);
   modal('停止跟单？',`停止跟单「${f.name}」后，投入资金释放回跟单账户。跟单仓位处理沿用现有规则。`,'停止跟单','danger',()=>{
-    f.on=false; f.end='2026-10-13'; const mk=S.market.find(x=>x.key===key); if(mk) mk.fol--; render(); toast('已停止跟单');
+    f.on=false; f.end='2026-10-13'; S.followBal+=f.pnl; S.fledger.unshift({t:now(),d:'停止跟单 · '+f.name+' 已实现盈亏',a:f.pnl}); const mk=S.market.find(x=>x.key===key); if(mk) mk.fol--; render(); toast('已停止跟单');
   });
 }
 
@@ -791,6 +804,9 @@ function renderPanel(){
   $('segRun').innerHTML=yn('run','有数据','无数据');
   $('segEnd').innerHTML=yn('end','有数据','无数据');
   $('segPend').innerHTML=yn('pend','有','无');
+  const fy=(k)=>[[true,'有数据'],[false,'无数据']].map(([v,t])=>{const dis=k==='fon'&&v&&isLead();return `<button class="${(k==='fon'?S.follows.some(f=>f.on):S.data[k])===v?'on':''}" ${dis?'disabled':''} onclick="setFollowData('${k}',${v})">${t}</button>`}).join('');
+  $('segFon').innerHTML=fy('fon'); $('segFoff').innerHTML=fy('foff');
+  $('fonTip').textContent = isLead() ? '带单员不能跟单，「跟随中」固定无数据；切到普通用户可查看' : '';
   const roleTxt={lead:'带单员',quitting:'带单员 · 注销处理中',normal:S.exLead?`普通用户 · 已注销带单员（${COOLDOWN} 天冷却期）`:'普通用户'}[S.role];
   $('stateBox').textContent=`身份：${roleTxt}　|　进行中项目 ${running().length} 个　|　待结算分润 ${S.pending.toFixed(2)}`;
   $('segSim').innerHTML=`<button ${S.role==='quitting'?'':'disabled'} onclick="simSettle()">模拟：本期分润结算完成</button><button onclick="reset();render()">重置</button>`;
@@ -800,8 +816,14 @@ function setData(k,v){
 }
 function pickRole(k){
   reset(S.data);
-  if(k==='normal'){S.role='normal';S.tab='discover';}
+  if(k==='normal'){S.role='normal';S.tab='discover';applyFollows();}
   render();
+}
+function applyFollows(){
+  S.follows = [...(S.data.fon && !isLead() ? clone(MOCK_FOLLOW_ON) : []), ...(S.data.foff ? clone(MOCK_FOLLOW_OFF) : [])];
+}
+function setFollowData(k,v){
+  S.data[k]=v; applyFollows(); S.mineTab = k==='fon'?'following':'done'; home('mine');
 }
 
 reset();
