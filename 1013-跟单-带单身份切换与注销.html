@@ -102,7 +102,42 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
 .empty{text-align:center;padding:36px 0 20px;color:var(--sub)}
 .empty .ic{width:64px;height:48px;border-radius:10px;background:var(--green-bg);margin:0 auto 12px}
 .empty p{font-size:13px;margin-bottom:14px}
-.fixbar{position:sticky;bottom:0;background:linear-gradient(transparent,#fff 30%);padding:18px 18px 8px}
+.subtabs .newproj{margin-left:auto;color:var(--green-dk);font-weight:600;font-size:14px}
+.subtabs .newproj:disabled{color:var(--sub2);cursor:not-allowed}
+/* forms & rows */
+.field{margin-bottom:18px}
+.field label{display:block;font-size:14px;font-weight:600;margin-bottom:8px}
+.field input,.field textarea{width:100%;border:0;background:var(--card);border-radius:10px;padding:12px;font:inherit;font-size:15px;outline:none;color:var(--text)}
+.field textarea{height:84px;resize:none}
+.err{font-size:12px;color:var(--red);margin-top:6px;min-height:0}
+.rows .row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-size:14px}
+.rows .row .lbl{margin-top:3px}
+.btn.line,.pill.line{background:#fff;border:1px solid #D9DCE0;color:var(--text)}
+.pill:disabled{opacity:.4;cursor:not-allowed}
+/* trade */
+.tproj{display:flex;align-items:center;justify-content:space-between;background:var(--green-bg);border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:13px}
+.tproj b{font-size:14px}
+.sym{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+.sym .s{font-size:20px;font-weight:800}
+.sym .px{font-size:22px;font-weight:800;color:var(--red);font-variant-numeric:tabular-nums;text-align:right}
+.trow{display:flex;gap:8px;margin-bottom:10px}
+.trow>*{flex:1}
+.box{height:42px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500}
+.seg2{display:flex;background:var(--card);border-radius:10px;padding:3px;margin-bottom:10px}
+.seg2 button{flex:1;height:36px;border-radius:8px;color:var(--sub);font-weight:600}
+.seg2 button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.inp{display:flex;align-items:center;height:48px;border-radius:10px;background:var(--card);padding:0 12px;margin-bottom:10px}
+.inp span{font-size:12px;color:var(--sub);width:44px;flex:none}
+.inp input{flex:1;border:0;background:none;font:inherit;font-size:15px;font-weight:600;outline:none;min-width:0;color:var(--text)}
+.inp em{font-style:normal;font-size:13px;color:var(--sub)}
+.avail{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin:4px 2px 12px}
+.avail b{color:var(--text);font-weight:600}
+.btn.long{background:var(--green);color:#fff} .btn.short{background:var(--red);color:#fff}
+.pos{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px}
+.pos .h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pos .h b{font-size:14px}
+.side{font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px;margin-right:6px}
+.side.l{color:var(--green-dk);background:var(--green-bg)} .side.s{color:var(--red);background:var(--red-bg)}
 .entry{display:flex;justify-content:space-between;align-items:center;padding:14px 2px;border-top:1px solid var(--line);margin-top:16px;font-size:14px}
 .entry span:last-child{color:var(--sub)}
 /* quit flow */
@@ -198,7 +233,8 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
       <li><span class="k new">新增</span><b>注销处理中状态</b>：有待结算分润时，提交后进入「处理中」，等本期分润结算完再生效；处理中可撤回，不能新建项目。</li>
       <li><span class="k opt">优化</span><b>发现页卡片</b>：补上带单员身份（头像 + 名称），收益率 + 收益额 + 收益曲线；跟单人数显示「当前 / 上限」；运行天数不足时收益率显示「--」，不显示 0.00% 误导用户。</li>
       <li><span class="k opt">优化</span><b>带单员自己的项目</b>出现在发现页时标「我的」，按钮从「跟单」换成「管理」，防止自己跟自己。</li>
-      <li><span class="k opt">优化</span><b>带单中心补快捷入口</b>：跟单用户 / 分润明细 / 余额历史 / 我的主页（对标竞品「交易专家中心」）；进行中项目卡片补「去带单 / 结束项目」操作；空状态补引导文案。</li>
+      <li><span class="k opt">优化</span><b>带单中心补快捷入口</b>：跟单用户 / 分润明细 / 余额历史 / 我的主页（对标竞品「交易专家中心」）；进行中项目卡片补「去带单 / 结束项目」操作；「+ 新建项目」从底部按钮移到项目 Tab 栏右侧；空状态补引导文案。</li>
+      <li><span class="k new">交互</span><b>全部入口可点</b>：带单交易（下单 / 平仓）、新建项目、跟单 / 停止跟单、项目详情、我的主页、跟单用户、分润明细、余额历史、账户划入划出、编辑资料、搜索、带单规则、申请成为带单员，数据联动。</li>
       <li><span class="k opt">优化</span><b>统一叫法</b>：带单员侧叫「项目」，跟单侧叫「带单策略」，原来同一个东西两种叫法。原型统一为「项目」，跟单侧「我的项目」改为「我的跟单」。</li>
       <li><span class="k opt">优化</span><b>普通用户的「成为带单员」入口</b>放在发现页顶部横幅；注销后冷却期内横幅变为置灰提示。</li>
     </ol>
@@ -219,82 +255,109 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
 <script>
 const ME = 'Trader10002298';
 const MARKET = [
-  {name:'ETH 波段策略', who:'Cooony', days:45, roi:36.75, gain:8296.24, aum:'46.2K', fol:302, cap:750, dd:7.02, line:[2,3,3,5,4,6,8,7,9,11,12,14]},
-  {name:'黄金短线策略', who:'GoldHunter', days:2, roi:null, gain:null, aum:'4.17K', fol:4, cap:100, dd:0, line:[]},
-  {name:'BTC 稳健网格', who:'deltathree', days:120, roi:9.12, gain:3668.72, aum:'18.9K', fol:18, cap:100, dd:3.41, line:[5,5,6,6,7,6,7,8,8,9,9,10]},
-  {name:'SOL 趋势追踪', who:'sirni', days:30, roi:-4.36, gain:-207.87, aum:'7.40K', fol:14, cap:300, dd:12.6, line:[9,10,8,9,7,8,6,7,6,5,6,5]},
+  {key:'m1', name:'ETH 波段策略', who:'Cooony', days:45, roi:36.75, gain:8296.24, aum:'46.2K', fol:302, cap:750, dd:7.02, line:[2,3,3,5,4,6,8,7,9,11,12,14], bio:'经验丰富的交易专家，专注于为跟单用户创造稳健收益。'},
+  {key:'m2', name:'黄金短线策略', who:'GoldHunter', days:2, roi:null, gain:null, aum:'4.17K', fol:4, cap:100, dd:0, line:[], bio:'黄金日内短线，快进快出。'},
+  {key:'m3', name:'BTC 稳健网格', who:'deltathree', days:120, roi:9.12, gain:3668.72, aum:'18.9K', fol:18, cap:100, dd:3.41, line:[5,5,6,6,7,6,7,8,8,9,9,10], bio:'低回撤网格策略，适合长期持有。'},
+  {key:'m4', name:'SOL 趋势追踪', who:'sirni', days:30, roi:-4.36, gain:-207.87, aum:'7.40K', fol:14, cap:300, dd:12.6, line:[9,10,8,9,7,8,6,7,6,5,6,5], bio:'趋势突破，顺势加仓。'},
 ];
-const ENDED = {name:'高胜率项目', id:'3680227388765020', status:'ended', pnl:1.69, share:0, start:'2026-10-12', end:'2026-10-12', fol:0};
-const RUNNING = {name:'BTC 趋势策略', id:'3680227388765021', status:'running', pnl:12.40, share:0, start:'2026-10-11', fol:3, days:2};
+const ENDED = {name:'高胜率项目', id:'3680227388765020', status:'ended', pnl:1.69, share:0, start:'2026-10-12', end:'2026-10-12', fol:0, days:1, syms:['BTCUSDT'], pos:[]};
+const RUNNING = {name:'BTC 趋势策略', id:'3680227388765021', status:'running', pnl:12.40, share:0, start:'2026-10-11', fol:3, days:2, syms:['BTCUSDT','ETHUSDT'],
+  pos:[{side:'l', sym:'BTCUSDT', size:0.01, entry:83120.5}]};
 const SCENES = {
   running:{label:'有进行中项目', pending:0.23},
   settle:{label:'无进行中项目，有待结算分润', pending:0.23},
   clear:{label:'全部已清', pending:0},
 };
+const PRICE = {BTCUSDT:83805.2, ETHUSDT:2471.36, SOLUSDT:142.85};
+const LEV = 20;
 const MIN_DAYS = 7; // ⚠️ 数值待确认
+const FOLLOWERS = [['u***82','2026-10-11',300,4.12],['k***07','2026-10-11',50,0.69],['m***31','2026-10-12',10,0.14]];
 
 let S;
 function reset(scene){
   scene = scene || 'running';
   S = {
-    role:'lead',            // lead | quitting | normal
-    exLead:false,           // 注销过带单员（冷却期中）
-    scene,
+    role:'lead', exLead:false, scene,
     projects: scene==='running' ? [clone(RUNNING), clone(ENDED)] : [clone(ENDED)],
     pending: SCENES[scene].pending,
+    leadBal:101.69, followBal:921.54,
+    ledger:[{t:'2026-10-12 18:20',d:'已实现盈亏 · 高胜率项目',a:1.69},{t:'2026-10-11 09:02',d:'从资金账户划入',a:100}],
+    fledger:[{t:'2026-10-10 14:31',d:'从资金账户划入',a:921.54}],
+    follows:[], market: clone(MARKET),
+    profile:{name:ME, bio:'专注 BTC 趋势交易，严格止损。'},
     tab:'lead', sort:'roi', leadTab:'running', mineTab:'following',
-    page:'home', agree:false, result:null,
+    page:'home', pd:null, stack:[], agree:false, result:null, q:'',
+    trade:{sym:'BTCUSDT', type:'limit', price:'', qty:''},
+    np:{name:'', syms:['BTCUSDT'], ratio:'10%', bio:''},
   };
 }
 function clone(o){return JSON.parse(JSON.stringify(o))}
 const $ = id => document.getElementById(id);
-const sign = n => (n>0?'+':'')+n.toFixed(2);
+const f2 = n => Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const sign = n => (n>0?'+':(n<0?'-':''))+f2(Math.abs(n));
 const cls = n => n>0?'up':(n<0?'down':'');
 const running = () => S.projects.filter(p=>p.status==='running');
 const ended = () => S.projects.filter(p=>p.status==='ended');
 const isLead = () => S.role!=='normal';
+const proj = id => S.projects.find(p=>p.id===id);
+const posPnl = q => (PRICE[q.sym]-q.entry)*q.size*(q.side==='l'?1:-1);
+const posMargin = q => q.entry*q.size/LEV;
+const leadMargin = () => running().reduce((a,p)=>a+p.pos.reduce((b,q)=>b+posMargin(q),0),0);
+const leadUpnl = () => running().reduce((a,p)=>a+p.pos.reduce((b,q)=>b+posPnl(q),0),0);
+const leadAvail = () => S.leadBal - leadMargin();
+const invested = () => S.follows.filter(f=>f.on).reduce((a,f)=>a+f.amt,0);
+const followAvail = () => S.followBal - invested();
+const now = () => '2026-10-13 15:'+String(30+Math.floor(Math.random()*29)).padStart(2,'0');
 
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),1800)}
-
-function spark(arr, up){
+function spark(arr, up, w=96, h=34){
   if(!arr.length) return '';
-  const w=96,h=34,mx=Math.max(...arr),mn=Math.min(...arr),r=(mx-mn)||1;
+  const mx=Math.max(...arr),mn=Math.min(...arr),r=(mx-mn)||1;
   const pts=arr.map((v,i)=>`${(i/(arr.length-1)*w).toFixed(1)},${(h-3-(v-mn)/r*(h-6)).toFixed(1)}`).join(' ');
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${up?'#35B85C':'#E5484D'}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
 
-/* ---------- render ---------- */
+/* ---------- navigation ---------- */
+function go(page, pd){S.stack.push({page:S.page, pd:S.pd}); S.page=page; S.pd=pd===undefined?null:pd; render(); $('screen').scrollTop=0}
+function back(){const x=S.stack.pop()||{page:'home',pd:null}; S.page=x.page; S.pd=x.pd; render()}
+function home(tab){S.stack=[]; S.page='home'; S.pd=null; if(tab) S.tab=tab; render(); $('screen').scrollTop=0}
+function nav(title, right=''){return `<div class="nav"><button class="icon-btn" onclick="back()" aria-label="返回">‹</button><div class="ttl">${title}</div><div style="min-width:32px;text-align:right">${right}</div></div>`}
+
+const PAGES = {home:()=>homeHTML(), quit:()=>quitHTML(), result:()=>resultHTML(), trade:()=>tradeHTML(), newproj:()=>newProjHTML(),
+  detail:()=>detailHTML(), myhome:()=>myHomeHTML(), followers:()=>followersHTML(), shares:()=>sharesHTML(), ledger:()=>ledgerHTML(),
+  account:()=>accountHTML(), profile:()=>profileHTML(), search:()=>searchHTML(), rules:()=>rulesHTML(), apply:()=>applyHTML()};
 function render(){
-  const sc=$('screen');
-  if(S.page==='home') sc.innerHTML = homeHTML();
-  else if(S.page==='quit') sc.innerHTML = quitHTML();
-  else if(S.page==='result') sc.innerHTML = resultHTML();
+  $('screen').innerHTML = PAGES[S.page]();
   $('appnav').style.display = S.page==='home' ? 'flex' : 'none';
   renderPanel();
 }
 
+/* ---------- home ---------- */
 function homeHTML(){
   const tabs = [['discover','发现'],['mine','我的跟单']];
   if(isLead()) tabs.push(['lead','带单中心']);
   if(!isLead() && S.tab==='lead') S.tab='discover';
   const more = S.tab==='lead' ? `<button class="icon-btn" onclick="openMore()" aria-label="更多">•••</button>` : '';
-  let h = `<div class="mhead"><h1>跟单</h1><div><button class="icon-btn" onclick="toast('搜索带单员 / 项目')" aria-label="搜索">⌕</button>${more}</div></div>
+  let h = `<div class="mhead"><h1>跟单</h1><div><button class="icon-btn" onclick="S.q='';go('search')" aria-label="搜索">⌕</button>${more}</div></div>
   <div class="tabs">${tabs.map(([k,t])=>`<button class="${S.tab===k?'on':''}" onclick="setTab('${k}')">${t}${k==='lead'&&S.role==='quitting'?'<span class="dot" style="color:var(--warn);background:var(--warn-bg)">注销中</span>':''}</button>`).join('')}</div>`;
   if(S.tab==='discover') h += discoverHTML();
   if(S.tab==='mine') h += mineHTML();
   if(S.tab==='lead') h += leadHTML();
   return h;
 }
-
+function marketList(){
+  const list = S.market.map(m=>({...m}));
+  if(isLead()) running().forEach(p=>list.push({key:p.id, name:p.name, who:S.profile.name, days:p.days, roi:null, gain:null, aum:f2(p.fol? FOLLOWERS.slice(0,p.fol).reduce((a,f)=>a+f[2],0):0), fol:p.fol, cap:100, dd:0, line:[], mine:true}));
+  return list;
+}
 function discoverHTML(){
   let banner='';
   if(!isLead()){
     banner = S.exLead
       ? `<div class="banner mute"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，<span class="warnmark">⚠️ N 天</span>后可重新申请</p></div></div>`
-      : `<div class="banner"><div><b>成为带单员，赚取跟单分润</b><p>分润比例 <span class="warnmark">⚠️ 数值待确认</span></p></div><span class="link chev" onclick="toast('进入带单员申请（沿用现有流程）')" style="cursor:pointer">申请</span></div>`;
+      : `<div class="banner" onclick="S.agree=false;go('apply')" style="cursor:pointer"><div><b>成为带单员，赚取跟单分润</b><p>分润比例 <span class="warnmark">⚠️ 数值待确认</span></p></div><span class="link chev">申请</span></div>`;
   }
-  let list = MARKET.map(m=>({...m}));
-  if(isLead()) running().forEach(p=>list.push({name:p.name, who:ME, days:p.days, roi:null, gain:null, aum:'0.36K', fol:p.fol, cap:100, dd:0, line:[], mine:true}));
+  const list = marketList();
   const key={roi:x=>x.roi==null?-1e9:x.roi, fol:x=>x.fol, dd:x=>-x.dd}[S.sort];
   list.sort((a,b)=>key(b)-key(a));
   const chips=[['roi','收益率'],['fol','跟单人数'],['dd','最大回撤']];
@@ -302,16 +365,22 @@ function discoverHTML(){
   <div class="chips">${chips.map(([k,t])=>`<button class="${S.sort===k?'on':''}" onclick="S.sort='${k}';render()">${t}</button>`).join('')}</div>
   ${list.map(cardHTML).join('')}</div>`;
 }
+function followBtn(m, big){
+  const c = big ? 'btn' : 'pill';
+  if(m.mine) return `<button class="${c} line" onclick="event.stopPropagation();home('lead')">管理</button>`;
+  if(S.follows.some(f=>f.key===m.key&&f.on)) return `<button class="${c} line" onclick="event.stopPropagation();openFollowed('${m.key}')">已跟单</button>`;
+  if(m.fol>=m.cap) return `<button class="${c} line" disabled>已满员</button>`;
+  return `<button class="${c} pri" onclick="event.stopPropagation();openFollow('${m.key}')">跟单</button>`;
+}
+function roiBlock(m){
+  return m.days < MIN_DAYS ? `<div class="roi na">--</div><div class="psub">运行不足 ${MIN_DAYS} 天，暂不计算</div>`
+    : `<div class="roi ${cls(m.roi)}">${m.roi>0?'+':''}${m.roi.toFixed(2)}%</div><div class="psub ${cls(m.gain)}">${m.gain>0?'+':'-'}$${f2(Math.abs(m.gain))}</div>`;
+}
 function cardHTML(m){
-  const young = m.days < MIN_DAYS;
-  const roi = young ? `<div class="roi na">--</div><div class="psub">运行不足 ${MIN_DAYS} 天，暂不计算</div>`
-                    : `<div class="roi ${cls(m.roi)}">${sign(m.roi)}%</div><div class="psub ${cls(m.gain)}">${m.gain>0?'+':'-'}$${Math.abs(m.gain).toLocaleString('en-US',{minimumFractionDigits:2})}</div>`;
-  const btn = m.mine ? `<button class="pill line" onclick="setTab('lead')">管理</button>`
-                     : `<button class="pill pri" onclick="follow('${m.name}')">跟单</button>`;
-  return `<div class="pcard">
+  return `<div class="pcard" style="cursor:pointer" onclick="go('detail','${m.key}')">
     <div class="prow"><div class="av">${m.who[0].toUpperCase()}</div>
-      <div class="who"><div class="pname">${m.name} ${m.mine?'<span class="tag mine">我的</span>':''}</div><div class="psub">${m.who} · 带单 ${m.days} 天</div></div>${btn}</div>
-    <div class="pmid"><div><div class="lbl">近 30 日收益率</div>${roi}</div>${young?'':spark(m.line, m.roi>=0)}</div>
+      <div class="who"><div class="pname">${m.name} ${m.mine?'<span class="tag mine">我的</span>':''}</div><div class="psub">${m.who} · 带单 ${m.days} 天</div></div>${followBtn(m)}</div>
+    <div class="pmid"><div><div class="lbl">近 30 日收益率</div>${roiBlock(m)}</div>${m.days<MIN_DAYS?'':spark(m.line, m.roi>=0)}</div>
     <div class="grid3"><div><div class="lbl">跟单资金</div><div class="v">${m.aum}</div></div>
       <div><div class="lbl">跟单人数</div><div class="v">${m.fol}<span style="color:var(--sub2);font-weight:400">/${m.cap}</span></div></div>
       <div><div class="lbl">最大回撤</div><div class="v">${m.dd.toFixed(2)}%</div></div></div>
@@ -319,20 +388,27 @@ function cardHTML(m){
 }
 
 function mineHTML(){
+  const on = S.follows.filter(f=>f.on), off = S.follows.filter(f=>!f.on);
+  const list = S.mineTab==='following' ? on : off;
+  const pnl = S.follows.reduce((a,f)=>a+f.pnl,0);
   const hist = S.exLead ? `<div class="entry" onclick="openHistory()" style="cursor:pointer"><span>历史带单记录</span><span class="chev">${ended().length} 个项目</span></div>` : '';
   const note = isLead() ? `<div style="font-size:12px;color:var(--sub);margin:10px 2px 0">跟单账户与带单账户资金独立，互不影响</div>` : '';
+  const rows = list.length ? list.map(f=>`<div class="lcard">
+      <div class="t">${f.name} <span class="tag ${f.on?'run':'end'}">${f.on?'跟随中':'已停止'}</span></div><div class="id">${f.who} · 开始 ${f.start}${f.end?' · 停止 '+f.end:''}</div>
+      <div class="two"><div><div class="lbl">投入资金 (USDT)</div><div class="v">${f2(f.amt)}</div></div><div><div class="lbl">跟单收益 (USDT)</div><div class="v ${cls(f.pnl)}">${sign(f.pnl)}</div></div></div>
+      <div class="acts" style="margin-top:12px"><button class="btn sm gray" onclick="go('detail','${f.key}')">项目详情</button>${f.on?`<button class="btn sm gray" onclick="askStop('${f.key}')">停止跟单</button>`:''}</div></div>`).join('')
+    : `<div class="empty"><div class="ic"></div><p>${S.mineTab==='following'?'还没有跟随任何项目':'暂无已结束的跟单'}</p>${S.mineTab==='following'?'<button class="pill pri" onclick="setTab(\'discover\')">去发现</button>':''}</div>`;
   return `<div class="body">
     <div class="card">
-      <div style="display:flex;justify-content:space-between"><span class="lbl" style="font-size:13px">跟单账户权益</span><span class="lbl chev" style="font-size:13px;cursor:pointer" onclick="toast('跟单账户详情')">账户详情</span></div>
-      <div style="margin:8px 0 2px"><span style="font-size:32px;font-weight:800">921.54</span> <span class="lbl">USDT</span></div>
-      <div class="lbl" style="margin-bottom:14px">累计盈亏 <b style="color:var(--text);font-weight:600">0.00 · 0.00%</b></div>
+      <div style="display:flex;justify-content:space-between"><span class="lbl" style="font-size:13px">跟单账户权益</span><span class="lbl chev" style="font-size:13px;cursor:pointer" onclick="go('account','follow')">账户详情</span></div>
+      <div style="margin:8px 0 2px"><span style="font-size:32px;font-weight:800">${f2(S.followBal)}</span> <span class="lbl">USDT</span></div>
+      <div class="lbl" style="margin-bottom:14px">累计盈亏 <b class="${cls(pnl)}" style="font-weight:600">${sign(pnl)}</b></div>
       <div class="grid3" style="border-top:1px solid #E3E5E8;padding-top:14px">
-        <div><div class="lbl">投入资金</div><div class="v">0.00</div></div><div><div class="lbl">占用保证金</div><div class="v">0.00</div></div><div><div class="lbl">未实现盈亏</div><div class="v">0.00</div></div>
+        <div><div class="lbl">投入资金</div><div class="v">${f2(invested())}</div></div><div><div class="lbl">可用</div><div class="v">${f2(followAvail())}</div></div><div><div class="lbl">未实现盈亏</div><div class="v">0.00</div></div>
       </div>
     </div>${note}
-    <div class="subtabs"><button class="${S.mineTab==='following'?'on':''}" onclick="S.mineTab='following';render()">跟随中 0</button><button class="${S.mineTab==='done'?'on':''}" onclick="S.mineTab='done';render()">已结束 0</button></div>
-    <div class="empty"><div class="ic"></div><p>${S.mineTab==='following'?'还没有跟随任何项目':'暂无已结束的跟单'}</p>${S.mineTab==='following'?'<button class="pill pri" onclick="setTab(\'discover\')">去发现</button>':''}</div>
-    ${hist}
+    <div class="subtabs"><button class="${S.mineTab==='following'?'on':''}" onclick="S.mineTab='following';render()">跟随中 ${on.length}</button><button class="${S.mineTab==='done'?'on':''}" onclick="S.mineTab='done';render()">已结束 ${off.length}</button></div>
+    ${rows}${hist}
   </div>`;
 }
 
@@ -342,40 +418,238 @@ function leadHTML(){
   const banner = quitting ? `<div class="banner warn"><div><b>注销处理中</b><p>本期分润结算后自动生效（<span class="warnmark">⚠️ 结算时间待确认</span>），期间不可新建项目</p></div><span class="link" style="cursor:pointer;white-space:nowrap" onclick="askWithdraw()">撤回</span></div>` : '';
   const list = S.leadTab==='running' ? running() : ended();
   const cards = list.length ? list.map(projHTML).join('')
-    : `<div class="empty"><div class="ic"></div><p>${S.leadTab==='running'?(quitting?'注销处理中，无进行中项目':'暂无进行中的项目，新建一个开始带单'):'暂无已结束的项目'}</p></div>`;
+    : `<div class="empty"><div class="ic"></div><p>${S.leadTab==='running'?(quitting?'注销处理中，无进行中项目':'暂无进行中的项目，新建一个开始带单'):'暂无已结束的项目'}</p>${S.leadTab==='running'&&!quitting?'<button class="pill pri" onclick="openNewProj()">新建项目</button>':''}</div>`;
+  const totalShare = S.projects.reduce((a,p)=>a+p.share,0);
   return `<div class="body">${banner}
-    <div class="prof"><div class="av">T</div><div style="flex:1"><div class="nm">${ME} <span class="tag run">带单员</span></div><div class="psub">带单 2 天</div></div><span class="lbl chev" style="cursor:pointer" onclick="toast('编辑头像、昵称、简介')">编辑资料</span></div>
+    <div class="prof"><div class="av">${S.profile.name[0].toUpperCase()}</div><div style="flex:1;min-width:0"><div class="nm">${S.profile.name} <span class="tag run">带单员</span></div><div class="psub">带单 2 天</div></div><span class="lbl chev" style="cursor:pointer;white-space:nowrap" onclick="go('profile')">编辑资料</span></div>
     <div class="card">
-      <div style="display:flex;justify-content:space-between"><span class="lbl" style="font-size:13px">带单账户权益 (USDT)</span><span class="lbl chev" style="font-size:13px;cursor:pointer" onclick="toast('带单账户详情')">账户详情</span></div>
-      <div style="font-size:32px;font-weight:800;margin:8px 0 14px">101.69</div>
+      <div style="display:flex;justify-content:space-between"><span class="lbl" style="font-size:13px">带单账户权益 (USDT)</span><span class="lbl chev" style="font-size:13px;cursor:pointer" onclick="go('account','lead')">账户详情</span></div>
+      <div style="font-size:32px;font-weight:800;margin:8px 0 14px">${f2(S.leadBal+leadUpnl())}</div>
       <div class="grid3" style="border-top:1px solid #E3E5E8;padding-top:14px">
         <div><div class="lbl">当前跟单人数</div><div class="v">${totalFol}</div></div>
-        <div><div class="lbl">本期待结算分润</div><div class="v ${S.pending?'up':''}">${S.pending?'+'+S.pending.toFixed(2):'0.00'}</div></div>
-        <div><div class="lbl">累计分润</div><div class="v">0.00</div></div>
+        <div><div class="lbl">待结算分润</div><div class="v ${S.pending?'up':''}">${S.pending?'+'+S.pending.toFixed(2):'0.00'}</div></div>
+        <div><div class="lbl">累计分润</div><div class="v">${f2(totalShare)}</div></div>
       </div>
     </div>
     <div class="quick">
-      <button onclick="toast('跟单用户列表')"><i>👥</i>跟单用户</button>
-      <button onclick="toast('分润明细')"><i>%</i>分润明细</button>
-      <button onclick="toast('余额历史')"><i>↧</i>余额历史</button>
-      <button onclick="toast('预览跟单者看到的主页')"><i>⌂</i>我的主页</button>
+      <button onclick="go('followers')"><i>👥</i>跟单用户</button>
+      <button onclick="go('shares')"><i>%</i>分润明细</button>
+      <button onclick="go('ledger','lead')"><i>↧</i>余额历史</button>
+      <button onclick="go('myhome')"><i>⌂</i>我的主页</button>
     </div>
-    <div class="subtabs"><button class="${S.leadTab==='running'?'on':''}" onclick="S.leadTab='running';render()">当前带单 ${running().length}</button><button class="${S.leadTab==='ended'?'on':''}" onclick="S.leadTab='ended';render()">已结束 ${ended().length}</button></div>
+    <div class="subtabs"><button class="${S.leadTab==='running'?'on':''}" onclick="S.leadTab='running';render()">当前带单 ${running().length}</button><button class="${S.leadTab==='ended'?'on':''}" onclick="S.leadTab='ended';render()">已结束 ${ended().length}</button>
+      <button class="newproj" ${quitting?'disabled':''} onclick="openNewProj()">+ 新建项目</button></div>
     ${cards}
-  </div>
-  <div class="fixbar"><button class="btn gray" ${quitting?'disabled':''} onclick="toast('新建项目（沿用现有流程）')">新建项目</button></div>`;
+  </div>`;
 }
 function projHTML(p){
-  if(p.status==='running') return `<div class="lcard">
+  if(p.status==='running') {
+    const u = p.pos.reduce((a,q)=>a+posPnl(q),0);
+    return `<div class="lcard">
     <div class="t">${p.name} <span class="tag run">进行中</span></div><div class="id">${p.id}</div>
-    <div class="two"><div><div class="lbl">累计盈亏 (USDT)</div><div class="v ${cls(p.pnl)}">${sign(p.pnl)}</div></div><div><div class="lbl">当前跟单人数</div><div class="v">${p.fol}</div></div></div>
-    <div class="time">开始时间 ${p.start}</div>
-    <div class="acts"><button class="btn sm dark" onclick="toast('进入带单交易页')">去带单</button><button class="btn sm gray" onclick="askEnd('${p.id}')">结束项目</button></div></div>`;
+    <div class="two"><div><div class="lbl">累计盈亏 (USDT)</div><div class="v ${cls(p.pnl+u)}">${sign(p.pnl+u)}</div></div><div><div class="lbl">当前跟单人数</div><div class="v">${p.fol}</div></div></div>
+    <div class="time">开始时间 ${p.start}　|　持仓 ${p.pos.length}</div>
+    <div class="acts"><button class="btn sm dark" ${S.role==='quitting'?'disabled':''} onclick="openTrade('${p.id}')">去带单</button><button class="btn sm gray" onclick="askEnd('${p.id}')">结束项目</button></div></div>`;
+  }
   return `<div class="lcard">
     <div class="t">${p.name} <span class="tag end">已结束</span></div><div class="id">${p.id}</div>
-    <div class="two"><div><div class="lbl">累计盈亏 (USDT)</div><div class="v ${cls(p.pnl)}">${sign(p.pnl)}</div></div><div><div class="lbl">累计分润 (USDT)</div><div class="v">${p.share.toFixed(2)}</div></div></div>
+    <div class="two"><div><div class="lbl">累计盈亏 (USDT)</div><div class="v ${cls(p.pnl)}">${sign(p.pnl)}</div></div><div><div class="lbl">累计分润 (USDT)</div><div class="v">${f2(p.share)}</div></div></div>
     <div class="time">开始时间 ${p.start}　|　结束时间 ${p.end}</div>
-    <button class="btn sm gray" onclick="toast('项目详情')">详情</button></div>`;
+    <button class="btn sm gray" onclick="closeOv();go('detail','${p.id}')">详情</button></div>`;
+}
+
+/* ---------- trade ---------- */
+function openTrade(id){const p=proj(id);S.trade={sym:p.syms[0], type:'limit', price:String(PRICE[p.syms[0]]), qty:''};go('trade',id)}
+function tradeHTML(){
+  const p = proj(S.pd), T = S.trade, px = PRICE[T.sym];
+  const pos = p.pos.map((q,i)=>{const u=posPnl(q);return `<div class="pos">
+    <div class="h"><b><span class="side ${q.side}">${q.side==='l'?'多':'空'}</span>${q.sym} · ${LEV}x</b><button class="pill line" onclick="askClose(${i})">平仓</button></div>
+    <div class="grid3"><div><div class="lbl">数量 (${q.sym.replace('USDT','')})</div><div class="v">${q.size}</div></div><div><div class="lbl">开仓价</div><div class="v">${f2(q.entry)}</div></div><div><div class="lbl">未实现盈亏</div><div class="v ${cls(u)}">${sign(u)}</div></div></div></div>`}).join('')
+    || `<div class="empty" style="padding:20px 0"><p>暂无持仓</p></div>`;
+  return nav('带单交易')+`<div class="body" style="padding-top:6px">
+    <div class="tproj"><span>当前项目 <b>${p.name}</b></span><span class="lbl">跟单人数 ${p.fol}</span></div>
+    <div class="chips">${p.syms.map(s=>`<button class="${T.sym===s?'on':''}" onclick="pickSym('${s}')">${s} 永续</button>`).join('')}</div>
+    <div class="sym"><div><div class="s">${T.sym}</div><div class="lbl">全仓 · ${LEV}x</div></div><div><div class="px">${f2(px)}</div><div class="lbl" style="text-align:right">最新价</div></div></div>
+    <div class="seg2"><button class="${T.type==='limit'?'on':''}" onclick="S.trade.type='limit';render()">限价</button><button class="${T.type==='market'?'on':''}" onclick="S.trade.type='market';render()">市价</button></div>
+    <div class="inp"><span>价格</span>${T.type==='market'?'<input value="以市场最优价成交" disabled style="color:var(--sub);font-weight:500">':`<input inputmode="decimal" value="${T.price}" oninput="S.trade.price=this.value;calc()">`}<em>USDT</em></div>
+    <div class="inp"><span>数量</span><input inputmode="decimal" placeholder="0.000" value="${T.qty}" oninput="S.trade.qty=this.value;calc()"><em>${T.sym.replace('USDT','')}</em></div>
+    <div class="avail"><span>可用 <b>${f2(leadAvail())}</b> USDT</span><span>所需保证金 <b id="need">--</b></span></div>
+    <div class="trow"><button class="btn long" onclick="placeOrder('l')">买入开多</button><button class="btn short" onclick="placeOrder('s')">卖出开空</button></div>
+    <div class="sec-t">持仓 (${p.pos.length})</div>${pos}
+  </div>`;
+}
+function pickSym(s){S.trade.sym=s;S.trade.price=String(PRICE[s]);render()}
+function orderPx(){return S.trade.type==='market'?PRICE[S.trade.sym]:parseFloat(S.trade.price)}
+function calc(){const q=parseFloat(S.trade.qty),px=orderPx();$('need').textContent=(q>0&&px>0)?f2(q*px/LEV):'--'}
+function placeOrder(side){
+  const q=parseFloat(S.trade.qty), px=orderPx();
+  if(!(px>0)) return toast('请输入价格');
+  if(!(q>0)) return toast('请输入数量');
+  if(q*px/LEV > leadAvail()) return toast('可用余额不足');
+  proj(S.pd).pos.push({side, sym:S.trade.sym, size:q, entry:px});
+  S.trade.qty=''; render(); toast(`${side==='l'?'买入开多':'卖出开空'}成功`);
+}
+function askClose(i){
+  const p=proj(S.pd), q=p.pos[i], u=posPnl(q);
+  modal('市价平仓？',`${q.sym} ${q.side==='l'?'多':'空'}仓 ${q.size}，预计盈亏 <b class="${cls(u)}">${sign(u)}</b> USDT`,'确认平仓','dark',()=>{
+    p.pos.splice(i,1); p.pnl+=u; S.leadBal+=u; S.ledger.unshift({t:now(),d:'已实现盈亏 · '+p.name,a:u}); render(); toast('已平仓');
+  });
+}
+
+/* ---------- new project ---------- */
+function openNewProj(){if(S.role==='quitting')return;S.np={name:'', syms:['BTCUSDT'], ratio:'10%', bio:''};go('newproj')}
+function newProjHTML(){
+  const N=S.np;
+  return nav('新建项目')+`<div class="body">
+    <div class="field"><label>项目名称</label><input id="npName" maxlength="20" placeholder="例如：BTC 趋势策略" value="${N.name}" oninput="S.np.name=this.value;$('npErr').textContent=''"><div class="err" id="npErr"></div></div>
+    <div class="field"><label>带单品种 <span class="lbl">（可多选）</span></label><div class="chips">${Object.keys(PRICE).map(s=>`<button class="${N.syms.includes(s)?'on':''}" onclick="toggleSym('${s}')">${s}</button>`).join('')}</div></div>
+    <div class="field"><label>分润比例 <span class="warnmark">⚠️ 可选范围待确认</span></label><div class="chips">${['5%','10%','15%','20%'].map(r=>`<button class="${N.ratio===r?'on':''}" onclick="S.np.ratio='${r}';render()">${r}</button>`).join('')}</div></div>
+    <div class="field"><label>跟单人数上限</label><div class="lbl" style="font-size:13px">100 人 <span class="warnmark">⚠️ 数值待确认</span></div></div>
+    <div class="field"><label>项目简介 <span class="lbl">（选填）</span></label><textarea maxlength="80" placeholder="介绍你的交易风格" oninput="S.np.bio=this.value">${N.bio}</textarea></div>
+    <button class="btn pri" style="margin-top:8px" onclick="createProj()">创建项目</button>
+  </div>`;
+}
+function toggleSym(s){const a=S.np.syms;const i=a.indexOf(s);if(i>=0){if(a.length===1)return toast('至少选择一个品种');a.splice(i,1)}else a.push(s);render()}
+function createProj(){
+  const n=S.np.name.trim();
+  if(!n){$('npErr').textContent='请输入项目名称';return}
+  if(S.projects.some(p=>p.status==='running'&&p.name===n)){$('npErr').textContent='已有同名进行中项目';return}
+  S.projects.unshift({name:n, id:String(3680227388765022+S.projects.length), status:'running', pnl:0, share:0, start:'2026-10-13', fol:0, days:0, syms:[...S.np.syms], pos:[]});
+  S.leadTab='running'; home('lead'); toast('项目已创建');
+}
+
+/* ---------- detail / my home ---------- */
+function findItem(key){return marketList().find(m=>m.key===key) || (()=>{const p=proj(key);return p&&{key:p.id,name:p.name,who:S.profile.name,days:p.days,roi:null,gain:null,aum:'--',fol:p.fol,cap:100,dd:0,line:[],mine:true,ended:p.status==='ended',p}})()}
+function detailHTML(){
+  const m = findItem(S.pd);
+  if(!m) return nav('项目详情')+`<div class="empty"><p>项目已下架</p></div>`;
+  const bio = m.mine ? S.profile.bio : (m.bio||'');
+  const big = m.days>=MIN_DAYS && m.line.length ? `<div style="margin:6px 0 16px">${spark(m.line, m.roi>=0, 339, 90)}</div>` : `<div class="empty" style="padding:16px 0"><p style="margin:0">运行不足 ${MIN_DAYS} 天，暂无收益曲线</p></div>`;
+  const stats = m.ended
+    ? `<div class="grid3"><div><div class="lbl">累计盈亏</div><div class="v ${cls(m.p.pnl)}">${sign(m.p.pnl)}</div></div><div><div class="lbl">累计分润</div><div class="v">${f2(m.p.share)}</div></div><div><div class="lbl">结束时间</div><div class="v">${m.p.end}</div></div></div>`
+    : `<div class="grid3"><div><div class="lbl">跟单资金</div><div class="v">${m.aum}</div></div><div><div class="lbl">跟单人数</div><div class="v">${m.fol}/${m.cap}</div></div><div><div class="lbl">最大回撤</div><div class="v">${m.dd.toFixed(2)}%</div></div></div>`;
+  return nav('项目详情')+`<div class="body">
+    <div class="prof"><div class="av">${m.who[0].toUpperCase()}</div><div style="flex:1;min-width:0"><div class="nm" style="font-size:17px">${m.name} ${m.mine?'<span class="tag mine">我的</span>':''}${m.ended?' <span class="tag end">已结束</span>':''}</div><div class="psub">${m.who} · 带单 ${m.days} 天</div></div></div>
+    ${bio?`<div style="font-size:13px;color:#454A52;line-height:1.6;margin-bottom:14px">${bio}</div>`:''}
+    ${m.ended?'':`<div class="lbl">近 30 日收益率</div>${roiBlock(m)}${big}`}
+    <div class="card" style="margin-top:${m.ended?0:4}px">${stats}</div>
+    ${m.ended?'':`<div style="margin-top:18px">${followBtn(m,true)}</div>`}
+  </div>`;
+}
+function myHomeHTML(){
+  const r = running();
+  const fol = r.reduce((a,p)=>a+p.fol,0);
+  return nav('我的主页')+`<div class="body">
+    <div class="banner mute" style="margin-bottom:16px"><div><p style="margin:0">以下是其他用户看到的你的主页</p></div></div>
+    <div class="prof"><div class="av">${S.profile.name[0].toUpperCase()}</div><div style="flex:1"><div class="nm">${S.profile.name}</div><div class="psub">带单 2 天</div></div><span class="lbl chev" style="cursor:pointer" onclick="go('profile')">编辑</span></div>
+    <div style="font-size:13px;color:#454A52;line-height:1.6;margin-bottom:14px">${S.profile.bio||'<span class="lbl">还没有简介</span>'}</div>
+    <div class="card grid3"><div><div class="lbl">进行中项目</div><div class="v">${r.length}</div></div><div><div class="lbl">当前跟单人数</div><div class="v">${fol}</div></div><div><div class="lbl">累计分润</div><div class="v">${f2(S.projects.reduce((a,p)=>a+p.share,0))}</div></div></div>
+    <div class="sec-t">带单项目</div>
+    ${r.length? marketList().filter(m=>m.mine).map(cardHTML).join('') : '<div class="empty"><p>暂无进行中的项目</p></div>'}
+  </div>`;
+}
+
+/* ---------- lists ---------- */
+function rowsHTML(rows){return rows.length? `<div class="rows">${rows.join('')}</div>` : `<div class="empty"><div class="ic"></div><p>暂无记录</p></div>`}
+function followersHTML(){
+  const rows=[]; running().forEach(p=>FOLLOWERS.slice(0,p.fol).forEach(f=>rows.push(`<div class="row"><div><b>${f[0]}</b><div class="lbl">${p.name} · 跟随于 ${f[1]}</div></div><div style="text-align:right"><b>${f2(f[2])}</b><div class="lbl up">${sign(f[3])}</div></div></div>`)));
+  return nav('跟单用户')+`<div class="body"><div class="lbl" style="margin-bottom:6px">共 ${rows.length} 人 · 右侧为跟单金额 / 跟单收益 (USDT)</div>${rowsHTML(rows)}</div>`;
+}
+function sharesHTML(){
+  const rows=[];
+  if(S.pending>0) rows.push(`<div class="row"><div><b>本期 10-13 ~ 10-19</b><div class="lbl">全部项目</div></div><div style="text-align:right"><b class="up">+${S.pending.toFixed(2)}</b><div class="lbl"><span class="tag warn">待结算</span></div></div></div>`);
+  S.projects.filter(p=>p.share>0).forEach(p=>rows.push(`<div class="row"><div><b>${p.name}</b><div class="lbl">${p.end||p.start}</div></div><div style="text-align:right"><b class="up">+${f2(p.share)}</b><div class="lbl"><span class="tag run">已结算</span></div></div></div>`));
+  return nav('分润明细')+`<div class="body"><div class="lbl" style="margin-bottom:6px">结算周期 <span class="warnmark">⚠️ 待确认</span></div>${rowsHTML(rows)}</div>`;
+}
+function ledgerHTML(){
+  const L = S.pd==='lead'?S.ledger:S.fledger;
+  return nav(S.pd==='lead'?'余额历史':'跟单账户流水')+`<div class="body">${rowsHTML(L.map(x=>`<div class="row"><div><b>${x.d}</b><div class="lbl">${x.t}</div></div><b class="${cls(x.a)}">${sign(x.a)}</b></div>`))}</div>`;
+}
+function accountHTML(){
+  const lead = S.pd==='lead';
+  const bal = lead?S.leadBal:S.followBal, avail = lead?leadAvail():followAvail(), used = lead?leadMargin():invested();
+  return nav(lead?'带单账户':'跟单账户')+`<div class="body">
+    <div class="card"><div class="lbl">账户余额 (USDT)</div><div style="font-size:30px;font-weight:800;margin:6px 0 14px">${f2(bal)}</div>
+      <div class="grid3" style="border-top:1px solid #E3E5E8;padding-top:14px"><div><div class="lbl">可用</div><div class="v">${f2(avail)}</div></div><div><div class="lbl">${lead?'占用保证金':'跟单占用'}</div><div class="v">${f2(used)}</div></div><div><div class="lbl">未实现盈亏</div><div class="v ${lead?cls(leadUpnl()):''}">${lead?sign(leadUpnl()):'0.00'}</div></div></div></div>
+    <div class="trow" style="margin-top:16px"><button class="btn pri" onclick="openTransfer('${S.pd}','in')">划入</button><button class="btn gray" onclick="openTransfer('${S.pd}','out')">划出</button></div>
+    <div class="entry" style="cursor:pointer" onclick="go('ledger','${S.pd}')"><span>${lead?'余额历史':'账户流水'}</span><span class="chev"></span></div>
+  </div>`;
+}
+function openTransfer(acct, dir){
+  const lead=acct==='lead', max = dir==='in' ? 5000 : (lead?leadAvail():followAvail());
+  overlay(`<div class="sheet" style="padding:8px 18px 22px"><div class="grab"></div><h3 style="padding:4px 0 12px">${dir==='in'?'划入':'划出'}${lead?'带单':'跟单'}账户</h3>
+    <div class="lbl" style="margin-bottom:8px">${dir==='in'?'从 资金账户 → '+(lead?'带单':'跟单')+'账户':'从 '+(lead?'带单':'跟单')+'账户 → 资金账户'}</div>
+    <div class="inp"><input id="tfAmt" inputmode="decimal" placeholder="0.00"><button class="link" onclick="$('tfAmt').value='${max.toFixed(2)}'">全部</button></div>
+    <div class="lbl" style="margin-bottom:14px">${dir==='in'?'资金账户可用':'可划出'} ${f2(max)} USDT</div>
+    <button class="btn pri" onclick="doTransfer('${acct}','${dir}',${max})">确认</button></div>`);
+}
+function doTransfer(acct, dir, max){
+  const a=parseFloat($('tfAmt').value);
+  if(!(a>0)) return toast('请输入金额');
+  if(a>max+1e-9) return toast('超出可划转金额');
+  const s = dir==='in'?a:-a, L = acct==='lead'?S.ledger:S.fledger;
+  if(acct==='lead') S.leadBal+=s; else S.followBal+=s;
+  L.unshift({t:now(), d:dir==='in'?'从资金账户划入':'划出至资金账户', a:s});
+  closeOv(); render(); toast('划转成功');
+}
+
+/* ---------- profile / search / rules / apply ---------- */
+function profileHTML(){
+  return nav('编辑资料')+`<div class="body">
+    <div class="field"><label>昵称</label><input id="pfName" maxlength="20" value="${S.profile.name}" oninput="$('pfErr').textContent=''"><div class="err" id="pfErr"></div></div>
+    <div class="field"><label>简介</label><textarea id="pfBio" maxlength="80">${S.profile.bio}</textarea></div>
+    <button class="btn pri" onclick="saveProfile()">保存</button></div>`;
+}
+function saveProfile(){const n=$('pfName').value.trim();if(!n){$('pfErr').textContent='昵称不能为空';return}S.profile.name=n;S.profile.bio=$('pfBio').value.trim();back();toast('已保存')}
+function searchHTML(){
+  return `<div class="nav"><button class="icon-btn" onclick="back()" aria-label="返回">‹</button><div class="inp" style="flex:1;height:36px;margin:0 6px 0 0"><input id="sq" placeholder="搜索带单员 / 项目" value="${S.q}" oninput="S.q=this.value;drawSearch()"></div></div>
+    <div class="body" id="sres"></div>`;
+}
+function drawSearch(){
+  const q=S.q.trim().toLowerCase(), el=$('sres'); if(!el) return;
+  if(!q){el.innerHTML='<div class="empty"><p>输入带单员昵称或项目名称</p></div>';return}
+  const r=marketList().filter(m=>(m.name+m.who).toLowerCase().includes(q));
+  el.innerHTML = r.length ? r.map(cardHTML).join('') : '<div class="empty"><div class="ic"></div><p>没有找到相关结果</p></div>';
+}
+function rulesHTML(){
+  return nav('带单规则')+`<div class="body" style="font-size:13px;line-height:1.8;color:#454A52">
+    <div class="sec-t" style="margin-top:4px">分润</div><p>分润比例：<span class="warnmark">⚠️ 待确认</span>；结算周期：<span class="warnmark">⚠️ 待确认</span></p>
+    <div class="sec-t">项目</div><p>每个项目跟单人数上限 <span class="warnmark">⚠️ 数值待确认</span>；结束项目后不可恢复。</p>
+    <div class="sec-t">注销带单员</div><p>需先结束全部进行中项目；有待结算分润时进入处理中，结算后生效；注销后 <span class="warnmark">⚠️ N 天</span>内不可重新申请。</p></div>`;
+}
+function applyHTML(){
+  return nav('申请成为带单员')+`<div class="body">
+    <div class="sec-t" style="margin-top:4px">申请条件</div>
+    <div class="check"><span class="st ok">✓</span><div class="c"><b>已完成身份认证</b></div></div>
+    <div class="check"><span class="st info">i</span><div class="c"><b>其他门槛</b><p>资产、交易量等门槛 <span class="warnmark">⚠️ 待确认</span>（沿用现有申请规则）</p></div></div>
+    <div class="agree ${S.agree?'on':''}" onclick="S.agree=!S.agree;render()"><i>${S.agree?'✓':''}</i><span>我已阅读并同意《带单员协议》</span></div>
+    <button class="btn pri" ${S.agree?'':'disabled'} onclick="doApply()">提交申请</button></div>`;
+}
+function doApply(){S.role='lead';S.projects=[];S.pending=0;S.leadBal=0;S.ledger=[];S.leadTab='running';home('lead');toast('申请通过，已成为带单员（原型模拟直接通过）')}
+
+/* ---------- follow ---------- */
+function openFollow(key){
+  const m=findItem(key), max=followAvail();
+  overlay(`<div class="sheet" style="padding:8px 18px 22px"><div class="grab"></div><h3 style="padding:4px 0 4px">跟单 ${m.name}</h3><div class="lbl" style="margin-bottom:14px">${m.who} · 跟单人数 ${m.fol}/${m.cap}</div>
+    <div class="inp"><span>投入</span><input id="fAmt" inputmode="decimal" placeholder="最低 ⚠️ 待确认"><em>USDT</em></div>
+    <div class="chips">${[25,50,100].map(r=>`<button onclick="$('fAmt').value='${(max*r/100).toFixed(2)}'">${r}%</button>`).join('')}</div>
+    <div class="lbl" style="margin-bottom:14px">跟单账户可用 ${f2(max)} USDT${max<=0?' · <span class="link" style="cursor:pointer" onclick="closeOv();go(\'account\',\'follow\')">去划入</span>':''}</div>
+    <button class="btn pri" onclick="doFollow('${key}',${max})">确认跟单</button></div>`);
+}
+function doFollow(key, max){
+  const a=parseFloat($('fAmt').value), m=findItem(key);
+  if(!(a>0)) return toast('请输入投入金额');
+  if(a>max+1e-9) return toast('跟单账户可用余额不足');
+  S.follows.unshift({key, name:m.name, who:m.who, amt:a, pnl:0, on:true, start:'2026-10-13'});
+  const mk=S.market.find(x=>x.key===key); if(mk) mk.fol++;
+  closeOv(); render(); toast('跟单成功，可在「我的跟单」查看');
+}
+function openFollowed(key){S.mineTab='following';home('mine')}
+function askStop(key){
+  const f=S.follows.find(x=>x.key===key&&x.on);
+  modal('停止跟单？',`停止跟单「${f.name}」后，投入资金释放回跟单账户。跟单仓位处理沿用现有规则。`,'停止跟单','danger',()=>{
+    f.on=false; f.end='2026-10-13'; const mk=S.market.find(x=>x.key===key); if(mk) mk.fol--; render(); toast('已停止跟单');
+  });
 }
 
 /* ---------- quit flow ---------- */
@@ -387,10 +661,9 @@ function quitHTML(){
   const c2 = S.pending>0
     ? `<div class="check"><span class="st wait">…</span><div class="c"><b>本期待结算分润：${S.pending.toFixed(2)} USDT</b><p>可以提交注销。提交后进入「处理中」，待本期分润结算完成后自动生效（<span class="warnmark">⚠️ 结算时间待确认</span>），期间可撤回</p></div></div>`
     : `<div class="check"><span class="st ok">✓</span><div class="c"><b>待结算分润：无</b><p>提交后立即生效</p></div></div>`;
-  const c3 = `<div class="check"><span class="st info">i</span><div class="c"><b>带单账户余额：101.69 USDT</b><p>注销生效后自动划转至 <span class="warnmark">⚠️ 资金账户（待确认）</span></p></div></div>`;
+  const c3 = `<div class="check"><span class="st info">i</span><div class="c"><b>带单账户余额：${f2(S.leadBal)} USDT</b><p>注销生效后自动划转至 <span class="warnmark">⚠️ 资金账户（待确认）</span></p></div></div>`;
   const can = !blocked && S.agree;
-  return `<div class="nav"><button class="icon-btn" onclick="S.page='home';render()" aria-label="返回">‹</button><div class="ttl">注销带单员</div></div>
-  <div class="body" style="padding-top:4px">
+  return nav('注销带单员')+`<div class="body" style="padding-top:4px">
     <div style="font-size:13px;color:var(--sub);line-height:1.6">注销后你将回到普通跟单用户身份。请先确认以下事项：</div>
     <div class="sec-t">注销前检查</div>${c1}${c2}${c3}
     <div class="sec-t">注销后的影响</div>
@@ -408,10 +681,10 @@ function quitHTML(){
 function resultHTML(){
   if(S.result==='pending') return `<div class="result"><div class="big" style="background:#E4A23A">…</div><h2>注销申请已提交</h2>
     <p>本期待结算分润 ${S.pending.toFixed(2)} USDT 结算完成后，注销自动生效（<span class="warnmark">⚠️ 结算时间待确认</span>）。<br>处理中期间：不能新建项目；你可以在「带单中心」随时撤回申请。</p>
-    <button class="btn pri" onclick="S.page='home';S.tab='lead';render()">返回带单中心</button></div>`;
+    <button class="btn pri" onclick="home('lead')">返回带单中心</button></div>`;
   return `<div class="result"><div class="big" style="background:var(--green)">✓</div><h2>已注销带单员</h2>
-    <p>带单账户余额 101.69 USDT 已划转至 <span class="warnmark">⚠️ 资金账户（待确认）</span>。<br>历史带单记录可在「我的跟单」查看。</p>
-    <button class="btn pri" onclick="S.page='home';S.tab='discover';render()">返回跟单</button></div>`;
+    <p>带单账户余额 ${f2(S.quitBal||0)} USDT 已划转至 <span class="warnmark">⚠️ 资金账户（待确认）</span>。<br>历史带单记录可在「我的跟单」查看。</p>
+    <button class="btn pri" onclick="home('discover')">返回跟单</button></div>`;
 }
 
 /* ---------- overlays ---------- */
@@ -424,7 +697,7 @@ function modal(title, body, okText, okCls, onOk){
 function openMore(){
   const quitting = S.role==='quitting';
   overlay(`<div class="sheet"><div class="grab"></div>
-    <button class="item" onclick="closeOv();toast('带单规则说明')">带单规则<small>分润比例、结算周期、带单员考核</small></button>
+    <button class="item" onclick="closeOv();go('rules')">带单规则<small>分润比例、结算周期、注销说明</small></button>
     ${quitting
       ? `<button class="item" onclick="closeOv();askWithdraw()">撤回注销申请<small>恢复正常带单状态</small></button>`
       : `<button class="item red" onclick="closeOv();startQuit()">注销带单员<small>回到普通跟单用户身份</small></button>`}
@@ -436,12 +709,12 @@ function openHistory(){
 
 /* ---------- actions ---------- */
 function setTab(t){S.tab=t;render();$('screen').scrollTop=0}
-function follow(n){toast(`跟单「${n}」：进入跟单设置（沿用现有流程）`)}
-function startQuit(){S.page='quit';S.agree=false;render();$('screen').scrollTop=0}
-function goEndProjects(){S.page='home';S.tab='lead';S.leadTab='running';render();toast('结束全部进行中项目后，再回来注销')}
+function startQuit(){S.agree=false;go('quit')}
+function goEndProjects(){S.leadTab='running';home('lead');toast('结束全部进行中项目后，再回来注销')}
 function askEnd(id){
-  const p=S.projects.find(x=>x.id===id);
-  modal('结束项目？',`确认结束「${p.name}」？结束后不可恢复，持仓与跟随者按现有「结束项目」规则处理。`,'确认结束','danger',()=>{
+  const p=proj(id), u=p.pos.reduce((a,q)=>a+posPnl(q),0);
+  modal('结束项目？',`确认结束「${p.name}」？${p.pos.length?`当前 ${p.pos.length} 笔持仓将市价平仓（预计盈亏 ${sign(u)} USDT），`:''}结束后不可恢复，跟随者按现有「结束项目」规则处理。`,'确认结束','danger',()=>{
+    if(p.pos.length){p.pnl+=u;S.leadBal+=u;S.ledger.unshift({t:now(),d:'已实现盈亏 · '+p.name,a:u});p.pos=[];}
     p.status='ended';p.end='2026-10-13';p.fol=0;S.leadTab='ended';render();toast('项目已结束');
   });
 }
@@ -449,16 +722,18 @@ function askQuit(){
   const pend = S.pending>0;
   modal('确认注销带单员？', pend?'提交后进入处理中，本期分润结算完成后自动生效。':'确认后立即生效，带单账户余额将自动划转。', pend?'提交':'确认注销','danger',()=>{
     if(pend){S.role='quitting';S.result='pending';}
-    else{S.role='normal';S.exLead=true;S.result='done';}
-    S.page='result';render();
+    else finishQuit();
+    S.stack=[]; S.page='result'; render();
   });
 }
+function finishQuit(){S.role='normal';S.exLead=true;S.result='done';S.quitBal=S.leadBal;S.leadBal=0}
 function askWithdraw(){
   modal('撤回注销申请？','撤回后恢复正常带单，可以新建项目。','撤回','pri',()=>{S.role='lead';render();toast('已撤回注销申请')});
 }
 function simSettle(){
-  S.pending=0;S.projects.forEach(p=>{if(p.status==='ended'&&p.name==='高胜率项目')p.share=0.23});
-  S.role='normal';S.exLead=true;S.page='home';S.tab='discover';render();toast('本期分润已结算，注销已生效');
+  S.projects.forEach(p=>{if(p.status==='ended'&&p.name==='高胜率项目')p.share+=S.pending});
+  S.leadBal+=S.pending; S.ledger.unshift({t:now(),d:'分润结算',a:S.pending}); S.pending=0;
+  finishQuit(); home('discover'); toast('本期分润已结算，注销已生效');
 }
 
 /* ---------- panel ---------- */
@@ -471,10 +746,12 @@ function renderPanel(){
   $('segSim').innerHTML=`<button ${S.role==='quitting'?'':'disabled'} onclick="simSettle()">模拟：本期分润结算完成</button><button onclick="reset(S.scene);render()">重置</button>`;
 }
 function pickRole(k){
-  if(k==='lead'){reset(S.scene);}
-  else{reset(S.scene);S.role='normal';S.tab='discover';}
+  reset(S.scene);
+  if(k==='normal'){S.role='normal';S.tab='discover';}
   render();
 }
+const _render = render;
+render = function(){_render(); if(S.page==='search'){drawSearch();}};
 
 reset('running');
 render();
