@@ -31,8 +31,9 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
 .mhead h1{font-size:26px;font-weight:800;letter-spacing:.5px}
 .icon-btn{width:32px;height:32px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--text)}
 .icon-btn:hover{background:var(--card)}
-.tabs{display:flex;gap:22px;padding:0 18px;border-bottom:1px solid var(--line);margin-top:10px}
-.tabs button{padding:12px 0 10px;font-size:15px;color:var(--sub);position:relative}
+.tabs{display:flex;gap:20px;padding:0 18px;border-bottom:1px solid var(--line);margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{padding:12px 0 10px;font-size:15px;color:var(--sub);position:relative;white-space:nowrap;flex:none}
 .tabs button.on{color:var(--text);font-weight:700}
 .tabs button.on:after{content:"";position:absolute;left:50%;bottom:-1px;width:20px;height:3px;border-radius:2px;background:var(--green);transform:translateX(-50%)}
 .tabs .dot{display:inline-block;margin-left:4px;font-size:10px;color:var(--green);background:var(--green-bg);border-radius:8px;padding:1px 5px;vertical-align:2px;font-weight:600}
@@ -115,6 +116,7 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
 .btn.line,.pill.line{background:#fff;border:1px solid #D9DCE0;color:var(--text)}
 .pill:disabled{opacity:.4;cursor:not-allowed}
 /* trade */
+.tacct{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:10px}
 .tproj{display:flex;align-items:center;justify-content:space-between;background:var(--green-bg);border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:13px}
 .tproj b{font-size:14px}
 .sym{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
@@ -234,6 +236,7 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
       <li><span class="k opt">优化</span><b>发现页卡片</b>：补上带单员身份（头像 + 名称），收益率 + 收益额 + 收益曲线；跟单人数显示「当前 / 上限」；运行天数不足时收益率显示「--」，不显示 0.00% 误导用户。</li>
       <li><span class="k opt">优化</span><b>带单员自己的项目</b>出现在发现页时标「我的」，按钮从「跟单」换成「管理」，防止自己跟自己。</li>
       <li><span class="k opt">优化</span><b>带单中心补快捷入口</b>：跟单用户 / 分润明细 / 余额历史 / 我的主页（对标竞品「交易专家中心」）；进行中项目卡片补「去带单 / 结束项目」操作；「+ 新建项目」从底部按钮移到项目 Tab 栏右侧；空状态补引导文案。</li>
+      <li><span class="k new">新增</span><b>「带单交易」Tab</b>（仅带单员可见，在带单中心右侧）：顶部显示带单账户可用余额和划入入口，下单保证金从带单账户扣；有多个进行中项目时可切换项目；没有进行中项目时引导新建；注销处理中不能下单。带单中心的「去带单」直接跳到这个 Tab。</li>
       <li><span class="k new">交互</span><b>全部入口可点</b>：带单交易（下单 / 平仓）、新建项目、跟单 / 停止跟单、项目详情、我的主页、跟单用户、分润明细、余额历史、账户划入划出、编辑资料、搜索、带单规则、申请成为带单员，数据联动。</li>
       <li><span class="k opt">优化</span><b>统一叫法</b>：带单员侧叫「项目」，跟单侧叫「带单策略」，原来同一个东西两种叫法。原型统一为「项目」，跟单侧「我的项目」改为「我的跟单」。</li>
       <li><span class="k opt">优化</span><b>普通用户的「成为带单员」入口</b>放在发现页顶部横幅；注销后冷却期内横幅变为置灰提示。</li>
@@ -248,6 +251,7 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
       <li><span class="k dec">D5</span>注销后冷却期：<span class="warnmark">⚠️ 数值待确认</span>，冷却期内不能再申请成为带单员。</li>
       <li><span class="k dec">D6</span>再次申请成为带单员时，历史战绩继承还是清零？</li>
       <li><span class="k dec">D7</span>运行不足多少天不展示收益率：<span class="warnmark">⚠️ 数值待确认</span>，原型暂按 7 天；跟单人数上限 <span class="warnmark">⚠️ 数值待确认</span>，原型暂写 100。</li>
+      <li><span class="k dec">D8</span>多个进行中项目是否共用同一个带单账户余额？原型按<b>共用</b>展示（持仓归属到所选项目）。备选：每个项目单独分配资金。</li>
     </ol>
   </aside>
 </div>
@@ -287,7 +291,7 @@ function reset(scene){
     profile:{name:ME, bio:'专注 BTC 趋势交易，严格止损。'},
     tab:'lead', sort:'roi', leadTab:'running', mineTab:'following',
     page:'home', pd:null, stack:[], agree:false, result:null, q:'',
-    trade:{sym:'BTCUSDT', type:'limit', price:'', qty:''},
+    trade:{sym:'BTCUSDT', type:'limit', price:'', qty:''}, tradePid:null,
     np:{name:'', syms:['BTCUSDT'], ratio:'10%', bio:''},
   };
 }
@@ -323,7 +327,7 @@ function back(){const x=S.stack.pop()||{page:'home',pd:null}; S.page=x.page; S.p
 function home(tab){S.stack=[]; S.page='home'; S.pd=null; if(tab) S.tab=tab; render(); $('screen').scrollTop=0}
 function nav(title, right=''){return `<div class="nav"><button class="icon-btn" onclick="back()" aria-label="返回">‹</button><div class="ttl">${title}</div><div style="min-width:32px;text-align:right">${right}</div></div>`}
 
-const PAGES = {home:()=>homeHTML(), quit:()=>quitHTML(), result:()=>resultHTML(), trade:()=>tradeHTML(), newproj:()=>newProjHTML(),
+const PAGES = {home:()=>homeHTML(), quit:()=>quitHTML(), result:()=>resultHTML(), newproj:()=>newProjHTML(),
   detail:()=>detailHTML(), myhome:()=>myHomeHTML(), followers:()=>followersHTML(), shares:()=>sharesHTML(), ledger:()=>ledgerHTML(),
   account:()=>accountHTML(), profile:()=>profileHTML(), search:()=>searchHTML(), rules:()=>rulesHTML(), apply:()=>applyHTML()};
 function render(){
@@ -335,14 +339,15 @@ function render(){
 /* ---------- home ---------- */
 function homeHTML(){
   const tabs = [['discover','发现'],['mine','我的跟单']];
-  if(isLead()) tabs.push(['lead','带单中心']);
-  if(!isLead() && S.tab==='lead') S.tab='discover';
+  if(isLead()) tabs.push(['lead','带单中心'],['ltrade','带单交易']);
+  if(!isLead() && (S.tab==='lead'||S.tab==='ltrade')) S.tab='discover';
   const more = S.tab==='lead' ? `<button class="icon-btn" onclick="openMore()" aria-label="更多">•••</button>` : '';
   let h = `<div class="mhead"><h1>跟单</h1><div><button class="icon-btn" onclick="S.q='';go('search')" aria-label="搜索">⌕</button>${more}</div></div>
   <div class="tabs">${tabs.map(([k,t])=>`<button class="${S.tab===k?'on':''}" onclick="setTab('${k}')">${t}${k==='lead'&&S.role==='quitting'?'<span class="dot" style="color:var(--warn);background:var(--warn-bg)">注销中</span>':''}</button>`).join('')}</div>`;
   if(S.tab==='discover') h += discoverHTML();
   if(S.tab==='mine') h += mineHTML();
   if(S.tab==='lead') h += leadHTML();
+  if(S.tab==='ltrade') h += ltradeHTML();
   return h;
 }
 function marketList(){
@@ -458,25 +463,41 @@ function projHTML(p){
     <button class="btn sm gray" onclick="closeOv();go('detail','${p.id}')">详情</button></div>`;
 }
 
-/* ---------- trade ---------- */
-function openTrade(id){const p=proj(id);S.trade={sym:p.syms[0], type:'limit', price:String(PRICE[p.syms[0]]), qty:''};go('trade',id)}
-function tradeHTML(){
-  const p = proj(S.pd), T = S.trade, px = PRICE[T.sym];
+/* ---------- trade (带单交易 Tab) ---------- */
+function initTrade(id){const p=proj(id);S.tradePid=id;S.trade={sym:p.syms[0], type:'limit', price:String(PRICE[p.syms[0]]), qty:''}}
+function openTrade(id){initTrade(id);home('ltrade')}
+function tradeProj(){
+  let p = S.tradePid && proj(S.tradePid);
+  if(!p || p.status!=='running'){p = running()[0]; if(p) initTrade(p.id); else S.tradePid=null;}
+  return p;
+}
+function ltradeHTML(){
+  const quitting = S.role==='quitting';
+  const acct = `<div class="tacct"><div><div class="lbl">带单账户可用 (USDT)</div><div class="v" style="font-size:18px">${f2(leadAvail())}</div></div>
+    <div style="text-align:right"><div class="lbl">账户权益 ${f2(S.leadBal+leadUpnl())}</div><span class="link" style="cursor:pointer;font-size:13px" onclick="openTransfer('lead','in')">划入资金</span></div></div>`;
+  const p = tradeProj();
+  if(!p) return `<div class="body">${acct}<div class="empty"><div class="ic"></div><p>${quitting?'注销处理中，不能带单交易':'暂无进行中的项目，带单交易需先新建项目'}</p>${quitting?'':'<button class="pill pri" onclick="openNewProj()">新建项目</button>'}</div></div>`;
+  const T = S.trade, px = PRICE[T.sym];
   const pos = p.pos.map((q,i)=>{const u=posPnl(q);return `<div class="pos">
     <div class="h"><b><span class="side ${q.side}">${q.side==='l'?'多':'空'}</span>${q.sym} · ${LEV}x</b><button class="pill line" onclick="askClose(${i})">平仓</button></div>
     <div class="grid3"><div><div class="lbl">数量 (${q.sym.replace('USDT','')})</div><div class="v">${q.size}</div></div><div><div class="lbl">开仓价</div><div class="v">${f2(q.entry)}</div></div><div><div class="lbl">未实现盈亏</div><div class="v ${cls(u)}">${sign(u)}</div></div></div></div>`}).join('')
     || `<div class="empty" style="padding:20px 0"><p>暂无持仓</p></div>`;
-  return nav('带单交易')+`<div class="body" style="padding-top:6px">
-    <div class="tproj"><span>当前项目 <b>${p.name}</b></span><span class="lbl">跟单人数 ${p.fol}</span></div>
+  return `<div class="body" style="padding-top:12px">
+    ${acct}
+    <div class="tproj" style="cursor:pointer" onclick="pickProj()"><span>当前项目 <b>${p.name}</b> ${running().length>1?'▾':''}</span><span class="lbl">跟单人数 ${p.fol}</span></div>
     <div class="chips">${p.syms.map(s=>`<button class="${T.sym===s?'on':''}" onclick="pickSym('${s}')">${s} 永续</button>`).join('')}</div>
-    <div class="sym"><div><div class="s">${T.sym}</div><div class="lbl">全仓 · ${LEV}x</div></div><div><div class="px">${f2(px)}</div><div class="lbl" style="text-align:right">最新价</div></div></div>
+    <div class="sym"><div><div class="s">${T.sym}</div><div class="lbl">全仓 · ${LEV}x <span class="warnmark">⚠️ 待确认</span></div></div><div><div class="px">${f2(px)}</div><div class="lbl" style="text-align:right">最新价</div></div></div>
     <div class="seg2"><button class="${T.type==='limit'?'on':''}" onclick="S.trade.type='limit';render()">限价</button><button class="${T.type==='market'?'on':''}" onclick="S.trade.type='market';render()">市价</button></div>
     <div class="inp"><span>价格</span>${T.type==='market'?'<input value="以市场最优价成交" disabled style="color:var(--sub);font-weight:500">':`<input inputmode="decimal" value="${T.price}" oninput="S.trade.price=this.value;calc()">`}<em>USDT</em></div>
     <div class="inp"><span>数量</span><input inputmode="decimal" placeholder="0.000" value="${T.qty}" oninput="S.trade.qty=this.value;calc()"><em>${T.sym.replace('USDT','')}</em></div>
-    <div class="avail"><span>可用 <b>${f2(leadAvail())}</b> USDT</span><span>所需保证金 <b id="need">--</b></span></div>
-    <div class="trow"><button class="btn long" onclick="placeOrder('l')">买入开多</button><button class="btn short" onclick="placeOrder('s')">卖出开空</button></div>
+    <div class="avail"><span>所需保证金 <b id="need">--</b> USDT</span><span>扣自带单账户</span></div>
+    <div class="trow"><button class="btn long" ${quitting?'disabled':''} onclick="placeOrder('l')">买入开多</button><button class="btn short" ${quitting?'disabled':''} onclick="placeOrder('s')">卖出开空</button></div>
     <div class="sec-t">持仓 (${p.pos.length})</div>${pos}
   </div>`;
+}
+function pickProj(){
+  const r=running(); if(r.length<2) return;
+  overlay(`<div class="sheet"><div class="grab"></div><h3>选择带单项目</h3>${r.map(p=>`<button class="item" onclick="closeOv();initTrade('${p.id}');render()">${p.name}${p.id===S.tradePid?' ✓':''}<small>跟单人数 ${p.fol} · 持仓 ${p.pos.length}</small></button>`).join('')}<button class="item cancel" onclick="closeOv()">取消</button></div>`);
 }
 function pickSym(s){S.trade.sym=s;S.trade.price=String(PRICE[s]);render()}
 function orderPx(){return S.trade.type==='market'?PRICE[S.trade.sym]:parseFloat(S.trade.price)}
@@ -485,12 +506,12 @@ function placeOrder(side){
   const q=parseFloat(S.trade.qty), px=orderPx();
   if(!(px>0)) return toast('请输入价格');
   if(!(q>0)) return toast('请输入数量');
-  if(q*px/LEV > leadAvail()) return toast('可用余额不足');
-  proj(S.pd).pos.push({side, sym:S.trade.sym, size:q, entry:px});
+  if(q*px/LEV > leadAvail()) return toast('带单账户可用余额不足，请先划入');
+  proj(S.tradePid).pos.push({side, sym:S.trade.sym, size:q, entry:px});
   S.trade.qty=''; render(); toast(`${side==='l'?'买入开多':'卖出开空'}成功`);
 }
 function askClose(i){
-  const p=proj(S.pd), q=p.pos[i], u=posPnl(q);
+  const p=proj(S.tradePid), q=p.pos[i], u=posPnl(q);
   modal('市价平仓？',`${q.sym} ${q.side==='l'?'多':'空'}仓 ${q.size}，预计盈亏 <b class="${cls(u)}">${sign(u)}</b> USDT`,'确认平仓','dark',()=>{
     p.pos.splice(i,1); p.pnl+=u; S.leadBal+=u; S.ledger.unshift({t:now(),d:'已实现盈亏 · '+p.name,a:u}); render(); toast('已平仓');
   });
