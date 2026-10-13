@@ -740,7 +740,7 @@ function updatePreview(){
   const ok=n&&!err;
   const pnl=ok?dir*(c.mark-r.entry)*n*s:null;
   const left=ok?rz(r.qty-n):null;
-  $('qtyConv').textContent=ok?(mUnit==='张'?`≈ ${qt(r,n,'币')}`:`≈ ${qt(r,n,'张')}`+(mUnit==='U'?`（${qt(r,n,'币')}）`:'')):'';
+  $('qtyConv').textContent=ok?(mUnit==='张'?`≈ ${qt(r,n,'币')}`:mUnit==='币'?`≈ ${qt(r,n,'张')}`:`按当前标记价折算为 ${qt(r,n,'张')}（${qt(r,n,'币')}）执行，实际减仓价值 ${fmt(n*s*c.mark)} USDT`):'';
   const val0=r.qty*s*c.mark,up0=c.upnl,rp0=r.rpnl;
   const val1=ok?left*s*c.mark:null,up1=ok?(r.qty?c.upnl*left/r.qty:0):null,rp1=ok?rp0+pnl:null;
   const cmp=(o,nv)=>`<span class="num"><span class="old">${o}</span><span class="ar">→</span><span class="new">${ok?nv:'--'}</span></span>`;
@@ -748,12 +748,12 @@ function updatePreview(){
   $('preview').innerHTML=`
     <div class="pv-h"><span>本次减仓</span></div>
     <div class="pr"><span class="k">成交价格</span><span><span class="num">${fmt(c.mark,pd)}</span> <span class="muted">（执行时实时标记价）</span></span></div>
-    <div class="pr"><span class="k">本次减仓数量</span><span class="num">${ok?qt(r,n,mUnit):'--'}</span></div>
+    <div class="pr"><span class="k">本次减仓数量</span><span class="num">${ok?qb(r,n):'--'}</span></div>
     <div class="pr"><span class="k">本次减仓价值</span><span class="num">${ok?fmt(n*s*c.mark)+' U':'--'}</span></div>
     <div class="pr"><span class="k">本次减仓预估盈亏</span><span class="num ${ok?cls(pnl):''}">${ok?sgn(pnl)+' U':'--'}</span></div>
     <div class="pr"><span class="k">手续费</span><span><span class="num">0.00 U</span> <span class="muted">（被减仓用户不收手续费）</span></span></div>
     <div class="pv-h"><span>减仓后预估</span><span>当前 → 减仓后</span></div>
-    <div class="pr"><span class="k">剩余持仓</span>${cmp(qt(r,r.qty,mUnit),left===0?'<b style="color:var(--red)">0（全部平掉）</b>':qt(r,left,mUnit))}</div>
+    <div class="pr"><span class="k">剩余持仓</span>${cmp(qb(r,r.qty),left===0?'<b style="color:var(--red)">0（全部平掉）</b>':qb(r,left))}</div>
     <div class="pr"><span class="k">剩余持仓价值</span>${cmp(fmt(val0)+' U',ok?fmt(val1)+' U':'')}</div>
     <div class="pr"><span class="k">减仓后未实现盈亏</span>${cmp(sv(up0),ok?sv(up1):'')}</div>
     <div class="pr"><span class="k">减仓后预估总已实现盈亏</span>${cmp(sv(rp0),ok?sv(rp1):'')}</div>`;
