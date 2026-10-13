@@ -242,23 +242,16 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
 
     <h4>✅ 已确认（2026-10-13）</h4>
     <ol class="notes">
-      <li>带单员不能跟单</li>
+      <li>带单员不能跟单；有跟随中项目的用户需先手动停止全部跟单才能申请成为带单员</li>
       <li>有进行中项目时必须先手动结束才能注销</li>
-      <li>有待结算分润时允许提交，本期结算后生效</li>
+      <li>有待结算分润时允许提交，本期（每周）结算后生效</li>
       <li>注销后带单账户余额划转至跟单账户</li>
-      <li>注销后冷却期 7 天</li>
-      <li>重新申请带单员，历史战绩继承</li>
+      <li>注销后冷却期 7 天；重新申请后历史战绩继承</li>
       <li>运行不足 7 天不展示收益率；跟单人数上限 500</li>
-      <li>每个项目使用独立余额</li>
-    </ol>
-
-    <h4>⚠️ 仍待确认</h4>
-    <ol class="notes">
-      <li><span class="k dec">Q1</span>普通用户有跟随中的项目时申请带单员：原型暂按「需先停止全部跟单」拦截。</li>
-      <li><span class="k dec">Q2</span>新建项目时的最低项目资金；跟单最低投入金额。</li>
-      <li><span class="k dec">Q3</span>分润比例可选范围；结算周期和结算时间。</li>
-      <li><span class="k dec">Q4</span>带单杠杆倍数（原型暂写 20x）。</li>
-      <li><span class="k dec">Q5</span>跟单人数上限 500、冷却期 7 天、收益率展示门槛 7 天是写死还是运营后台可配。</li>
+      <li>每个项目使用独立余额；新建项目最低资金 100 USDT；跟单最低投入 100 USDT</li>
+      <li>分润比例可选 5% / 10% / 15% / 20%，默认 10%；每周结算</li>
+      <li>带单杠杆 2000x</li>
+      <li>上限 500、冷却期 7 天、收益率门槛 7 天先写死，不做后台配置</li>
     </ol>
   </aside>
 </div>
@@ -277,14 +270,15 @@ const MARKET = [
 ];
 const ENDED = {name:'高胜率项目', id:'3680227388765020', status:'ended', pnl:1.69, share:0, start:'2026-10-12', end:'2026-10-12', fol:0, days:1, syms:['BTCUSDT'], pos:[], bal:0};
 const RUNNING = {name:'BTC 趋势策略', id:'3680227388765021', status:'running', pnl:12.40, share:0, start:'2026-10-11', fol:3, days:2, syms:['BTCUSDT','ETHUSDT'],
-  pos:[{side:'l', sym:'BTCUSDT', size:0.01, entry:83120.5}], bal:60};
+  pos:[{side:'l', sym:'BTCUSDT', size:0.01, entry:83120.5}], bal:100};
 const SCENES = {
   running:{label:'有进行中项目', pending:0.23},
   settle:{label:'无进行中项目，有待结算分润', pending:0.23},
   clear:{label:'全部已清', pending:0},
 };
 const PRICE = {BTCUSDT:83805.2, ETHUSDT:2471.36, SOLUSDT:142.85};
-const LEV = 20;
+const LEV = 2000;        // 带单杠杆 2000x（R12 已确认）
+const MIN_AMT = 100;      // 最低项目资金 / 最低跟单金额 100 USDT（R11 已确认）
 const FOLLOWERS = [['u***82','2026-10-11',300,4.12],['k***07','2026-10-11',50,0.69],['m***31','2026-10-12',10,0.14]];
 
 let S;
@@ -295,7 +289,7 @@ function reset(scene){
     role:'lead', exLead:false, scene,
     projects: run ? [clone(RUNNING), clone(ENDED)] : [clone(ENDED)],
     pending: SCENES[scene].pending,
-    pool: run ? 41.69 : 101.69,           // 带单账户未分配余额
+    pool: run ? 1.69 : 101.69,           // 带单账户未分配余额
     followBal:921.54,
     ledger:[{t:'2026-10-12 18:20',d:'高胜率项目结束 · 余额转回',a:101.69},{t:'2026-10-11 09:02',d:'从资金账户划入',a:100}],
     fledger:[{t:'2026-10-10 14:31',d:'从资金账户划入',a:921.54}],
@@ -306,7 +300,7 @@ function reset(scene){
     trade:{sym:'BTCUSDT', type:'limit', price:'', qty:''}, tradePid:null,
     np:{name:'', syms:['BTCUSDT'], ratio:'10%', bio:'', amt:''},
   };
-  if(run) S.ledger.unshift({t:'2026-10-11 09:10',d:'分配至 BTC 趋势策略',a:-60});
+  if(run) S.ledger.unshift({t:'2026-10-11 09:10',d:'分配至 BTC 趋势策略',a:-100});
 }
 function clone(o){return JSON.parse(JSON.stringify(o))}
 const $ = id => document.getElementById(id);
@@ -375,7 +369,7 @@ function discoverHTML(){
   if(isLead()) banner = `<div class="banner mute"><div><p style="margin:0">你是带单员，不能跟单；注销带单员后可跟单</p></div></div>`;
   else banner = S.exLead
       ? `<div class="banner mute"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，${COOLDOWN} 天后可重新申请</p></div></div>`
-      : `<div class="banner" onclick="S.agree=false;go('apply')" style="cursor:pointer"><div><b>成为带单员，赚取跟单分润</b><p>分润比例 <span class="warnmark">⚠️ 数值待确认</span></p></div><span class="link chev">申请</span></div>`;
+      : `<div class="banner" onclick="S.agree=false;go('apply')" style="cursor:pointer"><div><b>成为带单员，赚取跟单分润</b><p>分润比例最高 20%</p></div><span class="link chev">申请</span></div>`;
   const list = marketList();
   const key={roi:x=>x.roi==null?-1e9:x.roi, fol:x=>x.fol, dd:x=>-x.dd}[S.sort];
   list.sort((a,b)=>key(b)-key(a));
@@ -435,7 +429,7 @@ function mineHTML(){
 function leadHTML(){
   const quitting = S.role==='quitting';
   const totalFol = running().reduce((a,p)=>a+p.fol,0);
-  const banner = quitting ? `<div class="banner warn"><div><b>注销处理中</b><p>本期分润结算后自动生效（<span class="warnmark">⚠️ 结算时间待确认</span>），期间不可新建项目</p></div><span class="link" style="cursor:pointer;white-space:nowrap" onclick="askWithdraw()">撤回</span></div>` : '';
+  const banner = quitting ? `<div class="banner warn"><div><b>注销处理中</b><p>本期分润（每周结算）结算后自动生效，期间不可新建项目、不可带单交易</p></div><span class="link" style="cursor:pointer;white-space:nowrap" onclick="askWithdraw()">撤回</span></div>` : '';
   const list = S.leadTab==='running' ? running() : ended();
   const cards = list.length ? list.map(projHTML).join('')
     : `<div class="empty"><div class="ic"></div><p>${S.leadTab==='running'?(quitting?'注销处理中，无进行中项目':'暂无进行中的项目，新建一个开始带单'):'暂无已结束的项目'}</p>${S.leadTab==='running'&&!quitting?'<button class="pill pri" onclick="openNewProj()">新建项目</button>':''}</div>`;
@@ -501,7 +495,7 @@ function ltradeHTML(){
     <div class="tacct"><div><div class="lbl">项目可用 (USDT)</div><div class="v" style="font-size:18px">${f2(pAvail(p))}</div></div>
       <div style="text-align:right"><div class="lbl">项目余额 ${f2(pEquity(p))}</div><span class="link" style="cursor:pointer;font-size:13px" onclick="openAdjust('${p.id}')">调整余额</span></div></div>
     <div class="chips">${p.syms.map(s=>`<button class="${T.sym===s?'on':''}" onclick="pickSym('${s}')">${s} 永续</button>`).join('')}</div>
-    <div class="sym"><div><div class="s">${T.sym}</div><div class="lbl">全仓 · ${LEV}x <span class="warnmark">⚠️ 待确认</span></div></div><div><div class="px">${f2(px)}</div><div class="lbl" style="text-align:right">最新价</div></div></div>
+    <div class="sym"><div><div class="s">${T.sym}</div><div class="lbl">全仓 · ${LEV}x</div></div><div><div class="px">${f2(px)}</div><div class="lbl" style="text-align:right">最新价</div></div></div>
     <div class="seg2"><button class="${T.type==='limit'?'on':''}" onclick="S.trade.type='limit';render()">限价</button><button class="${T.type==='market'?'on':''}" onclick="S.trade.type='market';render()">市价</button></div>
     <div class="inp"><span>价格</span>${T.type==='market'?'<input value="以市场最优价成交" disabled style="color:var(--sub);font-weight:500">':`<input inputmode="decimal" value="${T.price}" oninput="S.trade.price=this.value;calc()">`}<em>USDT</em></div>
     <div class="inp"><span>数量</span><input inputmode="decimal" placeholder="0.000" value="${T.qty}" oninput="S.trade.qty=this.value;calc()"><em>${T.sym.replace('USDT','')}</em></div>
@@ -564,10 +558,10 @@ function newProjHTML(){
   const N=S.np;
   return nav('新建项目')+`<div class="body">
     <div class="field"><label>项目名称</label><input id="npName" maxlength="20" placeholder="例如：BTC 趋势策略" value="${N.name}" oninput="S.np.name=this.value;$('npErr').textContent=''"><div class="err" id="npErr"></div></div>
-    <div class="field"><label>项目资金</label><div class="inp" style="margin:0"><input id="npAmt" inputmode="decimal" placeholder="最低 ⚠️ 待确认" value="${N.amt}" oninput="S.np.amt=this.value;$('amtErr').textContent=''"><em>USDT</em></div>
+    <div class="field"><label>项目资金</label><div class="inp" style="margin:0"><input id="npAmt" inputmode="decimal" placeholder="最低 ${MIN_AMT}" value="${N.amt}" oninput="S.np.amt=this.value;$('amtErr').textContent=''"><em>USDT</em></div>
       <div class="lbl" style="margin-top:6px">从带单账户未分配余额划入，可用 ${f2(S.pool)} USDT${S.pool<=0?' · <span class="link" style="cursor:pointer" onclick="go(\'account\',\'lead\')">去划入</span>':''}</div><div class="err" id="amtErr"></div></div>
     <div class="field"><label>带单品种 <span class="lbl">（可多选）</span></label><div class="chips">${Object.keys(PRICE).map(s=>`<button class="${N.syms.includes(s)?'on':''}" onclick="toggleSym('${s}')">${s}</button>`).join('')}</div></div>
-    <div class="field"><label>分润比例 <span class="warnmark">⚠️ 可选范围待确认</span></label><div class="chips">${['5%','10%','15%','20%'].map(r=>`<button class="${N.ratio===r?'on':''}" onclick="S.np.ratio='${r}';render()">${r}</button>`).join('')}</div></div>
+    <div class="field"><label>分润比例</label><div class="chips">${['5%','10%','15%','20%'].map(r=>`<button class="${N.ratio===r?'on':''}" onclick="S.np.ratio='${r}';render()">${r}</button>`).join('')}</div></div>
     <div class="field"><label>跟单人数上限</label><div class="lbl" style="font-size:13px">${CAP} 人</div></div>
     <div class="field"><label>项目简介 <span class="lbl">（选填）</span></label><textarea maxlength="80" placeholder="介绍你的交易风格" oninput="S.np.bio=this.value">${N.bio}</textarea></div>
     <button class="btn pri" style="margin-top:8px" onclick="createProj()">创建项目</button>
@@ -580,6 +574,7 @@ function createProj(){
   if(!n){$('npErr').textContent='请输入项目名称';bad=true}
   else if(S.projects.some(p=>p.status==='running'&&p.name===n)){$('npErr').textContent='已有同名进行中项目';bad=true}
   if(!(amt>0)){$('amtErr').textContent='请输入项目资金';bad=true}
+  else if(amt<MIN_AMT){$('amtErr').textContent=`项目资金最低 ${MIN_AMT} USDT`;bad=true}
   else if(amt>S.pool+1e-9){$('amtErr').textContent='超出带单账户未分配余额';bad=true}
   if(bad) return;
   const p={name:n, id:String(3680227388765022+S.projects.length), status:'running', pnl:0, share:0, start:'2026-10-13', fol:0, days:0, syms:[...S.np.syms], pos:[], bal:amt};
@@ -628,7 +623,7 @@ function sharesHTML(){
   const rows=[];
   if(S.pending>0) rows.push(`<div class="row"><div><b>本期 10-13 ~ 10-19</b><div class="lbl">全部项目</div></div><div style="text-align:right"><b class="up">+${S.pending.toFixed(2)}</b><div class="lbl"><span class="tag warn">待结算</span></div></div></div>`);
   S.projects.filter(p=>p.share>0).forEach(p=>rows.push(`<div class="row"><div><b>${p.name}</b><div class="lbl">${p.end||p.start}</div></div><div style="text-align:right"><b class="up">+${f2(p.share)}</b><div class="lbl"><span class="tag run">已结算</span></div></div></div>`));
-  return nav('分润明细')+`<div class="body"><div class="lbl" style="margin-bottom:6px">结算周期 <span class="warnmark">⚠️ 待确认</span></div>${rowsHTML(rows)}</div>`;
+  return nav('分润明细')+`<div class="body"><div class="lbl" style="margin-bottom:6px">每周结算一次</div>${rowsHTML(rows)}</div>`;
 }
 function ledgerHTML(){
   const L = S.pd==='lead'?S.ledger:S.fledger;
@@ -680,15 +675,15 @@ function profileHTML(){
 function saveProfile(){const n=$('pfName').value.trim();if(!n){$('pfErr').textContent='昵称不能为空';return}S.profile.name=n;S.profile.bio=$('pfBio').value.trim();back();toast('已保存')}
 function rulesHTML(){
   return nav('带单规则')+`<div class="body" style="font-size:13px;line-height:1.8;color:#454A52">
-    <div class="sec-t" style="margin-top:4px">身份</div><p>带单员不能跟单；注销带单员后可正常跟单。</p>
-    <div class="sec-t">项目</div><p>每个项目使用独立余额；每个项目跟单人数上限 ${CAP} 人；运行不足 ${MIN_DAYS} 天不展示收益率；结束项目后不可恢复，项目余额转回带单账户。</p>
-    <div class="sec-t">分润</div><p>分润比例：<span class="warnmark">⚠️ 待确认</span>；结算周期：<span class="warnmark">⚠️ 待确认</span></p>
+    <div class="sec-t" style="margin-top:4px">身份</div><p>带单员不能跟单；注销带单员后可正常跟单。有跟随中项目的用户需先手动停止全部跟单，才能申请成为带单员。</p>
+    <div class="sec-t">项目</div><p>每个项目使用独立余额，新建项目最低资金 ${MIN_AMT} USDT；跟单最低投入 ${MIN_AMT} USDT；带单杠杆 ${LEV}x；每个项目跟单人数上限 ${CAP} 人；运行不足 ${MIN_DAYS} 天不展示收益率；结束项目后不可恢复，项目余额转回带单账户。</p>
+    <div class="sec-t">分润</div><p>分润比例可选 5% / 10% / 15% / 20%，默认 10%；每周结算一次。</p>
     <div class="sec-t">注销带单员</div><p>需先手动结束全部进行中项目；有待结算分润时进入处理中，本期结算后生效，期间可撤回；生效后带单账户余额划转至跟单账户；注销后 ${COOLDOWN} 天内不可重新申请，重新申请后历史战绩继承。</p></div>`;
 }
 function applyHTML(){
   const on = S.follows.filter(f=>f.on).length;
   const c = on
-    ? `<div class="check"><span class="st no">!</span><div class="c"><b>跟随中项目：${on} 个</b><p>带单员不能跟单，需先停止全部跟单 <span class="warnmark">⚠️ 处理方式待确认</span></p><div class="act"><button class="pill pri" onclick="S.mineTab='following';home('mine')">去停止</button></div></div></div>`
+    ? `<div class="check"><span class="st no">!</span><div class="c"><b>跟随中项目：${on} 个</b><p>带单员不能跟单，需先手动停止全部跟单后才能申请</p><div class="act"><button class="pill pri" onclick="S.mineTab='following';home('mine')">去停止</button></div></div></div>`
     : `<div class="check"><span class="st ok">✓</span><div class="c"><b>无跟随中项目</b></div></div>`;
   return nav('申请成为带单员')+`<div class="body">
     <div class="sec-t" style="margin-top:4px">申请条件</div>
@@ -703,7 +698,7 @@ function doApply(){S.role='lead';S.projects=[];S.pending=0;S.pool=0;S.ledger=[];
 function openFollow(key){
   const m=findItem(key), max=followAvail();
   overlay(`<div class="sheet" style="padding:8px 18px 22px"><div class="grab"></div><h3 style="padding:4px 0 4px">跟单 ${m.name}</h3><div class="lbl" style="margin-bottom:14px">${m.who} · 跟单人数 ${m.fol}/${m.cap}</div>
-    <div class="inp"><span>投入</span><input id="fAmt" inputmode="decimal" placeholder="最低 ⚠️ 待确认"><em>USDT</em></div>
+    <div class="inp"><span>投入</span><input id="fAmt" inputmode="decimal" placeholder="最低 ${MIN_AMT}"><em>USDT</em></div>
     <div class="chips">${[25,50,100].map(r=>`<button onclick="$('fAmt').value='${(max*r/100).toFixed(2)}'">${r}%</button>`).join('')}</div>
     <div class="lbl" style="margin-bottom:14px">跟单账户可用 ${f2(max)} USDT${max<=0?' · <span class="link" style="cursor:pointer" onclick="closeOv();go(\'account\',\'follow\')">去划入</span>':''}</div>
     <button class="btn pri" onclick="doFollow('${key}',${max})">确认跟单</button></div>`);
@@ -711,6 +706,7 @@ function openFollow(key){
 function doFollow(key, max){
   const a=parseFloat($('fAmt').value), m=findItem(key);
   if(!(a>0)) return toast('请输入投入金额');
+  if(a<MIN_AMT) return toast(`跟单金额最低 ${MIN_AMT} USDT`);
   if(a>max+1e-9) return toast('跟单账户可用余额不足');
   S.follows.unshift({key, name:m.name, who:m.who, amt:a, pnl:0, on:true, start:'2026-10-13'});
   const mk=S.market.find(x=>x.key===key); if(mk) mk.fol++;
@@ -730,7 +726,7 @@ function quitHTML(){
     ? `<div class="check"><span class="st no">!</span><div class="c"><b>进行中项目：${r} 个</b><p>需先手动结束全部进行中项目，结束后项目余额转回带单账户，跟随者按现有「结束项目」规则处理</p><div class="act"><button class="pill pri" onclick="goEndProjects()">去结束</button></div></div></div>`
     : `<div class="check"><span class="st ok">✓</span><div class="c"><b>进行中项目：0 个</b><p>已无进行中项目</p></div></div>`;
   const c2 = S.pending>0
-    ? `<div class="check"><span class="st wait">…</span><div class="c"><b>本期待结算分润：${S.pending.toFixed(2)} USDT</b><p>可以提交注销。提交后进入「处理中」，待本期分润结算完成后自动生效（<span class="warnmark">⚠️ 结算时间待确认</span>），期间可撤回</p></div></div>`
+    ? `<div class="check"><span class="st wait">…</span><div class="c"><b>本期待结算分润：${S.pending.toFixed(2)} USDT</b><p>可以提交注销。提交后进入「处理中」，待本期分润（每周结算）结算完成后自动生效，期间可撤回</p></div></div>`
     : `<div class="check"><span class="st ok">✓</span><div class="c"><b>待结算分润：无</b><p>提交后立即生效</p></div></div>`;
   const c3 = `<div class="check"><span class="st info">i</span><div class="c"><b>带单账户余额：${f2(S.pool)} USDT</b><p>注销生效后自动划转至跟单账户${S.pending>0?'（含本期结算的分润）':''}</p></div></div>`;
   const can = !blocked && S.agree;
@@ -751,7 +747,7 @@ function quitHTML(){
 }
 function resultHTML(){
   if(S.result==='pending') return `<div class="result"><div class="big" style="background:#E4A23A">…</div><h2>注销申请已提交</h2>
-    <p>本期待结算分润 ${S.pending.toFixed(2)} USDT 结算完成后，注销自动生效（<span class="warnmark">⚠️ 结算时间待确认</span>），带单账户余额将划转至跟单账户。<br>处理中期间：不能新建项目、不能带单交易；你可以在「带单中心」随时撤回申请。</p>
+    <p>本期待结算分润 ${S.pending.toFixed(2)} USDT 结算完成后（每周结算），注销自动生效，带单账户余额将划转至跟单账户。<br>处理中期间：不能新建项目、不能带单交易；你可以在「带单中心」随时撤回申请。</p>
     <button class="btn pri" onclick="home('lead')">返回带单中心</button></div>`;
   return `<div class="result"><div class="big" style="background:var(--green)">✓</div><h2>已注销带单员</h2>
     <p>带单账户余额 ${f2(S.quitBal||0)} USDT 已划转至跟单账户。<br>历史带单记录可在「我的跟单」查看；${COOLDOWN} 天后可重新申请成为带单员。</p>
