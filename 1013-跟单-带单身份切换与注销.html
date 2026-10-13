@@ -85,10 +85,6 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
 .prof{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .prof .av{width:48px;height:48px;border-radius:24px;font-size:20px}
 .prof .nm{font-size:18px;font-weight:800}
-.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:14px 0 4px}
-.quick button{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--text);padding:6px 0;border-radius:12px}
-.quick button:hover{background:var(--card)}
-.quick i{width:40px;height:40px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:17px}
 .subtabs{display:flex;gap:20px;border-bottom:1px solid var(--line);margin:14px 0 12px}
 .subtabs button{padding:10px 0 8px;font-size:15px;color:var(--sub);position:relative}
 .subtabs button.on{color:var(--text);font-weight:700}
@@ -236,7 +232,7 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
       <li><span class="k new">新增</span><b>「带单交易」Tab</b>：顶部显示当前项目可用余额和「调整余额」；有多个进行中项目时可切换；没有进行中项目时引导新建；注销处理中不能下单。带单中心的「去带单」直接跳到这个 Tab。</li>
       <li><span class="k new">新增</span><b>注销带单员</b>：入口在带单中心右上角「···」。流程：前置检查 → 影响告知 + 勾选确认 → 二次确认弹窗 → 结果页。必须先手动结束全部项目；有待结算分润时进入「处理中」，本期结算后生效，期间可撤回；生效后带单账户余额转入跟单账户；7 天内不能重新申请，重新申请后战绩继承。</li>
       <li><span class="k opt">优化</span><b>发现页卡片</b>：补带单员头像 + 名称、收益率 + 收益额 + 收益曲线；跟单人数显示「当前 / 500」，满员显示「已满员」；运行不足 7 天收益率显示「--」。自己的项目标「我的」，按钮为「管理」。</li>
-      <li><span class="k opt">优化</span><b>带单中心</b>：补快捷入口（跟单用户 / 分润明细 / 余额历史 / 我的主页）；项目卡片显示项目余额，补「去带单 / 结束项目」；「+ 新建项目」移到项目 Tab 栏右侧；去掉搜索按钮。</li>
+      <li><span class="k opt">优化</span><b>带单中心</b>：项目卡片显示项目余额，补「去带单 / 结束项目」；「+ 新建项目」移到项目 Tab 栏右侧；去掉搜索按钮。</li>
       <li><span class="k opt">优化</span><b>统一叫法</b>：带单侧「项目」与跟单侧「带单策略」统一为「项目」，跟单侧「我的项目」改为「我的跟单」。</li>
     </ol>
 
@@ -337,7 +333,7 @@ function home(tab){S.stack=[]; S.page='home'; S.pd=null; if(tab) S.tab=tab; rend
 function nav(title, right=''){return `<div class="nav"><button class="icon-btn" onclick="back()" aria-label="返回">‹</button><div class="ttl">${title}</div><div style="min-width:32px;text-align:right">${right}</div></div>`}
 
 const PAGES = {home:()=>homeHTML(), quit:()=>quitHTML(), result:()=>resultHTML(), newproj:()=>newProjHTML(),
-  detail:()=>detailHTML(), myhome:()=>myHomeHTML(), followers:()=>followersHTML(), shares:()=>sharesHTML(), ledger:()=>ledgerHTML(),
+  detail:()=>detailHTML(), ledger:()=>ledgerHTML(),
   account:()=>accountHTML(), profile:()=>profileHTML(), rules:()=>rulesHTML(), apply:()=>applyHTML()};
 function render(){
   $('screen').innerHTML = PAGES[S.page]();
@@ -445,12 +441,6 @@ function leadHTML(){
         <div><div class="lbl">待结算分润</div><div class="v ${S.pending?'up':''}">${S.pending?'+'+S.pending.toFixed(2):'0.00'}</div></div>
         <div><div class="lbl">累计分润</div><div class="v">${f2(totalShare)}</div></div>
       </div>
-    </div>
-    <div class="quick">
-      <button onclick="go('followers')"><i>👥</i>跟单用户</button>
-      <button onclick="go('shares')"><i>%</i>分润明细</button>
-      <button onclick="go('ledger','lead')"><i>↧</i>余额历史</button>
-      <button onclick="go('myhome')"><i>⌂</i>我的主页</button>
     </div>
     <div class="subtabs"><button class="${S.leadTab==='running'?'on':''}" onclick="S.leadTab='running';render()">当前带单 ${running().length}</button><button class="${S.leadTab==='ended'?'on':''}" onclick="S.leadTab='ended';render()">已结束 ${ended().length}</button>
       <button class="newproj" ${quitting?'disabled':''} onclick="openNewProj()">+ 新建项目</button></div>
@@ -600,31 +590,9 @@ function detailHTML(){
     ${m.ended?'':`<div style="margin-top:18px">${followBtn(m,true)}</div>${isLead()&&!m.mine?'<div class="lbl" style="text-align:center;margin-top:8px">带单员不能跟单，注销带单员后可跟单</div>':''}`}
   </div>`;
 }
-function myHomeHTML(){
-  const r = running();
-  const fol = r.reduce((a,p)=>a+p.fol,0);
-  return nav('我的主页')+`<div class="body">
-    <div class="banner mute" style="margin-bottom:16px"><div><p style="margin:0">以下是其他用户看到的你的主页</p></div></div>
-    <div class="prof"><div class="av">${S.profile.name[0].toUpperCase()}</div><div style="flex:1"><div class="nm">${S.profile.name}</div><div class="psub">带单 2 天</div></div><span class="lbl chev" style="cursor:pointer" onclick="go('profile')">编辑</span></div>
-    <div style="font-size:13px;color:#454A52;line-height:1.6;margin-bottom:14px">${S.profile.bio||'<span class="lbl">还没有简介</span>'}</div>
-    <div class="card grid3"><div><div class="lbl">进行中项目</div><div class="v">${r.length}</div></div><div><div class="lbl">当前跟单人数</div><div class="v">${fol}</div></div><div><div class="lbl">累计分润</div><div class="v">${f2(S.projects.reduce((a,p)=>a+p.share,0))}</div></div></div>
-    <div class="sec-t">带单项目</div>
-    ${r.length? marketList().filter(m=>m.mine).map(cardHTML).join('') : '<div class="empty"><p>暂无进行中的项目</p></div>'}
-  </div>`;
-}
 
 /* ---------- lists ---------- */
 function rowsHTML(rows){return rows.length? `<div class="rows">${rows.join('')}</div>` : `<div class="empty"><div class="ic"></div><p>暂无记录</p></div>`}
-function followersHTML(){
-  const rows=[]; running().forEach(p=>FOLLOWERS.slice(0,p.fol).forEach(f=>rows.push(`<div class="row"><div><b>${f[0]}</b><div class="lbl">${p.name} · 跟随于 ${f[1]}</div></div><div style="text-align:right"><b>${f2(f[2])}</b><div class="lbl up">${sign(f[3])}</div></div></div>`)));
-  return nav('跟单用户')+`<div class="body"><div class="lbl" style="margin-bottom:6px">共 ${rows.length} 人 · 右侧为跟单金额 / 跟单收益 (USDT)</div>${rowsHTML(rows)}</div>`;
-}
-function sharesHTML(){
-  const rows=[];
-  if(S.pending>0) rows.push(`<div class="row"><div><b>本期 10-13 ~ 10-19</b><div class="lbl">全部项目</div></div><div style="text-align:right"><b class="up">+${S.pending.toFixed(2)}</b><div class="lbl"><span class="tag warn">待结算</span></div></div></div>`);
-  S.projects.filter(p=>p.share>0).forEach(p=>rows.push(`<div class="row"><div><b>${p.name}</b><div class="lbl">${p.end||p.start}</div></div><div style="text-align:right"><b class="up">+${f2(p.share)}</b><div class="lbl"><span class="tag run">已结算</span></div></div></div>`));
-  return nav('分润明细')+`<div class="body"><div class="lbl" style="margin-bottom:6px">每周结算一次</div>${rowsHTML(rows)}</div>`;
-}
 function ledgerHTML(){
   const L = S.pd==='lead'?S.ledger:S.fledger;
   return nav(S.pd==='lead'?'余额历史':'跟单账户流水')+`<div class="body">${rowsHTML(L.map(x=>`<div class="row"><div><b>${x.d}</b><div class="lbl">${x.t}</div></div><b class="${cls(x.a)}">${sign(x.a)}</b></div>`))}</div>`;
