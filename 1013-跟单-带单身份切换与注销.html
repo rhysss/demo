@@ -192,6 +192,8 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
 .notes b{color:var(--text)}
 .k{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:0 4px;margin-right:4px;vertical-align:1px}
 .k.opt{background:#E8F0FE;color:#2F5BD3} .k.new{background:var(--green-bg);color:var(--green-dk)} .k.dec{background:var(--warn-bg);color:var(--warn)}
+.ctl{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.ctl>span{width:72px;flex:none;font-size:12px;color:#454A52}
 .statebox{font-size:12px;background:var(--card);border-radius:8px;padding:8px 10px;color:#454A52}
 @media (max-width:860px){
   .wrap{flex-direction:column;align-items:center;padding:16px}
@@ -218,8 +220,10 @@ button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
 
     <h4>用户身份</h4>
     <div class="seg" id="segRole"></div>
-    <h4>带单数据场景（注销前置条件）</h4>
-    <div class="seg" id="segScene"></div>
+    <h4>带单中心数据（切换后回到带单中心）</h4>
+    <div class="ctl"><span>当前带单</span><div class="seg" id="segRun"></div></div>
+    <div class="ctl"><span>已结束</span><div class="seg" id="segEnd"></div></div>
+    <div class="ctl"><span>待结算分润</span><div class="seg" id="segPend"></div></div>
     <h4>当前状态</h4>
     <div class="statebox" id="stateBox"></div>
     <div class="seg" style="margin-top:8px" id="segSim"></div>
@@ -264,27 +268,30 @@ const MARKET = [
   {key:'m4', name:'SOL 趋势追踪', who:'sirni', days:30, roi:-4.36, gain:-207.87, aum:'7.40K', fol:14, dd:12.6, line:[9,10,8,9,7,8,6,7,6,5,6,5], bio:'趋势突破，顺势加仓。'},
   {key:'m5', name:'BNB 日内', who:'WilliamGC', days:60, roi:12.4, gain:5340.97, aum:'10.1K', fol:500, dd:5.2, line:[3,4,4,5,6,5,7,7,8,8,9,10], bio:'满员示例。'},
 ];
-const ENDED = {name:'高胜率项目', id:'3680227388765020', status:'ended', pnl:1.69, share:0, start:'2026-10-12', end:'2026-10-12', fol:0, days:1, syms:['BTCUSDT'], pos:[], bal:0};
-const RUNNING = {name:'BTC 趋势策略', id:'3680227388765021', status:'running', pnl:12.40, share:0, start:'2026-10-11', fol:3, days:2, syms:['BTCUSDT','ETHUSDT'],
-  pos:[{side:'l', sym:'BTCUSDT', size:0.01, entry:83120.5}], bal:100};
-const SCENES = {
-  running:{label:'有进行中项目', pending:0.23},
-  settle:{label:'无进行中项目，有待结算分润', pending:0.23},
-  clear:{label:'全部已清', pending:0},
-};
+const MOCK_RUNNING = [
+  {name:'BTC 趋势策略', id:'3680227388765021', status:'running', pnl:12.40, share:0, start:'2026-10-11', fol:3, days:2, syms:['BTCUSDT','ETHUSDT'],
+    pos:[{side:'l', sym:'BTCUSDT', size:0.01, entry:83120.5}], bal:100},
+  {name:'ETH 波段', id:'3680227388765022', status:'running', pnl:-3.20, share:0, start:'2026-10-08', fol:1, days:5, syms:['ETHUSDT'],
+    pos:[{side:'s', sym:'ETHUSDT', size:0.5, entry:2480.1}], bal:120},
+];
+const MOCK_ENDED = [
+  {name:'高胜率项目', id:'3680227388765020', status:'ended', pnl:1.69, share:0, start:'2026-10-12', end:'2026-10-12', fol:0, days:1, syms:['BTCUSDT'], pos:[], bal:0},
+  {name:'ETH 短线', id:'3680227388765019', status:'ended', pnl:-8.32, share:0, start:'2026-10-05', end:'2026-10-09', fol:0, days:4, syms:['ETHUSDT'], pos:[], bal:0},
+  {name:'SOL 波段', id:'3680227388765018', status:'ended', pnl:25.60, share:2.56, start:'2026-09-20', end:'2026-10-01', fol:0, days:11, syms:['SOLUSDT'], pos:[], bal:0},
+];
 const PRICE = {BTCUSDT:83805.2, ETHUSDT:2471.36, SOLUSDT:142.85};
 const LEV = 2000;        // 带单杠杆 2000x（R12 已确认）
 const MIN_AMT = 100;      // 最低项目资金 / 最低跟单金额 100 USDT（R11 已确认）
 const FOLLOWERS = [['u***82','2026-10-11',300,4.12],['k***07','2026-10-11',50,0.69],['m***31','2026-10-12',10,0.14]];
 
 let S;
-function reset(scene){
-  scene = scene || 'running';
-  const run = scene==='running';
+function reset(d){
+  d = d || {run:true, end:true, pend:true};
+  const run = d.run;
   S = {
-    role:'lead', exLead:false, scene,
-    projects: run ? [clone(RUNNING), clone(ENDED)] : [clone(ENDED)],
-    pending: SCENES[scene].pending,
+    role:'lead', exLead:false, data:{...d},
+    projects: [...(d.run?clone(MOCK_RUNNING):[]), ...(d.end?clone(MOCK_ENDED):[])],
+    pending: d.pend ? 0.23 : 0,
     pool: run ? 1.69 : 101.69,           // 带单账户未分配余额
     followBal:921.54,
     ledger:[{t:'2026-10-12 18:20',d:'高胜率项目结束 · 余额转回',a:101.69},{t:'2026-10-11 09:02',d:'从资金账户划入',a:100}],
@@ -296,7 +303,7 @@ function reset(scene){
     trade:{sym:'BTCUSDT', type:'limit', price:'', qty:''}, tradePid:null,
     np:{name:'', syms:['BTCUSDT'], ratio:'10%', bio:'', amt:''},
   };
-  if(run) S.ledger.unshift({t:'2026-10-11 09:10',d:'分配至 BTC 趋势策略',a:-100});
+  if(run) S.ledger.unshift({t:'2026-10-08 10:00',d:'从资金账户划入',a:220},{t:'2026-10-08 10:01',d:'分配至 ETH 波段',a:-120},{t:'2026-10-11 09:10',d:'分配至 BTC 趋势策略',a:-100});
 }
 function clone(o){return JSON.parse(JSON.stringify(o))}
 const $ = id => document.getElementById(id);
@@ -567,7 +574,7 @@ function createProj(){
   else if(amt<MIN_AMT){$('amtErr').textContent=`项目资金最低 ${MIN_AMT} USDT`;bad=true}
   else if(amt>S.pool+1e-9){$('amtErr').textContent='超出带单账户未分配余额';bad=true}
   if(bad) return;
-  const p={name:n, id:String(3680227388765022+S.projects.length), status:'running', pnl:0, share:0, start:'2026-10-13', fol:0, days:0, syms:[...S.np.syms], pos:[], bal:amt};
+  const p={name:n, id:String(3680227388765100+S.projects.length), status:'running', pnl:0, share:0, start:'2026-10-13', fol:0, days:0, syms:[...S.np.syms], pos:[], bal:amt};
   S.projects.unshift(p); S.pool-=amt; S.ledger.unshift({t:now(), d:'分配至 '+n, a:-amt});
   S.leadTab='running'; home('lead'); toast('项目已创建');
 }
@@ -780,18 +787,24 @@ function simSettle(){
 function renderPanel(){
   const roles=[['lead','带单员'],['normal','普通用户（从未带单）']];
   $('segRole').innerHTML=roles.map(([k,t])=>`<button class="${(k==='lead'&&isLead())||(k==='normal'&&!isLead()&&!S.exLead)?'on':''}" onclick="pickRole('${k}')">${t}</button>`).join('');
-  $('segScene').innerHTML=Object.entries(SCENES).map(([k,v])=>`<button class="${S.scene===k?'on':''}" onclick="reset('${k}');render()">${v.label}</button>`).join('');
+  const yn=(k,y,n)=>[[true,y],[false,n]].map(([v,t])=>`<button class="${S.data[k]===v?'on':''}" onclick="setData('${k}',${v})">${t}</button>`).join('');
+  $('segRun').innerHTML=yn('run','有数据','无数据');
+  $('segEnd').innerHTML=yn('end','有数据','无数据');
+  $('segPend').innerHTML=yn('pend','有','无');
   const roleTxt={lead:'带单员',quitting:'带单员 · 注销处理中',normal:S.exLead?`普通用户 · 已注销带单员（${COOLDOWN} 天冷却期）`:'普通用户'}[S.role];
   $('stateBox').textContent=`身份：${roleTxt}　|　进行中项目 ${running().length} 个　|　待结算分润 ${S.pending.toFixed(2)}`;
-  $('segSim').innerHTML=`<button ${S.role==='quitting'?'':'disabled'} onclick="simSettle()">模拟：本期分润结算完成</button><button onclick="reset(S.scene);render()">重置</button>`;
+  $('segSim').innerHTML=`<button ${S.role==='quitting'?'':'disabled'} onclick="simSettle()">模拟：本期分润结算完成</button><button onclick="reset();render()">重置</button>`;
+}
+function setData(k,v){
+  const lt=S.leadTab; reset({...S.data,[k]:v}); S.leadTab = k==='end'?'ended':(k==='run'?'running':lt); home('lead');
 }
 function pickRole(k){
-  reset(S.scene);
+  reset(S.data);
   if(k==='normal'){S.role='normal';S.tab='discover';}
   render();
 }
 
-reset('running');
+reset();
 render();
 </script>
 </body>
