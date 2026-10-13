@@ -74,7 +74,7 @@
 
 <div class="cover">
   <h1>中台 ADL 减仓 PRD</h1>
-  <div class="ver">版本 V2.3 · 2026-10-12 · 修订人 Rhys</div>
+  <div class="ver">版本 V2.4 · 2026-10-13 · 修订人 Rhys</div>
   <div class="sub">需求类型：0→1 · 规模 L ｜ 配套原型：<a href="https://forclaudecode.vercel.app/1009-中台ADL减仓.html">1009-中台ADL减仓.html</a> ｜ 规则来源：规则台账_ADL减仓 v1.0（R01–R19）</div>
 </div>
 
@@ -187,14 +187,35 @@ stateDiagram-v2
   <tr><td>平台账户</td><td>承接 ADL 所产生盈亏的平台自有账户。</td></tr>
 </table>
 
-<h3>2.4 重要信息 Checklist</h3>
+<h3>2.4 计算口径（沿用《账户字段公式》）</h3>
+<p>本需求不新增计算口径，全部沿用现有《账户字段公式》，ADL 视同一次按标记价格成交、免手续费的平仓。</p>
+<table>
+  <tr><th>字段</th><th>公式</th><th>使用位置</th></tr>
+  <tr><td>单个仓位未实现盈亏</td><td>仓位方向 ×（标记价格 − 开仓均价）× 面值 × 张数（多 +1 / 空 −1）</td><td>列表、弹窗、用户端持仓</td></tr>
+  <tr><td>平仓盈亏（本次减仓预估盈亏）</td><td>仓位方向 ×（平仓均价 − 开仓均价）× 面值 × |张数|；ADL 平仓均价 = 执行时标记价格；手续费 0</td><td>弹窗「本次减仓预估盈亏」、历史委托 / 成交</td></tr>
+  <tr><td>已实现盈亏</td><td>成交差价 × 数量 − 手续费 + 资金费用（有正负号）</td><td>列表、弹窗「减仓后预估总已实现盈亏」= 当前已实现盈亏 + 本次减仓预估盈亏</td></tr>
+  <tr><td>仓位价值</td><td>开仓价值 = 面值 × 张数 × 开仓均价（中台列表「仓位价值」）；当前仓位价值 = 面值 × 张数 × 标记价格（弹窗「仓位价值」「剩余持仓价值」）</td><td>列表、弹窗</td></tr>
+  <tr><td>仓位本金 / 仓位保证金</td><td>全仓 = 张数 × 面值 × 开仓均价 / 杠杆；逐仓 = 逐仓保证金（逐仓余额）</td><td>列表「仓位保证金」、收益率分母</td></tr>
+  <tr><td>收益率</td><td>持仓收益率 = 未实现盈亏 / 仓位本金；平仓收益率（历史页）= 仓位已实现盈亏 / 仓位本金</td><td>列表「回报率」、用户端持仓、历史仓位</td></tr>
+  <tr><td>减仓时逐仓保证金转出</td><td>转出 = min（A，B，减仓前仓位保证金）<br>A = max【仓位保证金 × 减仓仓位价值 / 减仓前仓位价值 + 方向 × 减仓张数 × 面值 ×（平仓均价 − 开仓均价），0】<br>B = max【减仓前仓位保证金 + 方向 × 剩余张数 × 面值 ×（标记价格 − 开仓均价）− 剩余张数 × 面值 × 标记价格 / 杠杆，0】</td><td>逐仓 ADL 执行后的保证金与资金去向</td></tr>
+  <tr><td>预估强平价</td><td>逐仓 =【逐仓余额 /（面值 × |张数|）− 方向 × 持仓均价】/（维持保证金率 + 爆仓手续费率 − 方向）<br>全仓（多仓位）=【（钱包余额 − Σ逐仓余额 + 其他仓位未实现盈亏）/（面值 × |张数|）− 方向 × 持仓均价】/（维持保证金率 + 爆仓手续费率 − 方向）<br>破产价格：同上，维持保证金率取 0；价格不存在时显示「--」</td><td>列表「强平价格」「破产价格」、用户端持仓</td></tr>
+  <tr><td>保证金率（逐仓）</td><td>（逐仓余额 + 未实现盈亏）/（面值 × |张数| × 标记价格 ×（维持保证金率 + 爆仓手续费率））</td><td>用户端持仓</td></tr>
+</table>
+<p><strong>由公式得出的两条结论</strong>：</p>
+<ul>
+  <li><strong>全仓</strong>：ADL 后钱包余额增加本次已实现盈亏，被减仓位的未实现盈亏同额减少，二者抵消，<strong>同账户其他仓位的预估强平价不变</strong>；被减仓位因张数减少，强平价远离标记价格。</li>
+  <li><strong>逐仓</strong>：按「减仓时逐仓保证金」规则转出，B 项会把浮盈超出部分一并转出，使剩余仓位权益 = 剩余初始保证金。例：10x 逐仓 0.0108 BTC 被 ADL 0.01 BTC，逐仓保证金 89.11 → 2.34 U，预估强平价 74,678 → 80,039，收益率 71.79% → 202.83%。剩余仓位的强平价会<strong>靠近</strong>标记价格（与用户手动部分平仓的结果一致）。</li>
+</ul>
+<p>维持保证金率、爆仓手续费率取各合约现有配置（原型示例值：0.5% / 0.06%）。</p>
+
+<h3>2.5 重要信息 Checklist</h3>
 <table>
   <tr><th>#</th><th>规则</th><th>台账</th></tr>
   <tr><td>1</td><td>可减条件：ADL 指示灯亮满 5 格 <strong>且</strong> 未实现盈亏 &gt; 0，两个条件同时满足</td><td>R13</td></tr>
   <tr><td>2</td><td>成交价：执行时的实时标记价格（不是运营打开弹窗时的价格）</td><td>R04</td></tr>
   <tr><td>3</td><td>被减部分不产生对手仓位，系统直接结算平仓，盈亏由平台账户承接</td><td>R03</td></tr>
   <tr><td>4</td><td>被减仓用户不收手续费</td><td>R12</td></tr>
-  <tr><td>5</td><td>释放的保证金和已实现盈亏立即可用，回到交易账户</td><td>R16</td></tr>
+  <tr><td>5</td><td>已实现盈亏立即计入交易账户钱包余额；逐仓按「减仓时逐仓保证金」规则转出的保证金立即回到全仓可用</td><td>R16 / R22</td></tr>
   <tr><td>6</td><td>执行后撤销该仓位全部平仓类挂单</td><td>R14</td></tr>
   <tr><td>7</td><td>数量上限 = 执行时的持仓量；超出报错、不执行；同一仓位可多次减仓</td><td>R13 / R17</td></tr>
   <tr><td>8</td><td>数量支持张 / 币 / USDT 切换与小数；张、币的小数位数沿用各合约现有数量精度配置，USDT 按当前标记价折算为张数后执行</td><td>R07 / R18</td></tr>
@@ -204,7 +225,7 @@ stateDiagram-v2
   <tr><td>12</td><td>用户端 ADL 数量统一用币单位显示（如 0.01 BTC）</td><td>R19</td></tr>
 </table>
 
-<h3>2.5 上线节奏</h3>
+<h3>2.6 上线节奏</h3>
 <p>一期上线本文全部范围（中台 + App + Web 同步）。邮件通知（P05）视上线后客服咨询量再评估。</p>
 
 <!-- ============ 三 ============ -->
@@ -309,7 +330,7 @@ flowchart LR
 <p><strong>App · 合约页持仓区</strong>（ADL 前 → 部分 ADL 后 → 全部 ADL 后；虚线框为变化项，原型标注，非实际 UI）＋ <strong>App · 交易记录</strong>（部分 ADL 后：历史委托 / 历史仓位 / 交易历史 / 资金流水）</p><div class="phones"><figure class="fig"><img src="中台ADL减仓_PRD_assets/11_app_before.jpg" alt="图 7　ADL 前" loading="lazy"><figcaption>图 7　ADL 前</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/12_app_partial.jpg" alt="图 8　部分 ADL 后" loading="lazy"><figcaption>图 8　部分 ADL 后</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/13_app_full.jpg" alt="图 9　全部 ADL 后" loading="lazy"><figcaption>图 9　全部 ADL 后</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/14_app_partial_hist.jpg" alt="图 10　交易记录 · 历史委托" loading="lazy"><figcaption>图 10　交易记录 · 历史委托</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/15_app_partial_pos.jpg" alt="图 10-1　交易记录 · 历史仓位（「ADL」标签）" loading="lazy"><figcaption>图 10-1　交易记录 · 历史仓位（「ADL」标签）</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/16_app_partial_fill.jpg" alt="图 10-2　交易记录 · 交易历史" loading="lazy"><figcaption>图 10-2　交易记录 · 交易历史</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/17_app_flow.jpg" alt="图 10-3　交易记录 · 资金流水（不改动）" loading="lazy"><figcaption>图 10-3　交易记录 · 资金流水（不改动）</figcaption></figure></div><p><strong>Web · 合约页仓位区</strong>（页签：当前持仓 / 当前委托 / 历史仓位 / 历史委托〔限价&amp;市价 · 止盈止损 · 计划委托〕/ 资金流水 / 历史成交）</p><figure class="fig"><img src="中台ADL减仓_PRD_assets/07_web_before.jpg" alt="图 11　ADL 前 · 当前持仓（止盈 95,000）" loading="lazy"><figcaption>图 11　ADL 前 · 当前持仓（止盈 95,000）</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/08_web_partial.jpg" alt="图 12　部分 ADL 后 · 当前持仓：数量变为 8 张，止盈被撤，无任何 ADL 标记" loading="lazy"><figcaption>图 12　部分 ADL 后 · 当前持仓：数量变为 8 张，止盈被撤，无任何 ADL 标记</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/18_web_partial_phist.jpg" alt="图 13　部分 ADL 后 · 历史仓位：「ADL」标签，平仓时间为 ADL 执行时间" loading="lazy"><figcaption>图 13　部分 ADL 后 · 历史仓位：「ADL」标签，平仓时间为 ADL 执行时间</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/09_web_partial_hist.jpg" alt="图 14　部分 ADL 后 · 历史委托 · 限价&市价：订单类型「ADL」" loading="lazy"><figcaption>图 14　部分 ADL 后 · 历史委托 · 限价&市价：订单类型「ADL」</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/19_web_partial_tpsl.jpg" alt="图 15　部分 ADL 后 · 历史委托 · 止盈止损：订单状态「因 ADL 撤销」" loading="lazy"><figcaption>图 15　部分 ADL 后 · 历史委托 · 止盈止损：订单状态「因 ADL 撤销」</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/20_web_partial_fill.jpg" alt="图 16　部分 ADL 后 · 历史成交：「ADL」标签，手续费 0" loading="lazy"><figcaption>图 16　部分 ADL 后 · 历史成交：「ADL」标签，手续费 0</figcaption></figure><figure class="fig"><img src="中台ADL减仓_PRD_assets/10_web_full_phist.jpg" alt="图 17　全部 ADL 后 · 历史仓位：「ADL」标签，已平仓量 = 持仓数量" loading="lazy"><figcaption>图 17　全部 ADL 后 · 历史仓位：「ADL」标签，已平仓量 = 持仓数量</figcaption></figure><p>App 与 Web 规则一致，页面名称不同：App「交易记录」页的页签为 历史委托 / 历史仓位 / 资金流水 / 交易历史，Web 为 历史仓位 / 历史委托（限价&amp;市价 · 止盈止损 · 计划委托）/ 资金流水 / 历史成交。以下以一笔 0.0108 BTC 的多仓被减 0.01 BTC 为例。ADL 记录中的数量统一用币单位（R19）；同页其他记录保持各端现有单位（App 现有为 USDT）。</p>
 <table>
   <tr><th>位置</th><th>部分 ADL 后</th><th>全部 ADL 后</th></tr>
-  <tr><td>当前持仓</td><td>仓位仍在，数量变为 0.0008 BTC。未实现盈亏、保证金按剩余部分显示；开仓均价、收益率不变。<strong>不加任何 ADL 标记</strong>。指示灯按现有逻辑重新计算。</td><td>仓位消失；无其他仓位时显示「暂无持仓」。</td></tr>
+  <tr><td>当前持仓</td><td>仓位仍在，数量变为 0.0008 BTC。开仓均价不变；未实现盈亏按剩余张数计算；逐仓保证金按转出规则变为 2.34 U，收益率、预估强平价、保证金率随之重算（见 2.4）。<strong>不加任何 ADL 标记</strong>。指示灯按现有逻辑重新计算。</td><td>仓位消失；无其他仓位时显示「暂无持仓」。</td></tr>
   <tr><td>当前委托</td><td>该仓位的平仓类挂单全部消失，委托数相应减少。</td><td>同左。</td></tr>
   <tr><td>历史委托</td><td colspan="2"><strong>App</strong>：新增一张卡片，标题 BTC_USDT，状态「已成交」；标签「卖出（平多）/ 买入（平空）· 逐仓 / 全仓 · 杠杆 · ADL」；「已成交/总数量(BTC)」如 0.01/0.01，进度条满；委托价格「--」；委托时间为执行时间。被撤的平仓挂单状态显示「已撤销 · 因 ADL」。<br><strong>Web</strong>：「限价&amp;市价」子页签新增一行：合约名称「BTC 平多 / 平空」，订单类型「ADL」标签，成交数量/委托数量如「0.01 BTC(100%) / 0.01 BTC」，成交均价为执行时标记价格，触发条件、委托价格「--」，平仓盈亏为本次已实现盈亏，手续费 0，订单状态「全部成交」。被撤的止盈止损单在「止盈止损」子页签中，订单状态显示「因 ADL 撤销」（与现有「用户撤销」并列）。「计划委托」不改动。</td></tr>
   <tr><td>交易历史（App）/ 历史成交（Web）</td><td colspan="2"><strong>App</strong>：卡片标题 BTCUSDT 旁加「ADL」标签；交易品种、成交数量（如 0.01 BTC）、手续费 0、成交价格（执行时标记价格）、时间、成交ID。<br><strong>Web</strong>：交易品种 BTCUSDT 旁加「ADL」标签；成交价格为执行时标记价格；成交数量如 0.01 BTC；手续费 0；时间、成交 ID。</td></tr>
@@ -340,8 +361,8 @@ flowchart LR
   <tr><td>16</td><td>同一仓位多次 ADL</td><td>允许；每次生成独立的委托和成交记录，「自动减仓量」累计</td><td>R13</td></tr>
   <tr><td>17</td><td>同一仓位既有 ADL 又有用户自己的平仓</td><td>历史仓位仍为一条聚合记录（数量、均价、盈亏合并计算）；只要该仓位发生过 ADL 就显示「ADL」标签</td><td><span class="tag-td">⚠️ P18</span></td></tr>
   <tr><td>18</td><td>双向持仓，同一合约同时有多仓和空仓</td><td>按持仓 ID 分别判断、分别操作，互不影响</td><td>R01</td></tr>
-  <tr><td>19</td><td>逐仓仓位被部分 ADL</td><td>保证金按比例释放，连同已实现盈亏立即回到交易账户可用；剩余仓位的强平价基本不变</td><td>R16</td></tr>
-  <tr><td>20</td><td>全仓仓位被部分 ADL</td><td>释放的保证金和已实现盈亏立即可用；对同账户其他仓位强平价的影响见 P07（推导为只会更安全）</td><td>R16 · <span class="tag-td">⚠️ P07</span></td></tr>
+  <tr><td>19</td><td>逐仓仓位被部分 ADL</td><td>按「减仓时逐仓保证金」规则转出 min（A，B，减仓前保证金），已实现盈亏计入钱包余额；剩余仓位保证金可能大幅减少、强平价靠近标记价格（见 2.4 示例）</td><td>R16 / R22</td></tr>
+  <tr><td>20</td><td>全仓仓位被部分 ADL</td><td>已实现盈亏计入钱包余额、立即可用；同账户其他仓位预估强平价不变，被减仓位强平价远离标记价格</td><td>R16 / R22</td></tr>
   <tr><td>21</td><td>标记价格在打开弹窗到执行之间变化</td><td>以执行那一刻的标记价格成交；预览值仅供参考</td><td>R04</td></tr>
   <tr><td>22</td><td>被全部 ADL 的用户想立即重新开仓</td><td>不做任何限制，沿用现有开仓逻辑</td><td>—</td></tr>
   <tr><td>23</td><td>切换单位时输入框为空或数值非法</td><td>只切换单位，不换算</td><td>R07</td></tr>
@@ -422,7 +443,6 @@ flowchart LR
 <table>
   <tr><th>编号</th><th>事项</th><th>推荐</th><th>影响章节</th></tr>
   <tr><td>P05</td><td>是否发邮件 / 短信 / App 推送（站内信已确定不发）</td><td>暂不发，上线后看客服咨询量再评估</td><td>1.3、3.3.5</td></tr>
-  <tr><td>P07</td><td>全仓 ADL 对同账户其他仓位强平价的影响</td><td>推导为只会更安全，需研发确认全仓权益是否按标记价计算未实现盈亏</td><td>3.4 #20</td></tr>
   <tr><td>P14</td><td>执行时灯数不足 5 格或未实现盈亏 ≤ 0，是继续执行还是报错</td><td>报错拒绝</td><td>3.4 #12、5.2</td></tr>
   <tr><td>P15</td><td>仓位强平中、合约暂停交易 / 结算 / 下架时能否执行</td><td>拒绝执行</td><td>3.4 #13、5.2</td></tr>
   <tr><td>P16</td><td>哪些中台角色能看到和使用「ADL减仓」</td><td>与现有「平仓」按钮权限一致</td><td>3.3.1</td></tr>
@@ -450,6 +470,7 @@ flowchart LR
   <tr><td>V2.1</td><td>2026-10-12</td><td>初稿（评审前）</td><td>减仓弹窗重新整理：上方固定为「当前仓位（操作前）」；执行预览分「本次减仓」（成交价、数量、价值、本次减仓预估盈亏、手续费）与「减仓后预估」（剩余持仓、剩余持仓价值、减仓后未实现盈亏、减仓后预估总已实现盈亏，均以「当前 → 减仓后」展示）；图 2、图 4 重截</td><td>业务方反馈：弹窗信息有点乱，希望前后对比更直观</td></tr>
   <tr><td>V2.2</td><td>2026-10-12</td><td>初稿（评审前）</td><td>历史仓位改为沿用现有按仓位聚合的展示方式（部分平仓也展示、平仓时间为最近一次），ADL 统一显示「ADL」标签，取消「ADL 部分减仓 / 全部平仓」区分；P18 改为标签规则；图 10-1、13、17 重截</td><td>PM 提供现有手动减仓的历史仓位截图</td></tr>
   <tr><td>V2.3</td><td>2026-10-12</td><td>初稿（评审前）</td><td>减仓弹窗「当前仓位（操作前）」新增「仓位价值」；图 2、图 4 重截</td><td>PM 反馈</td></tr>
+  <tr><td>V2.4</td><td>2026-10-13</td><td>初稿（评审前）</td><td>新增 2.4「计算口径」，全部沿用《账户字段公式》；原型数值改按公式计算（仓位价值、仓位保证金、收益率、强平价、破产价、逐仓保证金转出、保证金率）；关闭 P07（全仓其他仓位强平价不变）；补充逐仓 ADL 后强平价靠近标记价格的结论；图重截</td><td>PM 提供《账户字段公式》</td></tr>
 </table>
 
 </div></div>

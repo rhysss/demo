@@ -572,7 +572,7 @@ let rows=[
 ];
 const LIGHTS=[4,3,5,4,1,5,3,1,5,2,5,1,5,2]; // 第 13 行为「亏损但亮 5 格」示例 // 模拟现有 ADL 指示灯格数
 const ltHtml=n=>`<span class="adl-lt">${[1,2,3,4,5].map(i=>`<b class="${i<=n?'on':''}"></b>`).join('')}</span>${n} / 5`;
-rows.forEach((r,i)=>{r.light=LIGHTS[i];r.oid='查看详情';r.upd='2026-10-09 08:00:00';r.orders=[{oid:String(BigInt(r.pid)+7n),dir:r.side==='L'?'买入开多':'卖出开空',type:'开仓',qty:r.qty,price:r.entry,avg:r.entry,op:'--',time:r.open}]});
+rows.forEach((r,i)=>{r.light=LIGHTS[i];if(r.mm==='逐仓')r.iso=r.qty*SIZE[r.sym]*r.entry/r.lev;r.oid='查看详情';r.upd='2026-10-09 08:00:00';r.orders=[{oid:String(BigInt(r.pid)+7n),dir:r.side==='L'?'买入开多':'卖出开空',type:'开仓',qty:r.qty,price:r.entry,avg:r.entry,op:'--',time:r.open}]});
 
 let sortK=null,sortDir=-1,view=rows.slice(),curRow=null;
 
@@ -588,12 +588,38 @@ const qt=(r,z,u)=>qn(r,z,u)+' '+ul(r,u);
 const qb=(r,z)=>`${qt(r,z,'张')}（${qt(r,z,'币')}）`;
 const sgn=(n,d=4)=>(n>0?'+':'')+fmt(n,d);
 const cls=n=>n>0?'up':n<0?'down':'';
+/* ===== 计算口径：取自《账户字段公式》 =====
+   单个仓位未实现盈亏 = 仓位方向 ×（标记价格 − 开仓均价）× 面值 × 张数
+   仓位开仓价值 = 面值 × 张数 × 开仓均价；当前仓位价值 = 面值 × 张数 × 标记价格
+   仓位本金：全仓 = 张数 × 面值 × 开仓均价 / 杠杆；逐仓 = 逐仓保证金（逐仓余额）
+   持仓收益率 = 未实现盈亏 / 仓位本金
+   预估强平价：逐仓 =【逐仓余额 /（面值×|张数|）− 方向×持仓均价】/（维持保证金率 + 爆仓手续费率 − 方向）
+             全仓 =【（钱包余额 − Σ逐仓余额 + 其他全仓仓位未实现盈亏）/（面值×|张数|）− 方向×持仓均价】/（维持保证金率 + 爆仓手续费率 − 方向）
+   破产价格：同强平价公式，维持保证金率取 0；价格不存在（≤0）时显示 "--"            */
+const MMR=0.005,LFEE=0.0006; // ⚠️ 维持保证金率、爆仓手续费率为原型示例值，实际取各合约风险档位 / 费率配置
+const CROSS_BAL={'11255508':50,'11250299':3000,'11249499':100,'11249927':2000,'11255661':10,'11255196':5,'11252067':30,'11255198':3,'11249893':20}; // 全仓余额 = 钱包余额 − Σ逐仓余额（模拟）
+const dirOf=r=>r.side==='L'?1:-1;
+const upnlOf=r=>dirOf(r)*(MARK[r.sym]-r.entry)*r.qty*SIZE[r.sym];
+const imOf=r=>r.qty*SIZE[r.sym]*r.entry/r.lev;
+function liqOf(r,mmr){
+  const q=r.qty*SIZE[r.sym],dir=dirOf(r); if(!q)return null;
+  const bal=r.mm==='逐仓'?r.iso:CROSS_BAL[r.uid]+rows.filter(x=>x!==r&&x.uid===r.uid&&x.mm==='全仓').reduce((a,x)=>a+upnlOf(x),0);
+  const p=(bal/q-dir*r.entry)/(mmr+LFEE-dir); return p>0?p:null;
+}
+/* 减仓时逐仓保证金转出 = min（A，B，减仓前仓位保证金）
+   A = max【仓位保证金 × 减仓仓位价值 / 减仓前仓位价值 + 方向 × 减仓张数 × 面值 ×（平仓均价 − 开仓均价），0】
+   B = max【减仓前仓位保证金 + 方向 × 剩余张数 × 面值 ×（标记价格 − 开仓均价）− 剩余张数 × 面值 × 标记价格 / 杠杆，0】 */
+function isoRelease(r,n,px){
+  const s=SIZE[r.sym],dir=dirOf(r),left=r.qty-n;
+  const a=Math.max(r.iso*n/r.qty+dir*n*s*(px-r.entry),0);
+  const b=Math.max(r.iso+dir*left*s*(MARK[r.sym]-r.entry)-left*s*MARK[r.sym]/r.lev,0);
+  return Math.min(a,b,r.iso);
+}
 function calc(r){
-  const s=SIZE[r.sym],m=MARK[r.sym],dir=r.side==='L'?1:-1;
-  const value=r.qty*s*m, margin=r.entry*r.qty*s/r.lev, upnl=dir*(m-r.entry)*r.qty*s;
-  const bk=r.side==='L'?r.entry*(1-1/r.lev):r.entry*(1+1/r.lev);
-  const liq=r.side==='L'?Math.max(0,r.entry*(1-1/r.lev+0.005)):r.entry*(1+1/r.lev-0.005);
-  return {value,margin,upnl,roe:margin?upnl/margin:0,bk,liq,mark:m,light:r.light};
+  const s=SIZE[r.sym],m=MARK[r.sym];
+  const value=r.qty*s*r.entry, curValue=r.qty*s*m, upnl=upnlOf(r);
+  const margin=r.mm==='逐仓'?r.iso:imOf(r);
+  return {value,curValue,margin,upnl,roe:margin?upnl/margin:0,bk:liqOf(r,0),liq:liqOf(r,MMR),mark:m,light:r.light};
 }
 
 function render(){
@@ -619,9 +645,9 @@ function render(){
       <td class="num">${fmt(c.value)}</td>
       <td class="num">${r.lev}</td>
       <td class="num">${fmt(c.margin)}</td>
-      <td class="num">${fmt(c.liq,pd)}</td>
+      <td class="num">${c.liq?fmt(c.liq,pd):'--'}</td>
       <td class="num">${fmt(c.mark,pd)}</td>
-      <td class="num">${fmt(c.bk,pd)}</td>
+      <td class="num">${c.bk?fmt(c.bk,pd):'--'}</td>
       <td class="num ${cls(c.upnl)}">${sgn(c.upnl)}</td>
       <td class="num ${cls(r.rpnl)}">${sgn(r.rpnl)}</td>
       <td class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</td>
@@ -674,7 +700,7 @@ function fillInfo(){
   const qtyCell=(q,a)=>`<span class="num">${qn(r,q,mUnit)} / ${qn(r,a,mUnit)} ${ul(r,mUnit)}</span>`;
   $('adlInfo').innerHTML=[
     ['UID',r.uid],['合约',r.sym],['方向',`<span class="${r.side==='L'?'side-l':'side-s'}">${r.side==='L'?'多仓':'空仓'}</span> · ${r.mm} ${r.lev}x`],['持仓 ID',`<span class="num" style="font-size:11.5px">${r.pid}</span>`],
-    ['开仓均价',`<span class="num">${fmt(r.entry,pd)}</span>`],['标记价格',`<span class="num">${fmt(c.mark,pd)}</span>`],['持仓量 / 可平量',ch(qtyCell(r.qty,r.avail),left===0?`<span class="num">0 / 0 ${ul(r,mUnit)}</span>`:qtyCell(left,left))],['仓位价值',`<span class="num">${fmt(c.value)} U</span>`],['累计已 ADL',`<span class="num">${qt(r,adl2,mUnit)}</span>`],
+    ['开仓均价',`<span class="num">${fmt(r.entry,pd)}</span>`],['标记价格',`<span class="num">${fmt(c.mark,pd)}</span>`],['持仓量 / 可平量',ch(qtyCell(r.qty,r.avail),left===0?`<span class="num">0 / 0 ${ul(r,mUnit)}</span>`:qtyCell(left,left))],['仓位价值',`<span class="num">${fmt(c.curValue)} U</span>`],['累计已 ADL',`<span class="num">${qt(r,adl2,mUnit)}</span>`],
     ['未实现盈亏',ch(`<span class="num ${cls(c.upnl)}">${sgn(c.upnl)} U</span>`,`<span class="num ${cls(up2)}">${sgn(up2)} U</span>`)],['回报率',`<span class="num ${cls(c.roe)}">${sgn(c.roe*100,2)}%</span>`],['已实现盈亏',ch(`<span class="num ${cls(r.rpnl)}">${sgn(r.rpnl)} U</span>`,`<span class="num ${cls(rp2)}">${sgn(rp2)} U</span>`)],['ADL 档位',ltHtml(r.light)],
   ].map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
   const d=udec(r,mUnit),min=Math.pow(10,-ZDEC)*per(r,mUnit);
@@ -770,6 +796,8 @@ function execute(){
     const c=calc(r),s=SIZE[r.sym],dir=r.side==='L'?1:-1,pnl=dir*(c.mark-r.entry)*n*s;
     const cancelled=rz(r.qty-r.avail);
     r.orders.push({oid:String(BigInt(r.pid)+BigInt(r.orders.length*13+101)),dir:r.side==='L'?'卖出平多':'买入平空',type:'ADL减仓',qty:n,price:c.mark,avg:c.mark,op:OPERATOR,time:'2026-10-09 '+new Date().toTimeString().slice(0,8)});
+    const rel=r.mm==='逐仓'?isoRelease(r,n,c.mark):0; if(r.mm==='逐仓')r.iso-=rel;
+    CROSS_BAL[r.uid]=(CROSS_BAL[r.uid]||0)+pnl+rel; // 钱包余额 += 已实现盈亏；逐仓转出部分回到全仓
     r.qty=rz(r.qty-n);r.avail=r.qty;r.adl=rz(r.adl+n);r.rpnl+=pnl;r.upd='2026-10-09 '+new Date().toTimeString().slice(0,8);
     const full=r.qty<=0;
     if(full){rows=rows.filter(x=>x!==r);view=view.filter(x=>x!==r)}
@@ -799,14 +827,22 @@ function toast(t,type){
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){['cfmMask','adlMask','ordMask'].forEach(hide)}});
 
 /* ---------- 用户端 App + Web ---------- */
-const A={entry:82510.63,mark:88433.72,lev:10,mmr:0.005,cs:0.0001};
+const A={entry:82510.63,mark:88433.72,lev:10,cs:0.0001,q0:0.0108};
+A.im0=A.q0*A.entry/A.lev; // 开仓时逐仓保证金（逐仓余额）
 const AS={before:{z:108,light:5,ord:1},partial:{z:8,light:5,ord:0},full:{z:0,light:0,ord:0}};
 const ADLZ={partial:100,full:108};
 const TIP_U='<span class="tip">自动减仓（ADL）：系统按标记价格减少您的部分或全部仓位，本次减仓不收取手续费，减仓后您可随时重新开仓。<br><span class="u-warn">⚠️ 文案 / 客服口径待确认（Q9）</span></span>';
 let aState='before',aHTab='ord',uT='pos',uSub='lm';
 const af=(n,d=2)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const bz=z=>+(z*A.cs).toFixed(6);
-function pm(z){const q=bz(z),val=q*A.mark,margin=A.entry*q/A.lev,up=(A.mark-A.entry)*q;return{q,val,margin,up,roe:up/margin*100,liq:A.entry*(1-1/A.lev+A.mmr),mr:(margin+up)/(val*A.mmr)*100}}
+function pm(z){
+  const q=bz(z),val=q*A.mark,up=(A.mark-A.entry)*q;
+  let iso=A.im0;
+  if(q<A.q0&&q>0){const n=A.q0-q,a=Math.max(A.im0*n/A.q0+n*(A.mark-A.entry),0),b=Math.max(A.im0+q*(A.mark-A.entry)-q*A.mark/A.lev,0);iso=A.im0-Math.min(a,b,A.im0)}
+  const liq=q?(iso/q-A.entry)/(MMR+LFEE-1):0;            // 逐仓预估强平价
+  const mr=q?(iso+up)/(q*A.mark*(MMR+LFEE))*100:0;        // 逐仓保证金率 =（逐仓余额 + 未实现盈亏）/（面值×|张数|×标记价×（维持保证金率 + 爆仓手续费率））
+  return{q,val,margin:iso,up,roe:iso?up/iso*100:0,liq,mr};
+}
 function aCard(st){
   const m=pm(st.z),ch=aState==='partial'?' chg-flag':'';
   const lt=[1,2,3,4,5].map(i=>`<b class="${i<=st.light?'on':''}"></b>`).join('');
@@ -833,7 +869,7 @@ function aRender(){
   $('aBody').innerHTML=st.z?aCard(st):`<div class="ph-row"><span class="ph-tog"><i></i>隐藏其它合约</span></div><div class="ph-empty">📄<br><br>暂无持仓</div>`;
   const notes={
    before:`<b>① ADL 前</b>：持有 0.0108 BTC（逐仓 10x），挂 1 张止盈单（触发价 95,000）。App 指示灯<b>亮满 5 格</b>，所以中台可以对它执行 ADL。`,
-   partial:`<b>② 部分 ADL 后</b>（App 中虚线框为变化项）：持仓量 0.0108 → 0.0008 BTC（App 显示 955.08 → 70.75 USDT）；未实现盈亏只剩剩余部分；逐仓保证金按比例释放，释放的保证金和已实现盈亏<b>立即回到交易账户可用</b>；指示灯按现有逻辑重新计算（回报率、杠杆不变，示意仍为 5 格，可再次被减）；止盈单被撤，委托 1 → 0。开仓均价、收益率、强平价、保证金率不变。<b>仓位区不加任何 ADL 标记</b>（R08），<b>不发站内信</b>（R09）；用户只能在历史委托 / 成交记录 / 仓位历史中看到「ADL」标签。`,
+   partial:`<b>② 部分 ADL 后</b>（App 中虚线框为变化项）：持仓量 0.0108 → 0.0008 BTC（App 显示 955.08 → 70.75 USDT）；未实现盈亏只剩剩余部分；逐仓保证金按现有「减仓时逐仓保证金」规则转出（89.11 → 2.33 U，转出部分与已实现盈亏<b>立即回到交易账户可用</b>）；指示灯按现有逻辑重新计算（回报率、杠杆不变，示意仍为 5 格，可再次被减）；止盈单被撤，委托 1 → 0。开仓均价不变；收益率、预估强平价、保证金率按公式随剩余保证金重算（强平价 74,678 → 80,046）。<b>仓位区不加任何 ADL 标记</b>（R08），<b>不发站内信</b>（R09）；用户只能在历史委托 / 成交记录 / 仓位历史中看到「ADL」标签。`,
    full:`<b>③ 全部 ADL 后</b>：仓位从当前持仓消失（Web / App 都显示「暂无持仓」）；止盈单被撤；ADL 记录只出现在历史委托 / 成交记录 / 仓位历史中。`};
   $('aNote').innerHTML=notes[aState];
   aHRender();uRender();
@@ -843,7 +879,7 @@ function aHRender(){
   document.querySelectorAll('#aHTabs span').forEach(s=>s.classList.toggle('on',s.dataset.h===aHTab));
   const CH={ord:['类型','币种','日期'],pos:['币种','交易方向','日期'],flow:['币种','类型','日期'],fill:['币种','日期']};
   $('aChips').innerHTML=CH[aHTab].map(c=>`<span>${c}</span>`).join('');
-  const done=aState!=='before',z=ADLZ[aState]||0,q=bz(z),pnl=(A.mark-A.entry)*q,roe=(A.mark-A.entry)/A.entry*A.lev*100,T='2026-10-09 13:40:12';
+  const done=aState!=='before',z=ADLZ[aState]||0,q=bz(z),pnl=(A.mark-A.entry)*q,roe=pnl/A.im0*100,T='2026-10-09 13:40:12';
   const adlTag=t=>`<span class="adl-b" style="margin-left:2px">${t}</span>`;
   const kv=(k,v,cls='')=>`<div><div class="k">${k}</div><div class="v ${cls}">${v}</div></div>`;
   const prog=(lab,a,b,full)=>`<div class="k"><b>已成交</b>/总数量(${lab})</div><div class="prog"><span class="v">${a}/${b}</span><span class="bar2"><i style="width:${full?100:0}%"></i></span></div>`;
@@ -865,7 +901,7 @@ function aHRender(){
   $('aHBody').innerHTML=H[aHTab];
 }
 function uRender(){
-  const st=AS[aState],done=aState!=='before',z=ADLZ[aState]||0,q=bz(z),pnl=(A.mark-A.entry)*q,roe=(A.mark-A.entry)/A.entry*A.lev*100,m=pm(st.z),T='2026-10-09 13:40:12',full=aState==='full';
+  const st=AS[aState],done=aState!=='before',z=ADLZ[aState]||0,q=bz(z),pnl=(A.mark-A.entry)*q,roe=pnl/A.im0*100,m=pm(st.z),T='2026-10-09 13:40:12',full=aState==='full';
   const NM={pos:'当前持仓',open:'当前委托',phist:'历史仓位',hist:'历史委托',flow:'资金流水',fill:'历史成交'};
   document.querySelectorAll('#uTabs button').forEach(b=>{const t=b.dataset.t;b.classList.toggle('on',t===uT);b.innerHTML=NM[t]+(t==='pos'?`<span class="bdg">${st.z?1:0}</span>`:t==='open'?`<span class="bdg">${st.ord}</span>`:'')});
   const chip=t=>`<span class="adl-chip">${t} ⓘ${TIP_U}</span>`;
