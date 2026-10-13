@@ -893,8 +893,7 @@ function aHRender(){
   H.pos=(done?posCard('<span class="tg b">多</span><span class="tg">逐仓</span><span class="tg b">10x</span>'+adlTag('ADL'),'a-up',A.mark.toFixed(2),q+' BTC',`+${pnl.toFixed(4)} / +${roe.toFixed(2)}%`,'2026-10-02 09:15:40',T):'')
         +posCard('<span class="tg b">多</span><span class="tg">逐仓</span><span class="tg b">26x</span>','a-down','63978.49','176.259825 USDT','-2.1451 / -40.84%','2026-03-30 06:49:18','2026-06-04 08:24:51');
   const flowCard=(amt,time,id)=>`<div class="tc"><div class="hd"><span>BTCUSDT</span></div><div class="g2">${kv('数量',amt+' USDT','a-down')}${kv('类型','资金费用')}${kv('时间',time)}${kv('成交ID',id)}</div></div>`;
-  H.flow=`<div class="tc-note">原型标注：资金流水本期不改动。ADL 与普通平仓一样，不在资金流水中产生记录（R20）。</div>`
-        +flowCard('-0.0075','2026-10-09 08:00:00','679733940931543306')+flowCard('-0.0008','2026-10-09 00:00:00','679613146448544010');
+  H.flow=flowCard('-0.0075','2026-10-09 08:00:00','679733940931543306')+flowCard('-0.0008','2026-10-09 00:00:00','679613146448544010');
   const fillCard=(tag,qty,fee,price,time,id)=>`<div class="tc"><div class="hd"><span>BTCUSDT${tag}</span></div><div class="g2">${kv('交易品种','BTCUSDT')}${kv('成交数量',qty)}${kv('手续费',fee)}${kv('成交价格',price)}${kv('时间',time)}${kv('成交ID',id)}</div></div>`;
   H.fill=(done?fillCard(adlTag('ADL'),q+' BTC','0',af(A.mark),T,'678732191894668611'):'')
         +fillCard('',openNotional+' USDT','0.4456',af(A.entry),'2026-10-02 09:15:40','678732191894668544');
@@ -931,7 +930,7 @@ function uRender(){
        <tr class="hl"><td>${sym('开多')}</td><td>2026-10-02 09:16:02</td><td><span class="pct">0 张(0%)</span><br>108 张</td><td>止盈: <span class="up">95,000</span><br>止损: --</td><td>因 ADL 撤销</td><td>${cp('678732202145783808')}</td></tr></tbody></table>`:empty('暂无记录')}
     if(uSub==='plan'){t=empty('暂无记录（本期无改动）')}
     h=sub+t}
-  if(uT==='flow'){h=`<div style="padding:8px 14px;color:#d8c58a;font-size:12px;border-bottom:1px dashed #4d4220">原型标注：资金流水本期不改动，ADL 不产生资金流水记录（R20）。</div><table class="wt"><thead><tr><th>时间</th><th>币种</th><th>数量</th><th>类型 ▽</th><th>交易品种</th><th>订单 ID</th></tr></thead><tbody>
+  if(uT==='flow'){h=`<table class="wt"><thead><tr><th>时间</th><th>币种</th><th>数量</th><th>类型 ▽</th><th>交易品种</th><th>订单 ID</th></tr></thead><tbody>
      <tr><td>2026-10-09 08:00:00</td><td>USDT</td><td class="dn">-0.00750000</td><td>资金费用</td><td>BTCUSDT</td><td>${cp('679733940931543306')}</td></tr>
      <tr><td>2026-10-09 00:00:00</td><td>USDT</td><td class="dn">-0.00080000</td><td>资金费用</td><td>BTCUSDT</td><td>${cp('679613146448544010')}</td></tr></tbody></table>`}
   if(uT==='fill'){h=`<table class="wt"><thead><tr><th>交易品种</th><th>成交价格</th><th>成交数量</th><th>手续费</th><th>时间</th><th>成交 ID</th></tr></thead><tbody>
