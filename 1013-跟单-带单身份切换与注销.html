@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>跟单 · 带单身份切换与注销</title>
+<style>
+:root{
+  --green:#35B85C; --green-bg:#E8F7EC; --green-dk:#23964A;
+  --text:#14161A; --sub:#8B9099; --sub2:#B4B8BF;
+  --card:#F4F5F7; --line:#ECEDEF; --bg:#FFFFFF;
+  --red:#E5484D; --red-bg:#FDECEC;
+  --warn:#A86A0C; --warn-bg:#FFF5E0;
+  --page:#E9EBEE;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
+.wrap{display:flex;gap:28px;justify-content:center;align-items:flex-start;padding:28px 16px}
+/* phone */
+.phone{width:375px;height:800px;background:var(--bg);border-radius:36px;box-shadow:0 0 0 10px #1b1d21,0 20px 50px rgba(0,0,0,.25);position:relative;overflow:hidden;flex:none;display:flex;flex-direction:column}
+.statusbar{height:40px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 24px;font-weight:600;font-size:14px}
+#screen{flex:1;overflow-y:auto;position:relative;scrollbar-width:none}
+#screen::-webkit-scrollbar{display:none}
+.appnav{flex:none;height:64px;margin:0 14px 14px;background:var(--card);border-radius:32px;display:flex;justify-content:space-around;align-items:center}
+.appnav div{font-size:11px;color:var(--sub);text-align:center;width:56px}
+.appnav div i{display:block;width:20px;height:20px;margin:0 auto 3px;border-radius:5px;background:#C9CDD3}
+.appnav div.on{color:var(--green)} .appnav div.on i{background:var(--green)}
+/* module header */
+.mhead{display:flex;justify-content:space-between;align-items:center;padding:6px 18px 0}
+.mhead h1{font-size:26px;font-weight:800;letter-spacing:.5px}
+.icon-btn{width:32px;height:32px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--text)}
+.icon-btn:hover{background:var(--card)}
+.tabs{display:flex;gap:22px;padding:0 18px;border-bottom:1px solid var(--line);margin-top:10px}
+.tabs button{padding:12px 0 10px;font-size:15px;color:var(--sub);position:relative}
+.tabs button.on{color:var(--text);font-weight:700}
+.tabs button.on:after{content:"";position:absolute;left:50%;bottom:-1px;width:20px;height:3px;border-radius:2px;background:var(--green);transform:translateX(-50%)}
+.tabs .dot{display:inline-block;margin-left:4px;font-size:10px;color:var(--green);background:var(--green-bg);border-radius:8px;padding:1px 5px;vertical-align:2px;font-weight:600}
+.body{padding:14px 18px 24px}
+/* generic */
+.card{background:var(--card);border-radius:16px;padding:16px}
+.lbl{font-size:12px;color:var(--sub)}
+.v{font-size:15px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.up{color:var(--green)} .down{color:var(--red)}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.grid3>div:nth-child(2){text-align:center} .grid3>div:nth-child(3){text-align:right}
+.tag{display:inline-block;font-size:11px;padding:2px 6px;border-radius:6px;font-weight:500;vertical-align:2px}
+.tag.run{color:var(--green-dk);background:var(--green-bg)}
+.tag.end{color:var(--sub);background:#E3E5E8}
+.tag.mine{color:#fff;background:var(--text)}
+.tag.warn{color:var(--warn);background:var(--warn-bg)}
+.btn{height:44px;border-radius:22px;font-weight:600;font-size:15px;width:100%}
+.btn.pri{background:var(--green);color:#fff}
+.btn.dark{background:var(--text);color:#fff}
+.btn.gray{background:#E3E5E8;color:var(--text)}
+.btn.danger{background:var(--red);color:#fff}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.sm{height:34px;font-size:13px;border-radius:17px}
+.pill{height:30px;padding:0 14px;border-radius:15px;font-size:13px;font-weight:600}
+.pill.pri{background:var(--green);color:#fff}
+.pill.line{background:#fff;border:1px solid #D9DCE0}
+.link{color:var(--green-dk);font-weight:500}
+.chev:after{content:"›";margin-left:3px;font-size:16px;line-height:1}
+.chips{display:flex;gap:8px;margin:2px 0 12px}
+.chips button{height:30px;padding:0 14px;border-radius:15px;background:var(--card);color:var(--sub);font-size:13px}
+.chips button.on{background:#E2E4E8;color:var(--text);font-weight:600}
+/* banner */
+.banner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:14px;background:var(--green-bg);margin-bottom:14px}
+.banner b{font-size:14px} .banner p{font-size:12px;color:var(--sub);margin-top:2px}
+.banner.warn{background:var(--warn-bg)} .banner.warn b{color:var(--warn)}
+.banner.mute{background:var(--card)}
+/* project card (discover) */
+.pcard{padding:16px 0;border-bottom:1px solid var(--line)}
+.pcard:last-child{border-bottom:0}
+.prow{display:flex;align-items:center;gap:10px}
+.av{width:36px;height:36px;border-radius:18px;background:var(--green-bg);color:var(--green-dk);font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.who{flex:1;min-width:0}
+.pname{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.psub{font-size:12px;color:var(--sub);margin-top:2px}
+.pmid{display:flex;justify-content:space-between;align-items:flex-end;margin:12px 0}
+.roi{font-size:24px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.roi.na{color:var(--sub2)}
+/* lead center */
+.prof{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.prof .av{width:48px;height:48px;border-radius:24px;font-size:20px}
+.prof .nm{font-size:18px;font-weight:800}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:14px 0 4px}
+.quick button{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--text);padding:6px 0;border-radius:12px}
+.quick button:hover{background:var(--card)}
+.quick i{width:40px;height:40px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:17px}
+.subtabs{display:flex;gap:20px;border-bottom:1px solid var(--line);margin:14px 0 12px}
+.subtabs button{padding:10px 0 8px;font-size:15px;color:var(--sub);position:relative}
+.subtabs button.on{color:var(--text);font-weight:700}
+.subtabs button.on:after{content:"";position:absolute;left:50%;bottom:-1px;width:18px;height:3px;border-radius:2px;background:var(--green);transform:translateX(-50%)}
+.lcard{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px}
+.lcard .t{font-size:16px;font-weight:700}
+.lcard .id{font-size:12px;color:var(--sub);margin:4px 0 12px;font-variant-numeric:tabular-nums}
+.lcard .two{display:flex;justify-content:space-between}
+.lcard .two>div:last-child{text-align:right}
+.lcard .time{font-size:11px;color:var(--sub);margin:12px 0}
+.lcard .acts{display:flex;gap:10px}
+.empty{text-align:center;padding:36px 0 20px;color:var(--sub)}
+.empty .ic{width:64px;height:48px;border-radius:10px;background:var(--green-bg);margin:0 auto 12px}
+.empty p{font-size:13px;margin-bottom:14px}
+.fixbar{position:sticky;bottom:0;background:linear-gradient(transparent,#fff 30%);padding:18px 18px 8px}
+.entry{display:flex;justify-content:space-between;align-items:center;padding:14px 2px;border-top:1px solid var(--line);margin-top:16px;font-size:14px}
+.entry span:last-child{color:var(--sub)}
+/* quit flow */
+.nav{display:flex;align-items:center;height:44px;padding:0 10px;position:sticky;top:0;background:#fff;z-index:2}
+.nav .ttl{flex:1;text-align:center;font-size:17px;font-weight:700;margin-right:32px}
+.sec-t{font-size:15px;font-weight:700;margin:20px 0 10px}
+.check{display:flex;gap:12px;padding:14px;border-radius:14px;background:var(--card);margin-bottom:10px}
+.check .st{width:22px;height:22px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;margin-top:1px}
+.st.ok{background:var(--green)} .st.no{background:var(--red)} .st.wait{background:#E4A23A} .st.info{background:#9AA0A8}
+.check .c{flex:1}
+.check .c b{font-size:14px} .check .c p{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.5}
+.check .c .act{margin-top:8px}
+.conseq{font-size:13px;line-height:1.7;color:#454A52;padding-left:18px}
+.conseq li{margin-bottom:4px}
+.agree{display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:18px 0 12px;cursor:pointer;user-select:none}
+.agree i{width:18px;height:18px;border-radius:5px;border:1.5px solid #C3C7CD;flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;font-style:normal;color:#fff;font-size:12px}
+.agree.on i{background:var(--green);border-color:var(--green)}
+.hint{font-size:12px;color:var(--red);text-align:center;margin-top:8px}
+.result{text-align:center;padding:56px 24px 0}
+.result .big{width:64px;height:64px;border-radius:32px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;font-weight:700}
+.result h2{font-size:20px;margin-bottom:10px}
+.result p{font-size:13px;color:var(--sub);line-height:1.7;margin-bottom:26px;text-align:left}
+.warnmark{color:var(--warn);background:var(--warn-bg);border-radius:4px;padding:0 4px;font-size:12px;white-space:nowrap}
+/* overlay */
+#overlay{position:absolute;inset:0;z-index:20;display:none}
+#overlay.show{display:block}
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;padding:8px 0 22px}
+.sheet .grab{width:36px;height:4px;border-radius:2px;background:#DADDE1;margin:4px auto 10px}
+.sheet .item{display:block;width:100%;text-align:left;padding:15px 22px;font-size:15px}
+.sheet .item:hover{background:var(--card)}
+.sheet .item small{display:block;font-size:12px;color:var(--sub);margin-top:2px}
+.sheet .item.red{color:var(--red)}
+.sheet .cancel{border-top:8px solid var(--card);text-align:center}
+.sheet h3{font-size:16px;padding:4px 22px 10px}
+.modal{position:absolute;left:28px;right:28px;top:50%;transform:translateY(-50%);background:#fff;border-radius:18px;padding:22px 20px 18px}
+.modal h3{font-size:17px;text-align:center;margin-bottom:10px}
+.modal p{font-size:13px;color:#545A63;line-height:1.65;margin-bottom:18px}
+.modal .acts{display:flex;gap:10px}
+#toast{position:absolute;left:50%;top:72px;transform:translateX(-50%);background:rgba(20,22,26,.9);color:#fff;font-size:13px;padding:9px 14px;border-radius:10px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none;max-width:300px;text-align:center}
+#toast.show{opacity:1}
+/* panel */
+.panel{width:400px;flex:none;background:#fff;border-radius:16px;padding:20px;max-height:calc(100vh - 56px);overflow-y:auto;position:sticky;top:28px}
+.panel h2{font-size:17px;margin-bottom:4px}
+.panel .desc{font-size:12px;color:var(--sub);margin-bottom:14px;line-height:1.6}
+.panel h4{font-size:13px;margin:18px 0 8px;color:var(--text)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 10px;border-radius:8px;background:var(--card);font-size:12px;color:#454A52}
+.seg button.on{background:var(--text);color:#fff}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+.notes{font-size:12px;line-height:1.65;color:#3C4149}
+.notes li{margin:0 0 8px 16px}
+.notes b{color:var(--text)}
+.k{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:0 4px;margin-right:4px;vertical-align:1px}
+.k.opt{background:#E8F0FE;color:#2F5BD3} .k.new{background:var(--green-bg);color:var(--green-dk)} .k.dec{background:var(--warn-bg);color:var(--warn)}
+.statebox{font-size:12px;background:var(--card);border-radius:8px;padding:8px 10px;color:#454A52}
+@media (max-width:860px){
+  .wrap{flex-direction:column;align-items:center;padding:16px}
+  .panel{width:100%;max-width:375px;position:static;max-height:none}
+  .phone{width:100%;max-width:375px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="phone">
+    <div class="statusbar"><span>15:27</span><span style="font-size:12px">●●● 5G ▮</span></div>
+    <div id="screen"></div>
+    <div class="appnav" id="appnav">
+      <div><i></i>首页</div><div><i></i>市场</div><div class="on"><i></i>交易</div><div><i></i>理财</div><div><i></i>资产</div>
+    </div>
+    <div id="overlay"></div>
+    <div id="toast"></div>
+  </div>
+
+  <aside class="panel">
+    <h2>原型控制台</h2>
+    <div class="desc">切换身份和数据场景，演示带单员在「跟单 / 带单」之间切换，以及注销带单员身份的完整路径。</div>
+
+    <h4>用户身份</h4>
+    <div class="seg" id="segRole"></div>
+    <h4>带单数据场景（注销前置条件）</h4>
+    <div class="seg" id="segScene"></div>
+    <h4>当前状态</h4>
+    <div class="statebox" id="stateBox"></div>
+    <div class="seg" style="margin-top:8px" id="segSim"></div>
+
+    <h4>改动说明</h4>
+    <ol class="notes">
+      <li><span class="k new">新增</span><b>跟单模块合并为一页、三个 Tab</b>：发现 / 我的跟单 / 带单中心。原来成为带单员后「交易员主页」直接替换了跟单页，回不去；现在带单员多出一个「带单中心」Tab，其余两个 Tab 不变，随时切换。</li>
+      <li><span class="k new">新增</span><b>注销带单员</b>：入口放在带单中心右上角「···」里（低频、不可逆操作，不放主按钮位）。流程：前置检查 → 影响告知 + 勾选确认 → 二次确认弹窗 → 结果页。</li>
+      <li><span class="k new">新增</span><b>区分「结束项目」和「注销身份」</b>：结束项目是单个项目级，沿用现有流程；注销是身份级，要求先结束所有进行中项目，避免重新定义跟随者仓位的处理规则。</li>
+      <li><span class="k new">新增</span><b>注销处理中状态</b>：有待结算分润时，提交后进入「处理中」，等本期分润结算完再生效；处理中可撤回，不能新建项目。</li>
+      <li><span class="k opt">优化</span><b>发现页卡片</b>：补上带单员身份（头像 + 名称），收益率 + 收益额 + 收益曲线；跟单人数显示「当前 / 上限」；运行天数不足时收益率显示「--」，不显示 0.00% 误导用户。</li>
+      <li><span class="k opt">优化</span><b>带单员自己的项目</b>出现在发现页时标「我的」，按钮从「跟单」换成「管理」，防止自己跟自己。</li>
+      <li><span class="k opt">优化</span><b>带单中心补快捷入口</b>：跟单用户 / 分润明细 / 余额历史 / 我的主页（对标竞品「交易专家中心」）；进行中项目卡片补「去带单 / 结束项目」操作；空状态补引导文案。</li>
+      <li><span class="k opt">优化</span><b>统一叫法</b>：带单员侧叫「项目」，跟单侧叫「带单策略」，原来同一个东西两种叫法。原型统一为「项目」，跟单侧「我的项目」改为「我的跟单」。</li>
+      <li><span class="k opt">优化</span><b>普通用户的「成为带单员」入口</b>放在发现页顶部横幅；注销后冷却期内横幅变为置灰提示。</li>
+    </ol>
+
+    <h4>⚠️ 待你决策（原型暂按推荐项展示）</h4>
+    <ol class="notes">
+      <li><span class="k dec">D1</span>带单员能否用跟单账户跟别人的单？推荐<b>可以</b>（带单账户和跟单账户本来就是分开的两个账户）。</li>
+      <li><span class="k dec">D2</span>有进行中项目时能否注销？推荐<b>必须先手动结束</b>（复用现有结束项目流程）。备选：注销时一键结束全部项目。</li>
+      <li><span class="k dec">D3</span>有待结算分润时：推荐<b>允许提交，等本期结算后生效</b>。备选：注销时立即结算 / 不结算完不允许提交。</li>
+      <li><span class="k dec">D4</span>带单账户余额去向：<span class="warnmark">⚠️ 划转到哪个账户待确认</span>，原型暂写「资金账户」。</li>
+      <li><span class="k dec">D5</span>注销后冷却期：<span class="warnmark">⚠️ 数值待确认</span>，冷却期内不能再申请成为带单员。</li>
+      <li><span class="k dec">D6</span>再次申请成为带单员时，历史战绩继承还是清零？</li>
+      <li><span class="k dec">D7</span>运行不足多少天不展示收益率：<span class="warnmark">⚠️ 数值待确认</span>，原型暂按 7 天；跟单人数上限 <span class="warnmark">⚠️ 数值待确认</span>，原型暂写 100。</li>
+    </ol>
+  </aside>
+</div>
+
+<script>
+const ME = 'Trader10002298';
+const MARKET = [
+  {name:'ETH 波段策略', who:'Cooony', days:45, roi:36.75, gain:8296.24, aum:'46.2K', fol:302, cap:750, dd:7.02, line:[2,3,3,5,4,6,8,7,9,11,12,14]},
+  {name:'黄金短线策略', who:'GoldHunter', days:2, roi:null, gain:null, aum:'4.17K', fol:4, cap:100, dd:0, line:[]},
+  {name:'BTC 稳健网格', who:'deltathree', days:120, roi:9.12, gain:3668.72, aum:'18.9K', fol:18, cap:100, dd:3.41, line:[5,5,6,6,7,6,7,8,8,9,9,10]},
+  {name:'SOL 趋势追踪', who:'sirni', days:30, roi:-4.36, gain:-207.87, aum:'7.40K', fol:14, cap:300, dd:12.6, line:[9,10,8,9,7,8,6,7,6,5,6,5]},
+];
+const ENDED = {name:'高胜率项目', id:'3680227388765020', status:'ended', pnl:1.69, share:0, start:'2026-10-12', end:'2026-10-12', fol:0};
+const RUNNING = {name:'BTC 趋势策略', id:'3680227388765021', status:'running', pnl:12.40, share:0, start:'2026-10-11', fol:3, days:2};
+const SCENES = {
+  running:{label:'有进行中项目', pending:0.23},
+  settle:{label:'无进行中项目，有待结算分润', pending:0.23},
+  clear:{label:'全部已清', pending:0},
+};
+const MIN_DAYS = 7; // ⚠️ 数值待确认
+
+let S;
+function reset(scene){
+  scene = scene || 'running';
+  S = {
+    role:'lead',            // lead | quitting | normal
+    exLead:false,           // 注销过带单员（冷却期中）
+    scene,
+    projects: scene==='running' ? [clone(RUNNING), clone(ENDED)] : [clone(ENDED)],
+    pending: SCENES[scene].pending,
+    tab:'lead', sort:'roi', leadTab:'running', mineTab:'following',
+    page:'home', agree:false, result:null,
+  };
+}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+const $ = id => document.getElementById(id);
+const sign = n => (n>0?'+':'')+n.toFixed(2);
+const cls = n => n>0?'up':(n<0?'down':'');
+const running = () => S.projects.filter(p=>p.status==='running');
+const ended = () => S.projects.filter(p=>p.status==='ended');
+const isLead = () => S.role!=='normal';
+
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),1800)}
+
+function spark(arr, up){
+  if(!arr.length) return '';
+  const w=96,h=34,mx=Math.max(...arr),mn=Math.min(...arr),r=(mx-mn)||1;
+  const pts=arr.map((v,i)=>`${(i/(arr.length-1)*w).toFixed(1)},${(h-3-(v-mn)/r*(h-6)).toFixed(1)}`).join(' ');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${up?'#35B85C':'#E5484D'}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const sc=$('screen');
+  if(S.page==='home') sc.innerHTML = homeHTML();
+  else if(S.page==='quit') sc.innerHTML = quitHTML();
+  else if(S.page==='result') sc.innerHTML = resultHTML();
+  $('appnav').style.display = S.page==='home' ? 'flex' : 'none';
+  renderPanel();
+}
+
+function homeHTML(){
+  const tabs = [['discover','发现'],['mine','我的跟单']];
+  if(isLead()) tabs.push(['lead','带单中心']);
+  if(!isLead() && S.tab==='lead') S.tab='discover';
+  const more = S.tab==='lead' ? `<button class="icon-btn" onclick="openMore()" aria-label="更多">•••</button>` : '';
+  let h = `<div class="mhead"><h1>跟单</h1><div><button class="icon-btn" onclick="toast('搜索带单员 / 项目')" aria-label="搜索">⌕</button>${more}</div></div>
+  <div class="tabs">${tabs.map(([k,t])=>`<button class="${S.tab===k?'on':''}" onclick="setTab('${k}')">${t}${k==='lead'&&S.role==='quitting'?'<span class="dot" style="color:var(--warn);background:var(--warn-bg)">注销中</span>':''}</button>`).join('')}</div>`;
+  if(S.tab==='discover') h += discoverHTML();
+  if(S.tab==='mine') h += mineHTML();
+  if(S.tab==='lead') h += leadHTML();
+  return h;
+}
+
+function discoverHTML(){
+  let banner='';
+  if(!isLead()){
+    banner = S.exLead
+      ? `<div class="banner mute"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，<span class="warnmark">⚠️ N 天</span>后可重新申请</p></div></div>`
+      : `<div class="banner"><div><b>成为带单员，赚取跟单分润</b><p>分润比例 <span class="warnmark">⚠️ 数值待确认</span></p></div><span class="link chev" onclick="toast('进入带单员申请（沿用现有流程）')" style="cursor:pointer">申请</span></div>`;
+  }
+  let list = MARKET.map(m=>({...m}));
+  if(isLead()) running().forEach(p=>list.push({name:p.name, who:ME, days:p.days, roi:null, gain:null, aum:'0.36K', fol:p.fol, cap:100, dd:0, line:[], mine:true}));
+  const key={roi:x=>x.roi==null?-1e9:x.roi, fol:x=>x.fol, dd:x=>-x.dd}[S.sort];
+  list.sort((a,b)=>key(b)-key(a));
+  const chips=[['roi','收益率'],['fol','跟单人数'],['dd','最大回撤']];
+  return `<div class="body">${banner}
+  <div class="chips">${chips.map(([k,t])=>`<button class="${S.sort===k?'on':''}" onclick="S.sort='${k}';render()">${t}</button>`).join('')}</div>
+  ${list.map(cardHTML).join('')}</div>`;
+}
+function cardHTML(m){
+  const young = m.days < MIN_DAYS;
+  const roi = young ? `<div class="roi na">--</div><div class="psub">运行不足 ${MIN_DAYS} 天，暂不计算</div>`
+                    : `<div class="roi ${cls(m.roi)}">${sign(m.roi)}%</div><div class="psub ${cls(m.gain)}">${m.gain>0?'+':'-'}$${Math.abs(m.gain).toLocaleString('en-US',{minimumFractionDigits:2})}</div>`;
+  const btn = m.mine ? `<button class="pill line" onclick="setTab('lead')">管理</button>`
+                     : `<button class="pill pri" onclick="follow('${m.name}')">跟单</button>`;
+  return `<div class="pcard">
+    <div class="prow"><div class="av">${m.who[0].toUpperCase()}</div>
+      <div class="who"><div class="pname">${m.name} ${m.mine?'<span class="tag mine">我的</span>':''}</div><div class="psub">${m.who} · 带单 ${m.days} 天</div></div>${btn}</div>
+    <div class="pmid"><div><div class="lbl">近 30 日收益率</div>${roi}</div>${young?'':spark(m.line, m.roi>=0)}</div>
+    <div class="grid3"><div><div class="lbl">跟单资金</div><div class="v">${m.aum}</div></div>
+      <div><div class="lbl">跟单人数</div><div class="v">${m.fol}<span style="color:var(--sub2);font-weight:400">/${m.cap}</span></div></div>
+      <div><div class="lbl">最大回撤</div><div class="v">${m.dd.toFixed(2)}%</div></div></div>
+  </div>`;
+}
+
+function mineHTML(){
+  const hist = S.exLead ? `<div class="entry" onclick="openHistory()" style="cursor:pointer"><span>历史带单记录</span><span class="chev">${ended().length} 个项目</span></div>` : '';
+  const note = isLead() ? `<div style="font-size:12px;color:var(--sub);margin:10px 2px 0">跟单账户与带单账户资金独立，互不影响</div>` : '';
+  return `<div class="body">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between"><span class="lbl" style="font-size:13px">跟单账户权益</span><span class="lbl chev" style="font-size:13px;cursor:pointer" onclick="toast('跟单账户详情')">账户详情</span></div>
+      <div style="margin:8px 0 2px"><span style="font-size:32px;font-weight:800">921.54</span> <span class="lbl">USDT</span></div>
+      <div class="lbl" style="margin-bottom:14px">累计盈亏 <b style="color:var(--text);font-weight:600">0.00 · 0.00%</b></div>
+      <div class="grid3" style="border-top:1px solid #E3E5E8;padding-top:14px">
+        <div><div class="lbl">投入资金</div><div class="v">0.00</div></div><div><div class="lbl">占用保证金</div><div class="v">0.00</div></div><div><div class="lbl">未实现盈亏</div><div class="v">0.00</div></div>
+      </div>
+    </div>${note}
+    <div class="subtabs"><button class="${S.mineTab==='following'?'on':''}" onclick="S.mineTab='following';render()">跟随中 0</button><button class="${S.mineTab==='done'?'on':''}" onclick="S.mineTab='done';render()">已结束 0</button></div>
+    <div class="empty"><div class="ic"></div><p>${S.mineTab==='following'?'还没有跟随任何项目':'暂无已结束的跟单'}</p>${S.mineTab==='following'?'<button class="pill pri" onclick="setTab(\'discover\')">去发现</button>':''}</div>
+    ${hist}
+  </div>`;
+}
+
+function leadHTML(){
+  const quitting = S.role==='quitting';
+  const totalFol = running().reduce((a,p)=>a+p.fol,0);
+  const banner = quitting ? `<div class="banner warn"><div><b>注销处理中</b><p>本期分润结算后自动生效（<span class="warnmark">⚠️ 结算时间待确认</span>），期间不可新建项目</p></div><span class="link" style="cursor:pointer;white-space:nowrap" onclick="askWithdraw()">撤回</span></div>` : '';
+  const list = S.leadTab==='running' ? running() : ended();
+  const cards = list.length ? list.map(projHTML).join('')
+    : `<div class="empty"><div class="ic"></div><p>${S.leadTab==='running'?(quitting?'注销处理中，无进行中项目':'暂无进行中的项目，新建一个开始带单'):'暂无已结束的项目'}</p></div>`;
+  return `<div class="body">${banner}
+    <div class="prof"><div class="av">T</div><div style="flex:1"><div class="nm">${ME} <span class="tag run">带单员</span></div><div class="psub">带单 2 天</div></div><span class="lbl chev" style="cursor:pointer" onclick="toast('编辑头像、昵称、简介')">编辑资料</span></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between"><span class="lbl" style="font-size:13px">带单账户权益 (USDT)</span><span class="lbl chev" style="font-size:13px;cursor:pointer" onclick="toast('带单账户详情')">账户详情</span></div>
+      <div style="font-size:32px;font-weight:800;margin:8px 0 14px">101.69</div>
+      <div class="grid3" style="border-top:1px solid #E3E5E8;padding-top:14px">
+        <div><div class="lbl">当前跟单人数</div><div class="v">${totalFol}</div></div>
+        <div><div class="lbl">本期待结算分润</div><div class="v ${S.pending?'up':''}">${S.pending?'+'+S.pending.toFixed(2):'0.00'}</div></div>
+        <div><div class="lbl">累计分润</div><div class="v">0.00</div></div>
+      </div>
+    </div>
+    <div class="quick">
+      <button onclick="toast('跟单用户列表')"><i>👥</i>跟单用户</button>
+      <button onclick="toast('分润明细')"><i>%</i>分润明细</button>
+      <button onclick="toast('余额历史')"><i>↧</i>余额历史</button>
+      <button onclick="toast('预览跟单者看到的主页')"><i>⌂</i>我的主页</button>
+    </div>
+    <div class="subtabs"><button class="${S.leadTab==='running'?'on':''}" onclick="S.leadTab='running';render()">当前带单 ${running().length}</button><button class="${S.leadTab==='ended'?'on':''}" onclick="S.leadTab='ended';render()">已结束 ${ended().length}</button></div>
+    ${cards}
+  </div>
+  <div class="fixbar"><button class="btn gray" ${quitting?'disabled':''} onclick="toast('新建项目（沿用现有流程）')">新建项目</button></div>`;
+}
+function projHTML(p){
+  if(p.status==='running') return `<div class="lcard">
+    <div class="t">${p.name} <span class="tag run">进行中</span></div><div class="id">${p.id}</div>
+    <div class="two"><div><div class="lbl">累计盈亏 (USDT)</div><div class="v ${cls(p.pnl)}">${sign(p.pnl)}</div></div><div><div class="lbl">当前跟单人数</div><div class="v">${p.fol}</div></div></div>
+    <div class="time">开始时间 ${p.start}</div>
+    <div class="acts"><button class="btn sm dark" onclick="toast('进入带单交易页')">去带单</button><button class="btn sm gray" onclick="askEnd('${p.id}')">结束项目</button></div></div>`;
+  return `<div class="lcard">
+    <div class="t">${p.name} <span class="tag end">已结束</span></div><div class="id">${p.id}</div>
+    <div class="two"><div><div class="lbl">累计盈亏 (USDT)</div><div class="v ${cls(p.pnl)}">${sign(p.pnl)}</div></div><div><div class="lbl">累计分润 (USDT)</div><div class="v">${p.share.toFixed(2)}</div></div></div>
+    <div class="time">开始时间 ${p.start}　|　结束时间 ${p.end}</div>
+    <button class="btn sm gray" onclick="toast('项目详情')">详情</button></div>`;
+}
+
+/* ---------- quit flow ---------- */
+function quitHTML(){
+  const r = running().length, blocked = r>0;
+  const c1 = blocked
+    ? `<div class="check"><span class="st no">!</span><div class="c"><b>进行中项目：${r} 个</b><p>需先结束全部进行中项目，结束后跟随者的跟单关系按现有「结束项目」规则处理</p><div class="act"><button class="pill pri" onclick="goEndProjects()">去结束</button></div></div></div>`
+    : `<div class="check"><span class="st ok">✓</span><div class="c"><b>进行中项目：0 个</b><p>已无进行中项目</p></div></div>`;
+  const c2 = S.pending>0
+    ? `<div class="check"><span class="st wait">…</span><div class="c"><b>本期待结算分润：${S.pending.toFixed(2)} USDT</b><p>可以提交注销。提交后进入「处理中」，待本期分润结算完成后自动生效（<span class="warnmark">⚠️ 结算时间待确认</span>），期间可撤回</p></div></div>`
+    : `<div class="check"><span class="st ok">✓</span><div class="c"><b>待结算分润：无</b><p>提交后立即生效</p></div></div>`;
+  const c3 = `<div class="check"><span class="st info">i</span><div class="c"><b>带单账户余额：101.69 USDT</b><p>注销生效后自动划转至 <span class="warnmark">⚠️ 资金账户（待确认）</span></p></div></div>`;
+  const can = !blocked && S.agree;
+  return `<div class="nav"><button class="icon-btn" onclick="S.page='home';render()" aria-label="返回">‹</button><div class="ttl">注销带单员</div></div>
+  <div class="body" style="padding-top:4px">
+    <div style="font-size:13px;color:var(--sub);line-height:1.6">注销后你将回到普通跟单用户身份。请先确认以下事项：</div>
+    <div class="sec-t">注销前检查</div>${c1}${c2}${c3}
+    <div class="sec-t">注销后的影响</div>
+    <ul class="conseq">
+      <li>你的带单员主页和全部项目从跟单广场下架，其他用户无法再搜索、跟随</li>
+      <li>历史项目、分润记录保留，可在「我的跟单 › 历史带单记录」只读查看</li>
+      <li>注销后 <span class="warnmark">⚠️ N 天</span>内不能重新申请成为带单员</li>
+      <li>跟单功能不受影响，跟单账户资金和跟随中的项目保持不变</li>
+    </ul>
+    <div class="agree ${S.agree?'on':''}" onclick="S.agree=!S.agree;render()"><i>${S.agree?'✓':''}</i><span>我已了解注销后的影响</span></div>
+    <button class="btn danger" ${can?'':'disabled'} onclick="askQuit()">${S.pending>0?'提交注销申请':'确认注销'}</button>
+    ${blocked?'<div class="hint">请先结束全部进行中项目</div>':''}
+  </div>`;
+}
+function resultHTML(){
+  if(S.result==='pending') return `<div class="result"><div class="big" style="background:#E4A23A">…</div><h2>注销申请已提交</h2>
+    <p>本期待结算分润 ${S.pending.toFixed(2)} USDT 结算完成后，注销自动生效（<span class="warnmark">⚠️ 结算时间待确认</span>）。<br>处理中期间：不能新建项目；你可以在「带单中心」随时撤回申请。</p>
+    <button class="btn pri" onclick="S.page='home';S.tab='lead';render()">返回带单中心</button></div>`;
+  return `<div class="result"><div class="big" style="background:var(--green)">✓</div><h2>已注销带单员</h2>
+    <p>带单账户余额 101.69 USDT 已划转至 <span class="warnmark">⚠️ 资金账户（待确认）</span>。<br>历史带单记录可在「我的跟单」查看。</p>
+    <button class="btn pri" onclick="S.page='home';S.tab='discover';render()">返回跟单</button></div>`;
+}
+
+/* ---------- overlays ---------- */
+function overlay(html){const o=$('overlay');o.innerHTML=`<div class="mask" onclick="closeOv()"></div>${html}`;o.classList.add('show')}
+function closeOv(){$('overlay').classList.remove('show');$('overlay').innerHTML=''}
+function modal(title, body, okText, okCls, onOk){
+  overlay(`<div class="modal"><h3>${title}</h3><p>${body}</p><div class="acts"><button class="btn gray" onclick="closeOv()">取消</button><button class="btn ${okCls}" id="mOk">${okText}</button></div></div>`);
+  $('mOk').onclick=()=>{closeOv();onOk()};
+}
+function openMore(){
+  const quitting = S.role==='quitting';
+  overlay(`<div class="sheet"><div class="grab"></div>
+    <button class="item" onclick="closeOv();toast('带单规则说明')">带单规则<small>分润比例、结算周期、带单员考核</small></button>
+    ${quitting
+      ? `<button class="item" onclick="closeOv();askWithdraw()">撤回注销申请<small>恢复正常带单状态</small></button>`
+      : `<button class="item red" onclick="closeOv();startQuit()">注销带单员<small>回到普通跟单用户身份</small></button>`}
+    <button class="item cancel" onclick="closeOv()">取消</button></div>`);
+}
+function openHistory(){
+  overlay(`<div class="sheet" style="max-height:80%;overflow:auto"><div class="grab"></div><h3>历史带单记录（只读）</h3><div style="padding:0 18px">${ended().map(projHTML).join('')}</div></div>`);
+}
+
+/* ---------- actions ---------- */
+function setTab(t){S.tab=t;render();$('screen').scrollTop=0}
+function follow(n){toast(`跟单「${n}」：进入跟单设置（沿用现有流程）`)}
+function startQuit(){S.page='quit';S.agree=false;render();$('screen').scrollTop=0}
+function goEndProjects(){S.page='home';S.tab='lead';S.leadTab='running';render();toast('结束全部进行中项目后，再回来注销')}
+function askEnd(id){
+  const p=S.projects.find(x=>x.id===id);
+  modal('结束项目？',`确认结束「${p.name}」？结束后不可恢复，持仓与跟随者按现有「结束项目」规则处理。`,'确认结束','danger',()=>{
+    p.status='ended';p.end='2026-10-13';p.fol=0;S.leadTab='ended';render();toast('项目已结束');
+  });
+}
+function askQuit(){
+  const pend = S.pending>0;
+  modal('确认注销带单员？', pend?'提交后进入处理中，本期分润结算完成后自动生效。':'确认后立即生效，带单账户余额将自动划转。', pend?'提交':'确认注销','danger',()=>{
+    if(pend){S.role='quitting';S.result='pending';}
+    else{S.role='normal';S.exLead=true;S.result='done';}
+    S.page='result';render();
+  });
+}
+function askWithdraw(){
+  modal('撤回注销申请？','撤回后恢复正常带单，可以新建项目。','撤回','pri',()=>{S.role='lead';render();toast('已撤回注销申请')});
+}
+function simSettle(){
+  S.pending=0;S.projects.forEach(p=>{if(p.status==='ended'&&p.name==='高胜率项目')p.share=0.23});
+  S.role='normal';S.exLead=true;S.page='home';S.tab='discover';render();toast('本期分润已结算，注销已生效');
+}
+
+/* ---------- panel ---------- */
+function renderPanel(){
+  const roles=[['lead','带单员'],['normal','普通用户（从未带单）']];
+  $('segRole').innerHTML=roles.map(([k,t])=>`<button class="${(k==='lead'&&isLead())||(k==='normal'&&!isLead()&&!S.exLead)?'on':''}" onclick="pickRole('${k}')">${t}</button>`).join('');
+  $('segScene').innerHTML=Object.entries(SCENES).map(([k,v])=>`<button class="${S.scene===k?'on':''}" onclick="reset('${k}');render()">${v.label}</button>`).join('');
+  const roleTxt={lead:'带单员',quitting:'带单员 · 注销处理中',normal:S.exLead?'普通用户 · 已注销带单员（冷却期）':'普通用户'}[S.role];
+  $('stateBox').textContent=`身份：${roleTxt}　|　进行中项目 ${running().length} 个　|　待结算分润 ${S.pending.toFixed(2)}`;
+  $('segSim').innerHTML=`<button ${S.role==='quitting'?'':'disabled'} onclick="simSettle()">模拟：本期分润结算完成</button><button onclick="reset(S.scene);render()">重置</button>`;
+}
+function pickRole(k){
+  if(k==='lead'){reset(S.scene);}
+  else{reset(S.scene);S.role='normal';S.tab='discover';}
+  render();
+}
+
+reset('running');
+render();
+</script>
+</body>
+</html>
