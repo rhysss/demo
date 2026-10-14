@@ -384,7 +384,7 @@ function discoverHTML(){
   let banner='';
   if(isLead()) banner = `<div class="banner mute"><div><p style="margin:0">你是带单员，不能跟单；注销带单员后可跟单</p></div></div>`;
   else banner = S.exLead
-      ? `<div class="banner mute"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，${COOLDOWN} 天后可重新申请</p></div></div>`
+      ? `<div class="banner mute"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，2026-10-20 15:30 后可重新申请（冷却期 ${COOLDOWN} 天）</p></div></div>`
       : `<div class="banner" onclick="S.agree=false;go('apply')" style="cursor:pointer"><div><b>成为带单员，赚取跟单分润</b><p>分润比例最高 20%</p></div><span class="link chev">申请</span></div>`;
   const list = marketList();
   const key={roi:x=>x.roi==null?-1e9:x.roi, fol:x=>x.fol, dd:x=>-x.dd}[S.sort];
