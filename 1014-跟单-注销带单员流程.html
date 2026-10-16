@@ -258,7 +258,7 @@ const quitPage = (o) => navBar('注销带单员') + `<div class="body" style="pa
   ${o.pend ? chk('wait','本期待结算分润：0.23 USDT','可以提交注销。提交后进入「处理中」，待本期分润（每周结算）结算完成后自动生效，期间可撤回') : chk('ok','待结算分润：无','提交后立即生效')}
   ${chk('info',`带单账户余额：${o.bal} USDT`,`注销生效后自动划转至跟单账户${o.pend?'（含本期结算的分润）':''}`)}
   <div class="sec-t">注销后的影响</div>
-  <ul class="conseq"><li>你的带单员主页和全部项目从跟单广场下架，其他用户无法再搜索、跟随</li><li>历史项目、分润记录保留，可在「我的跟单 › 历史带单记录」只读查看</li><li>注销后 7 天内不能重新申请成为带单员；重新成为带单员后，历史战绩继承</li><li>注销后可以正常跟单</li></ul>
+  <ul class="conseq"><li>你的带单员主页和全部项目从跟单广场下架，其他用户无法再搜索、跟随</li><li>注销后 7 天内不能重新申请成为带单员；重新成为带单员后，历史战绩继承</li><li>注销后可以正常跟单</li></ul>
   <div class="agree ${o.agree?'on':''}"><i>${o.agree?'✓':''}</i><span>我已了解注销后的影响</span></div>
   <button class="btn danger" ${o.running||!o.agree?'disabled':''}>${o.pend?'提交注销申请':'确认注销'}</button>
   ${o.running?'<div class="hint">请先结束全部进行中项目</div>':''}
@@ -276,8 +276,7 @@ const mine = (o={}) => head('mine') + `<div class="body">
     <div class="lbl" style="margin-bottom:14px">累计盈亏 <b style="font-weight:600;color:var(--text)">0.00</b></div>
     <div class="grid3" style="border-top:1px solid #E3E5E8;padding-top:14px"><div><div class="lbl">投入资金</div><div class="v">0.00</div></div><div><div class="lbl">可用</div><div class="v">${o.bal||'1,030.08'}</div></div><div><div class="lbl">未实现盈亏</div><div class="v">0.00</div></div></div></div>
   <div class="subtabs"><button class="on">跟随中 0</button><button>已结束 0</button></div>
-  <div class="empty"><div class="ic"></div><p>还没有跟随任何项目</p><button class="pill pri">去发现</button></div>
-  <div class="entry ${o.hlHist?'hl':''}"><span>历史带单记录</span><span class="chev">2 个项目</span></div></div>`;
+  <div class="empty"><div class="ic"></div><p>还没有跟随任何项目</p><button class="pill pri">去发现</button></div></div>`;
 const applyPage = (following) => navBar('申请成为带单员') + `<div class="body">
   <div class="sec-t" style="margin-top:4px">申请条件</div>
   ${chk('ok','已完成身份认证','')}
@@ -288,7 +287,7 @@ const applyPage = (following) => navBar('申请成为带单员') + `<div class="
   <button class="btn pri" ${following?'disabled':''}>提交申请</button></div>`;
 const result = (pending) => pending
   ? `<div class="result"><div class="big" style="background:#E4A23A">…</div><h2>注销申请已提交</h2><p>本期待结算分润 0.23 USDT 结算完成后（每周结算），注销自动生效，带单账户余额将划转至跟单账户。<br>处理中期间：不能新建项目、不能带单交易；你可以在「带单中心」随时撤回申请。</p><button class="btn pri">返回带单中心</button></div>`
-  : `<div class="result"><div class="big" style="background:var(--green)">✓</div><h2>已注销带单员</h2><p>带单账户余额 108.54 USDT 已划转至跟单账户。<br>历史带单记录可在「我的跟单」查看；2026-10-21 15:30 后可重新申请成为带单员。</p><button class="btn pri">返回跟单</button></div>`;
+  : `<div class="result"><div class="big" style="background:var(--green)">✓</div><h2>已注销带单员</h2><p>带单账户余额 108.54 USDT 已划转至跟单账户。<br>2026-10-21 15:30 后可重新申请成为带单员。</p><button class="btn pri">返回跟单</button></div>`;
 
 /* ---------- 截图清单 ---------- */
 const SECTIONS = [
@@ -317,9 +316,8 @@ const SECTIONS = [
  ]},
  {t:'五、注销生效', d:'无待结算分润时确认即生效；有待结算分润时本期结算完成后自动生效。带单账户余额（含本期分润）划转至跟单账户。', shots:[
   ['E1','结果 · 已注销带单员', '', phone(result(false)), 'R5 · R6'],
-  ['E2','我的跟单 · 余额到账', '跟单账户余额增加 108.54；底部新增「历史带单记录」只读入口；带单中心、带单交易 Tab 消失。', phone(mine({hlBal:true}),{app:true}), 'R5'],
-  ['E3','历史带单记录', '只读查看历史项目与分润。', phone(mine(),{app:true, ov:`<div class="sheet" style="max-height:80%;overflow:hidden"><div class="grab"></div><h3>历史带单记录（只读）</h3><div style="padding:0 18px">${endCard('BTC 趋势策略','+19.25','0.00','2026-10-11','2026-10-14')}${endCard()}</div></div>`}), 'R7'],
-  ['E4','发现页 · 可以正常跟单', '注销后「跟单」按钮恢复可用。', phone(discover(`<div class="banner mute"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，2026-10-21 15:30 后可重新申请</p></div></div>`),{app:true}), 'R2'],
+  ['E2','我的跟单 · 余额到账', '跟单账户余额增加 108.54；带单中心、带单交易 Tab 消失。', phone(mine({hlBal:true}),{app:true}), 'R5'],
+  ['E3','发现页 · 可以正常跟单', '注销后「跟单」按钮恢复可用。', phone(discover(`<div class="banner mute"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，2026-10-21 15:30 后可重新申请</p></div></div>`),{app:true}), 'R2'],
  ]},
  {t:'六、冷却期：是否满 7 天', d:'以注销生效时间起算 7 天（示例：2026-10-14 15:30 生效 → 2026-10-21 15:30 后可申请）。', shots:[
   ['F1','未满 7 天 · 发现页', '「成为带单员」横幅置灰不可点，显示可重新申请的具体时间。', phone(discover(`<div class="banner mute hl"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，2026-10-21 15:30 后可重新申请</p></div></div>`),{app:true}), 'R6'],
@@ -337,7 +335,7 @@ const MATRIX = [
  ['无进行中项目 · 有待结算分润','可提交 → 注销处理中 → 本期结算后自动生效（可撤回）','C1 · C4 · D1–D4'],
  ['无进行中项目 · 无待结算分润','确认后立即生效','C2 · C5 · E1'],
  ['未勾选「我已了解」','按钮置灰','C3'],
- ['注销生效','带单账户余额（含本期分润）转入跟单账户；带单 Tab 消失；可正常跟单；历史只读','E1–E4'],
+ ['注销生效','带单账户余额（含本期分润）转入跟单账户；带单 Tab 消失；可正常跟单','E1–E3'],
  ['注销后未满 7 天','「成为带单员」入口置灰，显示可申请时间','F1'],
  ['注销后已满 7 天','申请入口恢复','F2'],
  ['重新申请 · 有跟随中项目','拦截，需先停止全部跟单','G1'],

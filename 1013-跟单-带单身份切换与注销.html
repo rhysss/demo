@@ -421,7 +421,6 @@ function mineHTML(){
   const on = S.follows.filter(f=>f.on), off = S.follows.filter(f=>!f.on);
   const list = S.mineTab==='following' ? on : off;
   const pnl = S.follows.reduce((a,f)=>a+f.pnl,0), upF = on.reduce((a,f)=>a+f.pnl,0);
-  const hist = S.exLead ? `<div class="entry" onclick="openHistory()" style="cursor:pointer"><span>历史带单记录</span><span class="chev">${ended().length} 个项目</span></div>` : '';
   const note = isLead() ? `<div class="banner mute" style="margin:12px 0 0"><div><p style="margin:0">你是带单员，不能跟单；可查看跟单账户和历史跟单记录</p></div></div>` : '';
   const rows = list.length ? list.map(f=>`<div class="lcard">
       <div class="t">${f.name} <span class="tag ${f.on?'run':'end'}">${f.on?'跟随中':'已停止'}</span></div><div class="id">${f.who} · 开始 ${f.start}${f.end?' · 停止 '+f.end:''}</div>
@@ -438,7 +437,7 @@ function mineHTML(){
       </div>
     </div>${note}
     <div class="subtabs"><button class="${S.mineTab==='following'?'on':''}" onclick="S.mineTab='following';render()">跟随中 ${on.length}</button><button class="${S.mineTab==='done'?'on':''}" onclick="S.mineTab='done';render()">已结束 ${off.length}</button></div>
-    ${rows}${hist}
+    ${rows}
   </div>`;
 }
 
@@ -724,7 +723,6 @@ function quitHTML(){
     <div class="sec-t">注销后的影响</div>
     <ul class="conseq">
       <li>你的带单员主页和全部项目从跟单广场下架，其他用户无法再搜索、跟随</li>
-      <li>历史项目、分润记录保留，可在「我的跟单 › 历史带单记录」只读查看</li>
       <li>注销后 ${COOLDOWN} 天内不能重新申请成为带单员；重新成为带单员后，历史战绩继承</li>
       <li>注销后可以正常跟单</li>
     </ul>
@@ -738,7 +736,7 @@ function resultHTML(){
     <p>本期待结算分润 ${S.pending.toFixed(2)} USDT 结算完成后（每周结算），注销自动生效，带单账户余额将划转至跟单账户。<br>处理中期间：不能新建项目、不能带单交易；你可以在「带单中心」随时撤回申请。</p>
     <button class="btn pri" onclick="home('lead')">返回带单中心</button></div>`;
   return `<div class="result"><div class="big" style="background:var(--green)">✓</div><h2>已注销带单员</h2>
-    <p>带单账户余额 ${f2(S.quitBal||0)} USDT 已划转至跟单账户。<br>历史带单记录可在「我的跟单」查看；${COOLDOWN} 天后可重新申请成为带单员。</p>
+    <p>带单账户余额 ${f2(S.quitBal||0)} USDT 已划转至跟单账户。<br>${COOLDOWN} 天后可重新申请成为带单员。</p>
     <button class="btn pri" onclick="home('discover')">返回跟单</button></div>`;
 }
 
@@ -757,9 +755,6 @@ function openMore(){
       ? `<button class="item" onclick="closeOv();askWithdraw()">撤回注销申请<small>恢复正常带单状态</small></button>`
       : `<button class="item red" onclick="closeOv();startQuit()">注销带单员<small>回到普通跟单用户身份</small></button>`}
     <button class="item cancel" onclick="closeOv()">取消</button></div>`);
-}
-function openHistory(){
-  overlay(`<div class="sheet" style="max-height:80%;overflow:auto"><div class="grab"></div><h3>历史带单记录（只读）</h3><div style="padding:0 18px">${ended().map(projHTML).join('')}</div></div>`);
 }
 
 /* ---------- actions ---------- */
