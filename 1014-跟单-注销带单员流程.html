@@ -208,6 +208,20 @@ table.mx td.id{font-weight:700;white-space:nowrap}
 .shot figcaption .no{display:inline-block;font-size:11px;font-weight:700;background:var(--text);color:#fff;border-radius:5px;padding:1px 6px;margin-right:6px;vertical-align:1px}
 .rtag{display:inline-block;font-size:11px;color:var(--green-dk);background:var(--green-bg);border-radius:4px;padding:0 5px;margin-left:4px}
 .hl{outline:2px solid #FF5A5F;outline-offset:3px;border-radius:12px}
+.stoast{position:absolute;left:50%;top:46%;transform:translateX(-50%);background:rgba(20,22,26,.9);color:#fff;font-size:13px;line-height:1.5;padding:10px 16px;border-radius:10px;z-index:30;width:max-content;max-width:280px;text-align:center}
+.fm{padding:4px 18px 0}
+.fm .f{margin-bottom:16px}
+.fm .f>label{display:block;font-size:14px;font-weight:600;margin-bottom:8px}
+.fm .ipt{height:46px;border-radius:10px;background:var(--card);display:flex;align-items:center;padding:0 14px;font-size:15px;color:var(--text);font-weight:600}
+.fm .ipt.ph{color:var(--sub2);font-weight:400;font-size:14px}
+.fm .ipt em{font-style:normal;margin-left:auto;color:var(--sub);font-weight:400;font-size:13px}
+.fm .ta{height:76px;border-radius:10px;background:var(--card);padding:12px 14px;font-size:14px;color:var(--sub2)}
+.fm .hint2{font-size:12px;color:var(--sub);margin-top:6px;display:flex;justify-content:space-between}
+.fm .range{display:flex;align-items:center;gap:10px}.fm .range .ipt{flex:1}
+.fm .avatar{display:flex;justify-content:space-between;align-items:center}
+.fm .avatar span{width:44px;height:44px;border-radius:22px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--sub)}
+.sw{width:42px;height:24px;border-radius:12px;background:var(--green);position:relative;flex:none}.sw:after{content:"";position:absolute;right:3px;top:3px;width:18px;height:18px;border-radius:9px;background:#fff}
+.wm{display:inline-block;font-size:11px;color:var(--warn);background:var(--warn-bg);border-radius:4px;padding:0 5px;margin-left:6px;font-weight:500;vertical-align:1px}
 @media (max-width:820px){.shot{width:100%;max-width:375px}}
 </style>
 </head>
@@ -216,14 +230,9 @@ table.mx td.id{font-weight:700;white-space:nowrap}
 <script>
 /* 纯静态截图：以下函数只负责拼接静态页面，无交互 */
 const APPNAV = `<div class="appnav"><div><i></i>首页</div><div><i></i>市场</div><div class="on"><i></i>交易</div><div><i></i>理财</div><div><i></i>资产</div></div>`;
-const phone = (inner, o={}) => `<div class="phone"><div class="statusbar"><span>15:30</span><span style="font-size:12px">●●● 5G ▮</span></div><div class="scr">${inner}</div>${o.app?APPNAV:''}${o.ov?`<div class="ov"><div class="mask"></div>${o.ov}</div>`:''}</div>`;
+const phone = (inner, o={}) => `<div class="phone"><div class="statusbar"><span>15:30</span><span style="font-size:12px">●●● 5G ▮</span></div><div class="scr">${inner}</div>${o.app?APPNAV:''}${o.ov?`<div class="ov"><div class="mask"></div>${o.ov}</div>`:''}${o.toast?`<div class="stoast">${o.toast}</div>`:''}</div>`;
 const navBar = t => `<div class="nav"><span class="icon-btn">‹</span><div class="ttl">${t}</div><div style="min-width:32px"></div></div>`;
-const head = (active, o={}) => {
-  const tabs = [['discover','发现'],['mine','我的跟单']];
-  if(o.lead) tabs.push(['lead','带单中心'],['ltrade','带单交易']);
-  return `<div class="mhead"><h1>跟单</h1><div>${active==='lead'?`<span class="icon-btn ${o.hlMore?'hl':''}">•••</span>`:''}</div></div>
-  <div class="tabs">${tabs.map(([k,t])=>`<button class="${k===active?'on':''}">${t}${k==='lead'&&o.quitting?'<span class="dot" style="color:var(--warn);background:var(--warn-bg)">注销中</span>':''}</button>`).join('')}</div>`;
-};
+const head = (active, o={}) => `<div class="mhead" style="padding-bottom:10px;border-bottom:1px solid var(--line)"><h1>跟单</h1><div>${active==='lead'?`<span class="icon-btn ${o.hlMore?'hl':''}">•••</span>`:''}</div></div>`;
 const runCard = (o={}) => `<div class="lcard">
   <div class="t">BTC 趋势策略 <span class="tag run">进行中</span></div><div class="id">3680227388765021</div>
   <div class="two"><div><div class="lbl">项目余额 (USDT)</div><div class="v">${o.bal||'106.85'}</div></div><div><div class="lbl">累计盈亏 (USDT)</div><div class="v up">+19.25</div></div></div>
@@ -277,14 +286,15 @@ const mine = (o={}) => head('mine') + `<div class="body">
     <div class="grid3" style="border-top:1px solid #E3E5E8;padding-top:14px"><div><div class="lbl">投入资金</div><div class="v">0.00</div></div><div><div class="lbl">可用</div><div class="v">${o.bal||'1,030.08'}</div></div><div><div class="lbl">未实现盈亏</div><div class="v">0.00</div></div></div></div>
   <div class="subtabs"><button class="on">跟随中 0</button><button>已结束 0</button></div>
   <div class="empty"><div class="ic"></div><p>还没有跟随任何项目</p><button class="pill pri">去发现</button></div></div>`;
-const applyPage = (following) => navBar('申请成为带单员') + `<div class="body">
-  <div class="sec-t" style="margin-top:4px">申请条件</div>
-  ${chk('ok','已完成身份认证','')}
-  ${following ? chk('no','跟随中项目：1 个','带单员不能跟单，需先手动停止全部跟单后才能申请','<button class="pill pri">去停止</button>') : chk('ok','无跟随中项目','')}
-  ${chk('ok','已过注销冷却期','2026-10-21 15:30 起可重新申请')}
-  ${chk('info','历史战绩','重新成为带单员后，历史项目与战绩继承')}
-  <div class="agree ${following?'':'on'}"><i>${following?'':'✓'}</i><span>我已阅读并同意《带单员协议》</span></div>
-  <button class="btn pri" ${following?'disabled':''}>提交申请</button></div>`;
+const createPage = () => navBar('申请带单') + `<div class="fm">
+  <div class="f avatar"><label style="margin:0">项目头像</label><span>＋</span></div>
+  <div class="f"><label>项目名称</label><div class="ipt ph">输入项目名称，最多 20 个字</div></div>
+  <div class="f"><label>项目简介</label><div class="ta">向跟单用户介绍你的交易风格，最多 200 字</div></div>
+  <div class="f"><label>单个用户跟单金额 (USDT)</label><div class="range"><div class="ipt">1,000</div><span style="color:var(--sub)">—</span><div class="ipt">100,000</div></div><div class="hint2"><span>跟单金额下限不低于 100 USDT</span></div></div>
+  <div class="f"><label>跟单人数上限<span class="wm">⚠️ 与 R8 冲突</span></label><div class="ipt">200<em>人</em></div></div>
+  <div class="f"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:14px;font-weight:600">持仓信息保护</div><div class="lbl" style="margin-top:3px">开启后，用户将无法查看本项目当前的带单信息。</div></div><span class="sw"></span></div></div>
+  <div class="f"><label>初始带单资金</label><div class="ipt">5,000<em>USDT</em></div><div class="hint2"><span>从 资金账户 转入带单账户</span><span>可用 48,260.00</span></div></div>
+  <button class="btn pri" style="margin-top:4px">创建带单项目</button></div>`;
 const result = (pending) => pending
   ? `<div class="result"><div class="big" style="background:#E4A23A">…</div><h2>注销申请已提交</h2><p>本期待结算分润 0.23 USDT 结算完成后（每周结算），注销自动生效，带单账户余额将划转至跟单账户。<br>处理中期间：不能新建项目、不能带单交易；你可以在「带单中心」随时撤回申请。</p><button class="btn pri">返回带单中心</button></div>`
   : `<div class="result"><div class="big" style="background:var(--green)">✓</div><h2>已注销带单员</h2><p>带单账户余额 108.54 USDT 已划转至跟单账户。<br>2026-10-21 15:30 后可重新申请成为带单员。</p><button class="btn pri">返回跟单</button></div>`;
@@ -310,22 +320,24 @@ const SECTIONS = [
  ]},
  {t:'四、有待结算分润 → 注销处理中', d:'处理中仍是带单员身份，但不能新建项目、不能带单交易；本期分润结算后自动生效，期间可撤回。', shots:[
   ['D1','结果 · 注销申请已提交', '', phone(result(true)), 'R4'],
-  ['D2','带单中心 · 处理中', 'Tab 标「注销中」，顶部黄色横幅可撤回，「+ 新建项目」置灰。', phone(leadCenter({quitting:true, running:false, fol:0, split:'未分配余额 108.54 · 项目中 0.00', hlBanner:true}),{app:true}), 'R4'],
+  ['D2','带单中心 · 处理中', '顶部黄色横幅提示注销处理中，可撤回；「+ 新建项目」置灰。', phone(leadCenter({quitting:true, running:false, fol:0, split:'未分配余额 108.54 · 项目中 0.00', hlBanner:true}),{app:true}), 'R4'],
   ['D3','带单交易 · 处理中', '不能带单交易。', phone(head('ltrade',{lead:true,quitting:true})+`<div class="body"><div class="empty"><div class="ic"></div><p>注销处理中，不能带单交易</p></div></div>`,{app:true}), 'R4'],
   ['D4','撤回注销申请', '入口在横幅「撤回」或「···」菜单；撤回后恢复正常带单。', phone(leadCenter({quitting:true, running:false, fol:0, split:'未分配余额 108.54 · 项目中 0.00'}),{app:true, ov:modal('撤回注销申请？','撤回后恢复正常带单，可以新建项目。','撤回','pri')}), 'R4'],
  ]},
  {t:'五、注销生效', d:'无待结算分润时确认即生效；有待结算分润时本期结算完成后自动生效。带单账户余额（含本期分润）划转至跟单账户。', shots:[
   ['E1','结果 · 已注销带单员', '', phone(result(false)), 'R5 · R6'],
-  ['E2','我的跟单 · 余额到账', '跟单账户余额增加 108.54；带单中心、带单交易 Tab 消失。', phone(mine({hlBal:true}),{app:true}), 'R5'],
+  ['E2','我的跟单 · 余额到账', '跟单账户余额增加 108.54；不再显示带单中心、带单交易入口。', phone(mine({hlBal:true}),{app:true}), 'R5'],
   ['E3','发现页 · 可以正常跟单', '注销后「跟单」按钮恢复可用。', phone(discover(`<div class="banner mute"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，2026-10-21 15:30 后可重新申请</p></div></div>`),{app:true}), 'R2'],
  ]},
  {t:'六、冷却期：是否满 7 天', d:'以注销生效时间起算 7 天（示例：2026-10-14 15:30 生效 → 2026-10-21 15:30 后可申请）。', shots:[
-  ['F1','未满 7 天 · 发现页', '「成为带单员」横幅置灰不可点，显示可重新申请的具体时间。', phone(discover(`<div class="banner mute hl"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，2026-10-21 15:30 后可重新申请</p></div></div>`),{app:true}), 'R6'],
-  ['F2','已满 7 天 · 发现页', '横幅恢复为可点击的申请入口。', phone(discover(`<div class="banner hl"><div><b>成为带单员，赚取跟单分润</b><p>分润比例最高 20%</p></div><span class="link chev">申请</span></div>`),{app:true}), 'R6'],
+  ['F1','未满 7 天 · 发现页', '「成为带单员」横幅置灰，显示可重新申请的具体时间；点击弹 toast（见 G2）。', phone(discover(`<div class="banner mute hl"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，2026-10-21 15:30 后可重新申请</p></div></div>`),{app:true}), 'R6'],
+  ['F2','已满 7 天 · 发现页', '横幅恢复为申请入口，点击后按条件判断（见第七组）。', phone(discover(`<div class="banner hl"><div><b>成为带单员，赚取跟单分润</b><p>分润比例最高 20%</p></div><span class="link chev">申请</span></div>`),{app:true}), 'R6'],
  ]},
- {t:'七、满 7 天后重新申请', d:'带单员不能跟单，所以有跟随中项目时要先停止全部跟单；重新成为带单员后历史战绩继承。', shots:[
-  ['G1','申请 · 有跟随中项目', '拦截，「提交申请」置灰，点「去停止」到我的跟单。', phone(applyPage(true)), 'R14'],
-  ['G2','申请 · 无跟随中项目', '可提交；提示历史战绩继承。', phone(applyPage(false)), 'R7'],
+ {t:'七、点击「成为带单员」：不满足条件弹 toast，满足条件直接进入创建页', d:'不再有单独的申请条件页。点击发现页横幅后依次校验：身份认证 → 冷却期 → 跟随中项目；任一不满足直接弹 toast 并停留在发现页；全部满足直接进入「申请带单」创建页，创建首个项目即成为带单员。', shots:[
+  ['G1','未完成身份认证 → toast', '沿用现有 KYC 要求。', phone(discover(`<div class="banner hl"><div><b>成为带单员，赚取跟单分润</b><p>分润比例最高 20%</p></div><span class="link chev">申请</span></div>`),{app:true, toast:'请先完成身份认证后再申请成为带单员'}), ''],
+  ['G2','冷却期未满 7 天 → toast', '横幅置灰但仍可点击，点击给出明确原因。', phone(discover(`<div class="banner mute hl"><div><b style="color:var(--sub)">成为带单员</b><p>你已注销带单员，2026-10-21 15:30 后可重新申请</p></div></div>`),{app:true, toast:'你已注销带单员，2026-10-21 15:30 后可重新申请'}), 'R6'],
+  ['G3','有跟随中项目 → toast', '带单员不能跟单，需先到「我的跟单」停止全部跟单。', phone(discover(`<div class="banner hl"><div><b>成为带单员，赚取跟单分润</b><p>分润比例最高 20%</p></div><span class="link chev">申请</span></div>`),{app:true, toast:'带单员不能跟单，请先停止全部跟单后再申请'}), 'R14'],
+  ['G4','条件全部满足 → 申请带单', '直接进入创建页，填写首个项目信息后点「创建带单项目」。标 ⚠️ 的字段与已确认规则冲突，待确认。重新申请的用户历史战绩继承（R7）。', phone(createPage()), 'R7 · R11'],
  ]},
 ];
 
@@ -335,11 +347,13 @@ const MATRIX = [
  ['无进行中项目 · 有待结算分润','可提交 → 注销处理中 → 本期结算后自动生效（可撤回）','C1 · C4 · D1–D4'],
  ['无进行中项目 · 无待结算分润','确认后立即生效','C2 · C5 · E1'],
  ['未勾选「我已了解」','按钮置灰','C3'],
- ['注销生效','带单账户余额（含本期分润）转入跟单账户；带单 Tab 消失；可正常跟单','E1–E3'],
- ['注销后未满 7 天','「成为带单员」入口置灰，显示可申请时间','F1'],
+ ['注销生效','带单账户余额（含本期分润）转入跟单账户；不再显示带单入口；可正常跟单','E1–E3'],
+ ['注销后未满 7 天','「成为带单员」入口置灰，显示可申请时间','F1 · G2'],
  ['注销后已满 7 天','申请入口恢复','F2'],
- ['重新申请 · 有跟随中项目','拦截，需先停止全部跟单','G1'],
- ['重新申请 · 无跟随中项目','可提交，历史战绩继承','G2'],
+ ['点击「成为带单员」· 未完成身份认证','弹 toast，停留在发现页','G1'],
+ ['点击「成为带单员」· 冷却期未满 7 天','弹 toast，显示可重新申请时间','G2'],
+ ['点击「成为带单员」· 有跟随中项目','弹 toast，需先停止全部跟单','G3'],
+ ['点击「成为带单员」· 条件全部满足','直接进入「申请带单」创建页，历史战绩继承','G4'],
 ];
 
 const $ = id => document.getElementById(id);
