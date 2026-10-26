@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>账单中心 · P0 原型</title>
+<style>
+  :root{
+    --bg:#ffffff;--ink:#1e2329;--ink2:#8a919e;--ink3:#b4b9c2;
+    --line:#f0f1f3;--green:#16bd7a;--green-bg:#e7f8f0;--red:#f0505a;--red-bg:#fdecee;
+    --blue:#0b63f6;--orange:#f0a020;--chip:#f2f3f5;--soft:#f7f8fa;--card:#eef1f3;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Helvetica Neue",Arial,sans-serif;
+    background:#e6e8eb;color:var(--ink);display:flex;justify-content:center;align-items:flex-start;gap:28px;flex-wrap:wrap;padding:40px 20px 80px;min-height:100vh}
+  .phone{width:390px;height:844px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;flex:0 0 auto;
+    box-shadow:0 24px 60px rgba(20,24,31,.22);border:1px solid #e2e4e8}
+  .statusbar{height:52px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 6px;font-size:15px;font-weight:600;position:relative;z-index:1}
+  .statusbar .r{display:flex;gap:6px;align-items:center;font-size:12px}
+
+  .screen{position:absolute;inset:0;background:var(--bg);transition:transform .3s cubic-bezier(.3,.8,.35,1);display:flex;flex-direction:column}
+  #scOverview{transform:translateX(0)}
+  #scList{transform:translateX(100%)}
+  #scDetail{transform:translateX(100%)}
+  .phone.nav-list #scOverview{transform:translateX(-24%)}
+  .phone.nav-list #scList{transform:translateX(0)}
+  .phone.nav-detail #scOverview{transform:translateX(-24%)}
+  .phone.nav-detail #scList{transform:translateX(-24%)}
+  .phone.nav-detail #scDetail{transform:translateX(0)}
+
+  /* ===== OVERVIEW ===== */
+  .toptabs{display:flex;gap:18px;padding:6px 22px 2px;overflow-x:auto;scrollbar-width:none}
+  .toptabs::-webkit-scrollbar{display:none}
+  .toptabs span{font-size:16px;color:var(--ink3);white-space:nowrap;font-weight:500}
+  .toptabs span.on{color:var(--ink);font-weight:800;font-size:22px}
+  .ovbody{flex:1;overflow-y:auto;scrollbar-width:none}.ovbody::-webkit-scrollbar{display:none}
+  .valwrap{padding:18px 22px 6px}
+  .valwrap .lab{font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:6px}
+  .valrow{display:flex;align-items:center;gap:12px;margin-top:6px}
+  .valrow .big{font-size:34px;font-weight:800;letter-spacing:-.5px}
+  .valrow .big small{font-size:15px;color:var(--ink2);font-weight:600;margin-left:4px}
+  .pnl{font-size:13px;color:var(--ink2);margin-top:8px}.pnl b{color:var(--green);font-weight:700}
+  .actions{display:flex;justify-content:space-between;padding:22px 30px 20px}
+  .act{display:flex;flex-direction:column;align-items:center;gap:9px;cursor:pointer}
+  .act .circ{width:56px;height:56px;border-radius:50%;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .act.pri .circ{background:var(--green);color:#fff}
+  .act .cap{font-size:13px;color:var(--ink)}
+  .divider{height:8px;background:var(--soft)}
+  .accbar{display:flex;gap:22px;padding:16px 22px 4px;align-items:baseline}
+  .accbar span{font-size:16px;color:var(--ink);font-weight:600}
+  .accbar small{font-size:11.5px;color:var(--ink3);font-weight:400}
+  .acclist{padding:6px 22px 20px}
+  .accrow{display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .accrow .l{display:flex;align-items:center;gap:12px}
+  .accrow .ico{width:30px;height:30px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:15px}
+  .accrow .nm{font-size:16px;font-weight:600}
+  .accrow .r{display:flex;align-items:center;gap:8px}
+  .accrow .amt{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .accrow .go{color:var(--ink3);font-size:15px}
+  .tabbar{display:flex;justify-content:space-around;align-items:center;padding:8px 10px 22px;border-top:1px solid var(--line);background:#fff}
+  .tabbar .t{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--ink3)}
+  .tabbar .t .g{font-size:18px}.tabbar .t.on{color:var(--green)}
+
+  /* ===== LIST ===== */
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:6px 18px 4px;height:44px;position:relative;z-index:12;background:#fff}
+  .nav .ic{font-size:24px;color:var(--ink);width:28px;cursor:pointer}
+  .nav .title{display:flex;flex-direction:column;align-items:center;line-height:1.15;cursor:pointer}
+  .nav .title b{font-size:17px;font-weight:700}
+  .nav .title b .car{font-size:11px;color:var(--ink2);margin-left:3px;display:inline-block;transition:.2s}
+  .phone.picker-open .nav .title b .car{transform:rotate(180deg)}
+  .nav .title span{font-size:11px;color:var(--ink2);margin-top:1px}
+  .tabs{display:flex;gap:20px;padding:4px 18px 0;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs .tb{font-size:15px;color:var(--ink2);padding:8px 0 10px;white-space:nowrap;cursor:pointer;position:relative}
+  .tabs .tb.on{color:var(--ink);font-weight:700}
+  .tabs .tb.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:2px;background:var(--ink)}
+  .chips{display:flex;align-items:center;gap:8px;padding:10px 18px;overflow-x:auto;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{font-size:13px;color:var(--ink);background:var(--chip);border-radius:8px;padding:6px 10px;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:4px}
+  .chip .car{font-size:9px;color:var(--ink3)}
+  .chip.act{color:var(--blue);background:#e8f0fe;font-weight:600}
+  .chips .sp{flex:1}
+  .chips .op{font-size:12.5px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 10px;white-space:nowrap;cursor:pointer}
+  .chips .op.dis{color:var(--ink3);cursor:default}
+  .hint{margin:0 18px 4px;background:var(--soft);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--ink2);display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+  .hint b{color:var(--ink);font-weight:600}
+  .list{overflow-y:auto;flex:1;padding:0 18px;scrollbar-width:none}.list::-webkit-scrollbar{display:none}
+
+  /* 流水行 */
+  .row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 0;border-bottom:1px solid var(--line)}
+  .row.tap{cursor:pointer}
+  .row .l{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .row .type{font-size:15.5px;font-weight:600}
+  .row .sub{font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .time{font-size:12px;color:var(--ink3)}
+  .row .r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:0 0 auto;white-space:nowrap}
+  .row .amt{font-size:15.5px;font-weight:700;font-variant-numeric:tabular-nums}
+  .in{color:var(--green)!important}.out{color:var(--red)!important}.neu{color:var(--ink)}
+  .row .meta{font-size:12px;color:var(--ink2)}
+
+  /* 统一卡片骨架 */
+  .card{padding:15px 0 14px;border-bottom:1px solid var(--line)}
+  .ch{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .ct{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+  .ct b{font-size:15.5px;font-weight:700;margin-right:2px}
+  .tag{font-size:11px;padding:2px 6px;border-radius:4px;background:var(--chip);color:var(--ink);font-weight:500}
+  .tag.buy{background:var(--green-bg);color:var(--green)}
+  .tag.sell{background:var(--red-bg);color:var(--red)}
+  .tag.promo{background:#fff;color:var(--green);border:1px solid #bfeedb}
+  .cr{font-size:12.5px;color:var(--ink2);white-space:nowrap}
+  .cr.ing{color:var(--orange)}
+  .ctime{font-size:12px;color:var(--ink3);margin-top:5px}
+  .kv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 8px;margin-top:11px}
+  .kv>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .kv>div:nth-child(3n){align-items:flex-end;text-align:right}
+  .kv>div:nth-child(3n+2){align-items:flex-start}
+  .kv .k{font-size:11.5px;color:var(--ink2)}
+  .kv .v{font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums;word-break:break-all}
+  .kv .v .cp{color:var(--ink3);margin-left:3px;cursor:pointer}
+  .kv .v.tm{font-size:12px;font-weight:500;white-space:nowrap;word-break:normal}
+  .cbtn{margin-top:11px;display:flex;justify-content:flex-end}
+  .cbtn span{font-size:12.5px;background:var(--chip);border-radius:14px;padding:5px 12px;cursor:pointer;font-weight:500}
+
+  /* 五态 */
+  .sk{padding:16px 0;border-bottom:1px solid var(--line)}
+  .sk i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,#f0f1f3 25%,#e6e8eb 50%,#f0f1f3 75%);background-size:200% 100%;animation:sh 1.2s infinite}
+  .sk i+i{margin-top:9px}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .state{text-align:center;padding:80px 20px 0;color:var(--ink2);font-size:14px;line-height:1.7}
+  .state .ico{font-size:44px;opacity:.55;margin-bottom:10px}
+  .state .sm{font-size:12px;color:var(--ink3)}
+  .state .btn{display:inline-block;margin-top:16px;padding:9px 26px;border-radius:10px;background:var(--ink);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+  .state .btn.ghost{background:var(--chip);color:var(--ink)}
+  .end{text-align:center;color:var(--ink3);font-size:12px;padding:18px 0 30px;line-height:1.7}
+
+  /* 双栏选择器 */
+  .picker{position:absolute;left:0;right:0;top:96px;bottom:0;background:#fff;display:flex;z-index:11;transform:translateY(-8px);opacity:0;pointer-events:none;transition:.2s;border-top:1px solid var(--line)}
+  .phone.picker-open .picker{transform:translateY(0);opacity:1;pointer-events:auto}
+  .pk-left{width:130px;background:var(--soft);overflow-y:auto;scrollbar-width:none}.pk-left::-webkit-scrollbar{display:none}
+  .pk-left .g{padding:20px 22px;font-size:16px;color:var(--ink2);cursor:pointer;font-weight:500}
+  .pk-left .g.on{background:#fff;color:var(--ink);font-weight:700}
+  .pk-right{flex:1;overflow-y:auto;padding:4px 0;scrollbar-width:none}.pk-right::-webkit-scrollbar{display:none}
+  .pk-right .s{display:flex;align-items:center;justify-content:space-between;padding:17px 22px;font-size:16px;color:var(--ink2);cursor:pointer}
+  .pk-right .s.on{color:var(--ink);font-weight:600}
+  .pk-right .s .ck{color:var(--ink);font-size:16px;opacity:0}.pk-right .s.on .ck{opacity:1}
+  .pk-right .s .p1{font-size:10.5px;color:var(--ink3);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-left:6px}
+
+  /* bottom sheet */
+  .mask{position:absolute;inset:0;background:rgba(20,24,31,.4);opacity:0;pointer-events:none;transition:.2s;z-index:20}
+  .mask.show{opacity:1;pointer-events:auto}
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;transform:translateY(100%);transition:.28s cubic-bezier(.3,.8,.4,1);z-index:21;padding:8px 0 30px}
+  .sheet.show{transform:translateY(0)}
+  .grab{width:40px;height:5px;border-radius:3px;background:#e2e4e8;margin:8px auto 4px}
+  .sheet h4{margin:12px 22px 6px;font-size:19px;font-weight:700}
+  .sopt{padding:15px 22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .sopt:first-of-type{border-top:none}
+  .sopt .t{font-size:16px;font-weight:600;margin-bottom:4px}
+  .sopt .d{font-size:12.5px;color:var(--ink2);max-width:300px;line-height:1.5}
+  .sopt .go{color:var(--ink3);font-size:18px}.sopt:active{background:var(--soft)}
+  .fsheet{max-height:82%;overflow-y:auto;scrollbar-width:none}.fsheet::-webkit-scrollbar{display:none}
+  .fs-h{font-size:18px;font-weight:700;margin:10px 22px 6px}
+  .fs-list{padding:2px 0 6px}
+  .fs-item{display:flex;align-items:center;justify-content:space-between;padding:15px 22px;font-size:15.5px;color:var(--ink2);cursor:pointer}
+  .fs-item.on{color:var(--ink);font-weight:600}
+  .fs-item .ck{color:var(--ink);opacity:0}.fs-item.on .ck{opacity:1}
+  .fs-item .cn{display:flex;align-items:center;gap:10px}
+  .ci2{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700}
+  .fs-search{margin:4px 22px 8px;background:var(--soft);border-radius:12px;display:flex;align-items:center;gap:8px;padding:10px 14px}
+  .fs-search input{border:none;background:none;outline:none;font-size:14px;flex:1;color:var(--ink)}
+  .date-tip{font-size:12px;color:var(--ink3);padding:0 22px 10px}
+  .date-quick{display:flex;gap:10px;padding:2px 22px 12px}
+  .date-quick .dq{flex:1;text-align:center;padding:11px 0;border-radius:10px;background:var(--soft);font-size:13.5px;color:var(--ink);cursor:pointer;border:1px solid transparent}
+  .date-quick .dq.on{border-color:var(--ink);font-weight:600;background:#fff}
+  .date-range{display:flex;align-items:center;gap:10px;padding:0 22px 4px}
+  .date-range input{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px;font-size:13px;background:var(--soft);color:var(--ink);font-family:inherit}
+  .date-err{font-size:12px;color:var(--red);padding:4px 22px 0;min-height:18px}
+  .sheet-btns{display:flex;gap:12px;padding:12px 22px 4px}
+  .sheet-btns .b{flex:1;text-align:center;padding:13px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer}
+  .sheet-btns .reset{background:var(--soft);color:var(--ink)}
+  .sheet-btns .apply{background:var(--ink);color:#fff}
+  .sheet-btns .apply.dis{opacity:.35;pointer-events:none}
+
+  /* ===== DETAIL ===== */
+  .dnav{display:flex;align-items:center;padding:6px 14px 0;height:40px}
+  .dnav .ic{font-size:26px;cursor:pointer;color:var(--ink)}
+  .dbody{flex:1;overflow-y:auto;padding:6px 20px 30px;scrollbar-width:none}.dbody::-webkit-scrollbar{display:none}
+  .dtitle{font-size:24px;font-weight:800;margin:6px 2px 18px}
+  .damt{background:var(--soft);border-radius:14px;padding:22px 16px;text-align:center;margin-bottom:14px}
+  .damt .dl{font-size:13px;color:var(--ink2)}
+  .damt .dbig{font-size:28px;font-weight:800;margin:8px 0 8px;font-variant-numeric:tabular-nums}
+  .damt .dok{font-size:14px;color:var(--green);font-weight:600}
+  .drow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .drow .k{font-size:14.5px;color:var(--ink2);flex:0 0 auto}
+  .drow .v{font-size:14.5px;font-weight:600;text-align:right;word-break:break-all}
+  .drow .v .cp{color:var(--ink3);margin-left:6px;cursor:pointer}
+  .dtabs{display:flex;gap:10px;margin:4px 0 6px}
+  .dtabs span{font-size:14px;padding:6px 12px;border-radius:8px;background:var(--chip);color:var(--ink2);cursor:pointer}
+  .dtabs span.on{background:var(--ink);color:#fff;font-weight:600}
+  .dgrp{border-bottom:8px solid var(--soft);padding-bottom:2px}
+  .dgrp .drow:last-child{border-bottom:none}
+  .dbtn{margin-top:22px;background:var(--soft);border-radius:14px;text-align:center;padding:15px;font-size:15px;font-weight:600;cursor:pointer}
+
+  .toast{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);background:rgba(20,24,31,.88);color:#fff;font-size:13.5px;padding:11px 18px;border-radius:10px;z-index:40;opacity:0;pointer-events:none;transition:.2s;max-width:300px;text-align:center;line-height:1.5}
+  .toast.show{opacity:1}
+
+  /* 原型控制台(不属于产品界面) */
+  .panel{width:300px;background:#fff;border-radius:16px;padding:18px 18px 14px;font-size:13px;color:var(--ink);box-shadow:0 8px 30px rgba(20,24,31,.08);line-height:1.6}
+  .panel h3{margin:0 0 4px;font-size:15px}
+  .panel .cap{color:var(--ink2);font-size:12px;margin-bottom:12px}
+  .panel .lbl{font-weight:600;margin:12px 0 6px}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .seg span{text-align:center;padding:7px 0;border-radius:8px;background:var(--chip);cursor:pointer;font-size:12.5px}
+  .seg span.on{background:var(--ink);color:#fff;font-weight:600}
+  .panel ul{margin:4px 0 0;padding-left:16px;color:var(--ink2);font-size:12px}
+  .panel li{margin:3px 0}
+  .warn{color:#b26a00}
+  @media (max-width:760px){.panel{width:390px;max-width:100%}}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+
+  <!-- SCREEN 1: 资产总览 -->
+  <div class="screen" id="scOverview">
+    <div class="statusbar"><span>12:57</span><span class="r">••• &nbsp;📶&nbsp;🔋</span></div>
+    <div class="toptabs"><span class="on">总览</span><span>资金</span><span>现货</span><span>合约</span><span>理财</span></div>
+    <div class="ovbody">
+      <div class="valwrap">
+        <div class="lab">总资产估值(USD) <span>👁</span></div>
+        <div class="valrow"><div class="big">26,886.85</div></div>
+        <div class="pnl">今日盈亏 <b>+$34.12</b></div>
+      </div>
+      <div class="actions">
+        <div class="act pri"><div class="circ">＋</div><div class="cap">充值</div></div>
+        <div class="act"><div class="circ">↑</div><div class="cap">提现</div></div>
+        <div class="act"><div class="circ">⇄</div><div class="cap">划转</div></div>
+        <div class="act" id="btnHistory"><div class="circ">🕘</div><div class="cap">账单</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="accbar"><span>账户</span><small>点击账户直达对应账单</small></div>
+      <div class="acclist" id="acclist">
+        <div class="accrow" data-g="资产" data-s="all"><div class="l"><div class="ico">◈</div><div class="nm">资金账户</div></div><div class="r"><div class="amt">12,795.28 USDT</div><div class="go">›</div></div></div>
+        <div class="accrow" data-g="交易" data-s="spot"><div class="l"><div class="ico">₿</div><div class="nm">现货</div></div><div class="r"><div class="amt">1,588.93 USDT</div><div class="go">›</div></div></div>
+        <div class="accrow" data-g="交易" data-s="fut"><div class="l"><div class="ico">📄</div><div class="nm">合约</div></div><div class="r"><div class="amt">3,371.70 USDT</div><div class="go">›</div></div></div>
+        <div class="accrow" data-g="交易" data-s="cfd"><div class="l"><div class="ico">📊</div><div class="nm">CFD</div></div><div class="r"><div class="amt">9,123.40 USDx</div><div class="go">›</div></div></div>
+        <div class="accrow" data-g="跟单"><div class="l"><div class="ico">👥</div><div class="nm">跟单</div></div><div class="r"><div class="amt">0.00 USDT</div><div class="go">›</div></div></div>
+        <div class="accrow" data-g="理财" data-s="fin_all"><div class="l"><div class="ico">📈</div><div class="nm">理财</div></div><div class="r"><div class="amt">1,020.86 USDT</div><div class="go">›</div></div></div>
+        <div class="accrow" data-g="理财" data-s="lp"><div class="l"><div class="ico">🚀</div><div class="nm">Launchpad</div></div><div class="r"><div class="amt">186.00 USDT</div><div class="go">›</div></div></div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="t"><div class="g">⌂</div>首页</div><div class="t"><div class="g">▤</div>市场</div>
+      <div class="t"><div class="g">⇄</div>交易</div><div class="t"><div class="g">◎</div>理财</div>
+      <div class="t on"><div class="g">▮</div>资产</div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: 账单列表 -->
+  <div class="screen" id="scList">
+    <div class="statusbar"><span>12:57</span><span class="r">••• &nbsp;📶&nbsp;🔋</span></div>
+    <div class="nav">
+      <span class="ic" id="btnBack">‹</span>
+      <div class="title" id="navTitle"><b id="navCat">资产<span class="car">▾</span></b><span id="navSub">全部</span></div>
+      <span class="ic" aria-hidden="true"></span>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="chips" id="chips"></div>
+    <div id="hintBox"></div>
+    <div class="list" id="list"></div>
+    <div class="picker" id="picker"><div class="pk-left" id="pkLeft"></div><div class="pk-right" id="pkRight"></div></div>
+  </div>
+
+  <!-- SCREEN 3: 详情 -->
+  <div class="screen" id="scDetail">
+    <div class="statusbar"><span>12:57</span><span class="r">••• &nbsp;📶&nbsp;🔋</span></div>
+    <div class="dnav"><span class="ic" id="dBack">‹</span></div>
+    <div class="dbody" id="dBody"></div>
+  </div>
+
+  <!-- 选择账单 -->
+  <div class="mask" id="mask"></div>
+  <div class="sheet" id="sheet">
+    <div class="grab"></div>
+    <h4>选择账单</h4>
+    <div class="sopt" data-go="资产"><div><div class="t">资产</div><div class="d">全部、充值、提现、划转、站内转账、OTC、返佣&amp;奖励…</div></div><div class="go">›</div></div>
+    <div class="sopt" data-go="交易"><div><div class="t">交易</div><div class="d">现货、合约、CFD</div></div><div class="go">›</div></div>
+    <div class="sopt" data-go="理财"><div><div class="t">理财</div><div class="d">折扣买币、套利工具、结构性套利、跟盈宝、混动引擎、Launchpad…</div></div><div class="go">›</div></div>
+  </div>
+
+  <!-- 统一筛选底部弹窗 -->
+  <div class="mask" id="fMask"></div>
+  <div class="sheet fsheet" id="fSheet"><div class="grab"></div><div id="fBody"></div></div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- 原型控制台 -->
+<div class="panel">
+  <h3>原型控制台</h3>
+  <div class="cap">不属于产品界面，仅用于演示列表各状态</div>
+  <div class="lbl">模拟列表状态</div>
+  <div class="seg" id="seg">
+    <span class="on" data-m="normal">正常</span><span data-m="loading">加载中</span>
+    <span data-m="empty">无数据</span><span data-m="error">请求失败</span>
+  </div>
+  <div class="lbl">本轮范围（P0）</div>
+  <ul>
+    <li>入口：资产页「账单」+ 账户行直达</li>
+    <li>资产组 9 个子类、交易组 现货 / 合约 / CFD</li>
+    <li>统一筛选 / 日期（近 180 天）/ 五态 / 卡片骨架</li>
+    <li>理财组为 P1，选择器内已列出</li>
+  </ul>
+  <div class="lbl warn">⚠️ 待确认</div>
+  <ul>
+    <li>跟单账单归属（Q-09）</li>
+    <li>CFD 计价单位 USDx 是否独立资产（Q-18）</li>
+    <li>精度去尾 0 规则（Q-19）</li>
+    <li>180 天是否运营后台可配（Q-20）</li>
+  </ul>
+</div>
+
+<script>
+  var NOW=new Date('2026-10-26T23:59:59');
+  var MAXDAYS=180;
+  /* 精度：按币种配置(示意值) · 去除末尾 0，最少保留 2 位 —— ⚠️ Q-19 */
+  var PREC={USDT:8,BTC:6,ETH:4,PXSTOCKS:4,XSTOCKS:4,'100XT':4,TSLA:2,USDx:2,CNY:2};
+  var COINC={USDT:['#26a17b','₮'],BTC:['#f7931a','฿'],ETH:['#627eea','◆'],PXSTOCKS:['#1b1f24','XS'],XSTOCKS:['#1b1f24','XS'],'100XT':['#b6e21c','X']};
+  function fmt(n,unit,sign){
+    var p=PREC[unit]!=null?PREC[unit]:4;
+    var s=Math.abs(n).toFixed(p);
+    if(s.indexOf('.')>=0){
+      s=s.replace(/0+$/,'');var a=s.split('.');var d=a[1]||'';
+      if(d.length<2)d=(d+'00').slice(0,2);
+      s=a[0]+'.'+d;
+    }
+    var a2=s.split('.');a2[0]=a2[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');s=a2.join('.');
+    if(n<0)s='-'+s;else if(sign&&n>0)s='+'+s;
+    return s;
+  }
+  function pnlCls(n){return n>0?'in':n<0?'out':'';}
+  function O(arr){return [['all','全部']].concat(arr.map(function(x){return Array.isArray(x)?x:[x,x];}));}
+
+  /* ================= 分组 ================= */
+  var GROUPS={
+    '资产':[['all','全部'],['deposit','充值'],['withdraw','提现'],['transfer','划转'],['p2p','站内转账'],['otc','OTC'],['reward','返佣&奖励'],['swap','兑换'],['other','其他']],
+    '交易':[['spot','现货'],['fut','合约'],['cfd','CFD']],
+    '理财':[['fin_all','全部'],['disc','折扣买币'],['arb','套利工具'],['struct','结构性套利'],['gyb','跟盈宝'],['gybpro','跟盈宝 Pro'],['hybrid','混动引擎'],['lp','Launchpad']]
+  };
+  function subLabel(g,s){var r=GROUPS[g].filter(function(x){return x[0]===s;})[0];return r?r[1]:'';}
+
+  /* ================= MOCK：资金账户流水 ================= */
+  var AF=[
+    {cat:'otc',t3:'买入',desc:'OTC 买币',time:'2026-10-25 20:06:42',amt:50,unit:'USDT',st:'已完成'},
+    {cat:'withdraw',t3:'链上提现',desc:'链上提现 · BSC',time:'2026-10-15 10:55:36',amt:-3000,unit:'USDT',st:'已完成',det:{net:'BSC',addr:'0xbabc417d41e6dd9c99d59be6eb87418996f3f1cb',wAmt:2999.9,fee:0.1,txid:'0x943954513985b76806da095df39208e5830db770a4f8d6e80d7900d40016712a'}},
+    {cat:'transfer',t3:'跟单',desc:'资金 → 跟单',time:'2026-10-12 18:19:20',amt:100000,unit:'USDT',st:'已完成',from:'资金账户',to:'跟单账户'},
+    {cat:'transfer',t3:'CFD',desc:'资金 → CFD',time:'2026-10-08 13:46:30',amt:10000,unit:'USDT',st:'已完成',from:'资金账户',to:'CFD 账户'},
+    {cat:'p2p',t3:'收款',desc:'收款 · UID 2847***91',time:'2026-09-30 15:39:38',amt:10,unit:'USDT',st:'已完成'},
+    {cat:'p2p',t3:'付款',desc:'付款 · UID 1093***27',time:'2026-09-30 14:21:11',amt:-1,unit:'USDT',st:'已完成'},
+    {cat:'reward',t3:'合伙人返佣',desc:'合伙人返佣',time:'2026-09-28 08:00:00',amt:12.3456,unit:'USDT',st:'已到账'},
+    {cat:'p2p',t3:'付款',desc:'付款 · UID 5521***08',time:'2026-09-23 15:14:45',amt:-100,unit:'USDT',st:'已完成'},
+    {cat:'otc',t3:'买入',desc:'OTC 买币',time:'2026-09-20 16:56:55',amt:29.62,unit:'USDT',st:'已完成'},
+    {cat:'transfer',t3:'理财',desc:'资金 → 理财',time:'2026-09-16 13:58:07',amt:1000,unit:'PXSTOCKS',st:'已完成',from:'资金账户',to:'理财账户'},
+    {cat:'swap',t3:'代币兑换',desc:'代币兑换 · 支出',time:'2026-09-10 11:20:00',amt:-100,unit:'XSTOCKS',st:'已完成'},
+    {cat:'swap',t3:'代币兑换',desc:'代币兑换 · 到账',time:'2026-09-10 11:20:00',amt:98.5,unit:'USDT',st:'已完成'},
+    {cat:'other',t3:'信号群门票购买',desc:'信号群门票购买',time:'2026-09-05 19:02:11',amt:-20,unit:'USDT',st:'已完成'},
+    {cat:'reward',t3:'普通返佣',desc:'普通返佣',time:'2026-08-20 08:00:00',amt:3.21,unit:'USDT',st:'已到账'},
+    {cat:'otc',t3:'卖出',desc:'OTC 卖币',time:'2026-08-12 20:15:22',amt:-29.02,unit:'USDT',st:'已完成'},
+    {cat:'deposit',t3:'链上充值',desc:'链上充值 · BSC',time:'2026-08-06 01:27:47',amt:3000,unit:'USDT',st:'已完成',det:{net:'BSC',addr:'0x515b72ed8a97f42c568d6a143232775018f133c8',txid:'0x3fec1d3520e999de72a91d4ea4bddc4d2718d9cb58836f20ab0d6bc46aaf4c7a'}},
+    {cat:'transfer',t3:'Launchpad',desc:'Launchpad → 资金',time:'2026-07-24 10:49:55',amt:100,unit:'USDT',st:'已完成',from:'Launchpad 账户',to:'资金账户'},
+    {cat:'transfer',t3:'现货',desc:'资金 → 现货',time:'2026-07-01 14:51:31',amt:100000,unit:'USDT',st:'已完成',from:'资金账户',to:'现货账户'},
+    {cat:'transfer',t3:'现货',desc:'现货 → 资金',time:'2026-07-01 14:51:19',amt:110224.76383854,unit:'USDT',st:'已完成',from:'现货账户',to:'资金账户'},
+    {cat:'reward',t3:'活动奖励',desc:'活动奖励 · 交易赛',time:'2026-06-18 12:00:00',amt:20,unit:'100XT',st:'已到账'},
+    {cat:'other',t3:'系统转入',desc:'系统转入',time:'2026-06-02 00:01:32',amt:28.565,unit:'USDT',st:'已到账'},
+    {cat:'deposit',t3:'链上充值',desc:'链上充值 · TRC20',time:'2026-05-16 13:57:21',amt:1603.62,unit:'USDT',st:'已完成',det:{net:'TRC20',addr:'TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE',txid:'7ab2c9e01d3520e999de72a91d4ea4bddc4d2718d9cb58836f20ab0d6bcaf419'}},
+    {cat:'withdraw',t3:'链上提现',desc:'链上提现 · BSC',time:'2026-05-06 09:35:02',amt:-3200,unit:'USDT',st:'已完成',det:{net:'BSC',addr:'0xbabc417d41e6dd9c99d59be6eb87418996f3f1cb',wAmt:3199.9,fee:0.1,txid:'0x2c1f9a7e3b0d4e88a1c6b5d2e0f7a9c3b4d5e6f708192a3b4c5d6e7f8091a2b3'}}
+  ];
+  var OTC=[
+    {side:'买入',status:'进行中',time:'2026-10-25 20:01:10',price:6.76,qty:50,fee:0,net:50,fiat:338,no:'BI5671180026431'},
+    {side:'买入',status:'已完成',time:'2026-09-20 16:56:55',price:6.75,qty:29.62,fee:0,net:29.62,fiat:200,no:'BI5668210015613'},
+    {side:'买入',status:'已取消',time:'2026-09-07 21:41:19',price:6.74,qty:29.67,fee:0,net:29.67,fiat:200,no:'BI5668021021047'},
+    {side:'卖出',status:'已完成',time:'2026-08-12 20:15:22',price:6.89,qty:29.02,fee:0.87,net:28.15,fiat:193.95,no:'BI5661100100142'},
+    {side:'卖出',status:'申诉中',time:'2026-08-12 19:42:45',price:6.89,qty:43.41,fee:1.3,net:42.11,fiat:290.14,no:'BI5661100074208'}
+  ];
+
+  /* ================= MOCK：现货 ================= */
+  var SPOT_OPEN=[
+    {pair:'BTC/USDT',otype:'限价',side:'买入',qty:0.002,filled:0,price:60000,time:'2026-10-25 21:10:05',st:'未成交'},
+    {pair:'ETH/USDT',otype:'限价',side:'卖出',qty:0.5,filled:0.12,price:2650,time:'2026-10-24 09:33:41',st:'部分成交'}
+  ];
+  var SPOT_HIST=[
+    {pair:'BTC/USDT',otype:'市价',side:'买入',qty:0.001602,filled:0.001602,avg:62415.891,price:null,time:'2026-07-09 12:05:36',st:'已成交'},
+    {pair:'BTC/USDT',otype:'市价',side:'买入',qty:0.009928,filled:0.009928,avg:62514.443,price:null,time:'2026-07-08 21:41:32',st:'已成交'},
+    {pair:'XSTOCKS/USDT',otype:'限价',side:'买入',qty:200,filled:120,avg:1.0234,price:1.025,time:'2026-07-03 15:20:11',st:'已取消'},
+    {pair:'PAXG/USDT',otype:'限价',side:'卖出',qty:0.5,filled:0,avg:null,price:3350,time:'2026-06-30 10:12:08',st:'已取消'},
+    {pair:'BTC/USDT',otype:'市价',side:'买入',qty:0.0016,filled:0.0016,avg:62465.965,price:null,time:'2026-07-08 19:13:39',st:'已成交'}
+  ];
+  var SPOT_FILL=[
+    {pair:'BTC/USDT',side:'买入',time:'2026-07-09 12:05:36',qty:0.001297,price:62428.464,fee:0.16193943,total:80.96,role:'吃单',oid:'616402394'},
+    {pair:'BTC/USDT',side:'买入',time:'2026-07-09 12:05:36',qty:0.000305,price:62362.43,fee:0.03804108,total:19.02,role:'吃单',oid:'616402394'},
+    {pair:'BTC/USDT',side:'买入',time:'2026-07-08 21:41:32',qty:0.002604,price:62610.425,fee:0.32607509,total:163.03,role:'吃单',oid:'616225871'},
+    {pair:'BTC/USDT',side:'买入',time:'2026-07-08 21:41:32',qty:0.004249,price:62513.848,fee:0.53124268,total:265.62,role:'挂单',oid:'616225871'}
+  ];
+  var SPOT_FLOW=[
+    {type:'交易',desc:'BTC/USDT 买入',time:'2026-07-09 12:05:36',amt:0.001297,unit:'BTC'},
+    {type:'交易',desc:'BTC/USDT 买入',time:'2026-07-09 12:05:36',amt:-80.96,unit:'USDT'},
+    {type:'手续费',desc:'BTC/USDT 买入',time:'2026-07-09 12:05:36',amt:-0.16193943,unit:'USDT'},
+    {type:'交易',desc:'BTC/USDT 买入',time:'2026-07-08 21:41:32',amt:0.002604,unit:'BTC'},
+    {type:'手续费',desc:'BTC/USDT 买入',time:'2026-07-08 21:41:32',amt:-0.32607509,unit:'USDT'},
+    {type:'转入',desc:'资金 → 现货',time:'2026-07-01 14:51:31',amt:100000,unit:'USDT'},
+    {type:'转出',desc:'现货 → 资金',time:'2026-07-01 14:51:19',amt:-110224.76383854,unit:'USDT'}
+  ];
+
+  /* ================= MOCK：合约 ================= */
+  var FUT_OPEN=[
+    {sym:'TSLAUSDT',side:'开多',otype:'限价',mode:'逐仓',lev:'10x',price:360,qty:2,filled:0,unit:'TSLA',time:'2026-10-25 22:10:31',st:'未成交'}
+  ];
+  var FUT_HIST=[
+    {sym:'ETHUSDT',side:'开空',otype:'市价',mode:'逐仓',lev:'10x',price:null,qty:0.1,filled:0.1,unit:'ETH',time:'2026-10-15 11:34:43',st:'已成交'},
+    {sym:'TSLAUSDT',side:'开空',otype:'市价',mode:'逐仓',lev:'10x',price:null,qty:2.67,filled:2.67,unit:'TSLA',time:'2026-09-26 14:47:44',st:'已成交'},
+    {sym:'TSLAUSDT',side:'平多',otype:'限价',mode:'逐仓',lev:'10x',price:372,qty:13.21,filled:13.21,unit:'TSLA',time:'2026-09-26 14:47:32',st:'已成交'},
+    {sym:'TSLAUSDT',side:'平多',otype:'限价',mode:'逐仓',lev:'10x',price:372.34,qty:13.21,filled:0,unit:'TSLA',time:'2026-09-26 14:32:45',st:'已取消'},
+    {sym:'TSLAUSDT',side:'开多',otype:'市价',mode:'逐仓',lev:'10x',price:null,qty:13.21,filled:13.21,unit:'TSLA',time:'2026-09-24 18:21:43',st:'已成交'}
+  ];
+  var FUT_POS=[
+    {ptype:'普通合约',sym:'TSLAUSDT',dir:'空',mode:'逐仓',lev:'10x',open:372.00,close:390.64,qty:2.67,unit:'TSLA',pnl:-49.77,roe:-50.1,ctype:'强平',otime:'2026-09-26 14:47:44',time:'2026-10-22 04:05:22'},
+    {ptype:'普通合约',sym:'TSLAUSDT',dir:'多',mode:'逐仓',lev:'10x',open:376.16,close:372.00,qty:13.21,unit:'TSLA',pnl:-55.01,roe:-11.07,ctype:'交易',otime:'2026-09-24 18:21:43',time:'2026-09-26 14:47:32'},
+    {ptype:'普通合约',sym:'TSLAUSDT',dir:'多',mode:'全仓',lev:'10x',open:380.73,close:375.69,qty:1.2,unit:'TSLA',pnl:-6.04,roe:-13.23,ctype:'交易',otime:'2026-09-23 16:33:17',time:'2026-09-24 18:14:36'},
+    {ptype:'体验券',sym:'TSLAUSDT',dir:'多',mode:'逐仓',lev:'100x',open:375.78,close:376.10,qty:25.31,unit:'TSLA',pnl:7.99,roe:8.4,ctype:'交易',otime:'2026-09-24 18:14:41',time:'2026-09-24 18:21:01'},
+    {ptype:'体验券',sym:'TSLAUSDT',dir:'多',mode:'逐仓',lev:'100x',open:321.66,close:357.68,qty:29.57,unit:'TSLA',pnl:1065.11,roe:1119.82,ctype:'交易',otime:'2026-08-06 10:09:41',time:'2026-09-16 14:04:12'},
+    {ptype:'护财符',sym:'ETHUSDT',dir:'空',mode:'逐仓',lev:'200x',open:1755.19,close:1752.05,qty:1.034,unit:'ETH',pnl:3.72,roe:41.03,ctype:'护财符平仓',otime:'2026-07-09 16:58:02',time:'2026-07-09 17:20:31',margin:9.07,
+      shield:{name:'护财符',tabs:[['护财符启用',[[['启用次数','1'],['仓位保证金','9.07 USDT'],['锁定价格','1,751.58 USDT'],['锁定盈利','+3.72 USDT','in'],['启用时间','2026-07-09 17:20:08']]]],
+        ['护财符触发',[[['平仓价格','1,752.05 USDT'],['平仓收益','+3.24 USDT','in'],['护盾费','0.1864 USDT'],['使用费','0.1815 USDT'],['平仓方式','护财符平仓'],['触发时间','2026-07-09 17:20:31']]]]]}},
+    {ptype:'护财符',sym:'BTCUSDT',dir:'空',mode:'逐仓',lev:'200x',open:77368.2,close:73680.3,qty:0.1439,unit:'BTC',pnl:505.26,roe:907.67,ctype:'护财符平仓',otime:'2026-05-28 09:41:10',time:'2026-05-29 18:16:24',margin:55.67,
+      shield:{name:'护财符',tabs:[['护财符启用',[[['启用次数','1'],['仓位保证金','55.67 USDT'],['锁定价格','73,702.10 USDT'],['锁定盈利','+508.12 USDT','in'],['启用时间','2026-05-29 17:55:40']]]],
+        ['护财符触发',[[['平仓价格','73,680.30 USDT'],['平仓收益','+505.26 USDT','in'],['护盾费','2.4120 USDT'],['使用费','0.4480 USDT'],['平仓方式','护财符平仓'],['触发时间','2026-05-29 18:16:24']]]]]}},
+    {ptype:'防爆盾',sym:'ETHUSDT',dir:'多',mode:'逐仓',lev:'200x',open:1751.87,close:1750.67,qty:1.036,unit:'ETH',pnl:-6.05,roe:-66.72,ctype:'交易',otime:'2026-07-09 14:50:20',time:'2026-07-09 16:01:06',margin:9.07,
+      shield:{name:'防爆盾',tabs:[['防爆盾启用',[
+          [['启用次数','1'],['实际保证金','7.81 USDT'],['锁定价格','1,753.43 USDT'],['锁定亏损','-1.25 USDT','out'],['启用时间','2026-07-09 14:50:56']],
+          [['启用次数','2'],['实际保证金','4.72 USDT'],['锁定价格','1,750.39 USDT'],['锁定亏损','-3.08 USDT','out'],['启用时间','2026-07-09 15:26:57']],
+          [['启用次数','3'],['实际保证金','3.74 USDT'],['锁定价格','1,750.92 USDT'],['锁定亏损','-0.98 USDT','out'],['启用时间','2026-07-09 15:48:48']]]],
+        ['防爆盾解锁',[
+          [['解锁次数','1'],['解锁模式','保持保证金'],['解锁价格','1,753.38 USDT'],['解锁时间','2026-07-09 14:55:59']],
+          [['解锁次数','2'],['解锁模式','保持保证金'],['解锁价格','1,751.87 USDT'],['解锁时间','2026-07-09 15:31:59']],
+          [['解锁次数','3'],['解锁模式','保持保证金'],['解锁价格','1,750.67 USDT'],['解锁时间','2026-07-09 16:01:06']]]]]}},
+    {ptype:'防爆盾',sym:'ETHUSDT',dir:'空',mode:'逐仓',lev:'200x',open:1754.31,close:1753.56,qty:1.035,unit:'ETH',pnl:-1.38,roe:-15.23,ctype:'交易',otime:'2026-07-09 14:02:33',time:'2026-07-09 14:50:53',margin:9.08,
+      shield:{name:'防爆盾',tabs:[['防爆盾启用',[[['启用次数','1'],['实际保证金','8.12 USDT'],['锁定价格','1,754.02 USDT'],['锁定亏损','-0.96 USDT','out'],['启用时间','2026-07-09 14:21:10']]]],
+        ['防爆盾解锁',[[['解锁次数','1'],['解锁模式','保持保证金'],['解锁价格','1,753.56 USDT'],['解锁时间','2026-07-09 14:50:53']]]]]}}
+  ];
+  var FUT_FILL=[
+    {sym:'TSLAUSDT',side:'平空',time:'2026-10-22 04:05:22',oid:'2389477902',price:390.65,qty:0.41,unit:'TSLA',fee:0,pnl:-7.6465,role:'吃单'},
+    {sym:'TSLAUSDT',side:'平空',time:'2026-10-22 04:05:22',oid:'2389477902',price:390.65,qty:0.65,unit:'TSLA',fee:0,pnl:-12.1225,role:'吃单'},
+    {sym:'TSLAUSDT',side:'平空',time:'2026-10-22 04:05:22',oid:'2389477902',price:390.64,qty:0.44,unit:'TSLA',fee:0,pnl:-8.2016,role:'吃单'},
+    {sym:'ETHUSDT',side:'开空',time:'2026-10-15 11:34:43',oid:'2381200457',price:2412.36,qty:0.1,unit:'ETH',fee:0.0965,pnl:0,role:'吃单'}
+  ];
+  var FUT_FLOW=[
+    {type:'资金费用',desc:'TSLAUSDT',time:'2026-10-22 08:00:00',amt:0.02472957,unit:'USDT'},
+    {type:'资金费用',desc:'ETHUSDT',time:'2026-10-22 08:00:00',amt:-0.1023907,unit:'USDT'},
+    {type:'体验金发放',desc:'体验金',time:'2026-10-22 05:50:27',amt:20,unit:'USDT'},
+    {type:'交易盈亏',desc:'TSLAUSDT 平空',time:'2026-10-22 04:05:22',amt:-15.25200001,unit:'USDT'},
+    {type:'手续费',desc:'ETHUSDT 开空',time:'2026-10-15 11:34:43',amt:-0.0965,unit:'USDT'},
+    {type:'转入',desc:'资金 → 合约',time:'2026-06-24 23:48:06',amt:1000,unit:'USDT'},
+    {type:'转出',desc:'合约 → 资金',time:'2026-06-25 15:23:53',amt:-430,unit:'USDT'}
+  ];
+
+  /* ================= MOCK：CFD（计价单位 USDx ⚠️ Q-18）================= */
+  var CFD_OPEN=[
+    {pair:'UKOUSD',side:'买入',otype:'限价',lev:'500x',price:100,qty:0.01,tp:110,sl:90,time:'2026-10-19 15:24:42',st:'待成交'}
+  ];
+  var CFD_HIST=[
+    {pair:'UKOUSD',side:'卖出',otype:'市价',lev:'500x',price:null,avg:110.015,qty:0.01,filled:0.01,pnl:11.02,time:'2026-10-19 17:03:45',etime:'2026-10-19 17:03:45',oid:'370497239517233152',st:'全部成交'},
+    {pair:'UKOUSD',side:'买入',otype:'市价',lev:'500x',price:null,avg:110.004,qty:0.01,filled:0.01,pnl:-12.10,time:'2026-10-19 17:03:39',etime:'2026-10-19 17:03:39',oid:'370497215622104568',st:'全部成交'},
+    {pair:'UKOUSD',side:'买入',otype:'市价',lev:'500x',price:null,avg:108.913,qty:0.01,filled:0.01,pnl:null,time:'2026-10-19 15:25:05',etime:'2026-10-19 15:25:05',oid:'370475880112640012',st:'全部成交'}
+  ];
+  var CFD_POS=[
+    {pair:'UKOUSD',dir:'多',lev:'500x',pnl:11.02,roe:505.90,closed:0.01,maxq:0.01,open:108.913,close:110.015,otime:'2026-10-19 15:25:05',time:'2026-10-19 17:03:45',st:'全部平仓'},
+    {pair:'UKOUSD',dir:'空',lev:'500x',pnl:-12.10,roe:-556.09,closed:0.01,maxq:0.01,open:108.794,close:110.004,otime:'2026-10-12 17:40:50',time:'2026-10-19 17:03:39',st:'全部平仓'},
+    {pair:'XAGAUD',dir:'多',lev:'100x',pnl:-110.48,roe:-36.15,closed:0.1,maxq:0.1,open:87.121,close:86.804,otime:'2026-10-09 10:12:30',time:'2026-10-10 21:40:02',st:'全部平仓'}
+  ];
+  var CFD_FLOW=[
+    {type:'平仓盈亏',desc:'UKOUSD',time:'2026-10-19 17:03:45',amt:11.02,unit:'USDx'},
+    {type:'掉期',desc:'UKOUSD',time:'2026-10-19 17:03:39',amt:-16.49,unit:'USDx'},
+    {type:'佣金',desc:'UKOUSD',time:'2026-10-19 15:25:05',amt:-0.55,unit:'USDx'},
+    {type:'平仓盈亏',desc:'XAGAUD',time:'2026-10-10 21:40:02',amt:-110.48,unit:'USDx'},
+    {type:'转入',desc:'资金 → CFD',time:'2026-10-08 13:46:30',amt:10000,unit:'USDx'}
+  ];
+
+  /* ================= 卡片渲染（统一骨架）================= */
+  function tag(t,c){return '<span class="tag'+(c?' '+c:'')+'">'+t+'</span>';}
+  function sideCls(s){return /买|多/.test(s)?'buy':'sell';}
+  function stCls(s){return /未成交|部分成交|待成交|进行中|申诉中/.test(s)?' ing':'';}
+  function cardHtml(o,i){
+    var h='<div class="card" data-i="'+i+'"><div class="ch"><div class="ct"><b>'+o.title+'</b>'+(o.tags||[]).join('')+'</div>'
+      +'<div class="cr'+(o.rc||'')+'">'+(o.right||'')+'</div></div>';
+    if(o.time)h+='<div class="ctime">'+o.time+'</div>';
+    h+='<div class="kv">'+o.kv.map(function(x){return '<div><span class="k">'+x[0]+'</span><span class="v'+(x[2]?' '+x[2]:'')+'">'+x[1]+'</span></div>';}).join('')+'</div>';
+    if(o.btn)h+='<div class="cbtn"><span data-act="'+o.btn[1]+'">'+o.btn[0]+'</span></div>';
+    return h+'</div>';
+  }
+  function cp(t,short){var s=short?t.slice(0,6)+'…'+t.slice(-6):t;return s+'<span class="cp" data-copy="'+t+'">⧉</span>';}
+
+  var R={
+    flow:function(it,i){
+      var neu=it.cat==='transfer';
+      var title=it.cat?subLabel('资产',it.cat):it.type;
+      var tap=(it.cat==='deposit'||it.cat==='withdraw'||it.cat==='transfer')?' tap':'';
+      return '<div class="row'+tap+'" data-i="'+i+'"><div class="l"><div class="type">'+title+'</div>'
+        +'<div class="sub">'+it.desc+'</div><div class="time">'+it.time+'</div></div>'
+        +'<div class="r"><div class="amt '+(neu?'neu':pnlCls(it.amt))+'">'+fmt(neu?Math.abs(it.amt):it.amt,it.unit,!neu)+' '+it.unit+'</div>'
+        +(it.st?'<div class="meta">'+it.st+'</div>':'')+'</div></div>';
+    },
+    otc:function(it,i){
+      var buy=it.side==='买入';
+      return cardHtml({title:'USDT',tags:[tag(it.side,buy?'buy':'sell')],right:it.status,rc:stCls(it.status),time:it.time,
+        kv:[['单价','1 USDT ≈ '+it.price+' CNY'],[buy?'买入数量':'卖出数量',fmt(it.qty,'USDT')+' USDT'],['手续费',fmt(it.fee,'USDT')+' USDT'],
+            [buy?'到账数量':'实际卖出数量',fmt(it.net,'USDT')+' USDT'],[buy?'支付金额':'到账金额','≈'+fmt(it.fiat,'CNY')+' CNY'],['订单编号',cp(it.no,true)]]},i);
+    },
+    spotOrder:function(it,i){
+      var base=it.pair.split('/')[0];
+      return cardHtml({title:it.pair,tags:[tag(it.side,sideCls(it.side)),tag(it.otype)],right:it.st,rc:stCls(it.st),time:it.time,
+        kv:[['已成交 / 委托数量',it.filled+' / '+it.qty+' '+base],['成交均价',it.avg?fmt(it.avg,'USDT'):'--'],['委托价格',it.price?fmt(it.price,'USDT'):'市价']]},i);
+    },
+    spotFill:function(it,i){
+      var base=it.pair.split('/')[0];
+      return cardHtml({title:it.pair,tags:[tag(it.side,sideCls(it.side))],right:it.role,time:it.time,
+        kv:[['成交数量',it.qty+' '+base],['成交价格',fmt(it.price,'USDT')],['手续费',fmt(it.fee,'USDT')+' USDT'],
+            ['成交金额',fmt(it.total,'USDT')+' USDT'],['',''],['订单编号',cp(it.oid)]]},i);
+    },
+    futOrder:function(it,i){
+      return cardHtml({title:it.sym+' 永续',tags:[tag(it.side,sideCls(it.side)),tag(it.otype),tag(it.mode),tag(it.lev)],right:it.st,rc:stCls(it.st),time:it.time,
+        kv:[['已成交 / 委托数量',it.filled+' / '+it.qty+' '+it.unit],['委托价格',it.price?fmt(it.price,'USDT'):'市价'],['订单类型',it.otype]]},i);
+    },
+    futPos:function(it,i){
+      var tags=[tag(it.dir,sideCls(it.dir))];
+      if(it.ptype!=='普通合约')tags.push(tag(it.ptype,'promo'));
+      tags.push(tag(it.mode),tag(it.lev));
+      var kv=[['开仓均价',fmt(it.open,'USDT')],['平仓均价',fmt(it.close,'USDT')],['数量',it.qty+' '+it.unit],
+        ['已实现盈亏(USDT)',fmt(it.pnl,'USDT',true),pnlCls(it.pnl)],['ROE',(it.roe>0?'+':'')+it.roe.toFixed(2)+'%',pnlCls(it.roe)],['平仓类型',it.ctype]];
+      if(it.margin)kv.push(['持仓保证金(USDT)',fmt(it.margin,'USDT')]);
+      kv.push(['开仓时间',it.otime,'tm']);
+      if(!it.margin)kv.push(['','']);
+      kv.push(['平仓时间',it.time,'tm']);
+      return cardHtml({title:it.sym+' 永续',tags:tags,kv:kv,btn:it.shield?['查看'+it.ptype+'明细','shield']:null},i);
+    },
+    futFill:function(it,i){
+      return cardHtml({title:it.sym+' 永续',tags:[tag(it.side,sideCls(it.side))],right:it.role,time:it.time,
+        kv:[['成交价格',fmt(it.price,'USDT')+' USDT'],['数量',it.qty+' '+it.unit],['手续费',fmt(it.fee,'USDT')+' USDT'],
+            ['已实现盈亏(USDT)',it.pnl?fmt(it.pnl,'USDT',true):'--',pnlCls(it.pnl)],['',''],['订单编号',cp(it.oid)]]},i);
+    },
+    cfdOpen:function(it,i){
+      return cardHtml({title:it.pair,tags:[tag(it.side,sideCls(it.side)),tag(it.otype),tag(it.lev)],right:it.st,rc:stCls(it.st),time:it.time,
+        kv:[['委托价格',it.price.toFixed(3)],['委托数量(手)',it.qty],['止盈 / 止损',it.tp.toFixed(3)+' / '+it.sl.toFixed(3)]]},i);
+    },
+    cfdHist:function(it,i){
+      return cardHtml({title:it.pair,tags:[tag(it.side,sideCls(it.side)),tag(it.otype),tag(it.lev)],right:it.st,time:it.time,
+        kv:[['委托价格',it.price?it.price.toFixed(3):'市价'],['成交均价',it.avg.toFixed(3)],['已成交 / 总数量(手)',it.filled+' / '+it.qty],
+            ['平仓盈亏(USDx)',it.pnl==null?'--':fmt(it.pnl,'USDx',true),pnlCls(it.pnl)],['结束时间',it.etime,'tm'],['订单编号',cp(it.oid,true)]]},i);
+    },
+    cfdPos:function(it,i){
+      return cardHtml({title:it.pair,tags:[tag(it.dir,sideCls(it.dir)),tag(it.lev)],right:it.st,
+        kv:[['开仓均价',it.open.toFixed(3)],['平仓均价',it.close.toFixed(3)],['已平仓 / 最大持仓(手)',it.closed+' / '+it.maxq],
+            ['已实现盈亏(USDx)',fmt(it.pnl,'USDx',true),pnlCls(it.pnl)],['ROE',(it.roe>0?'+':'')+it.roe.toFixed(2)+'%',pnlCls(it.roe)],['',''],
+            ['开仓时间',it.otime,'tm'],['',''],['平仓时间',it.time,'tm']]},i);
+    }
+  };
+
+  /* ================= 视图定义 ================= */
+  var F={date:{k:'date'}};
+  function fCoin(items){var u=[];items.forEach(function(x){if(u.indexOf(x.unit)<0)u.push(x.unit);});return {k:'unit',lbl:'币种',coin:true,opts:O(u)};}
+  function fOf(k,lbl,items){var u=[];items.forEach(function(x){if(u.indexOf(x[k])<0)u.push(x[k]);});return {k:k,lbl:lbl,opts:O(u)};}
+  var ASUB={
+    deposit:{lbl:'类型',opts:O(['链上充值'])},
+    withdraw:{lbl:'类型',opts:O(['链上提现'])},
+    transfer:{lbl:'账户',opts:O(['现货','合约','CFD','跟单','理财','Launchpad'])},
+    p2p:{lbl:'类型',opts:O(['付款','收款'])},
+    reward:{lbl:'类型',opts:O(['合伙人返佣','普通返佣','活动奖励'])},
+    swap:{lbl:'类型',opts:O(['代币兑换'])},
+    other:{lbl:'类型',opts:O(['系统转入','系统转出','信号群门票购买'])}
+  };
+  function assetView(sub){
+    if(sub==='otc')return {tabs:[{name:'',items:OTC,render:'otc',filters:[{k:'side',lbl:'方向',opts:O(['买入','卖出'])},{k:'status',lbl:'状态',opts:O(['进行中','申诉中','已完成','已取消'])},F.date]}]};
+    var items=sub==='all'?AF:AF.filter(function(x){return x.cat===sub;});
+    var f1=sub==='all'?{k:'cat',lbl:'类型',opts:[['all','全部']].concat(GROUPS['资产'].slice(1))}:{k:'t3',lbl:ASUB[sub].lbl,opts:ASUB[sub].opts};
+    return {hint:sub==='all',tabs:[{name:'',items:items,render:'flow',filters:[f1,fCoin(AF),F.date]}]};
+  }
+  var TRADE={
+    spot:{tabs:[
+      {name:'当前委托',count:true,items:SPOT_OPEN,render:'spotOrder',empty:'当前没有委托',cancel:true,noDate:true,filters:[fOf('pair','交易对',SPOT_HIST.concat(SPOT_OPEN)),{k:'otype',lbl:'订单类型',opts:O(['限价','市价','止盈止损'])},{k:'side',lbl:'方向',opts:O(['买入','卖出'])}]},
+      {name:'历史委托',items:SPOT_HIST,render:'spotOrder',filters:[fOf('pair','交易对',SPOT_HIST),{k:'side',lbl:'方向',opts:O(['买入','卖出'])},{k:'st',lbl:'状态',opts:O(['已成交','已取消'])},F.date]},
+      {name:'成交历史',items:SPOT_FILL,render:'spotFill',filters:[fOf('pair','交易对',SPOT_FILL),{k:'side',lbl:'方向',opts:O(['买入','卖出'])},F.date]},
+      {name:'资金流水',items:SPOT_FLOW,render:'flow',filters:[{k:'type',lbl:'类型',opts:O(['转入','转出','交易','手续费'])},fCoin(SPOT_FLOW),F.date]}
+    ]},
+    fut:{tabs:[
+      {name:'当前委托',count:true,items:FUT_OPEN,render:'futOrder',empty:'当前没有委托',cancel:true,noDate:true,filters:[fOf('sym','合约',FUT_HIST.concat(FUT_OPEN)),{k:'otype',lbl:'订单类型',opts:O(['限价','市价'])}]},
+      {name:'历史委托',items:FUT_HIST,render:'futOrder',filters:[fOf('sym','合约',FUT_HIST),{k:'otype',lbl:'订单类型',opts:O(['限价','市价'])},F.date]},
+      {name:'仓位历史',items:FUT_POS,render:'futPos',filters:[{k:'ptype',lbl:'仓位类型',opts:O(['普通合约','体验券','护财符','防爆盾'])},fOf('sym','合约',FUT_POS),F.date]},
+      {name:'成交历史',items:FUT_FILL,render:'futFill',filters:[fOf('sym','合约',FUT_FILL),{k:'side',lbl:'方向',opts:O(['开多','开空','平多','平空'])},F.date]},
+      {name:'资金流水',items:FUT_FLOW,render:'flow',filters:[{k:'type',lbl:'类型',opts:O(['转入','转出','资金费用','交易盈亏','手续费','体验金发放'])},F.date]}
+    ]},
+    cfd:{tabs:[
+      {name:'当前委托',count:true,items:CFD_OPEN,render:'cfdOpen',empty:'当前没有委托',cancel:true,noDate:true,filters:[fOf('pair','交易对',CFD_POS.concat(CFD_OPEN))]},
+      {name:'历史委托',items:CFD_HIST,render:'cfdHist',filters:[fOf('pair','交易对',CFD_HIST),{k:'side',lbl:'方向',opts:O(['买入','卖出'])},F.date]},
+      {name:'历史仓位',items:CFD_POS,render:'cfdPos',filters:[fOf('pair','交易对',CFD_POS),F.date]},
+      {name:'资金流水',items:CFD_FLOW,render:'flow',filters:[{k:'type',lbl:'类型',opts:O(['转入','转出','佣金','掉期','平仓盈亏','负余额修正'])},F.date]}
+    ]}
+  };
+  function getView(){
+    if(state.group==='资产')return assetView(state.sub);
+    if(state.group==='交易')return TRADE[state.sub];
+    return null;
+  }
+
+  /* ================= 状态 ================= */
+  function defDate(){return {preset:'180d'};}
+  var state={group:'资产',sub:'all',tab:0,f:{},date:defDate()};
+  var mode='normal',token=0,rendered=[];
+  var phone=document.getElementById('phone'),list=document.getElementById('list');
+  function curTab(){var v=getView();return v?v.tabs[state.tab]:null;}
+  function resetFilters(){state.f={};state.date=defDate();}
+
+  function inDate(t){
+    var d=new Date(t.replace(' ','T'));var r=dateRange(state.date);
+    return d>=r.from&&d<=r.to;
+  }
+  function dateRange(dt){
+    if(dt.preset==='custom')return {from:dt.from,to:dt.to};
+    var n=dt.preset==='7d'?7:dt.preset==='30d'?30:MAXDAYS;
+    var from=new Date(NOW);from.setDate(from.getDate()-n);from.setHours(0,0,0,0);
+    return {from:from,to:new Date(NOW)};
+  }
+  function pass(it,tb){
+    for(var i=0;i<tb.filters.length;i++){
+      var f=tb.filters[i];
+      if(f.k==='date')continue;
+      var v=state.f[f.k];
+      if(v&&v!=='all'&&it[f.k]!==v)return false;
+    }
+    return tb.noDate?true:inDate(it.time);
+  }
+  function filterActive(){
+    for(var k in state.f)if(state.f[k]&&state.f[k]!=='all')return true;
+    return state.date.preset!=='180d';
+  }
+
+  /* ================= 渲染 ================= */
+  function syncHeader(){
+    document.getElementById('navCat').innerHTML=state.group+'<span class="car">▾</span>';
+    document.getElementById('navSub').textContent=subLabel(state.group,state.sub);
+  }
+  function renderTabs(){
+    var v=getView(),el=document.getElementById('tabs');
+    if(!v||v.tabs.length<2){el.style.display='none';el.innerHTML='';return;}
+    el.style.display='flex';
+    el.innerHTML=v.tabs.map(function(t,i){
+      var n=t.count?' ('+(mode==='empty'?0:t.items.length)+')':'';
+      return '<div class="tb'+(i===state.tab?' on':'')+'" data-t="'+i+'">'+t.name+n+'</div>';}).join('');
+  }
+  var DLB={'7d':'近7天','30d':'近30天','180d':'日期','custom':'自定义'};
+  function renderChips(){
+    var tb=curTab(),el=document.getElementById('chips');
+    if(!tb){el.style.display='none';el.innerHTML='';return;}
+    el.style.display='flex';
+    var h=tb.filters.map(function(f){
+      if(f.k==='date'){var a=state.date.preset!=='180d';return '<div class="chip'+(a?' act':'')+'" data-f="date">'+DLB[state.date.preset]+'<span class="car">▾</span></div>';}
+      var v=state.f[f.k],lab=f.lbl;
+      if(v&&v!=='all'){var o=f.opts.filter(function(x){return x[0]===v;})[0];lab=o?o[1]:v;}
+      return '<div class="chip'+(v&&v!=='all'?' act':'')+'" data-f="'+f.k+'">'+lab+'<span class="car">▾</span></div>';
+    }).join('');
+    if(tb.cancel){var has=mode!=='empty'&&tb.items.length;h+='<span class="sp"></span><span class="op'+(has?'':' dis')+'" id="cancelAll">全部撤单</span>';}
+    el.innerHTML=h;
+  }
+  function renderHint(){
+    var v=getView(),el=document.getElementById('hintBox');
+    el.innerHTML=(v&&v.hint)?'<div class="hint" id="hintGo"><span>仅展示<b>资金账户</b>流水，现货 / 合约 / CFD 流水请在「交易」查看</span><span>›</span></div>':'';
+  }
+  function skeleton(){
+    var h='';for(var i=0;i<6;i++)h+='<div class="sk"><i style="width:'+(40+i*7%30)+'%"></i><i style="width:'+(70-i*5%25)+'%"></i></div>';
+    list.innerHTML=h;
+  }
+  function renderList(){
+    var tb=curTab();
+    if(!tb){
+      list.innerHTML='<div class="state"><div class="ico">🗂</div><div>理财记录（订单 / 流水）为 P1 范围</div><div class="sm">本轮原型聚焦 P0：资产组 + 交易组</div></div>';return;
+    }
+    if(mode==='error'){
+      list.innerHTML='<div class="state"><div class="ico">📡</div><div>网络异常，加载失败</div><div class="sm">请检查网络后重试</div><div class="btn" id="retry">重试</div></div>';return;
+    }
+    var base=mode==='empty'?[]:tb.items;
+    rendered=base.filter(function(it){return pass(it,tb);}).sort(function(a,b){return a.time<b.time?1:-1;});
+    if(!rendered.length){
+      if(base.length&&filterActive()){
+        list.innerHTML='<div class="state"><div class="ico">🔍</div><div>没有搜索结果</div><div class="sm">换个筛选条件试试</div><div class="btn ghost" id="resetF">重置筛选</div></div>';
+      }else{
+        list.innerHTML='<div class="state"><div class="ico">📄</div><div>'+(tb.empty||'暂无记录')+'</div></div>';
+      }
+      return;
+    }
+    var fn=R[tb.render];
+    list.innerHTML=rendered.map(function(it,i){return fn(it,i);}).join('')
+      +'<div class="end">'+(tb.noDate?'':'仅支持查询近 '+MAXDAYS+' 天的记录<br>')+'没有更多了</div>';
+  }
+  function load(){
+    renderTabs();renderChips();renderHint();
+    var my=++token;skeleton();list.scrollTop=0;
+    if(mode==='loading')return;
+    setTimeout(function(){if(my===token)renderList();},350);
+  }
+  function go(g,s,tab){
+    state.group=g;state.sub=s;state.tab=tab||0;resetFilters();
+    syncHeader();load();
+  }
+
+  /* ================= 交互 ================= */
+  var toastEl=document.getElementById('toast'),toastT;
+  function toast(t){toastEl.textContent=t;toastEl.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){toastEl.classList.remove('show');},1800);}
+
+  document.getElementById('tabs').addEventListener('click',function(e){
+    var t=e.target.closest('.tb');if(!t)return;
+    state.tab=+t.getAttribute('data-t');resetFilters();load();
+  });
+  document.getElementById('chips').addEventListener('click',function(e){
+    if(e.target.id==='cancelAll'){if(!e.target.classList.contains('dis'))toast('确认撤销全部委托？（示意）');return;}
+    var c=e.target.closest('.chip');if(!c)return;
+    var k=c.getAttribute('data-f');
+    if(k==='date')openDate();else openOpt(k);
+  });
+  document.getElementById('hintBox').addEventListener('click',function(e){if(e.target.closest('#hintGo')){state.group='交易';openPicker();}});
+  list.addEventListener('click',function(e){
+    if(e.target.id==='retry'){setMode('normal');return;}
+    if(e.target.id==='resetF'){resetFilters();load();return;}
+    var c=e.target.closest('[data-copy]');if(c){toast('已复制');return;}
+    var a=e.target.closest('[data-act="shield"]');
+    if(a){renderShield(rendered[+a.closest('.card').getAttribute('data-i')],0);return;}
+    var row=e.target.closest('.row.tap');
+    if(row)renderDetail(rendered[+row.getAttribute('data-i')]);
+  });
+
+  /* ---- 选择账单 ---- */
+  var mask=document.getElementById('mask'),sheet=document.getElementById('sheet');
+  function openSheet(){mask.classList.add('show');sheet.classList.add('show');}
+  function closeSheet(){mask.classList.remove('show');sheet.classList.remove('show');}
+  document.getElementById('btnHistory').addEventListener('click',openSheet);
+  mask.addEventListener('click',closeSheet);
+  function enter(g,s){go(g,s);setTimeout(function(){phone.classList.add('nav-list');},120);}
+  document.querySelectorAll('.sopt').forEach(function(o){
+    o.addEventListener('click',function(){var g=o.getAttribute('data-go');closeSheet();setTimeout(function(){enter(g,GROUPS[g][0][0]);},120);});
+  });
+  document.getElementById('acclist').addEventListener('click',function(e){
+    var r=e.target.closest('.accrow');if(!r)return;
+    var g=r.getAttribute('data-g');
+    if(g==='跟单'){toast('跟单账单归属待确认（Q-09）');return;}
+    enter(g,r.getAttribute('data-s'));
+  });
+  document.getElementById('btnBack').addEventListener('click',function(){closePicker();phone.classList.remove('nav-list');});
+
+  /* ---- 双栏选择器 ---- */
+  var pickGroup='资产';
+  function buildPicker(){
+    document.getElementById('pkLeft').innerHTML=Object.keys(GROUPS).map(function(g){
+      return '<div class="g'+(g===pickGroup?' on':'')+'" data-g="'+g+'">'+g+'</div>';}).join('');
+    document.getElementById('pkRight').innerHTML=GROUPS[pickGroup].map(function(s){
+      var on=(pickGroup===state.group&&s[0]===state.sub)?' on':'';
+      var p1=pickGroup==='理财'?'<span class="p1">P1</span>':'';
+      return '<div class="s'+on+'" data-s="'+s[0]+'"><span>'+s[1]+p1+'</span><span class="ck">✓</span></div>';}).join('');
+  }
+  function openPicker(){pickGroup=state.group;buildPicker();phone.classList.add('picker-open');}
+  function closePicker(){phone.classList.remove('picker-open');}
+  document.getElementById('navTitle').addEventListener('click',function(){phone.classList.contains('picker-open')?closePicker():openPicker();});
+  document.getElementById('pkLeft').addEventListener('click',function(e){var g=e.target.closest('.g');if(!g)return;pickGroup=g.getAttribute('data-g');buildPicker();});
+  document.getElementById('pkRight').addEventListener('click',function(e){
+    var s=e.target.closest('.s');if(!s)return;closePicker();go(pickGroup,s.getAttribute('data-s'));
+  });
+
+  /* ---- 统一筛选底部弹窗 ---- */
+  var fMask=document.getElementById('fMask'),fSheet=document.getElementById('fSheet'),fBody=document.getElementById('fBody');
+  function showF(){fMask.classList.add('show');fSheet.classList.add('show');}
+  function hideF(){fMask.classList.remove('show');fSheet.classList.remove('show');}
+  fMask.addEventListener('click',hideF);
+  var coinQ='';
+  function openOpt(k,keepQ){
+    var f=curTab().filters.filter(function(x){return x.k===k;})[0];if(!f)return;
+    if(!keepQ)coinQ='';
+    var cur=state.f[k]||'all',h='<div class="fs-h">'+(f.coin?'选择币种':f.lbl)+'</div>';
+    if(f.coin)h+='<div class="fs-search"><span>🔍</span><input id="coinInput" placeholder="搜索币种" value="'+coinQ+'"></div>';
+    h+='<div class="fs-list">';
+    f.opts.filter(function(o){return !f.coin||o[0]==='all'||o[0].toLowerCase().indexOf(coinQ.toLowerCase())>=0;}).forEach(function(o){
+      var ic='';
+      if(f.coin&&o[0]!=='all'){var c=COINC[o[0]]||['#8a919e',o[0].charAt(0)];ic='<span class="ci2" style="background:'+c[0]+'">'+c[1]+'</span>';}
+      h+='<div class="fs-item'+(o[0]===cur?' on':'')+'" data-v="'+o[0]+'"><span class="cn">'+ic+'<span>'+o[1]+'</span></span><span class="ck">✓</span></div>';
+    });
+    fBody.innerHTML=h+'</div>';
+    var ci=document.getElementById('coinInput');
+    if(ci){ci.addEventListener('input',function(){coinQ=this.value;openOpt(k,true);var n=document.getElementById('coinInput');n.focus();n.setSelectionRange(n.value.length,n.value.length);});}
+    fBody.querySelectorAll('.fs-item').forEach(function(it){it.addEventListener('click',function(){
+      state.f[k]=it.getAttribute('data-v');hideF();load();
+    });});
+    showF();
+  }
+  function fmtD(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+  function openDate(){
+    var p=state.date.preset,pend=p,r=dateRange(state.date);
+    var minD=new Date(NOW);minD.setDate(minD.getDate()-MAXDAYS);
+    var h='<div class="fs-h">日期</div><div class="date-tip">仅支持查询近 '+MAXDAYS+' 天内的记录</div>';
+    h+='<div class="date-quick">'+[['7d','近7天'],['30d','近30天'],['180d','近180天']].map(function(x){
+      return '<div class="dq'+(p===x[0]?' on':'')+'" data-p="'+x[0]+'">'+x[1]+'</div>';}).join('')+'</div>';
+    h+='<div class="date-range"><input type="date" id="dFrom" min="'+fmtD(minD)+'" max="'+fmtD(NOW)+'" value="'+fmtD(r.from)+'"><span>—</span><input type="date" id="dTo" min="'+fmtD(minD)+'" max="'+fmtD(NOW)+'" value="'+fmtD(r.to)+'"></div>';
+    h+='<div class="date-err" id="dErr"></div>';
+    h+='<div class="sheet-btns"><div class="b reset" id="dReset">重置</div><div class="b apply" id="dApply">确定</div></div>';
+    fBody.innerHTML=h;
+    var dFrom=document.getElementById('dFrom'),dTo=document.getElementById('dTo'),dErr=document.getElementById('dErr'),dApply=document.getElementById('dApply');
+    function validate(){
+      var a=dFrom.value,b=dTo.value,msg='';
+      if(!a||!b)msg='请选择开始和结束日期';
+      else if(a>b)msg='开始日期不能晚于结束日期';
+      else if(a<fmtD(minD))msg='仅支持查询近 '+MAXDAYS+' 天内的记录';
+      dErr.textContent=msg;dApply.classList.toggle('dis',!!msg);
+    }
+    fBody.querySelectorAll('.dq').forEach(function(dq){dq.addEventListener('click',function(){
+      fBody.querySelectorAll('.dq').forEach(function(x){x.classList.remove('on');});
+      dq.classList.add('on');pend=dq.getAttribute('data-p');
+      var rr=dateRange({preset:pend});dFrom.value=fmtD(rr.from);dTo.value=fmtD(rr.to);validate();
+    });});
+    [dFrom,dTo].forEach(function(x){x.addEventListener('change',function(){pend='custom';fBody.querySelectorAll('.dq').forEach(function(q){q.classList.remove('on');});validate();});});
+    document.getElementById('dReset').addEventListener('click',function(){state.date=defDate();hideF();load();});
+    dApply.addEventListener('click',function(){
+      state.date=pend==='custom'?{preset:'custom',from:new Date(dFrom.value+'T00:00:00'),to:new Date(dTo.value+'T23:59:59')}:{preset:pend};
+      hideF();load();
+    });
+    validate();showF();
+  }
+
+  /* ---- 详情 ---- */
+  function drow(k,v,c){return '<div class="drow"><div class="k">'+k+'</div><div class="v'+(c?' '+c:'')+'">'+v+'</div></div>';}
+  function renderDetail(it){
+    var h='';
+    if(it.cat==='deposit'){
+      h+='<h2 class="dtitle">充值详情</h2><div class="damt"><div class="dl">数量</div><div class="dbig">'+fmt(it.amt,it.unit,true)+' '+it.unit+'</div><div class="dok">✓ '+it.st+'</div></div>'
+        +drow('类型','链上充值')+drow('网络',it.det.net)+drow('地址',cp(it.det.addr))+drow('交易ID',cp(it.det.txid))+drow('时间',it.time)
+        +'<div class="dbtn">在区块链浏览器上查看</div>';
+    }else if(it.cat==='withdraw'){
+      h+='<h2 class="dtitle">提现详情</h2><div class="damt"><div class="dl">扣除总额</div><div class="dbig">'+fmt(it.amt,it.unit,true)+' '+it.unit+'</div><div class="dok">✓ '+it.st+'</div></div>'
+        +drow('网络',it.det.net)+drow('地址',cp(it.det.addr))+drow('到账数量',fmt(it.det.wAmt,it.unit)+' '+it.unit)+drow('提现手续费',fmt(it.det.fee,it.unit)+' '+it.unit)
+        +drow('交易ID',cp(it.det.txid))+drow('时间',it.time)+'<div class="dbtn">在区块链浏览器上查看</div>';
+    }else{
+      h+='<h2 class="dtitle">划转详情</h2><div class="damt"><div class="dl">数量</div><div class="dbig">'+fmt(it.amt,it.unit)+' '+it.unit+'</div><div class="dok">✓ '+it.st+'</div></div>'
+        +drow('从',it.from)+drow('到',it.to)+drow('币种',it.unit)+drow('时间',it.time);
+    }
+    document.getElementById('dBody').innerHTML=h;phone.classList.add('nav-detail');
+  }
+  var shieldItem=null;
+  function renderShield(it,ti){
+    shieldItem=it;var s=it.shield;
+    var h='<h2 class="dtitle">'+s.name+'详情</h2>'
+      +'<div class="ct" style="margin-bottom:14px"><b>'+it.sym+' 永续</b>'+tag((it.dir==='多'?'开多':'开空'),sideCls(it.dir))+tag(it.lev)+'</div>'
+      +'<div class="dtabs">'+s.tabs.map(function(t,i){return '<span class="'+(i===ti?'on':'')+'" data-st="'+i+'">'+t[0]+'</span>';}).join('')+'</div>';
+    s.tabs[ti][1].forEach(function(grp){h+='<div class="dgrp">'+grp.map(function(r){return drow(r[0],r[1],r[2]);}).join('')+'</div>';});
+    document.getElementById('dBody').innerHTML=h;phone.classList.add('nav-detail');
+  }
+  document.getElementById('dBody').addEventListener('click',function(e){
+    var t=e.target.closest('[data-st]');if(t&&shieldItem){renderShield(shieldItem,+t.getAttribute('data-st'));return;}
+    if(e.target.closest('[data-copy]'))toast('已复制');
+  });
+  document.getElementById('dBack').addEventListener('click',function(){phone.classList.remove('nav-detail');shieldItem=null;});
+
+  /* ---- 原型控制台 ---- */
+  function setMode(m){
+    mode=m;
+    document.querySelectorAll('#seg span').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-m')===m);});
+    if(phone.classList.contains('nav-list'))load();
+  }
+  document.getElementById('seg').addEventListener('click',function(e){var s=e.target.closest('span');if(s)setMode(s.getAttribute('data-m'));});
+
+  syncHeader();renderTabs();renderChips();renderHint();renderList();
+</script>
+</body>
+</html>
