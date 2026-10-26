@@ -350,14 +350,14 @@
   var AF=[
     {cat:'otc',t3:'买入',desc:'OTC 买币',time:'2026-10-25 20:06:42',amt:50,unit:'USDT',st:'已完成'},
     {cat:'withdraw',t3:'链上提现',desc:'链上提现 · BSC',time:'2026-10-15 10:55:36',amt:-3000,unit:'USDT',st:'已完成',det:{net:'BSC',addr:'0xbabc417d41e6dd9c99d59be6eb87418996f3f1cb',wAmt:2999.9,fee:0.1,txid:'0x943954513985b76806da095df39208e5830db770a4f8d6e80d7900d40016712a'}},
-    {cat:'transfer',t3:'跟单',desc:'资金 → 跟单',time:'2026-10-12 18:19:20',amt:100000,unit:'USDT',st:'已完成',from:'资金账户',to:'跟单账户'},
-    {cat:'transfer',t3:'CFD',desc:'资金 → CFD',time:'2026-10-08 13:46:30',amt:10000,unit:'USDT',st:'已完成',from:'资金账户',to:'CFD 账户'},
+    {cat:'transfer',t3:'跟单',desc:'资金 → 跟单',time:'2026-10-12 18:19:20',amt:-100000,unit:'USDT',st:'已完成',from:'资金账户',to:'跟单账户'},
+    {cat:'transfer',t3:'CFD',desc:'资金 → CFD',time:'2026-10-08 13:46:30',amt:-10000,unit:'USDT',st:'已完成',from:'资金账户',to:'CFD 账户'},
     {cat:'p2p',t3:'收款',desc:'收款 · UID 2847***91',time:'2026-09-30 15:39:38',amt:10,unit:'USDT',st:'已完成'},
     {cat:'p2p',t3:'付款',desc:'付款 · UID 1093***27',time:'2026-09-30 14:21:11',amt:-1,unit:'USDT',st:'已完成'},
     {cat:'reward',t3:'合伙人返佣',desc:'合伙人返佣',time:'2026-09-28 08:00:00',amt:12.3456,unit:'USDT',st:'已到账'},
     {cat:'p2p',t3:'付款',desc:'付款 · UID 5521***08',time:'2026-09-23 15:14:45',amt:-100,unit:'USDT',st:'已完成'},
     {cat:'otc',t3:'买入',desc:'OTC 买币',time:'2026-09-20 16:56:55',amt:29.62,unit:'USDT',st:'已完成'},
-    {cat:'transfer',t3:'理财',desc:'资金 → 理财',time:'2026-09-16 13:58:07',amt:1000,unit:'PXSTOCKS',st:'已完成',from:'资金账户',to:'理财账户'},
+    {cat:'transfer',t3:'理财',desc:'资金 → 理财',time:'2026-09-16 13:58:07',amt:-1000,unit:'PXSTOCKS',st:'已完成',from:'资金账户',to:'理财账户'},
     {cat:'swap',t3:'代币兑换',desc:'代币兑换 · 支出',time:'2026-09-10 11:20:00',amt:-100,unit:'XSTOCKS',st:'已完成'},
     {cat:'swap',t3:'代币兑换',desc:'代币兑换 · 到账',time:'2026-09-10 11:20:00',amt:98.5,unit:'USDT',st:'已完成'},
     {cat:'other',t3:'信号群门票购买',desc:'信号群门票购买',time:'2026-09-05 19:02:11',amt:-20,unit:'USDT',st:'已完成'},
@@ -365,7 +365,7 @@
     {cat:'otc',t3:'卖出',desc:'OTC 卖币',time:'2026-08-12 20:15:22',amt:-29.02,unit:'USDT',st:'已完成'},
     {cat:'deposit',t3:'链上充值',desc:'链上充值 · BSC',time:'2026-08-06 01:27:47',amt:3000,unit:'USDT',st:'已完成',det:{net:'BSC',addr:'0x515b72ed8a97f42c568d6a143232775018f133c8',txid:'0x3fec1d3520e999de72a91d4ea4bddc4d2718d9cb58836f20ab0d6bc46aaf4c7a'}},
     {cat:'transfer',t3:'Launchpad',desc:'Launchpad → 资金',time:'2026-07-24 10:49:55',amt:100,unit:'USDT',st:'已完成',from:'Launchpad 账户',to:'资金账户'},
-    {cat:'transfer',t3:'现货',desc:'资金 → 现货',time:'2026-07-01 14:51:31',amt:100000,unit:'USDT',st:'已完成',from:'资金账户',to:'现货账户'},
+    {cat:'transfer',t3:'现货',desc:'资金 → 现货',time:'2026-07-01 14:51:31',amt:-100000,unit:'USDT',st:'已完成',from:'资金账户',to:'现货账户'},
     {cat:'transfer',t3:'现货',desc:'现货 → 资金',time:'2026-07-01 14:51:19',amt:110224.76383854,unit:'USDT',st:'已完成',from:'现货账户',to:'资金账户'},
     {cat:'reward',t3:'活动奖励',desc:'活动奖励 · 交易赛',time:'2026-06-18 12:00:00',amt:20,unit:'100XT',st:'已到账'},
     {cat:'other',t3:'系统转入',desc:'系统转入',time:'2026-06-02 00:01:32',amt:28.565,unit:'USDT',st:'已到账'},
@@ -498,13 +498,14 @@
 
   var R={
     /* 资产·全部：只展示大类，点击进入该业务子类；资产子类：展示明细，可看详情；交易流水：类型 + 合约/交易对 */
+    /* 资产组按资金账户视角：划转转出为 -、转入为 + */
     flow:function(it,i){
-      var neu=it.cat==='transfer',overview=it.cat&&state.sub==='all';
+      var overview=it.cat&&state.sub==='all';
       var title=overview?subLabel('资产',it.cat):(it.cat?it.desc:it.type);
       var meta=it.cat?it.st:it.desc;
       var tap=overview||(it.cat==='deposit'||it.cat==='withdraw'||it.cat==='transfer')?' tap':'';
       return '<div class="row'+tap+'" data-i="'+i+'"'+(overview?' data-jump="'+it.cat+'"':'')+'>'
-        +'<div class="ln"><span class="type">'+title+'</span><span class="amt '+(neu?'neu':pnlCls(it.amt))+'">'+fmt(neu?Math.abs(it.amt):it.amt,it.unit,!neu)+' '+it.unit+'</span></div>'
+        +'<div class="ln"><span class="type">'+title+'</span><span class="amt '+pnlCls(it.amt)+'">'+fmt(it.amt,it.unit,true)+' '+it.unit+'</span></div>'
         +'<div class="ln"><span class="time">'+it.time+'</span><span class="meta">'+meta+'</span></div></div>';
     },
     otc:function(it,i){
@@ -845,7 +846,7 @@
         +drow('网络',it.det.net)+drow('地址',cp(it.det.addr))+drow('到账数量',fmt(it.det.wAmt,it.unit)+' '+it.unit)+drow('提现手续费',fmt(it.det.fee,it.unit)+' '+it.unit)
         +drow('交易ID',cp(it.det.txid))+drow('时间',it.time)+'<div class="dbtn">在区块链浏览器上查看</div>';
     }else{
-      h+='<h2 class="dtitle">划转详情</h2><div class="damt"><div class="dl">数量</div><div class="dbig">'+fmt(it.amt,it.unit)+' '+it.unit+'</div><div class="dok">✓ '+it.st+'</div></div>'
+      h+='<h2 class="dtitle">划转详情</h2><div class="damt"><div class="dl">数量</div><div class="dbig">'+fmt(it.amt,it.unit,true)+' '+it.unit+'</div><div class="dok">✓ '+it.st+'</div></div>'
         +drow('从',it.from)+drow('到',it.to)+drow('币种',it.unit)+drow('时间',it.time);
     }
     document.getElementById('dBody').innerHTML=h;phone.classList.add('nav-detail');
