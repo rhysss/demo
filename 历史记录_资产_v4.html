@@ -280,9 +280,9 @@
   <div class="sheet" id="sheet">
     <div class="grab"></div>
     <h4>选择账单</h4>
-    <div class="sopt" data-go="资产"><div><div class="t">资产</div><div class="d">全部、充值、提现、划转、站内转账、OTC、返佣、其他</div></div><div class="go">›</div></div>
+    <div class="sopt" data-go="资产"><div><div class="t">资产</div><div class="d">全部、充值、提现、划转、站内转账、OTC、返佣、兑换、其他</div></div><div class="go">›</div></div>
     <div class="sopt" data-go="交易"><div><div class="t">交易</div><div class="d">现货、合约、CFD</div></div><div class="go">›</div></div>
-    <div class="sopt" data-go="理财"><div><div class="t">理财</div><div class="d">折扣买币、套利工具、结构性套利、跟盈宝、混动引擎、代币兑换…</div></div><div class="go">›</div></div>
+    <div class="sopt" data-go="理财"><div><div class="t">理财</div><div class="d">折扣买币、套利工具、结构性套利、跟盈宝、混动引擎、Launchpad…</div></div><div class="go">›</div></div>
   </div>
 
   <!-- 统一筛选底部弹窗 -->
@@ -304,7 +304,7 @@
   <div class="lbl">本轮范围（P0）</div>
   <ul>
     <li>入口：资产页「账单」+ 账户行直达</li>
-    <li>资产组 8 个子类、交易组 现货 / 合约 / CFD</li>
+    <li>资产组 9 个子类、交易组 现货 / 合约 / CFD</li>
     <li>统一筛选 / 日期（近 180 天）/ 五态 / 卡片骨架</li>
     <li>理财组为 P1，选择器内已列出</li>
   </ul>
@@ -340,9 +340,9 @@
 
   /* ================= 分组 ================= */
   var GROUPS={
-    '资产':[['all','全部'],['deposit','充值'],['withdraw','提现'],['transfer','划转'],['p2p','站内转账'],['otc','OTC'],['reward','返佣'],['other','其他']],
+    '资产':[['all','全部'],['deposit','充值'],['withdraw','提现'],['transfer','划转'],['p2p','站内转账'],['otc','OTC'],['reward','返佣'],['swap','兑换'],['other','其他']],
     '交易':[['spot','现货'],['fut','合约'],['cfd','CFD']],
-    '理财':[['fin_all','全部'],['disc','折扣买币'],['arb','套利工具'],['struct','结构性套利'],['gyb','跟盈宝'],['gybpro','跟盈宝 Pro'],['hybrid','混动引擎'],['swapfin','代币兑换'],['lp','Launchpad']]
+    '理财':[['fin_all','全部'],['disc','折扣买币'],['arb','套利工具'],['struct','结构性套利'],['gyb','跟盈宝'],['gybpro','跟盈宝 Pro'],['hybrid','混动引擎'],['lp','Launchpad']]
   };
   function subLabel(g,s){var r=GROUPS[g].filter(function(x){return x[0]===s;})[0];return r?r[1]:'';}
 
@@ -358,7 +358,12 @@
     {cat:'p2p',t3:'付款',desc:'付款 · UID 5521***08',time:'2026-09-23 15:14:45',amt:-100,unit:'USDT',st:'已完成'},
     {cat:'otc',t3:'买入',desc:'OTC 买币',time:'2026-09-20 16:56:55',amt:29.62,unit:'USDT',st:'已完成'},
     {cat:'transfer',t3:'理财',desc:'资金 → 理财',time:'2026-09-16 13:58:07',amt:-1000,unit:'PXSTOCKS',st:'已完成',from:'资金账户',to:'理财账户'},
-    {cat:'other',t3:'系统转出',desc:'系统转出',time:'2026-09-10 11:20:00',amt:-5,unit:'USDT',st:'已完成'},
+    {cat:'swap',t3:'代币兑换支出',desc:'代币兑换支出 · XSTOCKS → USDT',time:'2026-09-10 11:20:00',amt:-100,unit:'XSTOCKS',st:'已完成'},
+    {cat:'swap',t3:'代币兑换到账',desc:'代币兑换到账 · XSTOCKS → USDT',time:'2026-09-10 11:20:00',amt:98.5,unit:'USDT',st:'已完成'},
+    {cat:'swap',t3:'代币兑换手续费',desc:'代币兑换手续费',time:'2026-09-10 11:20:00',amt:-0.2,unit:'USDT',st:'已完成'},
+    {cat:'transfer',t3:['现货','合约'],neu:true,desc:'现货 → 合约',time:'2026-09-03 10:15:42',amt:500,unit:'USDT',st:'已完成',from:'现货账户',to:'合约账户'},
+    {cat:'transfer',t3:['现货','合约'],neu:true,desc:'合约 → 现货',time:'2026-08-28 19:40:06',amt:200,unit:'USDT',st:'已完成',from:'合约账户',to:'现货账户'},
+    {cat:'other',t3:'系统转出',desc:'系统转出',time:'2026-08-30 11:20:00',amt:-5,unit:'USDT',st:'已完成'},
     {cat:'other',t3:'信号群门票购买',desc:'信号群门票购买',time:'2026-09-05 19:02:11',amt:-20,unit:'USDT',st:'已完成'},
     {cat:'reward',t3:'普通返佣',desc:'普通返佣',time:'2026-08-20 08:00:00',amt:3.21,unit:'USDT',st:'已到账'},
     {cat:'otc',t3:'卖出',desc:'OTC 卖币',time:'2026-08-12 20:15:22',amt:-29.02,unit:'USDT',st:'已完成'},
@@ -504,7 +509,7 @@
       var meta=it.cat?it.st:it.desc;
       var tap=overview||(it.cat==='deposit'||it.cat==='withdraw'||it.cat==='transfer')?' tap':'';
       return '<div class="row'+tap+'" data-i="'+i+'"'+(overview?' data-jump="'+it.cat+'"':'')+'>'
-        +'<div class="ln"><span class="type">'+title+'</span><span class="amt '+pnlCls(it.amt)+'">'+fmt(it.amt,it.unit,true)+' '+it.unit+'</span></div>'
+        +'<div class="ln"><span class="type">'+title+'</span><span class="amt '+(it.neu?'neu':pnlCls(it.amt))+'">'+fmt(it.amt,it.unit,!it.neu)+' '+it.unit+'</span></div>'
         +'<div class="ln"><span class="time">'+it.time+'</span><span class="meta">'+meta+'</span></div></div>';
     },
     otc:function(it,i){
@@ -572,6 +577,7 @@
     transfer:{lbl:'账户',opts:O(['现货','合约','CFD','跟单','理财','Launchpad'])},
     p2p:{lbl:'类型',opts:O(['付款','收款'])},
     reward:{lbl:'类型',opts:O(['合伙人返佣','普通返佣'])},
+    swap:{lbl:'类型',opts:O(['代币兑换到账','代币兑换支出','代币兑换手续费'])},
     other:{lbl:'类型',opts:O(['系统转入','系统转出','信号群门票购买'])}
   };
   function assetView(sub){
@@ -630,7 +636,7 @@
       var f=tb.filters[i];
       if(f.k==='date')continue;
       var v=state.f[f.k];
-      if(v&&v!=='all'&&it[f.k]!==v)return false;
+      if(v&&v!=='all'&&(Array.isArray(it[f.k])?it[f.k].indexOf(v)<0:it[f.k]!==v))return false;
     }
     return tb.noDate?true:inDate(it.time);
   }
@@ -844,7 +850,7 @@
         +drow('网络',it.det.net)+drow('地址',cp(it.det.addr))+drow('到账数量',fmt(it.det.wAmt,it.unit)+' '+it.unit)+drow('提现手续费',fmt(it.det.fee,it.unit)+' '+it.unit)
         +drow('交易ID',cp(it.det.txid))+drow('时间',it.time)+'<div class="dbtn">在区块链浏览器上查看</div>';
     }else{
-      h+='<h2 class="dtitle">划转详情</h2><div class="damt"><div class="dl">数量</div><div class="dbig">'+fmt(it.amt,it.unit,true)+' '+it.unit+'</div><div class="dok">✓ '+it.st+'</div></div>'
+      h+='<h2 class="dtitle">划转详情</h2><div class="damt"><div class="dl">数量</div><div class="dbig">'+fmt(it.amt,it.unit,!it.neu)+' '+it.unit+'</div><div class="dok">✓ '+it.st+'</div></div>'
         +drow('从',it.from)+drow('到',it.to)+drow('币种',it.unit)+drow('时间',it.time);
     }
     document.getElementById('dBody').innerHTML=h;phone.classList.add('nav-detail');
