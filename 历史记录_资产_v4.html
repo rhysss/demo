@@ -66,7 +66,8 @@
   .nav .ic{font-size:24px;color:var(--ink);width:28px;cursor:pointer}
   .nav .title{display:flex;flex-direction:column;align-items:center;line-height:1.15;cursor:pointer}
   .nav .title b{font-size:17px;font-weight:700}
-  .nav .title b .car{font-size:11px;color:var(--ink2);margin-left:3px;display:inline-block;transition:.2s}
+  .nav .title b .car{font-size:13px;color:var(--ink2);margin-left:3px;display:inline-block;transition:.2s}
+  .cf-t{font-size:15px;color:var(--ink2);padding:2px 22px 8px;line-height:1.6}
   .phone.picker-open .nav .title b .car{transform:rotate(180deg)}
   .nav .title span{font-size:11px;color:var(--ink2);margin-top:1px}
   .tabs{display:flex;gap:20px;padding:4px 18px 0;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}
@@ -77,26 +78,24 @@
   .chips{display:flex;align-items:center;gap:8px;padding:10px 18px;overflow-x:auto;scrollbar-width:none}
   .chips::-webkit-scrollbar{display:none}
   .chip{font-size:13px;color:var(--ink);background:var(--chip);border-radius:8px;padding:6px 10px;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:4px}
-  .chip .car{font-size:9px;color:var(--ink3)}
+  .chip .car{font-size:11px;color:var(--ink2)}
   .chip.act{color:var(--blue);background:#e8f0fe;font-weight:600}
   .chips .sp{flex:1}
   .chips .op{font-size:12.5px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 10px;white-space:nowrap;cursor:pointer}
   .chips .op.dis{color:var(--ink3);cursor:default}
-  .hint{margin:0 18px 4px;background:var(--soft);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--ink2);display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
-  .hint b{color:var(--ink);font-weight:600}
   .list{overflow-y:auto;flex:1;padding:0 18px;scrollbar-width:none}.list::-webkit-scrollbar{display:none}
 
   /* 流水行 */
-  .row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 0;border-bottom:1px solid var(--line)}
+  /* 所有流水行固定两行：① 类型 + 金额 ② 时间 + 状态/补充 */
+  .row{padding:14px 0;border-bottom:1px solid var(--line)}
   .row.tap{cursor:pointer}
-  .row .l{display:flex;flex-direction:column;gap:3px;min-width:0}
-  .row .type{font-size:15.5px;font-weight:600}
-  .row .sub{font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .row .time{font-size:12px;color:var(--ink3)}
-  .row .r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:0 0 auto;white-space:nowrap}
-  .row .amt{font-size:15.5px;font-weight:700;font-variant-numeric:tabular-nums}
+  .row .ln{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  .row .ln+.ln{margin-top:5px}
+  .row .type{font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .row .time{font-size:12px;color:var(--ink3);white-space:nowrap}
+  .row .amt{font-size:15.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;flex:0 0 auto}
   .in{color:var(--green)!important}.out{color:var(--red)!important}.neu{color:var(--ink)}
-  .row .meta{font-size:12px;color:var(--ink2)}
+  .row .meta{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 
   /* 统一卡片骨架 */
   .card{padding:15px 0 14px;border-bottom:1px solid var(--line)}
@@ -265,7 +264,6 @@
     </div>
     <div class="tabs" id="tabs"></div>
     <div class="chips" id="chips"></div>
-    <div id="hintBox"></div>
     <div class="list" id="list"></div>
     <div class="picker" id="picker"><div class="pk-left" id="pkLeft"></div><div class="pk-right" id="pkRight"></div></div>
   </div>
@@ -499,14 +497,15 @@
   function cp(t,short){var s=short?t.slice(0,6)+'…'+t.slice(-6):t;return s+'<span class="cp" data-copy="'+t+'">⧉</span>';}
 
   var R={
+    /* 资产·全部：只展示大类，点击进入该业务子类；资产子类：展示明细，可看详情；交易流水：类型 + 合约/交易对 */
     flow:function(it,i){
-      var neu=it.cat==='transfer';
-      var title=it.cat?subLabel('资产',it.cat):it.type;
-      var tap=(it.cat==='deposit'||it.cat==='withdraw'||it.cat==='transfer')?' tap':'';
-      return '<div class="row'+tap+'" data-i="'+i+'"><div class="l"><div class="type">'+title+'</div>'
-        +'<div class="sub">'+it.desc+'</div><div class="time">'+it.time+'</div></div>'
-        +'<div class="r"><div class="amt '+(neu?'neu':pnlCls(it.amt))+'">'+fmt(neu?Math.abs(it.amt):it.amt,it.unit,!neu)+' '+it.unit+'</div>'
-        +(it.st?'<div class="meta">'+it.st+'</div>':'')+'</div></div>';
+      var neu=it.cat==='transfer',overview=it.cat&&state.sub==='all';
+      var title=overview?subLabel('资产',it.cat):(it.cat?it.desc:it.type);
+      var meta=it.cat?it.st:it.desc;
+      var tap=overview||(it.cat==='deposit'||it.cat==='withdraw'||it.cat==='transfer')?' tap':'';
+      return '<div class="row'+tap+'" data-i="'+i+'"'+(overview?' data-jump="'+it.cat+'"':'')+'>'
+        +'<div class="ln"><span class="type">'+title+'</span><span class="amt '+(neu?'neu':pnlCls(it.amt))+'">'+fmt(neu?Math.abs(it.amt):it.amt,it.unit,!neu)+' '+it.unit+'</span></div>'
+        +'<div class="ln"><span class="time">'+it.time+'</span><span class="meta">'+meta+'</span></div></div>';
     },
     otc:function(it,i){
       var buy=it.side==='买入';
@@ -580,7 +579,7 @@
     if(sub==='otc')return {tabs:[{name:'',items:OTC,render:'otc',filters:[{k:'side',lbl:'方向',opts:O(['买入','卖出'])},{k:'status',lbl:'状态',opts:O(['进行中','申诉中','已完成','已取消'])},F.date]}]};
     var items=sub==='all'?AF:AF.filter(function(x){return x.cat===sub;});
     var f1=sub==='all'?{k:'cat',lbl:'类型',opts:[['all','全部']].concat(GROUPS['资产'].slice(1))}:{k:'t3',lbl:ASUB[sub].lbl,opts:ASUB[sub].opts};
-    return {hint:sub==='all',tabs:[{name:'',items:items,render:'flow',filters:[f1,fCoin(AF),F.date]}]};
+    return {tabs:[{name:'',items:items,render:'flow',filters:[f1,fCoin(items),F.date]}]};
   }
   var TRADE={
     spot:{tabs:[
@@ -653,6 +652,7 @@
     el.innerHTML=v.tabs.map(function(t,i){
       var n=t.count?' ('+(mode==='empty'?0:t.items.length)+')':'';
       return '<div class="tb'+(i===state.tab?' on':'')+'" data-t="'+i+'">'+t.name+n+'</div>';}).join('');
+    var on=el.querySelector('.tb.on');if(on)el.scrollLeft=Math.max(0,on.offsetLeft-el.offsetLeft-60);
   }
   var DLB={'7d':'近7天','30d':'近30天','180d':'日期','custom':'自定义'};
   function renderChips(){
@@ -667,10 +667,6 @@
     }).join('');
     if(tb.cancel){var has=mode!=='empty'&&tb.items.length;h+='<span class="sp"></span><span class="op'+(has?'':' dis')+'" id="cancelAll">全部撤单</span>';}
     el.innerHTML=h;
-  }
-  function renderHint(){
-    var v=getView(),el=document.getElementById('hintBox');
-    el.innerHTML=(v&&v.hint)?'<div class="hint" id="hintGo"><span>仅展示<b>资金账户</b>流水，现货 / 合约 / CFD 流水请在「交易」查看</span><span>›</span></div>':'';
   }
   function skeleton(){
     var h='';for(var i=0;i<6;i++)h+='<div class="sk"><i style="width:'+(40+i*7%30)+'%"></i><i style="width:'+(70-i*5%25)+'%"></i></div>';
@@ -699,7 +695,7 @@
       +'<div class="end">'+(tb.noDate?'':'仅支持查询近 '+MAXDAYS+' 天的记录<br>')+'没有更多了</div>';
   }
   function load(){
-    renderTabs();renderChips();renderHint();
+    renderTabs();renderChips();
     var my=++token;skeleton();list.scrollTop=0;
     if(mode==='loading')return;
     setTimeout(function(){if(my===token)renderList();},350);
@@ -718,20 +714,20 @@
     state.tab=+t.getAttribute('data-t');resetFilters();load();
   });
   document.getElementById('chips').addEventListener('click',function(e){
-    if(e.target.id==='cancelAll'){if(!e.target.classList.contains('dis'))toast('确认撤销全部委托？（示意）');return;}
+    if(e.target.id==='cancelAll'){if(!e.target.classList.contains('dis'))openCancel();return;}
     var c=e.target.closest('.chip');if(!c)return;
     var k=c.getAttribute('data-f');
     if(k==='date')openDate();else openOpt(k);
   });
-  document.getElementById('hintBox').addEventListener('click',function(e){if(e.target.closest('#hintGo')){state.group='交易';openPicker();}});
   list.addEventListener('click',function(e){
     if(e.target.id==='retry'){setMode('normal');return;}
     if(e.target.id==='resetF'){resetFilters();load();return;}
     var c=e.target.closest('[data-copy]');if(c){toast('已复制');return;}
     var a=e.target.closest('[data-act="shield"]');
     if(a){renderShield(rendered[+a.closest('.card').getAttribute('data-i')],0);return;}
-    var row=e.target.closest('.row.tap');
-    if(row)renderDetail(rendered[+row.getAttribute('data-i')]);
+    var row=e.target.closest('.row.tap');if(!row)return;
+    var j=row.getAttribute('data-jump');
+    if(j)go('资产',j);else renderDetail(rendered[+row.getAttribute('data-i')]);
   });
 
   /* ---- 选择账单 ---- */
@@ -793,6 +789,14 @@
     fBody.querySelectorAll('.fs-item').forEach(function(it){it.addEventListener('click',function(){
       state.f[k]=it.getAttribute('data-v');hideF();load();
     });});
+    showF();
+  }
+  function openCancel(){
+    var n=curTab().items.filter(function(it){return pass(it,curTab());}).length;
+    fBody.innerHTML='<div class="fs-h">全部撤单</div><div class="cf-t">确认撤销当前筛选下的 '+n+' 笔委托？撤单后冻结资金将退回可用余额。</div>'
+      +'<div class="sheet-btns"><div class="b reset" id="cfNo">取消</div><div class="b apply" id="cfYes">确认撤单</div></div>';
+    document.getElementById('cfNo').addEventListener('click',hideF);
+    document.getElementById('cfYes').addEventListener('click',function(){hideF();toast('已提交撤单（原型示意）');});
     showF();
   }
   function fmtD(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
@@ -869,7 +873,7 @@
   }
   document.getElementById('seg').addEventListener('click',function(e){var s=e.target.closest('span');if(s)setMode(s.getAttribute('data-m'));});
 
-  syncHeader();renderTabs();renderChips();renderHint();renderList();
+  syncHeader();renderTabs();renderChips();renderList();
 </script>
 </body>
 </html>
