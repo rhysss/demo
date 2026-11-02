@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 管家 · 对话 Agent 原型</title>
+<style>
+:root{
+ --ink:#0F1419;--ink2:#2B3139;--muted:#6B7480;--faint:#9AA3AE;--line:#E6E8EB;--line2:#F0F1F3;
+ --bg:#EEF0F2;--panel:#FFFFFF;--soft:#F5F6F7;
+ --up:#0B9B5C;--upbg:#E7F6EE;--down:#D9304F;--downbg:#FCEBEE;--warn:#C27C0E;--warnbg:#FDF4E3;
+ --brand:#0F7B5F;--brandbg:#E6F4EF;--ai1:#19C08A;--ai2:#0E9F9A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Inter,-apple-system,"PingFang SC","Noto Sans SC",sans-serif;color:var(--ink);background:var(--bg);font-size:13px;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+.app{display:grid;grid-template-columns:232px 1fr 340px;height:100vh}
+/* 左侧旅程导航 */
+aside.nav{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.brand{padding:20px 18px 12px}
+.brand b{font-size:15px;display:block}
+.brand span{font-size:11.5px;color:var(--muted)}
+.navlist{overflow-y:auto;padding:0 10px 20px;flex:1}
+.navlist h4{font-size:11.5px;font-weight:600;color:var(--muted);margin:14px 8px 4px}
+.navlist button{display:flex;align-items:center;gap:6px;width:100%;text-align:left;border:0;background:none;font-size:13px;padding:7px 8px;border-radius:8px}
+.navlist button:hover{background:var(--soft)}
+.navlist button[aria-current=true]{background:var(--brandbg);color:var(--brand);font-weight:600}
+.navlist .new{font-size:10px;color:var(--brand);border:1px solid #BFE3D6;border-radius:4px;padding:0 4px;margin-left:auto;font-weight:500}
+.mbar{display:none}
+/* 中间舞台 */
+main{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:18px 16px;overflow:auto;min-width:0}
+.crumb{font-size:12px;color:var(--muted);margin-bottom:10px;align-self:stretch;text-align:center}
+.crumb b{color:var(--ink)}
+.device{width:390px;height:800px;border-radius:44px;background:#0F1419;padding:9px;box-shadow:0 24px 50px rgba(15,20,25,.18);flex:none}
+.screen{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:#fff}
+/* 右侧说明栏 */
+aside.notes{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:18px 18px 28px}
+.notes h2{font-size:15px;margin:2px 0 2px}
+.notes .jr{font-size:11.5px;color:var(--muted)}
+.notes h5{font-size:11.5px;color:var(--muted);font-weight:600;margin:16px 0 6px;letter-spacing:.2px}
+.notes p,.notes li{font-size:12.5px;line-height:1.6;color:var(--ink2);margin:0}
+.notes ol,.notes ul{padding-left:18px;margin:0;display:flex;flex-direction:column;gap:3px}
+.chipsr{display:flex;flex-wrap:wrap;gap:6px}
+.rtag{font-size:11.5px;padding:2px 7px;border-radius:5px;background:var(--brandbg);color:var(--brand)}
+.qtag{font-size:11.5px;padding:2px 7px;border-radius:5px;background:var(--warnbg);color:var(--warn)}
+.demo{margin-top:16px;padding:12px;border-radius:10px;background:var(--soft)}
+.demo h5{margin-top:0}
+.seg{display:inline-flex;background:#E9EBEE;border-radius:8px;padding:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;font-size:12px;padding:5px 9px;border-radius:6px;color:var(--muted)}
+.seg button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.demo .row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.demo .row:last-child{margin-bottom:0}
+.demo label{font-size:11.5px;color:var(--muted)}
+.replay{margin-top:12px;width:100%;height:32px;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:12.5px}
+
+/* ===== 手机内部 ===== */
+.sb{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;flex:none}
+.page{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff}
+.scroll{flex:1;overflow-y:auto;min-height:0}
+.scroll::-webkit-scrollbar{width:0}
+.hp{padding:4px 16px 16px;display:flex;flex-direction:column;gap:16px}
+.hp .top{display:flex;align-items:center;gap:10px}
+.avatar{width:32px;height:32px;border-radius:16px;background:#EEF1F4;display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--muted)}
+.search{flex:1;height:34px;border-radius:17px;background:var(--soft);display:flex;align-items:center;padding:0 14px;color:var(--faint);font-size:12.5px}
+.asset small{font-size:12px;color:var(--muted)}
+.asset .v{font-size:28px;font-weight:700;margin:2px 0}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tiles div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2)}
+.tiles i{width:40px;height:40px;border-radius:12px;background:var(--soft);display:block;position:relative}
+.tiles i::after{content:"";position:absolute;inset:13px;border-radius:4px;border:2px solid #C5CBD2}
+.mkt{display:flex;flex-direction:column}
+.mkt .h{display:flex;gap:14px;font-size:13px;color:var(--muted);margin-bottom:6px}
+.mkt .h b{color:var(--ink)}
+.mrow{display:grid;grid-template-columns:1fr auto 72px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line2);gap:10px}
+.mrow b{font-size:14px}
+.pill{font-size:12px;font-weight:600;padding:5px 0;border-radius:6px;text-align:center;color:#fff}
+.pill.up{background:var(--up)}.pill.down{background:var(--down)}
+.tabbar{height:64px;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:flex-start;padding-top:9px;font-size:10.5px;color:var(--faint);flex:none;background:#fff}
+.tabbar span{display:flex;flex-direction:column;align-items:center;gap:4px}
+.tabbar span::before{content:"";width:20px;height:20px;border-radius:6px;background:#E3E6EA}
+.tabbar .on{color:var(--ink);font-weight:600}.tabbar .on::before{background:var(--ink)}
+/* 光球入口 */
+.orb{position:absolute;right:16px;bottom:82px;width:56px;height:56px;border-radius:28px;background:#fff;box-shadow:0 6px 18px rgba(15,20,25,.16);display:grid;place-items:center;border:0;z-index:5}
+.orb i{width:34px;height:34px;border-radius:17px;display:block;background:radial-gradient(circle at 35% 30%,#8CF0C8,var(--ai1) 45%,var(--ai2));animation:breath 3.2s ease-in-out infinite}
+.orb.pending i{background:radial-gradient(circle at 35% 30%,#FFE08A,#F0A81E 50%,#C77C0A)}
+.orb.danger i{background:radial-gradient(circle at 35% 30%,#FF9AA8,#E5384F 50%,#B01F37)}
+.orb.pending::after,.orb.danger::after{content:"";position:absolute;inset:-4px;border-radius:32px;border:2px solid;opacity:.5;animation:pulse 1.8s ease-out infinite}
+.orb.pending::after{border-color:#F0A81E}.orb.danger::after{border-color:#E5384F}
+.orb .badge{position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;border-radius:9px;background:var(--down);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 4px;border:2px solid #fff}
+.orb.pending .badge{background:#E08B00}
+.bubble{position:absolute;right:80px;bottom:90px;max-width:210px;background:var(--ink);color:#fff;border-radius:14px 14px 4px 14px;padding:9px 12px;font-size:12.5px;line-height:1.45;z-index:5;box-shadow:0 6px 16px rgba(0,0,0,.18);border:0;text-align:left}
+.bubble small{display:block;color:#9FE8CB;margin-top:2px}
+@keyframes breath{0%,100%{transform:scale(.92)}50%{transform:scale(1)}}
+@keyframes pulse{0%{transform:scale(.95);opacity:.6}100%{transform:scale(1.25);opacity:0}}
+/* 合约页 */
+.fh{display:flex;align-items:center;gap:8px;padding:6px 16px 10px}
+.fh b{font-size:17px}
+.fh .tag{font-size:11px;background:var(--soft);padding:2px 6px;border-radius:4px;color:var(--muted)}
+.aibtn{margin-left:auto;height:30px;border-radius:15px;border:1px solid #BFE3D6;background:var(--brandbg);color:var(--brand);font-size:12px;font-weight:600;padding:0 10px;display:flex;align-items:center;gap:6px}
+.aibtn i{width:14px;height:14px;border-radius:7px;background:radial-gradient(circle at 35% 30%,#8CF0C8,var(--ai1) 45%,var(--ai2))}
+.fp{padding:0 16px}
+.fp .p{font-size:26px;font-weight:700;color:var(--up)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 16px}
+.ob div{display:flex;justify-content:space-between;font-size:12px;padding:2px 0}
+.form{display:flex;flex-direction:column;gap:8px}
+.form .f{height:34px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:12px;color:var(--muted)}
+.form .bb{height:36px;border-radius:8px;display:grid;place-items:center;color:#fff;font-weight:600;font-size:13px}
+.ptab{display:flex;gap:16px;padding:10px 16px 0;border-top:6px solid var(--soft);font-size:13px;color:var(--muted)}
+.ptab b{color:var(--ink);border-bottom:2px solid var(--ink);padding-bottom:6px}
+.prow{padding:12px 16px;border-bottom:1px solid var(--line2);display:flex;flex-direction:column;gap:4px}
+/* 锁屏 */
+.lock{position:absolute;inset:0;background:linear-gradient(180deg,#1F3B37,#0D1A21);color:#fff;display:flex;flex-direction:column;align-items:center}
+.lock .d{margin-top:60px;font-size:15px;opacity:.85}
+.lock .t{font-size:72px;font-weight:300;letter-spacing:-2px;line-height:1.1}
+.push{width:calc(100% - 24px);background:rgba(255,255,255,.9);color:var(--ink);border-radius:18px;padding:11px 13px;margin-top:10px;text-align:left;border:0;display:flex;gap:10px}
+.push:first-of-type{margin-top:40px}
+.push .ic{width:34px;height:34px;border-radius:9px;background:var(--ink);flex:none;display:grid;place-items:center}
+.push .ic i{width:16px;height:16px;border-radius:8px;background:radial-gradient(circle at 35% 30%,#8CF0C8,var(--ai1) 45%,var(--ai2))}
+.push b{font-size:13.5px}.push p{margin:2px 0 0;font-size:12.5px;line-height:1.4;color:var(--ink2)}
+.push .tm{margin-left:auto;font-size:11px;color:var(--muted);flex:none}
+.push.hot{box-shadow:0 0 0 2px #F0A81E}
+.lock .tip{position:absolute;bottom:36px;font-size:12px;opacity:.6}
+
+/* ===== AI 浮层 ===== */
+.scrim{position:absolute;inset:0;background:rgba(15,20,25,.38);z-index:10}
+.ai{position:absolute;left:0;right:0;bottom:0;top:22%;background:#fff;border-radius:22px 22px 0 0;z-index:11;display:flex;flex-direction:column;box-shadow:0 -8px 30px rgba(0,0,0,.12);transition:top .25s}
+.ai.full{top:0;border-radius:0}
+.ai.full .sbpad{display:block}
+.sbpad{display:none;height:44px;flex:none}
+.grab{width:36px;height:4px;border-radius:2px;background:#D6DADF;margin:8px auto 0;flex:none}
+.ai.full .grab{display:none}
+.ahead{display:flex;align-items:center;gap:6px;padding:8px 12px 8px 14px;flex:none}
+.ahead .ttl{display:flex;align-items:center;gap:7px;font-weight:700;font-size:15px}
+.ahead .ttl i{width:18px;height:18px;border-radius:9px;background:radial-gradient(circle at 35% 30%,#8CF0C8,var(--ai1) 45%,var(--ai2))}
+.atabs{display:flex;background:var(--soft);border-radius:9px;padding:2px;margin-left:10px}
+.atabs button{border:0;background:none;font-size:12.5px;padding:4px 12px;border-radius:7px;color:var(--muted)}
+.atabs button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.ib{width:30px;height:30px;border:0;background:none;border-radius:8px;display:grid;place-items:center;color:var(--muted);font-size:15px}
+.ib:hover{background:var(--soft)}
+.ahead .sp{flex:1}
+.ctxbar{margin:0 14px 6px;padding:7px 10px;border-radius:8px;background:var(--soft);font-size:11.5px;color:var(--muted);display:flex;gap:6px;align-items:center;flex:none}
+.ctxbar b{color:var(--ink)}
+.from{margin:0 14px 6px;padding:8px 10px;border-radius:8px;background:var(--brandbg);font-size:11.5px;color:var(--brand);flex:none;line-height:1.45}
+.abody{flex:1;overflow-y:auto;min-height:0;padding:6px 14px 12px;display:flex;flex-direction:column;gap:12px}
+.abody::-webkit-scrollbar{width:0}
+.composer{flex:none;border-top:1px solid var(--line2);padding:8px 12px 12px;background:#fff}
+.sugg{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
+.sugg::-webkit-scrollbar{height:0}
+.sugg button{flex:none;border:1px solid var(--line);background:#fff;border-radius:15px;font-size:12px;padding:5px 10px;color:var(--ink2)}
+.inrow{display:flex;gap:8px;align-items:center}
+.inrow input{flex:1;height:38px;border-radius:19px;border:1px solid var(--line);background:var(--soft);padding:0 14px;font:inherit;font-size:13px;outline:none}
+.inrow input:focus{border-color:#9DD5C2;background:#fff}
+.send{width:38px;height:38px;border-radius:19px;border:0;background:var(--ink);color:#fff;font-size:16px}
+.send:disabled{background:#C9CED4}
+.disc{font-size:10.5px;color:var(--faint);text-align:center;margin-top:6px}
+
+/* 看板 */
+.greet{font-size:12px;color:var(--muted)}
+.hero{border-radius:14px;padding:14px;background:var(--warnbg);display:flex;flex-direction:column;gap:6px}
+.hero .st{font-size:11.5px;font-weight:600;color:var(--warn)}
+.hero b{font-size:17px;line-height:1.35}
+.hero .acts{display:flex;gap:8px;margin-top:4px}
+.btn{height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:12.5px;font-weight:600;padding:0 12px}
+.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.dan{background:var(--down);color:#fff;border-color:var(--down)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.sec{display:flex;flex-direction:column;gap:2px}
+.sec h6{font-size:12px;color:var(--muted);margin:0 0 4px;font-weight:600;display:flex;justify-content:space-between}
+.li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2);border-left:0;border-right:0;border-top:0;background:none;text-align:left;width:100%}
+.li:last-child{border-bottom:0}
+.li .k{font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;flex:none}
+.k.w{background:var(--warnbg);color:var(--warn)}.k.g{background:var(--upbg);color:var(--up)}.k.n{background:var(--soft);color:var(--muted)}.k.r{background:var(--downbg);color:var(--down)}
+.li .tx{flex:1;font-size:13px;line-height:1.4}
+.li .ar{color:var(--faint)}
+.boxs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.box{border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:left;background:#fff}
+.box small{font-size:11px;color:var(--muted)}
+.box b{display:block;font-size:17px;margin-top:2px}
+
+/* 消息 */
+.mu{align-self:flex-end;max-width:80%;background:var(--ink);color:#fff;padding:9px 12px;border-radius:14px 14px 4px 14px;font-size:13.5px;line-height:1.45}
+.ma{display:flex;flex-direction:column;gap:8px;max-width:100%}
+.trace{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.trace .dot{width:6px;height:6px;border-radius:3px;background:var(--ai1);animation:breath 1s infinite}
+.trace.done::before{content:"✓";color:var(--up);font-weight:700}
+.at{font-size:13.5px;line-height:1.6;color:var(--ink)}
+.at b{font-weight:600}
+.fu{display:flex;flex-wrap:wrap;gap:6px}
+.fu button{border:1px solid #BFE3D6;background:var(--brandbg);color:var(--brand);border-radius:14px;font-size:12px;padding:4px 10px}
+.card{border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;background:#fff}
+.ch{display:flex;align-items:center;gap:6px}
+.ch b{font-size:14px}
+.ch .tag{font-size:11px;color:var(--muted);background:var(--soft);padding:2px 6px;border-radius:4px}
+.ch .r{margin-left:auto;font-size:11.5px;font-weight:600}
+.big{font-size:28px;font-weight:700;line-height:1.1}
+.sub{font-size:12px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kv div{display:flex;flex-direction:column;gap:2px}
+.kv small{font-size:11px;color:var(--muted)}
+.kv b{font-size:13.5px}
+.rows{display:flex;flex-direction:column}
+.rw{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:6px 0;border-bottom:1px dashed var(--line2);gap:10px}
+.rw:last-child{border-bottom:0}
+.rw span{color:var(--muted)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts .btn{flex:1}
+.stamp{font-size:11px;color:var(--faint);display:flex;justify-content:space-between;align-items:center}
+.stamp button{border:0;background:none;color:var(--brand);font-size:11px;padding:0}
+.meter{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--down) 0 20%,#F0A81E 20% 45%,var(--up) 45%);position:relative}
+.meter i{position:absolute;top:-4px;width:3px;height:14px;background:var(--ink);border-radius:2px}
+.up{color:var(--up)}.down{color:var(--down)}.warn{color:var(--warn)}
+.opt{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;text-align:left;width:100%}
+.opt[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.opt .rad{width:16px;height:16px;border-radius:8px;border:1.5px solid #C5CBD2;flex:none}
+.opt[aria-pressed=true] .rad{border:5px solid var(--ink)}
+.opt .grow{flex:1;display:flex;flex-direction:column;gap:2px}
+.opt .grow b{font-size:13px}.opt .grow small{font-size:11.5px;color:var(--muted)}
+.opts{display:flex;flex-direction:column;gap:6px}
+.chk{width:16px;height:16px;border-radius:4px;border:1.5px solid #C5CBD2;flex:none;display:grid;place-items:center;font-size:11px;color:#fff}
+.opt[aria-pressed=true] .chk{background:var(--ink);border-color:var(--ink)}
+.banner{border-radius:9px;padding:8px 10px;font-size:12px;line-height:1.5}
+.banner.w{background:var(--warnbg);color:#8A5A0B}
+.banner.g{background:var(--upbg);color:#0A6B41}
+.banner.r{background:var(--downbg);color:#A3203A}
+.banner.n{background:var(--soft);color:var(--ink2)}
+.pend{font-size:10.5px;color:var(--warn);background:var(--warnbg);border-radius:4px;padding:1px 5px;font-weight:600;white-space:nowrap}
+.tl{display:flex;flex-direction:column;gap:0}
+.tl div{display:flex;gap:10px;font-size:12.5px;position:relative;padding-bottom:12px}
+.tl div::before{content:"";width:10px;height:10px;border-radius:5px;background:#D6DADF;flex:none;margin-top:3px;z-index:1}
+.tl div::after{content:"";position:absolute;left:4px;top:13px;bottom:0;width:2px;background:#E6E8EB}
+.tl div:last-child::after{display:none}
+.tl div.ok::before{background:var(--up)}
+.tl div.cur::before{background:#F0A81E;box-shadow:0 0 0 4px var(--warnbg)}
+.tl span{color:var(--muted);margin-left:auto}
+.bar{display:grid;grid-template-columns:86px 1fr 62px;align-items:center;gap:8px;font-size:12px;padding:3px 0}
+.bar .tr{height:8px;background:var(--soft);border-radius:4px;position:relative}
+.bar .tr i{position:absolute;top:0;bottom:0;border-radius:4px}
+.bar b{text-align:right}
+.gauge{height:8px;border-radius:4px;background:linear-gradient(90deg,#D9304F,#F0A81E 50%,#0B9B5C);position:relative}
+.gauge i{position:absolute;top:-4px;width:4px;height:16px;border-radius:2px;background:var(--ink)}
+.hyp{display:flex;gap:6px;flex-wrap:wrap}
+.hyp button{border:1px solid var(--line);background:#fff;border-radius:14px;font-size:11.5px;padding:4px 9px;color:var(--ink2)}
+.hyp button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dir{font-size:11.5px;font-weight:600;padding:2px 7px;border-radius:4px}
+.dir.d{background:var(--downbg);color:var(--down)}.dir.u{background:var(--upbg);color:var(--up)}.dir.n{background:var(--soft);color:var(--muted)}
+.news{display:flex;flex-direction:column;gap:3px;padding:8px 0;border-bottom:1px solid var(--line2)}
+.news:last-child{border-bottom:0}
+.news b{font-size:13px;line-height:1.4}
+.news small{font-size:11px;color:var(--muted)}
+.fine{font-size:10.5px;color:var(--faint);line-height:1.5}
+.faqg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.faqg button{border:1px solid var(--line);background:#fff;border-radius:8px;font-size:11.5px;padding:7px 4px;color:var(--ink2)}
+.faqg button[aria-pressed=true]{border-color:var(--ink);color:var(--ink);font-weight:600}
+.lnk{border:0;background:none;color:var(--brand);font-size:12px;padding:0;text-align:left}
+.toast{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:10px;padding:8px 14px;font-size:12.5px;z-index:30;white-space:nowrap;box-shadow:0 6px 16px rgba(0,0,0,.2)}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:rot .8s linear infinite;vertical-align:-2px;margin-right:6px}
+.spin.dk{border-color:#D6DADF;border-top-color:var(--ink)}
+@keyframes rot{to{transform:rotate(360deg)}}
+.seg2{display:flex;gap:6px}
+.seg2 button{flex:1;height:30px;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:12px}
+.seg2 button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:#fff;font-weight:600}
+
+@media (max-width:1180px){.app{grid-template-columns:220px 1fr}aside.notes{grid-column:2;border-left:0;border-top:1px solid var(--line)}.app{height:auto;min-height:100vh}aside.nav{height:100vh;position:sticky;top:0}}
+@media (max-width:760px){
+ .app{grid-template-columns:1fr}
+ aside.nav{display:none}aside.notes{grid-column:1}
+ .mbar{display:flex;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40}
+ .mbar select{flex:1;height:36px;border-radius:8px;border:1px solid var(--line);font:inherit;padding:0 8px;background:#fff}
+ main{padding:12px 0}
+ .device{transform:scale(var(--s,1));transform-origin:top center}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="mbar"><select id="msel" aria-label="选择场景"></select></div>
+<div class="app">
+ <aside class="nav">
+  <div class="brand"><b>AI 管家 · 对话 Agent</b><span>交互原型 · 浅色 · App · 示意数据</span></div>
+  <div class="navlist" id="nav"></div>
+ </aside>
+ <main>
+  <div class="crumb" id="crumb"></div>
+  <div class="wrapdev" id="wrapdev"><div class="device"><div class="screen" id="screen"></div></div></div>
+ </main>
+ <aside class="notes" id="notes"></aside>
+</div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const f2=v=>Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const sg=v=>(v>0?'+':v<0?'−':'')+f2(Math.abs(v));
+const cls=v=>v>0?'up':v<0?'down':'';
+const P='<span class="pend">⚠️ 待确认</span>';
+const pq=q=>`<span class="pend">⚠️ ${q} 待确认</span>`;
+
+/* ---------- 示意数据 ---------- */
+const POS={
+ sol:{sym:'SOLUSDT',side:'多',lev:10,mode:'逐仓',qty:5.5,unit:'SOL',entry:182.40,mark:168.90,liq:152.35,mr:128,upnl:-74.20,sl:true},
+ btc:{sym:'BTCUSDT',side:'多',lev:5,mode:'全仓',qty:0.02,unit:'BTC',entry:78117.0,mark:79697.47,liq:64210.0,mr:412,upnl:31.60,sl:false}
+};
+const ORDERS=[
+ {id:'o1',sym:'BTCUSDT',type:'限价',side:'开多',price:'78,000.0',qty:0.010,unit:'BTC',filled:0.004},
+ {id:'o2',sym:'BTCUSDT',type:'止盈',side:'平多',price:'85,000.0',qty:0.020,unit:'BTC',filled:0},
+ {id:'o3',sym:'ETHUSDT',type:'限价',side:'开空',price:'2,450.00',qty:0.50,unit:'ETH',filled:0}
+];
+const FAQ={
+ fee:['手续费怎么算','合约手续费 = 成交金额 × 费率。挂单（Maker）和吃单（Taker）费率不同，VIP 等级越高费率越低。具体费率以费率页为准。'],
+ funding:['资金费率是什么','永续合约没有到期日，平台用资金费让合约价格贴近现货价格。费率为正时多头付给空头，为负时空头付给多头；只在结算时刻持仓才会收付。'],
+ mode:['全仓和逐仓','逐仓：每个仓位单独用分配给它的保证金，最多亏掉这部分。全仓：合约账户里的可用余额都可以给仓位兜底，抗波动更强，但亏损可能波及整个合约账户。'],
+ avail:['有余额却开不了仓','常见原因：钱在资金账户还没划到合约账户；可用余额被挂单冻结；所选杠杆下的保证金不足；当前交易对处于限制状态。'],
+ tpsl:['止盈止损怎么设','开仓时可同时设置，也可以在持仓里补设。触发价按标记价格或最新价格判断；止损价要设在强平价之前，否则可能先被强平。'],
+ order:['市价单和限价单','市价单按当前盘口立即成交，速度快但可能有滑点；限价单按你指定的价格或更优价格成交，不一定马上成交。'],
+ slip:['成交价和看到的不一样','行情波动快或盘口深度不足时，市价单会逐档成交，实际均价和你看到的价格会有差异，这就是滑点。'],
+ safe:['账户安全','开启双重验证和防钓鱼码；不在任何地方透露验证码、密码或助记词；官方客服不会私聊你要求转账。'],
+ redeem:['理财赎回多久到账','活期产品一般可快速赎回，定期产品要到期后才能赎回，提前赎回规则以产品页为准。'],
+ transfer:['怎么划转','在资产页选择「划转」，选好转出和转入账户，即时到账、不收手续费。'],
+ deposit:['充值没到账','先确认选对了网络，并且链上确认数已经达到要求。确认数够了还没到账，可以把交易哈希发给我查询。'],
+ pnl:['浮盈和已实现盈亏','浮盈（未实现盈亏）是持仓按当前价格算出来的账面盈亏，会随价格变动；已实现盈亏是平仓后落袋的部分，会计入余额。']
+};
+const FAQ_KEYS=Object.keys(FAQ);
+
+/* ---------- 状态 ---------- */
+const S={page:'home',ai:null,tab:'board',msgs:[],busy:false,orb:'pending',bubble:true,ctx:null,from:null,user:'normal',closeRes:'ok',ordersEmpty:false,scene:'home',toast:''};
+let tok=0,stickBottom=false,toastT;
+function reset(){tok++;S.msgs=[];S.busy=false;S.ctx=null;S.from=null;S.tab='board';S.bubble=true;}
+
+/* ---------- 场景（左侧旅程导航 + 右侧说明） ---------- */
+const SCENES=[
+ {id:'home',g:'① 主动触达',t:'首页入口 · 光球三态',demo:['orb'],
+  run(){S.page='home';S.ai=null},
+  trig:'所有已登录用户在首页右下角看到常驻光球。颜色只由当前最高风险等级决定。',
+  logic:['默认：绿色呼吸，没有待处理事项','待处理：琥珀色 + 数字角标 + 外圈脉冲','高风险：红色 + 叹号，用于接近强平','出现新待处理事项时弹出一次气泡，点气泡直接进入对应对话'],
+  edge:['多个事项同时存在时，角标显示总数，颜色取最高等级','用户关闭气泡后，同一事项不再弹出'],
+  rules:['R1'],pend:['Q9 气泡停留时长','Q10 多风险合并与排序']},
+ {id:'push',g:'① 主动触达',t:'锁屏推送 → 落地',new:false,
+  run(){S.page='lock';S.ai=null},
+  trig:'风险提醒、价格提醒、早报、到账通知。点击推送打开 AI 对话，并带上来源。',
+  logic:['落地时按最新数据刷新卡片，不展示推送时的旧数据','数据已经变化时，在顶部明确告诉用户：推送时是多少，现在是多少，期间发生了什么','风险已降低时，结论改成「暂时不用处理」'],
+  edge:['用户点开时仓位已经平掉：卡片显示「已平仓」，不再给操作按钮','推送和早报说的是同一件事：只推送一次'],
+  rules:['R1'],pend:['Q8 风险提醒默认阈值','Q9 推送频控']},
+ {id:'board',g:'② 唤起与看板',t:'AI 看板',
+  run(){S.page='home';S.ai='sheet';S.tab='board'},
+  trig:'点击光球打开 AI。默认进入「看板」：今天需要处理的事、要点、资产和持仓一屏看完。',
+  logic:['顶部只放 1 条最高优先级事项和处理入口','「今日要点」点击后直接带着问题进入对话','资产、持仓数字可点击，问 AI 来源和原因','常问问题按用户当前阶段推荐（新手 / 有持仓 / 只有跟单）'],
+  edge:['没有待处理事项：顶部改为「今天一切正常」','未登录：只展示行情和常问问题，不展示个人数据'],
+  rules:['R1','R3'],pend:[]},
+ {id:'futures',g:'② 唤起与看板',t:'交易页内唤起',new:true,
+  run(){S.page='futures';S.ai='sheet';S.tab='chat';S.ctx='BTCUSDT 永续'},
+  trig:'用户在合约交易页点击 AI 入口，打开对话浮层，交易页保留在下面。',
+  logic:['自动带上当前交易对，作为上下文提示','推荐问题按当前交易对生成（挂单、新闻、平仓、规则）','浮层可以展开成全屏（右上角 ⤢），对话内容保留'],
+  edge:['页面停在 BTC，不等于用户授权买 BTC。交易参数必须由用户明说','对话浮层和半屏下单组件不同时出现：先关闭浮层再打开下单'],
+  rules:['R2','R6'],pend:['Q5 交易页入口形态（顶栏按钮 / 悬浮光球）']},
+ {id:'orders',g:'③ 查询',t:'合约挂单查询',new:true,demo:['orders'],
+  run(){openChat();ask('查我所有的合约挂单')},
+  trig:'「我有哪些挂单」「委托」「没成交的单」。',
+  logic:['按交易对筛选，区分普通限价单和止盈止损单','每笔展示方向、价格、数量和已成交部分','可勾选后在卡片内撤销（见撤单场景）'],
+  edge:['没有挂单：空状态，并给出常用入口','挂单很多：卡片只展示前 5 笔，其余跳转委托页'],
+  rules:['R2','R4'],pend:['Q13 是否同时展示现货挂单']},
+ {id:'withdraw',g:'③ 查询',t:'提币处理中',new:true,
+  run(){openChat();ask('提币一直处理中怎么办？')},
+  trig:'「提币一直没到」「提现处理中」。',
+  logic:['查询最近一笔提币，用时间线展示当前所处阶段','给出这个阶段的常见原因和预计时间区间','超过预计时间：直接给出转人工入口，带上单号'],
+  edge:['AI 不能加速到账，也不承诺具体到账时间','提币失败退回：说明已退回哪个账户','地址或网络填错导致无法找回：只说明情况并转人工'],
+  rules:['R2'],pend:['Q6 能否在对话中撤销提币','各阶段预计时长 ⚠️ 数值待确认']},
+ {id:'deposit',g:'③ 查询',t:'充值未到账',
+  run(){openChat();ask('我充的 USDT 怎么还没到账')},
+  trig:'「充值没到」「转进来的钱没看到」。',
+  logic:['查询最近 24 小时的充值记录','展示链上确认数进度和预计到账时间','不是这一笔时，可以选择「选错网络」或查看全部记录'],
+  edge:['链上查不到：引导用户提供交易哈希','选错网络：说明能否找回，并转人工'],
+  rules:['R1'],pend:[]},
+ {id:'pnl',g:'④ 解释与资讯',t:'盈亏解释：BTC 涨了为什么还亏',new:true,
+  run(){openChat();ask('今天 BTC 涨了，为什么我的账户还在亏？')},
+  trig:'「为什么还在亏」「亏在哪」「钱少了」。',
+  logic:['先给结论，再按来源拆开：各仓位、资金费、手续费、跟单、理财','明确口径：浮动盈亏和已实现盈亏分开说','最后给能继续追问的问题'],
+  edge:['当前余额不能直接解释历史差额，必须按时间范围查询资产变动','有划转或充提时，单独列出，不计入盈亏'],
+  rules:['R2'],pend:[]},
+ {id:'news',g:'④ 解释与资讯',t:'持仓相关新闻',new:true,
+  run(){openChat();ask('根据我的持仓，整理今天相关的新闻')},
+  trig:'「跟我持仓有关的新闻」「今天有什么消息」。',
+  logic:['按用户持仓筛选新闻，每条标注相关的仓位','每条注明来源和发布时间','只陈述事实和可能影响，不给买卖建议'],
+  edge:['没有持仓：按自选币种；也没有自选：按热门币种','新闻源不可信或已超过时效：不展示'],
+  rules:['R2','R5'],pend:[]},
+ {id:'macro',g:'④ 解释与资讯',t:'宏观、情绪与情景推演',new:true,
+  run(){openChat();ask('接下来有哪些重要宏观事件？')},
+  trig:'「最近有什么宏观事件」「市场情绪怎么样」「美元走强会怎样」。',
+  logic:['事件日历：时间、影响等级，以及和你的持仓有没有关系','情绪：恐惧与贪婪指数、多空比','情景推演：选一个假设，逐个持仓给出方向（利好 / 利空 / 中性）'],
+  edge:['只给方向，不给估算盈亏数值','卡片底部固定标注：不构成投资建议、数据来源、截至时间'],
+  rules:['R5'],pend:[]},
+ {id:'faq',g:'④ 解释与资讯',t:'FAQ 知识问答',new:true,
+  run(){openChat();ask('资金费率是什么？')},
+  trig:'规则和知识类问题：手续费、资金费率、全仓逐仓、止盈止损、滑点、理财赎回等。',
+  logic:['答案来自知识库，附「查看完整规则」','能结合用户自己的数据时顺带说明（例如你的 BTC 多单下次结算预计付多少）','卡片里可以切换到相关问题'],
+  edge:['知识库里没有：明确说「暂不支持」，不编造','规则更新后，知识库同步更新'],
+  rules:['R2'],pend:['Q14 知识库是否由运营后台维护']},
+ {id:'risk',g:'⑤ 对话 → 操作',t:'风险处理与止损',
+  run(){openChat();S.from='来自风险提醒 · 10:42';ask('SOL 多单离强平 9.8%，怎么处理')},
+  trig:'光球气泡、风险推送，或用户主动问。',
+  logic:['风险卡片：保证金率、强平价、标记价、未实现盈亏','三个处理方式：设止损 / 减仓 / 加保证金','设止损：给 3 个候选价，显示距现价多远、触发时亏损多少，在卡片内确认'],
+  edge:['止损价必须高于强平价，否则会先被强平','加保证金跳转仓位页完成，不在对话里提交'],
+  rules:['R4'],pend:['Q8 风险提醒阈值']},
+ {id:'close',g:'⑤ 对话 → 操作',t:'平仓',new:true,demo:['close'],
+  run(){openChat();ask('我要平仓')},
+  trig:'「我要平仓」「把 SOL 平了」「减仓一半」。',
+  logic:['有多个仓位时先让用户选，不默认第一个','选择平仓比例（25 / 50 / 100%）和类型（市价 / 限价）','卡片展示预估成交价和预估已实现盈亏','在卡片内确认，以业务回执为准'],
+  edge:['结果未知：显示「确认中」，自动查询最新状态，禁止重复提交','仓位已变化（被强平或在别处平掉）：卡片失效，提示刷新','平掉最后一个仓位：看板改为无持仓状态'],
+  rules:['R4'],pend:['Q16 关联止盈止损单的处理','Q2 一键全平']},
+ {id:'cancel',g:'⑤ 对话 → 操作',t:'撤单',new:true,demo:['orders'],
+  run(){openChat();ask('找出我的 BTC 未成交订单，准备撤销')},
+  trig:'「撤掉 BTC 的挂单」「没成交的不要了」。',
+  logic:['按用户说的范围预先筛选（这里是 BTC）','用户勾选后点「撤销」，卡片内再确认一次','结果逐笔列出'],
+  edge:['撤销时已部分成交：只撤未成交部分，已成交部分保留','撤销时已全部成交：这一笔撤销失败，说明原因','全选批量撤销：待确认是否支持'],
+  rules:['R4'],pend:['Q2 批量撤单']},
+ {id:'clarify',g:'⑥ 异常兜底',t:'追问消歧：「把这个关掉」',new:true,
+  run(){openChat();ask('把这个关掉')},
+  trig:'对象不明确，可能有多种理解。',
+  logic:['不猜测，只问一个关键问题：撤掉挂单，还是平掉仓位','用户选择后进入对应流程'],
+  edge:['上下文里只有一个可能对象时，可以直接确认这个对象'],
+  rules:['R4'],pend:[]},
+ {id:'multi',g:'⑥ 异常兜底',t:'多意图拆分',new:true,
+  run(){openChat();ask('看看亏了多少，没成交的也撤了')},
+  trig:'一句话里既有查询，又有操作。',
+  logic:['拆成两件事：查询直接给结果，写操作单独确认','两件事分开展示，用户能看清每一步'],
+  edge:['写操作不会因为和查询放在同一句话里就跳过确认'],
+  rules:['R4'],pend:[]},
+ {id:'incomplete',g:'⑥ 异常兜底',t:'参数不全：「BTC 全买了」',new:true,
+  run(){openChat();S.ctx='BTCUSDT 永续';ask('BTC 全买了')},
+  trig:'意图明确但关键参数缺失或含糊（「全买了」「照之前来」）。',
+  logic:['不推断金额和范围','只追问影响结果的关键项：现货还是合约、投入多少','上下文里的交易对只作提示，不当作授权'],
+  edge:['「全部」类表述必须让用户确认具体金额'],
+  rules:['R4'],pend:[]},
+ {id:'stale',g:'⑥ 异常兜底',t:'数据过期',new:true,
+  run(){openChat();ask('SOL 多单离强平 9.8%，怎么处理',{stale:true})},
+  trig:'卡片展示时间超过阈值，或行情大幅变化。',
+  logic:['卡片顶部标黄：数据可能已变化','操作按钮置灰，必须先刷新','刷新后更新数值和截至时间'],
+  edge:['写操作卡片同样适用：过期后不能直接确认'],
+  rules:['R4'],pend:['Q7 过期阈值 ⚠️ 数值待确认']},
+ {id:'handoff',g:'⑥ 异常兜底',t:'转人工',new:true,
+  run(){openChat();ask('提币一直处理中，我要找人工客服')},
+  trig:'身份争议、复杂投诉、充提异常无法自助、用户明确要求。',
+  logic:['把已确认的信息整理成摘要，客服接手时可以直接看到','用户确认摘要后再转接'],
+  edge:['不承诺一定能解决、多久能解决'],
+  rules:['R2'],pend:[]},
+ {id:'unsupported',g:'⑥ 异常兜底',t:'暂不支持',new:true,
+  run(){openChat();ask('帮我预测明天 BTC 的价格')},
+  trig:'超出能力或数据范围（价格预测、代客操作、无依据的问题）。',
+  logic:['明确说做不到，并说明原因','列出当前能做的事'],
+  edge:['不编造行情、余额、到账时间或订单结果'],
+  rules:['R5'],pend:[]},
+ {id:'comply',g:'⑥ 异常兜底',t:'合规拦截',new:true,demo:['user'],
+  run(){S.user=S.user==='normal'?'restricted':S.user;openChat();ask('帮我开个 BTC 合约')},
+  trig:'受限地区用户、未完成 KYC 的用户请求受限功能。',
+  logic:['查询类和知识类正常回答','受限功能给出明确的拦截原因和可行的下一步'],
+  edge:['不提示绕过方式（例如换地区、用他人账户）'],
+  rules:['R6'],pend:['Q12 受限地区与未 KYC 的可用范围']}
+];
+
+/* ---------- 路由：用户输入 → 任务 ---------- */
+function route(q){
+ if(/预测|明天.*价格|会涨到|带单|代我/.test(q))return 'unsupported';
+ if(/人工|客服|投诉/.test(q))return 'handoff';
+ if(/亏/.test(q)&&/撤/.test(q))return 'multi';
+ if(/关掉|不要了|这个/.test(q))return 'clarify';
+ if(/全买|照之前|帮我搞|梭哈/.test(q))return 'incomplete';
+ if(/开个|开仓|开多|开空/.test(q))return 'open';
+ if(/平仓|平了|减仓/.test(q))return 'close';
+ if(/撤|挂单|委托|未成交/.test(q))return 'orders';
+ if(/提币|提现/.test(q))return 'withdraw';
+ if(/充值|充的|到账/.test(q))return 'deposit';
+ if(/宏观|美联储|CPI|事件|情绪|恐惧|贪婪|多空|美元|美债|利率/.test(q))return 'macro';
+ if(/新闻|消息/.test(q))return 'news';
+ if(/亏|盈亏|钱少/.test(q))return 'pnl';
+ if(/强平|风险|保证金率|止损/.test(q))return 'risk';
+ for(const k of FAQ_KEYS){const kw={fee:/手续费/,funding:/资金费/,mode:/全仓|逐仓/,avail:/开不了|不能开/,tpsl:/止盈/,order:/市价|限价/,slip:/滑点|成交价/,safe:/安全|诈骗|骗/,redeem:/赎回|理财/,transfer:/划转/,deposit:/没到/,pnl:/浮盈|已实现/}[k];if(kw.test(q))return 'faq:'+k}
+ return 'unsupported';
+}
+const BLOCKED={restricted:['open','close'],unkyc:['open','close','orders-cancel']};
+
+function ask(q,opt={}){
+ if(S.busy){toast('请等当前回答完成');return}
+ q=q.trim();if(!q)return;
+ S.tab='chat';S.msgs.push({r:'u',t:q});
+ const k=route(q);
+ if((BLOCKED[S.user]||[]).includes(k)){return reply('核对账户权限',()=>[{r:'a',k:'block',d:{}}])}
+ const H={
+  risk:()=>reply('读取 SOL 仓位',()=>[{r:'a',k:'text',d:{trace:'已读取仓位 · 10:42:18',t:'这笔 <b>SOL 多单</b>的保证金率 24 小时内从 168% 降到 128%，SOL 再跌 <b>9.8%</b> 会触发强平。你可以三选一：'}},{r:'a',k:'risk',d:{stale:!!opt.stale,mr:128,liq:152.35,mark:168.90,upnl:-74.20,at:'10:42:18'}}]),
+  close:()=>reply('读取持仓',()=>[{r:'a',k:'text',d:{trace:'已读取持仓 · 2 个仓位',t:'你有 2 个合约仓位，要平哪一个？'}},{r:'a',k:'pick',d:{sel:null}}]),
+  orders:()=>{const btc=/BTC/.test(q);return reply('读取合约挂单',()=>[{r:'a',k:'text',d:{trace:'已读取合约挂单 · 10:42:20',t:S.ordersEmpty?'你目前没有未成交的合约挂单。':btc?'找到 <b>2 笔 BTC 未成交挂单</b>，勾选要撤销的：':'你有 <b>3 笔</b>未成交的合约挂单：'}},{r:'a',k:'orders',d:{f:btc?'BTCUSDT':'全部',sel:btc?['o1']:[],st:'edit'}}])},
+  withdraw:()=>reply('查询最近提币记录',()=>[{r:'a',k:'text',d:{trace:'已查询最近 7 天提币记录',t:'你最近一笔提币正处在 <b>风控复核</b> 阶段，这是正常流程，不需要你操作。'}},{r:'a',k:'withdraw',d:{}}]),
+  deposit:()=>reply('查询最近 24 小时充值',()=>[{r:'a',k:'text',d:{trace:'已查询最近 24 小时充值记录',t:'找到 1 笔：链上已收到，正在等区块确认，<b>约 3 分钟内到账</b>，不需要你操作。'}},{r:'a',k:'deposit',d:{}}]),
+  pnl:()=>reply('拆解昨日盈亏来源',()=>[{r:'a',k:'text',d:{trace:'已读取昨日资产变动 · 按来源拆分',t:'BTC 昨天确实涨了，你的 BTC 多单赚了 <b class="up">+18.70</b>；但 <b>SOL 多单浮亏 −96.30</b> 把它抵掉了，所以账户整体是亏的。'}},{r:'a',k:'pnl',d:{}}]),
+  news:()=>reply('按持仓筛选新闻',()=>[{r:'a',k:'text',d:{trace:'已按持仓 SOL、BTC 筛选 · 3 条',t:'和你持仓相关的有 3 条，SOL 那条最值得留意：'}},{r:'a',k:'news',d:{}}]),
+  macro:()=>reply('读取事件日历与情绪数据',()=>[{r:'a',k:'text',d:{trace:'已读取事件日历、情绪指标',t:'未来 3 天有 <b>2 个高影响事件</b>，今晚 20:30 的 CPI 离得最近。下面也可以选一个假设，看对你每个持仓的影响方向。'}},{r:'a',k:'macro',d:{h:0}}]),
+  multi:()=>reply('拆分为 2 个任务',()=>[{r:'a',k:'text',d:{trace:'识别到 2 件事：盈亏查询 + 撤单',t:'我拆成两件事处理。<b>① 盈亏</b>：已查，昨日 <b class="down">−82.40</b>，主要来自 SOL 多单。<b>② 撤单</b>：涉及资金操作，需要你勾选并确认：'}},{r:'a',k:'orders',d:{f:'全部',sel:[],st:'edit'}}]),
+  clarify:()=>reply('识别操作对象',()=>[{r:'a',k:'text',d:{trace:'对象不明确，需要确认',t:'你想关掉的是哪一种？'}},{r:'a',k:'clarify',d:{}}]),
+  incomplete:()=>reply('核对参数',()=>[{r:'a',k:'text',d:{trace:'缺少关键参数',t:'先确认两件事，我不会替你推断金额：<br>1. 买 <b>BTC 现货</b>，还是开 <b>BTC 合约</b>？<br>2. 投入多少？「全部」请告诉我具体数额。<div class="fine" style="margin-top:6px">你当前停在 BTCUSDT 页面，只作为参考，不代表你已经选好了标的。</div>'}},{r:'a',k:'fu',d:{c:[['买 BTC 现货 · 100 USDT','spot:'],['开 BTC 合约','fut:']]}}]),
+  open:()=>reply('核对参数',()=>[{r:'a',k:'text',d:{trace:'交易准备',t:'好的。开 BTC 合约前需要你说清楚：<b>方向</b>（做多 / 做空）、<b>保证金</b>多少、<b>杠杆</b>几倍。说完我会生成下单卡片，由你确认。'+' '+pq('开仓卡片确认方式（R4 只覆盖平仓、撤单）')}}]),
+  handoff:()=>reply('整理已确认信息',()=>[{r:'a',k:'text',d:{trace:'已整理 4 项信息',t:'好的，我先把已确认的信息整理好，客服接手时能直接看到，不用你再说一遍：'}},{r:'a',k:'handoff',d:{st:'edit'}}]),
+  unsupported:()=>reply('检查能力范围',()=>[{r:'a',k:'text',d:{trace:'超出支持范围',t:'这个我做不了：我<b>不预测价格</b>，也不会替你做买卖决定。我能帮你：'}},{r:'a',k:'fu',d:{c:[['查持仓和盈亏','q:今天 BTC 涨了，为什么我的账户还在亏？'],['看宏观事件','q:接下来有哪些重要宏观事件？'],['设价格提醒','toast:价格提醒（示意）'],['查规则','q:资金费率是什么？']]}}])
+ };
+ if(k.startsWith('faq:')){const t=k.slice(4);return reply('检索规则知识库',()=>[{r:'a',k:'faq',d:{t}}])}
+ H[k]();
+}
+function reply(trace,build){
+ const my=tok;S.busy=true;S.msgs.push({r:'a',k:'trace',d:{t:trace}});stickBottom=true;render();
+ setTimeout(()=>{if(my!==tok)return;S.msgs.pop();S.msgs.push(...build());S.busy=false;stickBottom=true;render()},750);
+}
+function openChat(){S.ai=S.ai||'sheet';S.tab='chat';if(S.page==='lock')S.page='home'}
+
+/* ---------- 卡片渲染 ---------- */
+function stamp(d,i){return `<div class="stamp"><span>数据截至 ${d.at||'10:42:18'}</span><button onclick="act(${i},'refresh')">刷新</button></div>`}
+const R={
+ trace:d=>`<div class="trace"><span class="dot"></span>正在${d.t}…</div>`,
+ text:d=>`<div class="ma">${d.trace?`<div class="trace done">${d.trace}</div>`:''}<div class="at">${d.t}</div></div>`,
+ fu:(d,i)=>`<div class="fu">${d.c.map(([l,a])=>`<button onclick="act(${i},'fu','${a}')">${l}</button>`).join('')}</div>`,
+ risk(d,i){
+  const lv=d.mr<150?['需关注','warn']:['安全','up'];
+  const pos=Math.min(96,Math.max(4,(d.mr-100)/3.2));
+  return `<div class="card">${d.stale?`<div class="banner w">这张卡片的数据已超过 ⚠️N 秒，行情可能已变化。刷新后才能继续操作。</div>`:''}
+  <div class="ch"><b>SOLUSDT</b><span class="tag">多 10x · 逐仓</span><span class="r ${lv[1]}">${lv[0]}</span></div>
+  <div><div class="big num ${lv[1]}">${d.mr}%</div><div class="sub">保证金率 · 离强平 ${((d.mark-d.liq)/d.mark*100).toFixed(1)}%</div></div>
+  <div class="meter"><i style="left:${pos}%"></i></div>
+  <div class="kv num"><div><small>强平价</small><b>${f2(d.liq)}</b></div><div><small>标记价</small><b>${f2(d.mark)}</b></div><div><small>未实现盈亏</small><b class="${cls(d.upnl)}">${sg(d.upnl)}</b></div></div>
+  <div class="acts"><button class="btn pri" ${d.stale?'disabled':''} onclick="act(${i},'sl')">设止损</button><button class="btn" ${d.stale?'disabled':''} onclick="act(${i},'reduce')">减仓</button><button class="btn" ${d.stale?'disabled':''} onclick="act(${i},'margin')">加保证金</button></div>
+  ${stamp(d,i)}</div>`},
+ stop(d,i){
+  const o=[[160.00,'5.3%','−123.20'],[158.00,'6.5%','−134.20'],[155.00,'8.2%','−150.70']];
+  if(d.st==='done')return `<div class="card"><div class="banner g">✓ 已设止损 ${f2(d.p)} · 标记价格触发后按市价平掉全部 5.50 SOL</div><div class="stamp"><span>回执编号 SL-26110210431</span><button onclick="toast('跳转仓位页（示意）')">在仓位页管理 ›</button></div></div>`;
+  return `<div class="card"><div class="ch"><b>设置止损</b><span class="tag">SOLUSDT 多 · 全部 5.50 SOL</span></div>
+  <div class="opts">${o.map(([p,dist,loss])=>`<button class="opt" aria-pressed="${d.p===p}" onclick="act(${i},'pickp',${p})"><span class="rad"></span><span class="grow"><b class="num">${f2(p)}</b><small>距现价 ${dist} · 触发时总亏损约 ${loss}</small></span></button>`).join('')}</div>
+  <div class="banner n">止损价必须高于强平价 152.35，否则会先被强平。触发方式：标记价格。</div>
+  <div class="acts"><button class="btn" onclick="act(${i},'cancel')">取消</button><button class="btn pri" ${d.p?'':'disabled'} onclick="act(${i},'confirm')">${d.st==='sub'?'<span class="spin"></span>提交中':'确认设置'}</button></div></div>`},
+ pick(d,i){
+  return `<div class="opts">${Object.entries(POS).map(([k,p])=>`<button class="opt" aria-pressed="${d.sel===k}" onclick="act(${i},'pick','${k}')"><span class="rad"></span><span class="grow"><b>${p.sym} · ${p.side} ${p.lev}x</b><small class="num">${p.qty} ${p.unit} · 未实现 <span class="${cls(p.upnl)}">${sg(p.upnl)}</span> · 保证金率 ${p.mr}%</small></span></button>`).join('')}</div>`},
+ close(d,i){
+  const p=POS[d.pos],qty=+(p.qty*d.pct/100).toFixed(4),pnl=p.upnl*d.pct/100;
+  const head=`<div class="ch"><b>平仓 · ${p.sym}</b><span class="tag">${p.side} ${p.lev}x · ${p.mode}</span><span class="r" style="color:var(--muted)">AI 已预填</span></div>`;
+  if(d.st==='done')return `<div class="card">${head}<div class="banner g">✓ 已平仓 ${qty} ${p.unit}，成交均价 ${f2(p.mark)}，已实现盈亏 <b>${sg(pnl)}</b>。资金已回到合约账户。</div>${d.pct===100&&p.sl?`<div class="banner n">该仓位上的 1 笔止损单 ${pq('Q16 处理方式')}</div>`:''}<div class="stamp"><span>回执编号 CL-26110210432 · 以业务系统为准</span><button onclick="toast('跳转成交记录（示意）')">查看成交 ›</button></div></div>`;
+  if(d.st==='unknown')return `<div class="card">${head}<div class="banner w"><span class="spin dk"></span>提交结果确认中。网络超时，正在查询这笔平仓的最新状态，请不要重复提交。</div><button class="btn" disabled>确认平仓</button></div>`;
+  if(d.st==='invalid')return `<div class="card">${head}<div class="banner r">仓位已经变化：提交前该仓位被部分平仓（剩余 2.75 SOL）。这张卡片已失效，没有提交任何操作。</div><div class="acts"><button class="btn pri" onclick="act(${i},'reload')">按最新仓位重新生成</button></div></div>`;
+  return `<div class="card">${head}
+  <div><div class="sub" style="margin-bottom:6px">平仓比例 ${d.pct===100?'':pq('Q2 一键全平不在此列')}</div><div class="seg2">${[25,50,100].map(v=>`<button aria-pressed="${d.pct===v}" onclick="act(${i},'pct',${v})">${v}%</button>`).join('')}</div></div>
+  <div class="seg2">${['市价','限价'].map(v=>`<button aria-pressed="${d.type===v}" onclick="act(${i},'type','${v}')">${v}</button>`).join('')}</div>
+  <div class="rows num"><div class="rw"><span>平仓数量</span><b>${qty} ${p.unit}</b></div><div class="rw"><span>${d.type==='市价'?'预估成交价':'限价'}</span><b>${d.type==='市价'?'≈ '+f2(p.mark):f2(p.mark+0.6)}</b></div><div class="rw"><span>预估已实现盈亏</span><b class="${cls(pnl)}">${sg(pnl)}</b></div><div class="rw"><span>手续费</span><b>按你的费率 ${P}</b></div>${p.sl?`<div class="rw"><span>关联止损单</span><b>1 笔 ${pq('Q16')}</b></div>`:''}</div>
+  ${d.type==='市价'?'<div class="fine">市价单可能有滑点，实际成交价以回执为准。</div>':''}
+  <div class="acts"><button class="btn" onclick="act(${i},'cancel')">取消</button><button class="btn dan" onclick="act(${i},'confirm')">${d.st==='sub'?'<span class="spin"></span>提交中':'确认平仓'}</button></div>
+  <div class="stamp"><span>数据截至 10:42:25</span><span>卡片有效期 ${P}</span></div></div>`},
+ orders(d,i){
+  if(S.ordersEmpty)return `<div class="card"><div class="banner n">没有未成交的合约挂单。</div><div class="acts"><button class="btn" onclick="toast('跳转委托记录（示意）')">看历史委托</button><button class="btn" onclick="act(${i},'fu','q:我要平仓')">管理仓位</button></div></div>`;
+  const list=ORDERS.filter(o=>d.f==='全部'||o.sym===d.f);
+  if(d.st==='done'){const done=ORDERS.filter(o=>d.sel.includes(o.id));return `<div class="card"><div class="ch"><b>撤单结果</b><span class="r up">已完成 ${done.length} 笔</span></div><div class="rows num">${done.map(o=>`<div class="rw"><span>${o.sym} ${o.type} ${o.side} @ ${o.price}</span><b class="up">${o.filled?'已撤未成交部分':'已撤销'}</b></div>${o.filled?`<div class="fine">撤销前已成交 ${o.filled} ${o.unit}，这部分保留为持仓；只撤销了剩余 ${(o.qty-o.filled).toFixed(3)} ${o.unit}。</div>`:''}`).join('')}</div><div class="stamp"><span>以业务系统回执为准 · 10:42:31</span><button onclick="toast('跳转委托记录（示意）')">委托记录 ›</button></div></div>`}
+  const n=d.sel.length,all=list.length&&list.every(o=>d.sel.includes(o.id));
+  return `<div class="card"><div class="hyp">${['全部','BTCUSDT','ETHUSDT'].map(f=>`<button aria-pressed="${d.f===f}" onclick="act(${i},'filter','${f}')">${f}</button>`).join('')}<button style="margin-left:auto" aria-pressed="${all}" onclick="act(${i},'all')">全选</button>${pq('Q2')}</div>
+  <div class="opts">${list.map(o=>`<button class="opt" aria-pressed="${d.sel.includes(o.id)}" onclick="act(${i},'tog','${o.id}')" ${d.st!=='edit'?'disabled':''}><span class="chk">✓</span><span class="grow"><b class="num">${o.sym} · <span class="${o.side.includes('多')?'up':'down'}">${o.side}</span> · ${o.type}</b><small class="num">价格 ${o.price} · 数量 ${o.qty} ${o.unit}${o.filled?` · 已成交 ${o.filled}`:''}</small></span></button>`).join('')}</div>
+  ${d.st==='confirm'?`<div class="banner w">确认撤销已选的 ${n} 笔挂单？撤销后不可恢复${d.sel.includes('o2')?'，其中包含 1 笔止盈单，撤销后这个仓位就没有止盈保护了':''}。</div><div class="acts"><button class="btn" onclick="act(${i},'back')">返回</button><button class="btn dan" onclick="act(${i},'do')">确认撤销 ${n} 笔</button></div>`
+  :d.st==='sub'?`<button class="btn dan" disabled><span class="spin"></span>撤销中</button>`
+  :`<button class="btn dan" ${n?'':'disabled'} onclick="act(${i},'ask')">撤销所选${n?` (${n})`:''}</button>`}
+  <div class="stamp"><span>数据截至 10:42:20</span><span>只展示合约 ${pq('Q13 现货')}</span></div></div>`},
+ withdraw:(d,i)=>`<div class="card"><div class="ch"><b>提币 · USDT（TRC20）</b><span class="r warn">处理中</span></div>
+  <div><div class="big num">1,000.00</div><div class="sub">到 TQ7x…8kPa · 已等待 37 分钟</div></div>
+  <div class="tl num"><div class="ok">提交申请<span>10:05</span></div><div class="ok">安全审核通过<span>10:06</span></div><div class="cur">风控复核中 · 预计 ${P}<span>10:06 起</span></div><div>链上广播</div><div>到账</div></div>
+  <div class="banner n">大额或新地址提币会进入风控复核，这是正常流程。我无法加速，也不能承诺具体到账时间。</div>
+  <div class="acts"><button class="btn" onclick="act(${i},'fu','q:提币一直处理中，我要找人工客服')">转人工</button><button class="btn" disabled>撤销提币 ${pq('Q6')}</button></div>
+  <div class="stamp"><span>单号 W26110210050017</span><span>数据截至 10:42:22</span></div></div>`,
+ deposit:(d,i)=>`<div class="card"><div class="ch"><b>充值 · USDT（TRC20）</b><span class="r warn">确认中</span></div>
+  <div class="big num">200.00</div>
+  <div class="tl num"><div class="ok">链上已收到<span>10:31</span></div><div class="cur">区块确认 14 / 20<span>进行中</span></div><div>到账资金账户<span>预计 10:48</span></div></div>
+  <div class="fu"><button onclick="act(${i},'fu','toast:选错网络处理指引（示意）')">我可能选错网络了</button><button onclick="toast('跳转充值记录（示意）')">看全部充值记录</button></div>
+  <div class="stamp"><span>交易哈希 7f3a…c91e</span><span>数据截至 10:42:22</span></div></div>`,
+ pnl(d,i){
+  const it=[['SOL 多单','浮动',-96.30],['BTC 多单','浮动',18.70],['跟单','已实现',5.20],['资金费','已实现',-3.20],['手续费','已实现',-6.80]];
+  return `<div class="card"><div class="ch"><b>昨日盈亏 · 按来源</b><span class="r down num">−82.40</span></div>
+  <div>${it.map(([n,t,v])=>`<div class="bar num"><span>${n} <small style="color:var(--faint)">${t}</small></span><span class="tr"><i style="${v<0?'right:50%':'left:50%'};width:${Math.abs(v)/96.3*50}%;background:${v<0?'var(--down)':'var(--up)'}"></i></span><b class="${cls(v)}">${sg(v)}</b></div>`).join('')}</div>
+  <div class="banner n">口径：「浮动」是持仓账面盈亏，平仓前会随价格变化；「已实现」已经计入余额。期间的充值、提币和划转不计入盈亏。</div>
+  <div class="fu"><button onclick="act(${i},'fu','q:SOL 多单离强平 9.8%，怎么处理')">SOL 这单怎么办</button><button onclick="act(${i},'fu','q:浮盈和已实现盈亏有什么区别')">浮盈和已实现的区别</button></div></div>`},
+ news:(d,i)=>`<div class="card"><div class="ch"><b>持仓相关 · 今天</b><span class="r" style="color:var(--muted)">示意新闻</span></div>
+  <div><div class="news"><small><span class="dir d">关联 SOL 多单</span> · [来源] · 09:12</small><b>[示意] SOL 生态某项目本周有大额代币解锁，市场关注抛压</b><small>可能影响：短期波动加大，你的 SOL 多单保证金率已在 128%</small></div>
+  <div class="news"><small><span class="dir n">关联 BTC 多单</span> · [来源] · 07:40</small><b>[示意] 现货 BTC ETF 昨日资金净流入</b><small>可能影响：资金面偏正面，不代表价格走势</small></div>
+  <div class="news"><small><span class="dir n">全市场</span> · [来源] · 06:55</small><b>[示意] 今晚 20:30 公布美国 CPI</b><small>可能影响：数据公布前后波动通常放大</small></div></div>
+  <div class="fine">只陈述事实和可能影响，不构成投资建议。来源 [数据源待接入]，截至 10:42。</div>
+  <div class="fu"><button onclick="act(${i},'fu','q:接下来有哪些重要宏观事件？')">看宏观事件日历</button></div></div>`,
+ macro(d,i){
+  const H=[['美元走强、美债收益率上行',['d','d','n']],['通胀数据高于预期',['d','d','n']],['美联储超预期降息',['u','u','n']]];
+  const L={d:'利空',u:'利好',n:'中性'};const cur=H[d.h];
+  return `<div class="card"><div class="ch"><b>事件日历 · 未来 3 天</b></div>
+  <div class="rows num"><div class="rw"><span>今晚 20:30 · 美国 CPI</span><b class="down">高影响</b></div><div class="rw"><span>周三 02:00 · 美联储利率决议</span><b class="down">高影响</b></div><div class="rw"><span>周五 20:30 · 非农就业</span><b class="warn">中影响</b></div></div></div>
+  <div class="card"><div class="ch"><b>市场情绪</b><span class="r warn">偏贪婪 62</span></div>
+  <div class="gauge"><i style="left:62%"></i></div><div class="stamp"><span>极度恐惧</span><span>极度贪婪</span></div>
+  <div class="rows num"><div class="rw"><span>BTC 多空持仓人数比</span><b>1.18</b></div><div class="rw"><span>SOL 多空持仓人数比</span><b>1.42 · 多头较拥挤</b></div></div></div>
+  <div class="card"><div class="ch"><b>情景推演 · 对你的持仓</b></div>
+  <div class="hyp">${H.map((h,k)=>`<button aria-pressed="${d.h===k}" onclick="act(${i},'hyp',${k})">${h[0]}</button>`).join('')}</div>
+  <div class="rows">${[['SOL 多 10x',cur[1][0]],['BTC 多 5x',cur[1][1]],['USDT 活期理财',cur[1][2]]].map(([n,x])=>`<div class="rw"><span>${n}</span><b class="dir ${x}">${L[x]}</b></div>`).join('')}</div>
+  <div class="banner n">只给方向，不给估算数值。历史上类似情形下，高杠杆多单承压更明显。</div>
+  <div class="fine">只陈述事实和可能影响，不构成投资建议。来源 [数据源待接入]，截至 10:42。</div></div>`},
+ faq(d,i){const [t,a]=FAQ[d.t];return `<div class="ma"><div class="trace done">已检索规则知识库 · ${t}</div><div class="at">${a}</div>${d.t==='funding'?`<div class="banner n num">和你相关：你的 BTC 多单下次结算在 16:00，按当前费率预估支付 −1.20 USDT。</div>`:''}<button class="lnk" onclick="toast('跳转完整规则页（示意）')">查看完整规则 ›</button></div>
+  <div class="card"><div class="sub">其他常见问题</div><div class="faqg">${FAQ_KEYS.slice(0,9).map(k=>`<button aria-pressed="${d.t===k}" onclick="act(${i},'faq','${k}')">${FAQ[k][0]}</button>`).join('')}</div></div>`},
+ clarify:(d,i)=>`<div class="opts"><button class="opt" onclick="act(${i},'fu','q:查我所有的合约挂单')"><span class="grow"><b>撤掉挂单</b><small>你有 3 笔未成交的合约挂单</small></span><span>›</span></button><button class="opt" onclick="act(${i},'fu','q:我要平仓')"><span class="grow"><b>平掉仓位</b><small>你有 2 个合约仓位</small></span><span>›</span></button></div>`,
+ handoff(d,i){
+  if(d.st==='done')return `<div class="card"><div class="banner g">✓ 已发起转接，客服接入后会看到以下摘要。处理时长以客服答复为准。</div><button class="btn" onclick="toast('打开在线客服（示意）')">进入客服会话 ›</button></div>`;
+  return `<div class="card"><div class="ch"><b>转人工摘要</b><span class="r" style="color:var(--muted)">发送前可修改</span></div>
+  <div class="rows num"><div class="rw"><span>问题类型</span><b>提币处理时间过长</b></div><div class="rw"><span>提币单号</span><b>W26110210050017</b></div><div class="rw"><span>当前状态</span><b>风控复核中 · 已 37 分钟</b></div><div class="rw"><span>用户诉求</span><b>想知道何时到账</b></div></div>
+  <div class="acts"><button class="btn" onclick="toast('编辑摘要（示意）')">修改</button><button class="btn pri" onclick="act(${i},'send')">确认并转人工</button></div></div>`},
+ block:(d,i)=>`<div class="card"><div class="banner r">${S.user==='restricted'?'根据你所在地区的监管要求，合约开仓和平仓相关的功能暂时无法使用。':'完成身份认证（KYC）后才能使用合约交易相关功能。'}</div>
+  <div class="at" style="font-size:12.5px">你仍然可以问我：行情、规则、资产查询。</div>
+  <div class="acts">${S.user==='unkyc'?'<button class="btn pri" onclick="toast(\'跳转身份认证（示意）\')">去认证</button>':''}<button class="btn" onclick="act(${i},'fu','q:资金费率是什么？')">问规则</button></div>
+  <div class="fine">可用范围 ${pq('Q12')}</div></div>`
+};
+
+/* ---------- 卡片交互 ---------- */
+function act(i,a,v){
+ const m=S.msgs[i],d=m&&m.d;if(!m)return;
+ if(a==='fu'){if(S.busy)return toast('请等当前回答完成');const[t,x]=[v.split(':')[0],v.slice(v.indexOf(':')+1)];
+  if(t==='q')return ask(x);if(t==='toast')return toast(x);
+  if(t==='spot'){S.msgs.push({r:'u',t:'买 BTC 现货 · 100 USDT'});return reply('生成下单卡片',()=>[{r:'a',k:'text',d:{trace:'参数已齐',t:'好的：用 100 USDT 市价买入 BTC 现货。确认后会生成下单卡片。'+pq('开仓卡片形态')}}])}
+  if(t==='fut'){S.msgs.push({r:'u',t:'开 BTC 合约'});return reply('核对参数',()=>[{r:'a',k:'text',d:{trace:'还缺 3 个参数',t:'开合约还需要你说明：<b>方向</b>、<b>保证金</b>、<b>杠杆</b>。'}}])}
+ }
+ if(a==='refresh'){if(m.k==='risk'){d.stale=false;d.mr=131;d.mark=169.40;d.upnl=-71.45;d.at='10:43:05';toast('已刷新');}else toast('已刷新');return render()}
+ if(m.k==='risk'){
+  if(a==='sl'){S.msgs.push({r:'u',t:'设止损'});return reply('计算候选止损价',()=>[{r:'a',k:'stop',d:{p:160,st:'edit'}}])}
+  if(a==='reduce'){S.msgs.push({r:'u',t:'减仓'});return reply('生成平仓卡片',()=>[{r:'a',k:'close',d:{pos:'sol',pct:50,type:'市价',st:'edit'}}])}
+  if(a==='margin')return toast('跳转仓位页追加保证金（示意）');
+ }
+ if(m.k==='stop'){if(a==='pickp')d.p=v;if(a==='cancel'){S.msgs.splice(i,1);S.msgs.push({r:'a',k:'text',d:{t:'已取消，没有设置任何止损。'}})}
+  if(a==='confirm'){d.st='sub';render();return setTimeout(()=>{d.st='done';render()},900)}return render()}
+ if(m.k==='pick'&&a==='pick'){if(S.busy)return;d.sel=v;S.msgs.push({r:'u',t:'平 '+POS[v].sym+' '+POS[v].side+'单'});return reply('生成平仓卡片',()=>[{r:'a',k:'close',d:{pos:v,pct:100,type:'市价',st:'edit'}}])}
+ if(m.k==='close'){
+  if(a==='pct')d.pct=v;if(a==='type')d.type=v;
+  if(a==='cancel'){S.msgs.splice(i,1);S.msgs.push({r:'a',k:'text',d:{t:'已取消，没有提交任何平仓。'}})}
+  if(a==='reload'){d.st='edit';d.pct=100;toast('已按最新仓位刷新')}
+  if(a==='confirm'){if(d.st!=='edit')return;d.st='sub';render();
+   return setTimeout(()=>{
+    if(S.closeRes==='ok'){d.st='done'}
+    else if(S.closeRes==='changed'){d.st='invalid'}
+    else{d.st='unknown';render();setTimeout(()=>{d.st='done';toast('已查询到结果：平仓成功');render()},2200)}
+    render()},900)}
+  return render()}
+ if(m.k==='orders'){
+  if(a==='filter'){d.f=v;d.sel=d.sel.filter(id=>v==='全部'||ORDERS.find(o=>o.id===id).sym===v)}
+  if(a==='tog'){d.sel=d.sel.includes(v)?d.sel.filter(x=>x!==v):[...d.sel,v]}
+  if(a==='all'){const ids=ORDERS.filter(o=>d.f==='全部'||o.sym===d.f).map(o=>o.id);d.sel=ids.every(x=>d.sel.includes(x))?[]:ids}
+  if(a==='ask'){if((BLOCKED[S.user]||[]).includes('orders-cancel')){S.msgs.push({r:'a',k:'block',d:{}});stickBottom=true;return render()}d.st='confirm'}
+  if(a==='back')d.st='edit';
+  if(a==='do'){d.st='sub';render();return setTimeout(()=>{d.st='done';render()},900)}
+  return render()}
+ if(m.k==='macro'&&a==='hyp'){d.h=v;return render()}
+ if(m.k==='faq'&&a==='faq'){d.t=v;return render()}
+ if(m.k==='handoff'&&a==='send'){d.st='done';return render()}
+}
+
+/* ---------- 页面渲染 ---------- */
+function home(){
+ const orbCls=S.orb==='default'?'':S.orb;
+ return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="scroll"><div class="hp">
+ <div class="top"><span class="avatar">R</span><div class="search">搜索币种 / 功能</div></div>
+ <div class="asset"><small>总资产估值 (USDT)</small><div class="v num">4,734.53</div><small class="down num">昨日盈亏 −82.40</small></div>
+ <div class="tiles"><div><i></i>充值</div><div><i></i>划转</div><div><i></i>跟单</div><div><i></i>理财</div></div>
+ <div class="mkt"><div class="h"><b>自选</b><span>热门</span><span>涨幅榜</span></div>
+ ${[['BTC/USDT','79,697.47','−0.86%','down'],['ETH/USDT','2,316.63','+0.68%','up'],['SOL/USDT','168.90','−6.20%','down'],['BNB/USDT','598.20','+0.31%','up']].map(r=>`<div class="mrow num"><b>${r[0]}</b><span>${r[1]}</span><span class="pill ${r[3]}">${r[2]}</span></div>`).join('')}
+ <button class="btn" style="margin-top:12px" onclick="go('futures')">进入 BTCUSDT 合约交易页 ›</button></div></div></div>
+ <div class="tabbar"><span class="on">首页</span><span>市场</span><span>交易</span><span>理财</span><span>资产</span></div>
+ ${S.orb!=='default'&&S.bubble&&!S.ai?`<button class="bubble" onclick="go('risk')">SOL 多单离强平 9.8%<small>点我看处理方式</small></button>`:''}
+ <button class="orb ${orbCls}" aria-label="打开 AI 管家" onclick="openAI()"><i></i>${S.orb==='pending'?'<span class="badge">1</span>':S.orb==='danger'?'<span class="badge">!</span>':''}</button></div>`}
+function futures(){
+ return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div>
+ <div class="fh"><span style="color:var(--muted)" onclick="go('home')">‹</span><b>BTCUSDT</b><span class="tag">永续</span><button class="aibtn" onclick="openAI('BTCUSDT 永续')"><i></i>问 AI</button>${pq('Q5')}</div>
+ <div class="fp num"><div class="p">79,697.47</div><div class="sub">标记价 79,690.12 · 资金费率 0.0100% · 16:00 结算</div></div>
+ <div class="fgrid num"><div class="ob">${[['79,712.0','0.214','down'],['79,705.5','0.088','down'],['79,701.2','1.320','down'],['79,697.4','0.540','up'],['79,692.0','0.912','up'],['79,688.8','0.160','up']].map(r=>`<div><span class="${r[2]}">${r[0]}</span><span>${r[1]}</span></div>`).join('')}</div>
+ <div class="form"><div class="f"><span>全仓</span><span>5x</span></div><div class="f"><span>价格</span><span>市价</span></div><div class="f"><span>数量</span><span>USDT</span></div><div class="bb" style="background:var(--up)">开多</div><div class="bb" style="background:var(--down)">开空</div></div></div>
+ <div class="ptab"><b>仓位 (2)</b><span>当前委托 (3)</span></div>
+ ${Object.values(POS).map(p=>`<div class="prow num"><b>${p.sym} · <span class="up">${p.side} ${p.lev}x</span></b><span class="sub">保证金率 ${p.mr}% · 未实现 <span class="${cls(p.upnl)}">${sg(p.upnl)}</span></span></div>`).join('')}
+ </div>`}
+function lock(){
+ return `<div class="lock"><div class="d">11月2日 星期一</div><div class="t num">10:51</div>
+ <button class="push hot" onclick="landPush()"><span class="ic"><i></i></span><span style="flex:1"><b>SOL 多单需要关注</b><p>保证金率降到 128%，再跌 9.8% 会触发强平。点开看处理方式。</p></span><span class="tm">10:42</span></button>
+ <button class="push" onclick="toast('落地：价格提醒详情（示意）')"><span class="ic"><i></i></span><span style="flex:1"><b>BTC 到 80,000 了</b><p>你设的价格提醒已触发。</p></span><span class="tm">8 分钟前</span></button>
+ <button class="push" onclick="openAI();S.tab='board';render()"><span class="ic"><i></i></span><span style="flex:1"><b>今日要点：SOL 领跌，BTC 横盘</b><p>1 件事需要处理，另有 2 条和你的持仓有关。</p></span><span class="tm">08:00</span></button>
+ <div class="tip">点击第一条推送，查看「数据已变化」的落地</div></div>`}
+function landPush(){reset();S.page='home';S.ai='full';S.tab='chat';
+ S.from='来自风险提醒 · 10:42 · 你在 10:51 打开。已按最新数据刷新：你在 10:45 追加了 50 USDT 保证金，保证金率从 128% 回升到 141%。';
+ S.msgs=[{r:'a',k:'text',d:{trace:'已按最新数据刷新 · 10:51:03',t:'<b class="up">风险已降低，暂时不用处理。</b>强平价从 152.35 降到 143.26，距离拉开到 15.2%。要不要顺便设个止损，防止再次跌回来？'}},{r:'a',k:'risk',d:{mr:141,liq:143.26,mark:168.90,upnl:-74.20,at:'10:51:03'}}];
+ stickBottom=true;render()}
+function board(){
+ return `<div class="greet">早上好 · 11月2日 · 今天有 1 件事需要处理</div>
+ <div class="hero"><span class="st">● 需处理</span><b>SOL 多单离强平只剩 9.8%</b><span class="sub">保证金率 24 小时内从 168% 降到 128%</span><div class="acts"><button class="btn pri" onclick="go('risk')">去处理</button><button class="btn" onclick="S.bubble=false;toast('已稍后提醒（示意）')">稍后</button></div></div>
+ <div class="sec"><h6>今日要点</h6>
+ <button class="li" onclick="ask('接下来有哪些重要宏观事件？')"><span class="k w">今晚</span><span class="tx">20:30 公布美国 CPI，波动可能放大</span><span class="ar">›</span></button>
+ <button class="li" onclick="ask('根据我的持仓，整理今天相关的新闻')"><span class="k n">持仓</span><span class="tx">SOL 生态有大额代币解锁</span><span class="ar">›</span></button>
+ <button class="li" onclick="ask('资金费率是什么？')"><span class="k n">16:00</span><span class="tx">BTC 多单资金费预估 −1.20</span><span class="ar">›</span></button>
+ <button class="li" onclick="ask('查我所有的合约挂单')"><span class="k g">挂单</span><span class="tx">3 笔未成交，其中 1 笔已部分成交</span><span class="ar">›</span></button></div>
+ <div class="boxs num"><button class="box" onclick="ask('今天 BTC 涨了，为什么我的账户还在亏？')"><small>总资产 · USDT</small><b>4,734.53</b><small class="down">昨日 −82.40 ›</small></button><button class="box" onclick="ask('我要平仓')"><small>合约仓位</small><b>2 个</b><small class="down">未实现 −42.60 ›</small></button></div>
+ <div class="sec"><h6>常问</h6><div class="fu">${['提币一直处理中怎么办？','全仓和逐仓有什么区别？','市场情绪偏贪婪还是恐惧？'].map(q=>`<button onclick="ask('${q}')">${q}</button>`).join('')}</div></div>`}
+function sugg(){
+ if(S.ctx)return ['我的 BTC 挂单','BTC 相关新闻','我要平仓','资金费率是什么？'];
+ return ['我要平仓','查我所有的合约挂单','提币一直处理中怎么办？','今天有哪些宏观事件？','把这个关掉'];
+}
+function aiPanel(){
+ const chat=S.tab==='chat';
+ return `${S.ai==='sheet'?'<div class="scrim" onclick="closeAI()"></div>':''}
+ <section class="ai ${S.ai==='full'?'full':''}"><div class="sbpad"></div><div class="grab"></div>
+ <div class="ahead"><span class="ttl"><i></i>AI 管家</span><div class="atabs"><button aria-pressed="${!chat}" onclick="S.tab='board';render()">看板</button><button aria-pressed="${chat}" onclick="S.tab='chat';render()">对话</button></div><span class="sp"></span>
+ <button class="ib" title="${S.ai==='full'?'收起为浮层':'展开全屏'}" onclick="S.ai=S.ai==='full'?'sheet':'full';render()">${S.ai==='full'?'⤡':'⤢'}</button><button class="ib" title="新对话" onclick="tok++;S.msgs=[];S.busy=false;S.from=null;S.tab='chat';render()">＋</button><button class="ib" title="关闭" onclick="closeAI()">✕</button></div>
+ ${chat&&S.ctx?`<div class="ctxbar">当前页面：<b>${S.ctx}</b><span>· 只作为参考，不代表下单授权</span></div>`:''}
+ ${chat&&S.from?`<div class="from">${S.from}</div>`:''}
+ <div class="abody" id="abody">${chat?(S.msgs.length?S.msgs.map((m,i)=>m.r==='u'?`<div class="mu">${m.t}</div>`:R[m.k](m.d,i)).join(''):`<div class="ma"><div class="at">${S.ctx?`你在看 <b>${S.ctx}</b>，想问点什么？行情、你的仓位和挂单、规则都可以。`:'有什么想问的？查账户、看行情、准备交易都可以。'}</div></div>`):board()}</div>
+ <div class="composer">${chat?`<div class="sugg">${sugg().map(q=>`<button onclick="ask('${q}')">${q}</button>`).join('')}</div>`:''}
+ <form class="inrow" onsubmit="event.preventDefault();const v=this.q.value;this.q.value='';ask(v)"><input name="q" placeholder="问我任何事，例如：我的 SOL 还安全吗" autocomplete="off" maxlength="300"><button class="send" ${S.busy?'disabled':''} aria-label="发送">↑</button></form>
+ <div class="disc">AI 可能出错。涉及资金的操作，以确认卡片和业务回执为准。</div></div></section>`}
+function render(){
+ const prev=$('abody'),atBottom=prev?prev.scrollHeight-prev.scrollTop-prev.clientHeight<40:true,keep=prev?prev.scrollTop:0;
+ const input=document.querySelector('.inrow input'),val=input?input.value:'',foc=document.activeElement===input;
+ $('screen').innerHTML=(S.page==='lock'?lock():S.page==='futures'?futures():home())+(S.ai?aiPanel():'')+(S.toast?`<div class="toast">${S.toast}</div>`:'');
+ const b=$('abody');if(b){b.scrollTop=(stickBottom||atBottom)?b.scrollHeight:keep}stickBottom=false;
+ const ni=document.querySelector('.inrow input');if(ni){ni.value=val;if(foc)ni.focus()}
+ renderSide();
+}
+function openAI(ctx){S.ai='sheet';S.ctx=ctx||S.ctx;S.tab=ctx?'chat':'board';S.bubble=false;render()}
+function closeAI(){tok++;S.busy=false;S.ai=null;render()}
+function toast(t){S.toast=t;render();clearTimeout(toastT);toastT=setTimeout(()=>{S.toast='';render()},1600)}
+
+/* ---------- 导航与说明栏 ---------- */
+function go(id){const sc=SCENES.find(s=>s.id===id);if(!sc)return;if(S.scene==='comply'&&id!=='comply')S.user='normal';S.scene=id;reset();sc.run();stickBottom=true;render()}
+function renderNav(){
+ const groups=[...new Set(SCENES.map(s=>s.g))];
+ $('nav').innerHTML=groups.map(g=>`<h4>${g}</h4>`+SCENES.filter(s=>s.g===g).map(s=>`<button aria-current="${S.scene===s.id}" onclick="go('${s.id}')">${s.t}${s.new?'<span class="new">新增</span>':''}</button>`).join('')).join('');
+ $('msel').innerHTML=groups.map(g=>`<optgroup label="${g}">`+SCENES.filter(s=>s.g===g).map(s=>`<option value="${s.id}" ${S.scene===s.id?'selected':''}>${s.t}</option>`).join('')+'</optgroup>').join('');
+}
+function segBtns(key,opts){return `<div class="seg">${opts.map(([v,l])=>`<button aria-pressed="${S[key]===v}" onclick="setDemo('${key}','${v}')">${l}</button>`).join('')}</div>`}
+function setDemo(k,v){S[k]=v;if(k==='ordersEmpty')S[k]=v==='true';if(k==='orb'){S.bubble=true;S.ai=null;S.page='home';render();return}go(S.scene)}
+function renderSide(){
+ const sc=SCENES.find(s=>s.id===S.scene);
+ $('crumb').innerHTML=`${sc.g} · <b>${sc.t}</b>`;
+ renderNav();
+ const dm=sc.demo||[];
+ $('notes').innerHTML=`<div class="jr">${sc.g}</div><h2>${sc.t}</h2>
+ <h5>触发条件</h5><p>${sc.trig}</p>
+ <h5>处理逻辑</h5><ol>${sc.logic.map(x=>`<li>${x}</li>`).join('')}</ol>
+ <h5>边界与兜底</h5><ul>${sc.edge.map(x=>`<li>${x}</li>`).join('')}</ul>
+ <h5>关联规则（台账）</h5><div class="chipsr">${sc.rules.map(r=>`<span class="rtag">${r}</span>`).join('')||'<span class="sub">—</span>'}</div>
+ ${sc.pend.length?`<h5>⚠️ 待确认</h5><div class="chipsr">${sc.pend.map(q=>`<span class="qtag">${q}</span>`).join('')}</div>`:''}
+ <div class="demo"><h5>演示开关</h5>
+ ${dm.includes('orb')?`<div class="row"><label>光球状态</label>${segBtns('orb',[['default','默认'],['pending','待处理'],['danger','高风险']])}</div>`:''}
+ ${dm.includes('close')?`<div class="row"><label>平仓提交结果</label>${segBtns('closeRes',[['ok','成功'],['unknown','结果未知'],['changed','仓位已变化']])}</div>`:''}
+ ${dm.includes('orders')?`<div class="row"><label>挂单数据</label><div class="seg"><button aria-pressed="${!S.ordersEmpty}" onclick="setDemo('ordersEmpty','false')">有挂单</button><button aria-pressed="${S.ordersEmpty}" onclick="setDemo('ordersEmpty','true')">空状态</button></div></div>`:''}
+ <div class="row"><label>用户身份（全局）</label>${segBtns('user',[['normal','正常'],['unkyc','未 KYC'],['restricted','受限地区']])}</div>
+ <button class="replay" onclick="go(S.scene)">↺ 重播本场景</button></div>
+ <h5>说明</h5><p class="sub" style="font-size:11.5px;line-height:1.6">所有数据为示意，不连接账户、行情或模型。对话框也可以自由输入，系统按关键词匹配到对应任务；匹配不到时走「暂不支持」。</p>`;
+}
+$('msel').onchange=e=>go(e.target.value);
+function fit(){const w=window.innerWidth;const s=w<=760?Math.min(1,(w-16)/408):1;document.querySelector('.device').style.setProperty('--s',s);$('wrapdev').style.height=w<=760?(818*s)+'px':''}
+window.addEventListener('resize',fit);fit();
+go('home');
+</script>
+</body>
+</html>
