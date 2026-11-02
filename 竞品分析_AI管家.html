@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 管家竞品分析</title>
+<style>
+:root{--ink:#0F1419;--ink2:#2B3139;--muted:#6B7480;--faint:#9AA3AE;--line:#E6E8EB;--line2:#F0F1F3;--bg:#F5F6F7;--panel:#fff;--soft:#F5F6F7;--up:#0B9B5C;--upbg:#E7F6EE;--down:#D9304F;--downbg:#FCEBEE;--warn:#B8740C;--warnbg:#FDF4E3;--brand:#0F7B5F;--brandbg:#E6F4EF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#EAECEF;--ink2:#C9CED6;--muted:#929AA5;--faint:#6B7480;--line:#2B3139;--line2:#232830;--bg:#0B0E11;--panel:#151A1F;--soft:#1C2127;--up:#2EBD85;--upbg:#12301F;--down:#F6465D;--downbg:#3A1A20;--warn:#F0B90B;--warnbg:#3A2F0E;--brand:#3DD6A6;--brandbg:#103229}}
+:root[data-theme="dark"]{--ink:#EAECEF;--ink2:#C9CED6;--muted:#929AA5;--faint:#6B7480;--line:#2B3139;--line2:#232830;--bg:#0B0E11;--panel:#151A1F;--soft:#1C2127;--up:#2EBD85;--upbg:#12301F;--down:#F6465D;--downbg:#3A1A20;--warn:#F0B90B;--warnbg:#3A2F0E;--brand:#3DD6A6;--brandbg:#103229}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,"PingFang SC","Noto Sans SC",sans-serif;font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .in{max-width:1120px;margin:0 auto;padding:0 24px;height:52px;display:flex;align-items:center;gap:20px}
+.top b{font-size:14px;white-space:nowrap}
+.top nav{display:flex;gap:16px;overflow-x:auto;font-size:13px}
+.top nav a{color:var(--muted);white-space:nowrap}
+.top nav a:hover{color:var(--ink);text-decoration:none}
+.wrap{max-width:1120px;margin:0 auto;padding:32px 24px 64px}
+header.hero{margin-bottom:28px}
+.eyebrow{font-size:12px;color:var(--brand);font-weight:600;letter-spacing:.3px}
+h1{font-size:30px;line-height:1.25;margin:6px 0 10px;letter-spacing:-.3px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12.5px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.src{font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;vertical-align:1px;white-space:nowrap}
+.s-o{background:var(--brandbg);color:var(--brand)}.s-m{background:var(--soft);color:var(--muted);border:1px solid var(--line)}.s-g{background:var(--warnbg);color:var(--warn)}
+section{margin-top:44px}
+h2{font-size:20px;margin:0 0 4px;letter-spacing:-.2px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+h3{font-size:16px;margin:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.forms .card h3{font-size:15px;margin-bottom:6px}
+.forms .who{font-size:12.5px;color:var(--muted);margin-top:8px}
+.forms .card.us{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;background:var(--brand);color:#fff;margin-left:6px;vertical-align:2px}
+.concl{counter-reset:c;display:flex;flex-direction:column;gap:10px;margin:12px 0 0;padding:0}
+.concl li{list-style:none;counter-increment:c;display:grid;grid-template-columns:28px 1fr;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.concl li::before{content:counter(c);width:26px;height:26px;border-radius:13px;background:var(--ink);color:var(--panel);font-weight:700;font-size:13px;display:grid;place-items:center}
+.concl b{font-weight:600}
+.comp{display:flex;flex-direction:column;gap:12px}
+.comp details{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.comp summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;gap:12px}
+.comp summary::-webkit-details-marker{display:none}
+.comp summary .nm{font-weight:700;font-size:15px}
+.comp summary .tg{font-size:12.5px;color:var(--muted)}
+.comp summary .chev{margin-left:auto;color:var(--faint);transition:transform .2s}
+.comp details[open] .chev{transform:rotate(90deg)}
+.comp .body{padding:0 20px 18px;border-top:1px solid var(--line2)}
+.comp .body ul{margin:12px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.kv{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+.kv th,.kv td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line2)}
+.kv th{width:140px;color:var(--muted);font-weight:600;white-space:nowrap}
+.tbl{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+table.m{border-collapse:collapse;width:100%;font-size:13px;min-width:860px}
+table.m th,table.m td{padding:10px 12px;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top}
+table.m thead th{background:var(--soft);font-size:12px;color:var(--muted);font-weight:600;position:sticky;top:0}
+table.m tbody th{font-weight:600;white-space:nowrap}
+table.m tr:last-child td,table.m tr:last-child th{border-bottom:0}
+table.m .us{background:color-mix(in srgb,var(--brandbg) 60%,transparent)}
+.y,.p,.n,.u{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.y::before,.p::before,.n::before,.u::before{font-weight:700;width:16px;text-align:center}
+.y::before{content:"✓";color:var(--up)}.p::before{content:"◐";color:var(--warn)}.n::before{content:"✕";color:var(--down)}.u::before{content:"?";color:var(--faint)}
+.u{color:var(--faint)}
+.mlegend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 2px 0}
+.reco{display:grid;grid-template-columns:1fr;gap:14px}
+.reco .card h3{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.dot{width:10px;height:10px;border-radius:5px;display:inline-block}
+.rl{display:flex;flex-direction:column}
+.rl .it{display:grid;grid-template-columns:210px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid var(--line2)}
+.rl .it:last-child{border-bottom:0}
+.rl .it b{font-weight:600}
+.rl .it .from{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.pend{display:inline-block;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:var(--warnbg);color:var(--warn);white-space:nowrap}
+.qs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.qs .card .q{font-size:12px;font-weight:700;color:var(--warn)}
+.qs .card h3{margin:4px 0 6px;font-size:15px}
+.qs .card p{margin:0;font-size:13px;color:var(--ink2)}
+.sources{columns:2;column-gap:28px;font-size:13px;padding-left:18px;margin:0}
+.sources li{break-inside:avoid;margin-bottom:6px}
+.sources b{font-weight:600}
+footer{margin-top:48px;color:var(--muted);font-size:12px}
+footer table{border-collapse:collapse;font-size:12.5px;margin-top:8px}
+footer td,footer th{border:1px solid var(--line);padding:6px 10px;text-align:left}
+@media (max-width:860px){.grid3,.qs{grid-template-columns:1fr}.rl .it{grid-template-columns:1fr;gap:4px}.sources{columns:1}}
+@media (max-width:560px){.wrap{padding:24px 16px 48px}.top .in{padding:0 16px}h1{font-size:24px}.kv th{width:96px;white-space:normal}.comp summary{flex-wrap:wrap;padding:14px 16px}.comp .body{padding:0 16px 16px}}
+</style>
+</head>
+<body>
+<div class="top"><div class="in"><b>AI 管家 · 竞品分析</b><nav><a href="#c1">结论</a><a href="#c2">竞品拆解</a><a href="#c3">对比矩阵</a><a href="#c4">策略建议</a><a href="#c5">待拍板</a><a href="#c6">来源</a></nav></div></div>
+<div class="wrap">
+<header class="hero">
+ <div class="eyebrow">STEP 4 · 竞品调研 · v1.0</div>
+ <h1>交易所对话式 AI 助手竞品分析</h1>
+ <div class="meta"><span>调研日期 2026-11-02</span><span>覆盖 8 家交易所和券商</span><span>用途：AI 管家 PRD 第 1 章、待确认项决策参考</span></div>
+ <div class="meta" style="margin-top:6px"><span>方法：公开资料（官方公告、媒体报道、评测文章），<b>未实际操作竞品 App</b></span></div>
+ <div class="legend"><span class="src s-o">官</span><span style="font-size:12px;color:var(--muted)">官方公告或官方账号</span><span class="src s-m">媒</span><span style="font-size:12px;color:var(--muted)">媒体或评测</span><span class="src s-g">推</span><span style="font-size:12px;color:var(--muted)">据公开信息推测</span></div>
+</header>
+
+<section id="c1">
+ <h2>结论先行</h2>
+ <p class="sub">行业已经分成三种形态，我方处在「信息型 + 有限执行」的位置</p>
+ <div class="grid3 forms">
+  <div class="card us"><h3>① 信息型助手<span class="badge">我方主体</span></h3><div>App 内只答不做：行情、资讯、持仓解释、主动简报。</div><div class="who">Binance AI 免费版 · GateAI · Robinhood Cortex · Crypto.com Amy</div></div>
+  <div class="card"><h3>② 执行型 Agent</h3><div>在对话里下单、生成策略、跑机器人。</div><div class="who">Bitget GetAgent · Binance AI Pro<br>我方只做平仓、撤单，在卡片内确认</div></div>
+  <div class="card"><h3>③ 开放接口</h3><div>把交易能力开放给 ChatGPT、Claude 等外部 AI 调用。</div><div class="who">Bybit AI Skills · OKX Agent Trade Kit · Binance Agent OS · Coinbase for Agents · Gate for AI</div></div>
+ </div>
+ <ol class="concl">
+  <li><div><b>在对话卡片里直接确认交易，已经是行业常态。</b>GetAgent 在对话中生成订单预览卡、一键确认；Bybit 每笔实盘都要用户明确确认。这支持台账 R4「卡片内直接确认」。</div></li>
+  <li><div><b>主动简报和按用户经验调整界面，头部已经在做。</b>Binance AI 每 4 小时更新一次市场简报，新手和老手看到的界面不同。所以「看板 + 主动推送」本身不是差异点，差异点要放在<b>风险推送落地</b>和<b>异常兜底</b>上。</div></li>
+  <li><div><b>客服类任务几乎没人做。</b>公开资料里没有竞品提到充提查询、带摘要转人工，各家都集中在行情和交易上 <span class="src s-g">推</span>。这是我方可以占的空位。</div></li>
+  <li><div><b>能自动执行的产品都配了资金隔离。</b>Binance AI Pro 每个策略用独立子账户；Coinbase 的 Agent 交易只能动独立的组合。如果以后做批量操作或自动化（Q2），应先参考这套隔离方式。</div></li>
+ </ol>
+</section>
+
+<section id="c2">
+ <h2>竞品拆解</h2>
+ <p class="sub">点击展开每家的详细信息</p>
+ <div class="comp">
+  <details open><summary><span class="nm">Binance 币安</span><span class="tg">产品矩阵最完整：免费信息助手 + 付费执行 + 开放接口</span><span class="chev">›</span></summary><div class="body">
+   <table class="kv">
+    <tr><th>Binance AI（免费）</th><td>2026-10-12 面向英语用户上线，此前约 15 万人参与 beta。提供持仓盈亏总结、异动币种识别、文字和语音资讯、每 4 小时更新的市场简报、语音价格提醒；<b>界面按用户经验分层</b>：新手有引导和首次使用提示，老手看到更多数据；<b>不执行交易</b>。<span class="src s-m">媒</span></td></tr>
+    <tr><th>Binance AI Pro</th><td>2026-10-19 正式版：用自然语言描述想法 → 生成策略 → 模拟盘测试 → 用户批准出资 → 在<b>独立子账户</b>中运行。支持现货和 U 本位合约；Standard 版免费，Premium 每月 19.99 USDC，按额度计费（每月 1000 万 vs 25 万）。<span class="src s-o">官</span> <span class="src s-m">媒</span></td></tr>
+    <tr><th>Bibi</th><td>在 Binance Square 里 @Bibi 即可提问：行情总结、30 秒白皮书摘要、代币对比、情绪变化。<span class="src s-o">官</span> <span class="src s-m">媒</span></td></tr>
+    <tr><th>Agent OS</th><td>2026-08-20 上线，用户授权后，外部 AI 助手可以读取数据并下单。<span class="src s-m">媒</span></td></tr>
+    <tr><th>策略与增长</th><td>免费信息助手引流，付费执行型 Pro 变现，再开放接口覆盖开发者；免费版刻意不做执行，把风险隔离在 Pro 里。App 内入口位置在公开资料里没写（未实测）。</td></tr>
+   </table></div></details>
+  <details><summary><span class="nm">Bitget · GetAgent</span><span class="tg">执行型做得最深：卡片一键确认</span><span class="chev">›</span></summary><div class="body">
+   <table class="kv">
+    <tr><th>定位</th><td>对话式交易 Agent：行情分析、交易所和链上下单、组合报告、理财推荐、交易机器人。<span class="src s-o">官</span> <span class="src s-m">媒</span></td></tr>
+    <tr><th>时间线</th><td>2025-07 上线 → 2025-09 升级（合约完整交易闭环、理财推荐、机器人）→ 2026-02 推出 Web 全屏版，并增强意图识别 → 后续扩大会员额度，开放给全部用户。<span class="src s-o">官</span></td></tr>
+    <tr><th>入口</th><td>首页「更多服务」、资产页、单币详情页；部分币种页显示「GetAgent is analyzing」横幅。<span class="src s-m">媒</span></td></tr>
+    <tr><th>交易确认</th><td>对话中生成订单预览卡（币种、预估成交价、类型、数量），<b>一键确认，不跳转页面</b>；链上交易多一步签名，展示网络和 Gas。<span class="src s-m">媒</span></td></tr>
+    <tr><th>个性化</th><td>学习用户的交易风格，推送个性化提醒；一句话生成持仓日报。<span class="src s-m">媒</span></td></tr>
+    <tr><th>短板</th><td>公开资料没有提到异常处理（结果未知、数据过期）和合规拦截；评测多带推广性质。<span class="src s-g">推</span></td></tr>
+   </table></div></details>
+  <details><summary><span class="nm">Bybit</span><span class="tg">从教育助手转向开放接口</span><span class="chev">›</span></summary><div class="body">
+   <table class="kv">
+    <tr><th>TradeGPT（2023）</th><td>基于 ChatGPT + 自研插件的教育型助手，提供行情分析和多语言问答；<b>用「成功概率百分比」的形式推荐策略和产品</b>。<span class="src s-m">媒</span></td></tr>
+    <tr><th>AI Skills（2026-03）</th><td>通过 ChatGPT、Claude、Gemini 等外部助手用自然语言交易，覆盖 253 个接口：现货市价、限价、批量；合约止盈止损、条件单；后续加入跟单、机器人、双币理财。<span class="src s-o">官</span> <span class="src s-m">媒</span></td></tr>
+    <tr><th>安全设计</th><td><b>每笔实盘都要用户明确确认</b>；新用户先用测试网；双重来源校验，防范供应链攻击。<span class="src s-m">媒</span></td></tr>
+   </table></div></details>
+  <details><summary><span class="nm">Gate</span><span class="tg">强调数据透明，全页固定入口</span><span class="chev">›</span></summary><div class="body">
+   <table class="kv">
+    <tr><th>GateAI（2026-01）</th><td>App 内行情助手，<b>数据不足或结论无法确认时会明确告知</b>。<span class="src s-m">媒</span></td></tr>
+    <tr><th>Web 端（2026-03）</th><td><b>每个页面底部都有固定入口</b>，定位从「AI 交易助手」升级为「智能服务层」。<span class="src s-m">媒</span></td></tr>
+    <tr><th>Gate for AI / GateClaw</th><td>开放接口，覆盖 CEX、DEX、钱包、资讯、数据五大能力。<span class="src s-m">媒</span></td></tr>
+   </table></div></details>
+  <details><summary><span class="nm">OKX</span><span class="tg">暂无 App 内助手，重心在开放接口</span><span class="chev">›</span></summary><div class="body">
+   <ul><li>公开资料里没有 App 内对话助手。</li><li>Agent Trade Kit：MCP 工具包，带模拟环境；OnchainOS：链上开发者工具包。<span class="src s-m">媒</span></li><li>2026-06 上线 OKX AI 市场：AI 代理之间互相雇佣，用稳定币结算。<span class="src s-m">媒</span></li></ul></div></details>
+  <details><summary><span class="nm">Coinbase</span><span class="tg">走合规路线：注册投资顾问 + 隔离组合</span><span class="chev">›</span></summary><div class="body">
+   <table class="kv">
+    <tr><th>Coinbase Advisor</th><td>App 内对话式 AI，<b>以 SEC 注册投资顾问的身份</b>提供新闻解读、投资想法和组合策略；免责声明很长，交易细节由用户核对后确认。<span class="src s-m">媒</span></td></tr>
+    <tr><th>Coinbase for Agents</th><td>2026-06 上线，外部助手在用户设定的额度内交易，<b>每个会话在独立组合中运行，碰不到其他资产</b>；2026-09 扩展到美股和 ETF。<span class="src s-m">媒</span></td></tr>
+   </table></div></details>
+  <details><summary><span class="nm">Robinhood · Cortex</span><span class="tg">券商参照：「为什么涨跌」放在详情页</span><span class="chev">›</span></summary><div class="body">
+   <table class="kv">
+    <tr><th>Digests</th><td>在个股详情页用通俗语言解释「为什么涨跌」，资料来源是新闻、分析师报告和平台数据；声明不构成研究或建议。<span class="src s-o">官</span></td></tr>
+    <tr><th>组合 Digests</th><td>针对用户持仓生成洞察，<b>只对 Gold 付费会员开放</b>（每月 5 美元）。<span class="src s-o">官</span></td></tr>
+   </table></div></details>
+  <details><summary><span class="nm">Crypto.com · Amy</span><span class="tg">较早期参照</span><span class="chev">›</span></summary><div class="body">
+   <ul><li>2023 年试点的 ChatGPT 类助手，提供代币资讯、价格和历史事件，定位是信息，不是投资建议。<span class="src s-m">媒</span></li><li>另有资料称其用 Claude 生成个性化情绪分析；2025–2026 年的状态未查到。</li><li>KuCoin：没有查到公开的 App 内 AI 助手资料，未纳入。</li></ul></div></details>
+ </div>
+</section>
+
+<section id="c3">
+ <h2>横向对比矩阵</h2>
+ <p class="sub">我方原型 vs 主要竞品，按能力逐项对比</p>
+ <div class="tbl"><table class="m">
+  <thead><tr><th>能力</th><th class="us">我方原型</th><th>Binance AI / Pro</th><th>Bitget GetAgent</th><th>Bybit</th><th>GateAI</th><th>Coinbase</th><th>Robinhood</th></tr></thead>
+  <tbody>
+   <tr><th>行情和资讯问答</th><td class="us"><span class="y"></span></td><td><span class="y"></span></td><td><span class="y"></span></td><td><span class="y"></span></td><td><span class="y"></span></td><td><span class="y"></span></td><td><span class="p">只有个股</span></td></tr>
+   <tr><th>持仓盈亏解释</th><td class="us"><span class="y">按来源拆分</span></td><td><span class="y">盈亏总结</span></td><td><span class="y">日报</span></td><td><span class="p"></span></td><td><span class="u"></span></td><td><span class="y"></span></td><td><span class="y">付费</span></td></tr>
+   <tr><th>主动推送和简报</th><td class="us"><span class="y">风险推送 + 看板要点</span></td><td><span class="y">每 4 小时 + 语音</span></td><td><span class="y">个性化提醒</span></td><td><span class="u"></span></td><td><span class="u"></span></td><td><span class="u"></span></td><td><span class="u"></span></td></tr>
+   <tr><th>按用户阶段调整界面</th><td class="us"><span class="y">阶段化看板</span></td><td><span class="y">按经验分层</span></td><td><span class="u"></span></td><td><span class="n"></span></td><td><span class="u"></span></td><td><span class="u"></span></td><td><span class="n"></span></td></tr>
+   <tr><th>宏观、情绪、情景推演</th><td class="us"><span class="y">只给方向</span></td><td><span class="p">情绪</span></td><td><span class="y">分析</span></td><td><span class="y"></span></td><td><span class="y"></span></td><td><span class="y"></span></td><td><span class="n"></span></td></tr>
+   <tr><th>对话内下单或开仓</th><td class="us"><span class="p">只追问参数</span></td><td><span class="y">Pro 策略</span></td><td><span class="y">卡片一键确认</span></td><td><span class="y">外部助手</span></td><td><span class="u"></span></td><td><span class="y">外部助手</span></td><td><span class="n"></span></td></tr>
+   <tr><th>对话内平仓、撤单</th><td class="us"><span class="y">卡片内确认</span></td><td><span class="y">Pro</span></td><td><span class="y"></span></td><td><span class="y"></span></td><td><span class="u"></span></td><td><span class="y"></span></td><td><span class="n"></span></td></tr>
+   <tr><th>策略、机器人、模拟盘</th><td class="us"><span class="n">不在本期</span></td><td><span class="y">Pro 核心</span></td><td><span class="y"></span></td><td><span class="y"></span></td><td><span class="u"></span></td><td><span class="p"></span></td><td><span class="n"></span></td></tr>
+   <tr><th>充提查询、转人工</th><td class="us"><span class="y"></span></td><td><span class="u"></span></td><td><span class="p">法币充提</span></td><td><span class="u"></span></td><td><span class="u"></span></td><td><span class="u"></span></td><td><span class="n"></span></td></tr>
+   <tr><th>异常兜底</th><td class="us"><span class="y">7 类</span></td><td><span class="u"></span></td><td><span class="u"></span></td><td><span class="p">测试网 + 每笔确认</span></td><td><span class="p">数据不足时告知</span></td><td><span class="p">免责声明</span></td><td><span class="p">免责声明</span></td></tr>
+   <tr><th>资金隔离</th><td class="us">—</td><td><span class="y">子账户</span></td><td><span class="u"></span></td><td><span class="u"></span></td><td><span class="u"></span></td><td><span class="y">独立组合</span></td><td>—</td></tr>
+   <tr><th>页面内唤起</th><td class="us"><span class="y">合约页</span></td><td><span class="u"></span></td><td><span class="y">币种页、资产页</span></td><td>—</td><td><span class="y">全页固定入口</span></td><td><span class="u"></span></td><td><span class="y">个股页</span></td></tr>
+   <tr><th>付费分层</th><td class="us"><span class="u">未定</span></td><td><span class="y">免费 + 19.99 USDC/月</span></td><td><span class="y">会员额度</span></td><td>免费</td><td>免费 <span class="src s-g">推</span></td><td><span class="u"></span></td><td><span class="y">Gold</span></td></tr>
+  </tbody></table></div>
+ <div class="mlegend"><span class="y">支持</span><span class="p">部分支持</span><span class="n">不支持</span><span class="u">公开资料未提及</span><span>— 不适用</span></div>
+
+ <div class="tbl" style="margin-top:20px"><table class="m">
+  <thead><tr><th>维度</th><th class="us">我方</th><th>Binance</th><th>Bitget</th><th>Bybit</th><th>Coinbase</th></tr></thead>
+  <tbody>
+   <tr><th>定位</th><td class="us">主动陪伴型管家：风险 + 服务 + 交易辅助</td><td>全矩阵：信息、执行、开放接口</td><td>执行型交易 Agent</td><td>开放接口</td><td>合规顾问 + 开放接口</td></tr>
+   <tr><th>写操作边界</th><td class="us">只做平仓、撤单，卡片内确认</td><td>免费版不执行；Pro 在子账户中执行</td><td>卡片一键确认</td><td>每笔明确确认</td><td>用户核对后确认</td></tr>
+   <tr><th>合规姿态</th><td class="us">只讲事实和影响（R5）</td><td>仅供辅助判断</td><td>推荐理财和策略</td><td>曾用成功概率百分比</td><td>注册顾问身份</td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="c4">
+ <h2>策略建议</h2>
+ <p class="sub">分成三类：可以借鉴的、不建议照搬的、我方可以做出差异的</p>
+ <div class="reco">
+  <div class="card"><h3><span class="dot" style="background:var(--up)"></span>可借鉴</h3><div class="rl">
+   <div class="it"><div><b>多入口唤起</b><span class="from">Bitget · Gate · Robinhood</span></div><div>币种页、资产页、交易页都能唤起，Gate 在每个页面底部有固定入口。给 Q5 提供参考：不只是交易页顶栏，还可以在币种详情页加「为什么涨跌」入口。<span class="pend">待你决策</span></div></div>
+   <div class="it"><div><b>按用户经验调整界面</b><span class="from">Binance AI</span></div><div>我方已有阶段化看板；可以补一条规则，明确新手和老手看到的看板分别是什么（Q19）。</div></div>
+   <div class="it"><div><b>结论不确定时明确告知</b><span class="from">GateAI</span></div><div>写进异常兜底：数据不足时说「无法确认」，不给结论。</div></div>
+   <div class="it"><div><b>新用户先用模拟环境</b><span class="from">Bybit · OKX</span></div><div>如果后续做对话内开仓，第一次可以引导到模拟盘。<span class="pend">本期不做</span></div></div>
+   <div class="it"><div><b>「为什么涨跌」放在详情页</b><span class="from">Robinhood</span></div><div>可以把盈亏解释和新闻的入口挂在持仓卡和币种页上（Q18）。</div></div>
+   <div class="it"><div><b>语音简报和语音提醒</b><span class="from">Binance AI</span></div><div>可选增强，不建议放在 P0。</div></div>
+  </div></div>
+  <div class="card"><h3><span class="dot" style="background:var(--down)"></span>不建议照搬</h3><div class="rl">
+   <div class="it"><div><b>用成功概率百分比推荐策略</b><span class="from">Bybit TradeGPT</span></div><div>和 R5「不给买卖建议、不给估算数值」冲突，合规风险高。</div></div>
+   <div class="it"><div><b>自然语言生成策略并自动运行</b><span class="from">Binance AI Pro · Bitget</span></div><div>本期已排除（R2），而且需要子账户隔离、模拟盘、计费等一整套配套。</div></div>
+   <div class="it"><div><b>以注册投资顾问身份给建议</b><span class="from">Coinbase Advisor</span></div><div>依赖特定牌照，不适用于我方。</div></div>
+   <div class="it"><div><b>开放交易接口给外部 AI</b><span class="from">Bybit · OKX · Binance · Coinbase</span></div><div>这是另一条产品线，不属于 App 内助手的范围。</div></div>
+  </div></div>
+  <div class="card"><h3><span class="dot" style="background:var(--brand)"></span>差异化方向</h3><div class="rl">
+   <div class="it"><div><b>风险推送的落地体验</b><span class="from">竞品空白 <span class="src s-g">推</span></span></div><div>竞品都有提醒，但公开资料没有提到「点开时数据已经变化」怎么处理。把落地时刷新数据、风险降低后改结论做成卖点（原型里已有）。</div></div>
+   <div class="it"><div><b>客服和充提自助</b><span class="from">竞品空白 <span class="src s-g">推</span></span></div><div>竞品集中在行情和交易，充提查询、转人工摘要几乎没人提。提币时间线、充值确认进度、带摘要转人工可以作为 P0，同时降低客服工单量。</div></div>
+   <div class="it"><div><b>异常处理透明</b><span class="from">只有 Gate 部分覆盖</span></div><div>7 类兜底（尤其是「结果未知时禁止重复提交」）放进 PRD 和评审重点。</div></div>
+  </div></div>
+ </div>
+</section>
+
+<section id="c5">
+ <h2>待你拍板</h2>
+ <p class="sub">本次调研新增的待确认项，已登记到规则台账 v0.4</p>
+ <div class="qs">
+  <div class="card"><div class="q">Q17</div><h3>收费模式</h3><p>全部免费，还是基础免费 + 高级额度付费。参考：Binance AI Pro 每月 19.99 USDC、Bitget 会员额度、Robinhood Gold 会员。</p></div>
+  <div class="card"><div class="q">Q18</div><h3>币种页和持仓卡上的 AI 入口</h3><p>是否加「为什么涨跌」入口，建议和 Q5 交易页入口形态一起定。参考：Bitget 币种页、Robinhood 个股页、Gate 全页固定入口。</p></div>
+  <div class="card"><div class="q">Q19</div><h3>看板分层</h3><p>新手和老手看板怎么分层：按什么判断用户阶段，各自展示什么。参考：Binance AI 按经验分层。</p></div>
+ </div>
+</section>
+
+<section id="c6">
+ <h2>信息来源</h2>
+ <p class="sub">以下均为公开资料，关键结论在正文中已标注来源类型</p>
+ <ul class="sources">
+  <li><b>Binance AI Pro</b>：<a href="https://www.morningstar.com/news/pr-newswire/20261019cn75206/binance-launches-binance-ai-pro-bringing-conversational-ai-strategy-building-to-users">Morningstar / PR Newswire</a> · <a href="https://www.unite.ai/binance-ai-pro-turns-trading-ideas-into-tested-automated-workflows/">Unite.AI</a> · <a href="https://www.tokenpost.com/news/technology/34824">TokenPost</a></li>
+  <li><b>Binance AI 免费版</b>：<a href="https://finance.biggo.com/news/65f50aa9-16d7-4bb3-a8c3-546347ae98a5">BigGo Finance</a> · <a href="https://www.cryptopolitan.com/binance-launches-ai-market-assistant-as-exchanges-race-on-ai-edge/">Cryptopolitan</a> · <a href="https://blockchain.news/news/binance-ai-assistant-multi-asset-trading-expansion-2026">Blockchain.News</a></li>
+  <li><b>Binance Bibi / Agent OS</b>：<a href="https://x.com/binance/status/1993590550662967781">Binance on X</a> · <a href="https://coinfomania.com/binance-bibi-ai-whitepaper-summarizer-launch-2025/">Coinfomania</a> · <a href="https://en.cryptonomist.ch/2026/08/21/binance-ai-trading-platform-agent-os/">Cryptonomist</a></li>
+  <li><b>Bitget GetAgent</b>：<a href="https://beincrypto.com/how-to-use-bitget-getagent/">BeInCrypto 使用教程</a> · <a href="https://www.aap.com.au/aapreleases/globenewswire1001143234/">AAP 升级公告</a> · <a href="https://www.benzinga.com/crypto/cryptocurrency/25/08/47264443/bitget-expands-access-to-ai-agent-assisted-trading-with-public-launch-of-getagent">Benzinga</a> · <a href="https://www.bitget.com/support/articles/12560603858583">Bitget 帮助中心</a></li>
+  <li><b>Bybit</b>：<a href="https://cointelegraph.com/news/bybit-launches-ai-trade-gpt-for-market-analysis">Cointelegraph · TradeGPT</a> · <a href="https://decrypt.co/361006/bybit-launches-ai-skills-powering-ai-agents-for-crypto-trading-with-zero-setup-253-api-endpoints-and-growing">Decrypt · AI Skills</a> · <a href="https://cfotech.asia/story/bybit-unveils-ai-trading-skill-for-automated-crypto-trades">CFOtech</a> · <a href="https://www.aap.com.au/aapreleases/cision20260320ae15264">AAP 升级公告</a></li>
+  <li><b>Gate</b>：<a href="https://beincrypto.com/gate-for-ai-agents-crypto-trading">BeInCrypto · Gate for AI</a> · <a href="https://beincrypto.com/gate-launches-gateclaw-ai-agent-platform">BeInCrypto · GateClaw</a> · <a href="https://www.itiger.com/news/2617854460">老虎财经</a></li>
+  <li><b>OKX</b>：<a href="https://theblock.co/news/defi/2026-06-30-okx-ai-unveils-marketplace-for-agents-to-find-work-and-get-paid-in-stablecoins-406704">The Block</a> · <a href="https://unlock-bc.com/en/okx-launches-agent-trade-kit-for-ai-trading">Unlock</a></li>
+  <li><b>Coinbase</b>：<a href="https://247wallst.com/investing/cryptocurrency/2026/10/23/coinbase-now-lets-ai-agents-trade-in-your-crypto-account-what-could-go-wrong/">24/7 Wall St.</a> · <a href="https://www.digit.fyi/coinbase-launches-ai-investment-adviser-in-major-test-for-financial-regulation/">DIGIT</a> · <a href="https://www.coindesk.com/tech/2026/05/26/coinbase-s-base-launches-ai-tool-for-chatgpt-to-manage-crypto-wallets-and-defi-apps">CoinDesk</a></li>
+  <li><b>Robinhood</b>：<a href="https://robinhood.com/us/en/newsroom/digests-by-robinhood-cortex-uk">Robinhood Newsroom</a> · <a href="https://robinhood.com/gb/en/learn/articles/cortex-digests-is-here">Robinhood Learn</a></li>
+  <li><b>Crypto.com</b>：<a href="https://cointelegraph.com/news/crypto-com-chatgpt-based-ai-user-assistant-amy">Cointelegraph</a></li>
+ </ul>
+</section>
+
+<footer>
+ <div>版本历史</div>
+ <table><tr><th>版本</th><th>日期</th><th>阶段</th><th>变更摘要</th></tr>
+ <tr><td>v1.0</td><td>2026-11-02</td><td>Step 4 竞品调研</td><td>首版：8 家竞品拆解、横向对比、可借鉴 / 不建议照搬 / 差异化方向</td></tr></table>
+</footer>
+</div>
+</body>
+</html>
