@@ -359,7 +359,7 @@ const SCENES=[
  {id:'board',g:'② 唤起与看板',t:'AI 看板',demo:['acct'],
   run(){S.page='home';S.ai='full';S.tab='board'},
   trig:'点击底部导航的 AI 入口，全屏打开 AI。默认进入「看板」：今天需要处理的事、要点、资产和持仓一屏看完。',
-  logic:['按账户状态分四类展示，不判断用户经验（右侧演示开关切换）','未充值：充值引导 + 新手常问','有资产无仓位：资产概览 + 行情早报','有仓位：顶部只放 1 条最高优先级事项，其次盈亏和持仓相关资讯','只有跟单：跟单收益 + 带单员动态','要点和数字可点击，直接带着问题进入对话'],
+  logic:['按账户状态分四类展示，不判断用户经验（右侧演示开关切换）','未充值：充值引导 + 新手常问','有资产无仓位：资产概览 + 行情早报','有仓位：顶部只放 1 条最高优先级事项，其次盈亏和持仓相关资讯','只有跟单：跟单收益（带单员动态随带单员数据放到后续版本）','要点和数字可点击，直接带着问题进入对话'],
   edge:['没有待处理事项：顶部改为「今天一切正常」','未登录：只展示行情和常问问题，不展示个人数据'],
   rules:['R1','R3','R22'],pend:[]},
  {id:'futures',g:'② 唤起与看板',t:'交易页内唤起',new:true,
@@ -726,9 +726,7 @@ function board(){
  <button class="li" onclick="ask('市场情绪偏贪婪还是恐惧？')"><span class="k n">情绪</span><span class="tx">恐惧与贪婪指数 62，偏贪婪</span><span class="ar">›</span></button>
  <button class="li" onclick="ask('今天有什么新闻')"><span class="k n">自选</span><span class="tx">SOL 领跌，BTC 横盘</span><span class="ar">›</span></button></div>`;
  if(S.acct==='copy')return `<div class="greet">早上好 · 11月2日 · 你只有跟单仓位</div>
- <div class="boxs num"><button class="box" onclick="toast('跳转跟单页（示意）')"><small>跟单收益 · 昨日</small><b class="up">+5.20</b><small>跟随 2 位带单员 ›</small></button><button class="box" onclick="toast('跳转跟单页（示意）')"><small>跟单投入 · USDT</small><b>800.00</b><small>累计 +36.40 ›</small></button></div>
- <div class="sec"><h6>带单员动态 ${pq('与 R9「带单员数据」后续版本冲突')}</h6>
- <button class="li" onclick="toast('带单员动态（示意）')"><span class="k n">调仓</span><span class="tx">[示意] 带单员 A 昨日减仓 ETH 多单</span><span class="ar">›</span></button></div>`;
+ <div class="boxs num"><button class="box" onclick="toast('跳转跟单页（示意）')"><small>跟单收益 · 昨日</small><b class="up">+5.20</b><small>跟随 2 位带单员 ›</small></button><button class="box" onclick="toast('跳转跟单页（示意）')"><small>跟单投入 · USDT</small><b>800.00</b><small>累计 +36.40 ›</small></button></div>`;
  return `<div class="greet">早上好 · 11月2日 · 今天有 1 件事需要处理</div>
  <div class="hero"><span class="st">● 需处理</span><b>SOL 多单离强平只剩 9.8%</b><span class="sub">保证金率 24 小时内从 168% 降到 128%</span><div class="acts"><button class="btn pri" onclick="go('risk')">去处理</button><button class="btn" onclick="S.bubble=false;toast('已稍后提醒（示意）')">稍后</button></div></div>
  <div class="sec"><h6>今日要点</h6>
