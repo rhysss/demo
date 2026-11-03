@@ -9,7 +9,7 @@
  --ink:#0F1419;--ink2:#2B3139;--muted:#6B7480;--faint:#9AA3AE;--line:#E6E8EB;--line2:#F0F1F3;
  --bg:#EEF0F2;--panel:#FFFFFF;--soft:#F5F6F7;
  --up:#0B9B5C;--upbg:#E7F6EE;--down:#D9304F;--downbg:#FCEBEE;--warn:#C27C0E;--warnbg:#FDF4E3;
- --brand:#0F7B5F;--brandbg:#E6F4EF;--ai1:#19C08A;--ai2:#0E9F9A;
+ --app:#5BC466;--appbg:#EAF7EC;--brand:#0F7B5F;--brandbg:#E6F4EF;--ai1:#19C08A;--ai2:#0E9F9A;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
@@ -94,6 +94,109 @@ aside.notes{background:var(--panel);border-left:1px solid var(--line);overflow-y
 .orb.pending::after{border-color:#F0A81E}.orb.danger::after{border-color:#E5384F}
 .orb .badge{position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;border-radius:9px;background:var(--down);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 4px;border:2px solid #fff}
 .orb.pending .badge{background:#E08B00}
+/* App 框架（参照线上 App 截图）：首页、交易菜单、现货 / 合约 / 跟单 / CFD / 理财 */
+.xic{width:26px;height:26px;display:grid;place-items:center;font-size:15px;color:var(--ink2);position:relative;flex:none}
+.xic.dot::after{content:"";position:absolute;top:1px;right:1px;width:6px;height:6px;border-radius:3px;background:var(--down)}
+.xasset{display:flex;justify-content:space-between;align-items:flex-start}
+.xasset small{font-size:12px;color:var(--muted)}
+.xasset .v{font-size:28px;font-weight:700;margin:4px 0}
+.chg{font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:14px;margin-top:14px}
+.chg.down{background:var(--downbg);color:var(--down)}
+.xbtn{height:42px;border-radius:21px;border:0;background:var(--app);color:#fff;font-weight:700;font-size:14.5px;width:100%}
+.xbtn.dn{background:#EF4359}
+.xbtn.sm{height:28px;width:auto;padding:0 14px;font-size:12px;border-radius:14px}
+.xshort{display:flex;overflow-x:auto;margin:0 -16px;padding:0 10px}
+.xshort::-webkit-scrollbar,.xmk::-webkit-scrollbar{display:none}
+.xshort button{flex:none;width:72px;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2);padding:0}
+.xshort i{width:30px;height:30px;border-radius:15px;background:#C9CDD2;display:block}
+.xcards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.xcard{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff;text-align:left;display:flex;flex-direction:column;gap:4px}
+.xcard.xbig{grid-row:span 2;min-height:210px}
+.xcard small{font-size:11.5px;color:var(--muted)}
+.xcard .g{color:var(--app);font-size:11.5px}
+.ph{background:repeating-linear-gradient(45deg,#F2F3F5 0 8px,#EBEDF0 8px 16px);border-radius:10px;flex:1;display:grid;place-items:center;color:var(--faint);font-size:11px;min-height:40px;margin-top:6px}
+.xtick{display:flex;align-items:center;gap:6px;border-radius:10px;background:var(--appbg);border:1px solid #D3EDD6;padding:9px 12px;font-size:12px;color:var(--ink2)}
+.xtick b{color:var(--app)}
+.xtabs{display:flex;align-items:baseline;gap:16px}
+.xtabs b{font-size:17px}.xtabs span{font-size:17px;color:var(--faint);font-weight:600}
+.xtabs .mr{margin-left:auto;font-size:12px;color:var(--muted);font-weight:400}
+.xmk{display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px}
+.xmk button{flex:none;width:190px;border:0;border-radius:14px;background:var(--soft);padding:12px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.xmk .xr{display:flex;justify-content:space-between;align-items:flex-end;margin-top:6px}.xmk .xr div{display:flex;flex-direction:column;gap:2px}
+.xmk b{font-size:14px}.xmk small{font-size:11px;color:var(--muted)}
+.tbar{display:flex;justify-content:space-between;padding:2px 16px 8px;font-size:12px;font-weight:600;border-bottom:1px solid var(--line2);flex:none}
+.thd{display:flex;align-items:center;gap:6px;padding:10px 16px 6px}
+.thd b{font-size:18px}
+.thd .tg{font-size:10.5px;color:var(--app);background:var(--appbg);padding:1px 5px;border-radius:4px}
+.thd .tg.n{color:var(--muted);background:var(--soft)}
+.thd .sp{margin-left:auto;color:var(--muted);letter-spacing:2px}
+.tgrid{display:grid;grid-template-columns:1fr 148px;gap:10px;padding:4px 16px 12px}
+.tf{display:flex;flex-direction:column;gap:7px}
+.fld{height:32px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:12px;color:var(--muted)}
+.fld.c{justify-content:center;color:var(--ink);font-weight:600}
+.fld.off{background:#E4E6E9;color:var(--faint);justify-content:center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg3{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:16px;padding:2px}
+.seg3 span{text-align:center;padding:5px 0;border-radius:14px;font-size:12.5px;color:var(--muted)}
+.seg3 .on{background:var(--app);color:#fff;font-weight:600}
+.sl{display:flex;justify-content:space-between;align-items:center;height:14px;position:relative;margin:2px 2px}
+.sl::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+.sl i{width:9px;height:9px;border-radius:5px;border:1.5px solid #C5CBD2;background:#fff;position:relative}
+.sl i:first-child{border-color:var(--app);width:13px;height:13px;border-radius:7px;border-width:2px}
+.kvs{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted)}
+.kvs b{color:var(--ink);font-weight:500}
+.cbx{font-size:11.5px;color:var(--ink2);display:inline-flex;gap:5px;align-items:center}
+.cbx::before{content:"";width:11px;height:11px;border:1.2px solid var(--muted);border-radius:2px}
+.obk div{display:flex;justify-content:space-between;font-size:11px;padding:2.5px 4px}
+.obk .hd{color:var(--muted);font-size:10px}
+.obk .a{background:linear-gradient(to left,var(--downbg) var(--w),transparent var(--w))}
+.obk .a span:first-child{color:var(--down)}
+.obk .b{background:linear-gradient(to left,var(--appbg) var(--w),transparent var(--w))}
+.obk .b span:first-child{color:var(--app)}
+.obk .mid{display:block;padding:6px 4px}
+.obk .mid b{font-size:15px;color:var(--down);display:block}
+.obk .mid small{font-size:10px;color:var(--muted)}
+.btabs{display:flex;gap:16px;align-items:center;padding:12px 16px 8px;border-top:8px solid var(--soft);font-size:13.5px;color:var(--muted);font-weight:600}
+.btabs b{color:var(--ink)}
+.brow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 16px 8px;font-size:11.5px;color:var(--muted)}
+.tog{display:flex;align-items:center;gap:6px}.tog::before{content:"";width:28px;height:16px;border-radius:8px;background:#C5CBD2}
+.gbtn{height:26px;border-radius:13px;border:0;background:var(--soft);font-size:11.5px;padding:0 12px;color:var(--ink2)}
+.empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:26px 0;color:var(--ink2);font-size:12.5px}
+.empty i{width:54px;height:44px;border-radius:8px;background:var(--appbg);display:block}
+.tp{padding-bottom:100px}
+.cfr{display:flex;flex-direction:column;gap:7px;font-size:11.5px}
+.cfr div{display:flex;justify-content:space-between;color:var(--muted)}
+.cfr b{font-weight:500}
+.cfr .note{border:1px solid var(--line);border-radius:8px;padding:7px;font-size:10.5px;line-height:1.5;color:var(--muted)}
+.tmenu{position:absolute;inset:0;background:rgba(15,20,25,.35);z-index:4}
+.tmenu .mc{position:absolute;left:16px;right:16px;bottom:92px;background:#fff;border-radius:16px;padding:6px 0}
+.tmenu button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:14px 20px;font-size:14px;color:var(--ink2);text-align:left}
+.tmenu button i{width:20px;height:20px;border-radius:5px;background:#C9CDD2;display:block}
+.tmenu button.on{color:var(--app)}.tmenu button.on i{background:var(--app)}
+.tmenu button.on::after{content:"✓";margin-left:auto;font-weight:700}
+.cp{padding:4px 16px 100px;display:flex;flex-direction:column;gap:14px}
+.cph{display:flex;justify-content:space-between;align-items:center}
+.cph>b{font-size:22px}
+.gpill{border:0;background:var(--appbg);color:var(--app);border-radius:15px;height:30px;padding:0 12px;font-size:12.5px}
+.eqc{background:var(--soft);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.eqc .v{font-size:26px;font-weight:700}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);font-size:11.5px;color:var(--muted)}
+.g3 b{display:block;color:var(--ink);font-size:13px;margin-top:3px;font-weight:600}
+.g3 div:nth-child(2){text-align:center}.g3 div:last-child{text-align:right}
+.eqc .g3{border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.chips{display:flex;gap:8px}.chips span{font-size:12px;padding:6px 12px;border-radius:15px;background:var(--soft);color:var(--muted)}.chips .on{background:#E2E5E8;color:var(--ink)}
+.trd{border-bottom:1px solid var(--line2);padding-bottom:12px;display:flex;flex-direction:column;gap:5px}
+.ep{padding:8px 16px 100px;display:flex;flex-direction:column;gap:12px}
+.ep h6{margin:4px 0 0;font-size:12px;color:var(--muted);font-weight:500}
+.ecard{border:1px solid #E1EEE3;border-radius:16px;padding:14px;background:linear-gradient(180deg,#fff,#F1FAF2)}
+.ecard .v{font-size:26px;font-weight:700;margin:4px 0 12px}
+.egrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 4px;border-top:1px solid var(--line);padding-top:14px}
+.egrid button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2)}
+.egrid i{width:24px;height:24px;border-radius:12px;border:1.6px solid var(--ink2);display:block}
+.etab{display:flex;gap:16px;font-size:15px;font-weight:700;color:var(--faint)}.etab b{color:var(--ink)}
+.prod{background:var(--soft);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;text-align:left;border:0;width:100%}
+.prod .t{display:flex;justify-content:space-between}.prod .t b{font-size:14px}
+.prod .r{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px;font-size:12.5px}
 .bubble{position:absolute;left:16px;bottom:90px;max-width:210px;background:var(--ink);color:#fff;border-radius:14px 14px 14px 4px;padding:9px 12px;font-size:12.5px;line-height:1.45;z-index:5;box-shadow:0 6px 16px rgba(0,0,0,.18);border:0;text-align:left}
 .bubble small{display:block;color:#9FE8CB;margin-top:2px}
 .bubble.danger{background:#E5384F}.bubble.danger small{color:#FFE1E5}
@@ -332,9 +435,9 @@ const FAQ={
 const FAQ_KEYS=Object.keys(FAQ);
 
 /* ---------- 状态 ---------- */
-const S={acct:'pos',alert:false,page:'home',ai:null,tab:'board',msgs:[],busy:false,orb:'pending',bubble:true,ctx:null,from:null,user:'normal',closeRes:'ok',ordersEmpty:false,scene:'home',toast:''};
+const S={menu:false,acct:'pos',alert:false,page:'home',ai:null,tab:'board',msgs:[],busy:false,orb:'pending',bubble:true,ctx:null,from:null,user:'normal',closeRes:'ok',ordersEmpty:false,scene:'home',toast:''};
 let tok=0,stickBottom=false,toastT;
-function reset(){tok++;S.alert=false;S.msgs=[];S.busy=false;S.ctx=null;S.from=null;S.tab='board';S.bubble=true;}
+function reset(){tok++;S.menu=false;S.alert=false;S.msgs=[];S.busy=false;S.ctx=null;S.from=null;S.tab='board';S.bubble=true;}
 
 /* ---------- 场景（左侧旅程导航 + 右侧说明） ---------- */
 const SCENES=[
@@ -364,8 +467,8 @@ const SCENES=[
   rules:['R1','R3','R22'],pend:[]},
  {id:'futures',g:'② 唤起与看板',t:'交易页内唤起',new:true,
   run(){S.page='futures';S.ai='full';S.tab='chat';S.ctx='BTCUSDT 永续'},
-  trig:'用户在合约交易页点击底部导航的 AI 入口，AI 全屏打开，导航栏隐藏；关闭后回到交易页。',
-  logic:['自动带上当前交易对，作为上下文提示','推荐问题按当前交易对生成（挂单、新闻、平仓、规则）','关闭 AI 回到交易页时，对话内容保留，再次打开可继续'],
+  trig:'用户在交易页（现货 / 合约 / CFD，底部「交易」菜单切换）点击底部导航的 AI 入口，AI 全屏打开，导航栏隐藏；关闭后回到交易页。',
+  logic:['底部「交易」点开菜单：现货 / 合约 / 跟单 / CFD','自动带上当前交易对（如 BTCUSDT 永续、BTC/USDT 现货、UKOUSD CFD），作为上下文提示','推荐问题按当前交易对生成（挂单、新闻、平仓、规则）','关闭 AI 回到交易页时，对话内容保留，再次打开可继续'],
   edge:['页面停在 BTC，不等于用户授权买 BTC。交易参数必须由用户明说','AI 全屏时不出现半屏下单组件：需要下单时先关闭 AI 回到交易页','AI 入口只在底部导航，币种页、持仓卡不另加入口'],
   rules:['R2','R6','R7','R19'],pend:[]},
  {id:'orders',g:'③ 查询',t:'挂单查询',new:true,demo:['orders'],
@@ -425,7 +528,7 @@ const SCENES=[
  {id:'closeall',g:'⑤ 对话 → 操作',t:'全部平掉：逐个确认',new:true,demo:['close'],
   run(){openChat();ask('把仓位全部平掉')},
   trig:'「全部平掉」「全平」「仓位都平了」。',
-  logic:['对话里不支持一键全平','列出全部仓位，每个仓位一张平仓卡片，各自确认','用户可以只平其中一部分'],
+  logic:['对话里不支持一键全平','列出全部仓位，每个仓位一张平仓卡片，各自确认','用户可以只平其中一部分','同时引导到合约交易页使用「一键平仓」（交易页现有功能）'],
   edge:['不会因为一句「全部平掉」就批量提交'],
   rules:['R4','R12'],pend:[]},
  {id:'cancel',g:'⑤ 对话 → 操作',t:'撤单',new:true,demo:['orders'],
@@ -509,7 +612,7 @@ function ask(q,opt={}){
  const H={
   risk:()=>reply('读取 SOL 仓位',()=>[{r:'a',k:'text',d:{trace:'已读取仓位 · 10:42:18',t:'这笔 <b>SOL 多单</b>的保证金率 24 小时内从 168% 降到 128%，SOL 再跌 <b>9.8%</b> 会触发强平。你可以三选一：'}},{r:'a',k:'risk',d:{mr:128,liq:152.35,mark:168.90,upnl:-74.20,at:'10:42:18'}}]),
   close:()=>reply('读取持仓',()=>[{r:'a',k:'text',d:{trace:'已读取持仓 · 2 个仓位',t:'你有 2 个合约仓位，要平哪一个？'}},{r:'a',k:'pick',d:{sel:null}}]),
-  closeall:()=>reply('读取持仓',()=>[{r:'a',k:'text',d:{trace:'已读取持仓 · 2 个仓位',t:'对话里<b>不支持一键全平</b>。下面是你的 2 个仓位，每个单独确认，也可以只平其中一个：'}},...Object.keys(POS).map(k=>({r:'a',k:'close',d:{pos:k,pct:100,type:'市价',st:'edit'}}))]),
+  closeall:()=>reply('读取持仓',()=>[{r:'a',k:'text',d:{trace:'已读取持仓 · 2 个仓位',t:'对话里<b>不支持一键全平</b>。下面是你的 2 个仓位，每个单独确认，也可以只平其中一个：'}},...Object.keys(POS).map(k=>({r:'a',k:'close',d:{pos:k,pct:100,type:'市价',st:'edit'}})),{r:'a',k:'fu',d:{c:[['去合约交易页用「一键平仓」','go:futures']]}}]),
   orders:()=>{if(!/合约|现货/.test(q))return reply('识别挂单类型',()=>[{r:'a',k:'text',d:{trace:'没说明是现货还是合约',t:'你想看哪一类挂单？'}},{r:'a',k:'otype',d:{q,sel:null}}]);
    if(/现货/.test(q))return reply('读取现货挂单',()=>[{r:'a',k:'text',d:{trace:'已读取现货挂单 · 10:42:20',t:'你有 <b>1 笔</b>未成交的现货挂单：'}},{r:'a',k:'spot',d:{}}]);
    const btc=/BTC/.test(q);return reply('读取合约挂单',()=>[{r:'a',k:'text',d:{trace:'已读取合约挂单 · 10:42:20',t:S.ordersEmpty?'你目前没有未成交的合约挂单。':btc?'找到 <b>2 笔 BTC 未成交挂单</b>，勾选要撤销的，也可以全选一次撤掉：':'你有 <b>3 笔</b>未成交的合约挂单：'}},{r:'a',k:'orders',d:{f:btc?'BTCUSDT':'全部',sel:btc?['o1']:[],st:'edit'}}])},
@@ -639,7 +742,7 @@ const R={
 function act(i,a,v){
  const m=S.msgs[i],d=m&&m.d;if(!m)return;
  if(a==='fu'){if(S.busy)return toast('请等当前回答完成');const[t,x]=[v.split(':')[0],v.slice(v.indexOf(':')+1)];
-  if(t==='q')return ask(x);if(t==='toast')return toast(x);
+  if(t==='q')return ask(x);if(t==='go'){tok++;S.busy=false;S.ai=null;S.page=x;S.scene='futures';return render()}if(t==='toast')return toast(x);
   if(t==='spot'){S.msgs.push({r:'u',t:'买 BTC 现货 · 100 USDT'});return reply('生成下单卡片',()=>[{r:'a',k:'text',d:{trace:'参数已齐',t:'好的：用 100 USDT 市价买入 BTC 现货。确认后会生成下单卡片。'+pq('开仓卡片形态')}}])}
   if(t==='fut'){S.msgs.push({r:'u',t:'开 BTC 合约'});return reply('核对参数',()=>[{r:'a',k:'text',d:{trace:'还缺 3 个参数',t:'开合约还需要你说明：<b>方向</b>、<b>保证金</b>、<b>杠杆</b>。'}}])}
  }
@@ -679,32 +782,104 @@ function act(i,a,v){
 
 /* ---------- 页面渲染 ---------- */
 function home(){
+ const spark=(c,pts)=>`<svg width="70" height="26" viewBox="0 0 70 26"><polyline fill="none" stroke="${c}" stroke-width="1.5" points="${pts}"/></svg>`;
  return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="scroll"><div class="hp">
- <div class="top"><span class="avatar">R</span><div class="search">搜索币种 / 功能</div></div>
- <div class="asset"><small>总资产估值 (USDT)</small><div class="v num">4,734.53</div><small class="down num">昨日盈亏 −82.40</small></div>
- <div class="tiles"><div><i></i>充值</div><div><i></i>划转</div><div><i></i>跟单</div><div><i></i>理财</div></div>
- <div class="mkt"><div class="h"><b>自选</b><span>热门</span><span>涨幅榜</span></div>
- ${[['BTC/USDT','79,697.47','−0.86%','down'],['ETH/USDT','2,316.63','+0.68%','up'],['SOL/USDT','168.90','−6.20%','down'],['BNB/USDT','598.20','+0.31%','up']].map(r=>`<div class="mrow num"><b>${r[0]}</b><span>${r[1]}</span><span class="pill ${r[3]}">${r[2]}</span></div>`).join('')}
- <button class="btn" style="margin-top:12px" onclick="navTo('futures')">进入 BTCUSDT 合约交易页 ›</button></div></div></div>
- ${BUB[S.orb]&&S.bubble&&!S.ai?`<button class="bubble ${S.orb}" onclick="go('${BUB[S.orb][2]}')">${BUB[S.orb][0]}<small>${BUB[S.orb][1]}</small></button>`:''}
- ${nav('home')}</div>`}
+ <div class="top"><span class="avatar">R</span><div class="search">⌕ 搜索</div><span class="xic dot">▣</span><span class="xic">☊</span></div>
+ <div class="xasset"><div><small>总资产估值 (USDT) ◉</small><div class="v num">4,734.53</div><small>昨日盈亏 <span class="down num">−82.40</span></small></div><span class="chg down num">▼ 1.71%</span></div>
+ <button class="xbtn" onclick="toast('跳转充值页（示意）')">充值</button>
+ <div class="xshort">${[['跟盈宝','earn'],['理财','earn'],['合约','futures'],['美股通',''],['Launch','']].map(([n,p])=>`<button onclick="${p?`navTo('${p}')`:`toast('示意：进入${n}')`}"><i></i>${n}</button>`).join('')}</div>
+ <div class="xcards"><div class="xcard xbig"><b>活动位</b><small>运营配置</small><div class="ph">活动图</div></div>
+ <button class="xcard" onclick="navTo('earn')"><span class="g">交易专家</span><b>跟盈宝</b><div class="ph">图</div></button>
+ <button class="xcard" onclick="toast('跳转 100X 学院（示意）')"><b>100X 学院</b><small>轻松玩转加密交易 →</small></button></div>
+ <div class="xtick">◁ 用户 10****48 <b>做空 ETHUSDT</b>，盈利 <b>+1.72 USDT</b><span style="margin-left:auto">›</span></div>
+ <div class="xtabs"><b>现货</b><span>合约</span><span class="mr">更多 ›</span></div>
+ <div class="xmk">${[['BTC/USDT','5,530.61万','79,697.47','−0.86%','down','2,10 10,14 20,8 30,12 40,6 50,16 60,18 68,22'],['ETH/USDT','2,104.33万','2,316.63','+0.68%','up','2,20 10,18 20,19 30,12 40,14 50,9 60,10 68,5'],['SOL/USDT','860.12万','168.90','−6.20%','down','2,4 10,6 20,9 30,8 40,14 50,17 60,21 68,24']].map(r=>`<button onclick="navTo('spot')"><b>${r[0]}</b><small class="num">${r[1]}</small><span class="xr"><div><b class="num">${r[2]}</b><small class="num ${r[4]}">${r[3]}</small></div>${spark(r[4]==='up'?'var(--app)':'var(--down)',r[5])}</span></button>`).join('')}</div>
+ </div></div>
+ ${BUB[S.orb]&&S.bubble&&!S.ai&&!S.menu?`<button class="bubble ${S.orb}" onclick="go('${BUB[S.orb][2]}')">${BUB[S.orb][0]}<small>${BUB[S.orb][1]}</small></button>`:''}
+ ${nav()}</div>`}
 /* 气泡三档：颜色与 AI 入口状态一致；资讯类只显示角标，不弹气泡 */
 const BUB={danger:['SOL 多单离强平 9.8%','点我看处理方式','risk'],pending:['BTC 挂单已部分成交 0.004','点我看剩余挂单','orders']};
-function nav(on){
+const TAB={home:'home',earn:'earn',spot:'trade',futures:'trade',copy:'trade',cfd:'trade'};
+function nav(){
  if(S.ai)return '';
- const orbCls=S.orb==='default'?'':S.orb;
+ const orbCls=S.orb==='default'?'':S.orb,on=TAB[S.page];
  return `<div class="tabnav"><button class="orb ${orbCls}" aria-label="打开 AI 管家" onclick="openAI()"><i></i><em>AI</em>${S.orb==='pending'?'<span class="badge">1</span>':S.orb==='danger'?'<span class="badge">!</span>':S.orb==='info'?'<span class="badge">2</span>':''}</button>
- <div class="navbar">${[['home','首页','⌂'],['market','市场','◫'],['futures','交易','⇅'],['earn','理财','¥'],['asset','资产','◎']].map(t=>`<button class="${t[0]===on?'on':''}" onclick="navTo('${t[0]}')"><span class="ic">${t[2]}</span><span class="l">${t[1]}</span></button>`).join('')}</div></div><div class="homebar"></div>`}
-function navTo(p){if(p!=='home'&&p!=='futures')return toast('示意：进入'+({market:'市场',earn:'理财',asset:'资产'}[p])+'页，底部导航保持不变');S.page=p;S.ai=null;S.scene=p==='home'?'home':'futures';render()}
+ <div class="navbar">${[['home','首页','⌂'],['market','市场','◫'],['trade','交易','⇅'],['earn','理财','¥'],['asset','资产','◎']].map(t=>`<button class="${t[0]===on&&!(t[0]==='trade'&&S.menu)?'on':''} ${t[0]==='trade'?'tr':''}" onclick="navTo('${t[0]}')"><span class="ic">${t[0]==='trade'&&S.menu?'✕':t[2]}</span><span class="l">${t[1]}</span></button>`).join('')}</div></div><div class="homebar"></div>`}
+function navTo(p){
+ if(p==='trade'){S.menu=!S.menu;return render()}
+ if(p==='market'||p==='asset')return toast('示意：进入'+({market:'市场',asset:'资产'}[p])+'页，底部导航保持不变');
+ S.menu=false;S.page=p;S.ai=null;S.scene=TAB[p]==='trade'?'futures':'home';render()}
+function tmenu(){return `<div class="tmenu" onclick="if(event.target===this){S.menu=false;render()}"><div class="mc">${[['spot','现货'],['futures','合约'],['copy','跟单'],['cfd','CFD']].map(([k,l])=>`<button class="${S.page===k?'on':''}" onclick="navTo('${k}')"><i></i>${l}</button>`).join('')}</div></div>`}
+function obk(h,mid,sub){
+ const A=[['79,712.0','0.214',20],['79,705.5','0.088',10],['79,701.2','1.320',70],['79,699.8','0.402',35],['79,698.6','0.051',8]],B=[['79,697.4','0.540',40],['79,692.0','0.912',55],['79,688.8','0.160',15],['79,684.1','2.031',90],['79,680.0','0.330',25]];
+ return `<div class="obk num"><div class="hd"><span>${h[0]}</span><span>${h[1]}</span></div>${A.map(([p,q,w])=>`<div class="a" style="--w:${w}%"><span>${p}</span><span>${q}</span></div>`).join('')}<div class="mid"><b>${mid}</b><small>${sub}</small></div>${B.map(([p,q,w])=>`<div class="b" style="--w:${w}%"><span>${p}</span><span>${q}</span></div>`).join('')}</div>`}
 function futures(){
- return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div>
- <div class="fh"><span style="color:var(--muted)" onclick="go('home')">‹</span><b>BTCUSDT</b><span class="tag">永续</span></div>
- <div class="fp num"><div class="p">79,697.47</div><div class="sub">标记价 79,690.12 · 资金费率 0.0100% · 16:00 结算</div></div>
- <div class="fgrid num"><div class="ob">${[['79,712.0','0.214','down'],['79,705.5','0.088','down'],['79,701.2','1.320','down'],['79,697.4','0.540','up'],['79,692.0','0.912','up'],['79,688.8','0.160','up']].map(r=>`<div><span class="${r[2]}">${r[0]}</span><span>${r[1]}</span></div>`).join('')}</div>
- <div class="form"><div class="f"><span>全仓</span><span>5x</span></div><div class="f"><span>价格</span><span>市价</span></div><div class="f"><span>数量</span><span>USDT</span></div><div class="bb" style="background:var(--up)">开多</div><div class="bb" style="background:var(--down)">开空</div></div></div>
- <div class="ptab"><b>仓位 (2)</b><span>当前委托 (3)</span></div>
+ return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="tbar"><span>BTCUSDT 永续 图表</span><span>▾</span></div><div class="scroll tp">
+ <div class="thd"><b>BTCUSDT</b><span class="tg">永续</span><span>▾</span><span class="sp">⫼ ···</span></div>
+ <div class="tgrid num"><div class="tf">
+  <div class="two"><div class="fld">全仓<span>▾</span></div><div class="fld">5X<span>▾</span></div></div>
+  <div class="fld c">市价单 ▾</div><div class="fld off">市价</div><div class="fld">成本<span>USDT ▾</span></div>
+  <div class="sl"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="kvs"><span>可用</span><b>1,860.20 USDT</b></div>
+  <div class="kvs"><span class="cbx">止盈止损</span><span>标记价 ▾</span></div>
+  <div class="kvs"><span>最大可买</span><b>9,301.00 USDT</b></div>
+  <button class="xbtn" style="height:38px;font-size:13.5px">买入/做多</button>
+  <div class="kvs"><span>最大可卖</span><b>9,301.00 USDT</b></div>
+  <button class="xbtn dn" style="height:38px;font-size:13.5px">卖出/做空</button>
+ </div><div><div class="kvs" style="flex-direction:column;align-items:flex-end;gap:2px;margin-bottom:6px"><span>资金费率/倒计时</span><b>0.0100% / 05:17:42</b></div>${obk(['价格(USDT)','数量(BTC)'],'79,697.47','79,690.12 −0.86%')}</div></div>
+ <div class="btabs"><b>仓位(2)</b><span>当前委托(3)</span><span>卡券(0)</span></div>
+ <div class="brow"><span class="tog">隐藏其他合约</span><button class="gbtn" onclick="toast('一键平仓：交易页现有功能（示意）')">一键平仓</button></div>
  ${Object.values(POS).map(p=>`<div class="prow num"><b>${p.sym} · <span class="up">${p.side} ${p.lev}x</span></b><span class="sub">保证金率 ${p.mr}% · 未实现 <span class="${cls(p.upnl)}">${sg(p.upnl)}</span></span></div>`).join('')}
- ${nav('futures')}</div>`}
+ </div>${nav()}</div>`}
+function spot(){
+ return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="tbar"><span>BTC/USDT 图表</span><span>▾</span></div><div class="scroll tp">
+ <div class="thd"><b>BTC/USDT</b><span>▾</span><span class="sp">⫼ ···</span></div>
+ <div class="tgrid num"><div class="tf">
+  <div class="seg3"><span class="on">买入</span><span>卖出</span></div>
+  <div class="fld c">限价单 ▾</div>
+  <div class="fld"><span>−</span><span>价格</span><span>+</span></div><div class="fld"><span>−</span><span>数量(BTC)</span><span>+</span></div>
+  <div class="sl"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="fld c" style="color:var(--muted);font-weight:400">总计(USDT)</div>
+  <div class="kvs"><span>可用</span><b>520.00 USDT</b></div><div class="kvs"><span>最大可买</span><b>0.0065 BTC</b></div>
+  <button class="xbtn" style="height:38px;font-size:13.5px">买入 BTC</button>
+ </div>${obk(['价格(USDT)','数量(BTC)'],'79,697.47','79,697.47 −0.86%')}</div>
+ <div class="btabs"><b>委托(1)</b><span>资产</span></div>
+ <div class="brow"><span class="tog">隐藏其他交易对</span><button class="gbtn" onclick="toast('全部取消：交易页现有功能（示意）')">全部取消</button></div>
+ <div class="prow num"><b>BTC/USDT · <span class="up">限价买入</span></b><span class="sub">价格 76,000.00 · 数量 0.002 BTC · 已成交 0</span></div>
+ </div>${nav()}</div>`}
+function copy(){
+ const T=[['带单员 A','带单 2 天','+48.94%','6.78K','2','0.00%'],['带单员 B','带单 9 天','0.00%','0.00','0','0.00%'],['带单员 C','带单 12 天','+3.10%','1.20K','5','2.40%']];
+ return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="scroll"><div class="cp">
+ <div class="cph"><b>跟单</b><button class="gpill" onclick="toast('申请带单（示意）')">申请带单 →</button></div>
+ <div class="eqc num"><div class="kvs" style="font-size:12px"><span>跟单账户权益</span><span>全部项目 ›</span></div><div><span class="v">836.40</span> <small class="sub">USDT</small></div><div class="kvs" style="justify-content:flex-start;gap:8px;font-size:12px"><span>累计盈亏</span><b class="up">+36.40</b><b class="up">+4.55%</b></div>
+ <div class="g3"><div>投入资金<b>800.00</b></div><div>占用保证金<b>210.50</b></div><div>未实现盈亏<b class="up">+12.30</b></div></div></div>
+ <div class="xtabs"><b>CFD跟单</b><span>合约跟单</span><span class="mr" style="color:var(--app)">规则介绍 ›</span></div>
+ <div class="chips"><span class="on">收益率</span><span>跟单人数</span><span>最大回撤</span></div>
+ ${T.map(t=>`<div class="trd num"><div class="cph"><div><b style="font-size:15px">${t[0]}</b><div class="sub">${t[1]}</div></div><button class="xbtn sm" onclick="toast('跟单（示意）')">跟单</button></div><small class="sub">近 30 日收益</small><b style="font-size:22px" class="${t[2].startsWith('+')&&t[2]!=='+0.00%'?'up':''}">${t[2]}</b><div class="g3"><div>跟单资金<b>${t[3]}</b></div><div>跟单人数<b>${t[4]}</b></div><div>最大回撤<b>${t[5]}</b></div></div></div>`).join('')}
+ </div></div>${nav()}</div>`}
+function cfd(){
+ return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="scroll tp">
+ <div class="thd"><b>UKOUSD</b><span class="tg n">500x</span><span>▾</span><span class="sp">⫼</span></div>
+ <div style="padding:0 16px;font-size:12px;color:var(--muted)">英国布伦特原油</div>
+ <div class="brow" style="padding-top:10px"><span>可用保证金 <b style="color:var(--ink)">0.00 USDx</b> <span style="color:var(--app)">⊕</span></span><span style="text-align:right">做多/做空掉期利率<br><b style="color:var(--ink)">149.93 / −199.97</b></span></div>
+ <div class="tgrid num"><div class="tf"><div class="fld">市价<span>▾</span></div><div class="fld">数量<span>手数</span></div><div class="kvs"><span>价值</span><b>-- USDx</b></div><span class="cbx">止盈止损</span><button class="xbtn" style="height:40px" onclick="toast('开通 CFD（示意）')">去开通</button></div>
+ <div class="cfr"><div><span>中间价</span><b class="up">110.505</b></div><div><span>涨跌</span><b class="up">+2.47%</b></div><div><span>卖出价格</span><b class="down">110.480</b></div><div><span>买入价格</span><b class="up">110.531</b></div><div><span>价差</span><b>51</b></div><span class="note">该交易对的参考流动性数据即将上线。</span></div></div>
+ <div style="padding:0 16px 12px"><div class="fld">保证金比例<span>-- ›</span></div></div>
+ <div class="btabs"><b>仓位(0)</b><span>委托(0)</span><span>资产</span></div>
+ <div class="brow"><button class="gbtn" onclick="toast('一键平仓：交易页现有功能（示意）')">一键平仓</button></div>
+ <div class="empty"><i></i>暂无数据</div>
+ </div>${nav()}</div>`}
+function earn(){
+ return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="scroll"><div class="ep">
+ <div class="ecard"><small class="sub">总资产估值(USD) ◉</small><div class="v num">521.12</div><div class="egrid">${['跟盈宝','混动引擎','代币兑换','折扣买币','结构性套利'].map(n=>`<button onclick="toast('示意：进入${n}')"><i></i>${n}</button>`).join('')}</div></div>
+ <div class="etab"><b>专属推荐</b><span>我的理财</span></div>
+ <h6>基础理财</h6>
+ <div class="prod"><div class="t"><b>折扣买币</b><span>›</span></div><small class="sub">低价入场，赚取高额收益</small><div class="r"><span>BTC</span><b class="num">1% ~ 15%</b><button class="xbtn sm" onclick="toast('申购（示意）')">申购</button></div></div>
+ <div class="prod"><div class="t"><b>pUSD 套利工具</b><span>›</span></div><small class="sub">风险对冲，稳健套利</small><div class="r"><span>BTC/pUSD</span><span></span><button class="xbtn sm" onclick="toast('申购（示意）')">申购</button></div></div>
+ <h6>进阶理财</h6>
+ <div class="prod"><div class="t"><b>结构性理财</b><span>›</span></div><small class="sub">安全起步，套利增值</small></div>
+ <div class="prod"><div class="t"><b>跟盈宝</b><span>›</span></div><small class="sub">让专业团队替您赚取每一分收益</small></div>
+ </div></div>${nav()}</div>`}
 function lock(){
  return `<div class="lock"><div class="d">11月2日 星期一</div><div class="t num">10:51</div>
  <button class="push hot" onclick="landPush()"><span class="ic"><i></i></span><span style="flex:1"><b>SOL 多单需要关注</b><p>保证金率降到 128%，再跌 9.8% 会触发强平。点开看处理方式。</p></span><span class="tm">10:42</span></button>
@@ -737,7 +912,7 @@ function board(){
  <div class="boxs num"><button class="box" onclick="ask('今天 BTC 涨了，为什么我的账户还在亏？')"><small>总资产 · USDT</small><b>4,734.53</b><small class="down">昨日 −82.40 ›</small></button><button class="box" onclick="ask('我要平仓')"><small>合约仓位</small><b>2 个</b><small class="down">未实现 −42.60 ›</small></button></div>
  <div class="sec"><h6>常问</h6><div class="fu">${['提币一直处理中怎么办？','全仓和逐仓有什么区别？','市场情绪偏贪婪还是恐惧？'].map(q=>`<button onclick="ask('${q}')">${q}</button>`).join('')}</div></div>`}
 function sugg(){
- if(S.ctx)return ['我的 BTC 挂单','BTC 相关新闻','我要平仓','资金费率是什么？'];
+ if(S.ctx&&/BTC/.test(S.ctx))return ['我的 BTC 挂单','BTC 相关新闻','我要平仓','资金费率是什么？'];
  return ['我要平仓','查我所有的合约挂单','提币一直处理中怎么办？','今天有哪些宏观事件？','把这个关掉'];
 }
 function aiPanel(){
@@ -755,12 +930,12 @@ function aiPanel(){
 function render(){
  const prev=$('abody'),atBottom=prev?prev.scrollHeight-prev.scrollTop-prev.clientHeight<40:true,keep=prev?prev.scrollTop:0;
  const input=document.querySelector('.inrow input'),val=input?input.value:'',foc=document.activeElement===input;
- $('screen').innerHTML=(S.page==='lock'?lock():S.page==='futures'?futures():home())+(S.ai?aiPanel():'')+(S.toast?`<div class="toast">${S.toast}</div>`:'');
+ $('screen').innerHTML=(({lock,futures,spot,copy,cfd,earn})[S.page]||home)()+(S.menu&&!S.ai?tmenu():'')+(S.ai?aiPanel():'')+(S.toast?`<div class="toast">${S.toast}</div>`:'');
  const b=$('abody');if(b){b.scrollTop=(stickBottom||atBottom)?b.scrollHeight:keep}stickBottom=false;
  const ni=document.querySelector('.inrow input');if(ni){ni.value=val;if(foc)ni.focus()}
  renderSide();
 }
-function openAI(ctx){S.ai='full';S.ctx=ctx||(S.page==='futures'?'BTCUSDT 永续':null);S.tab=S.ctx?'chat':'board';S.bubble=false;render()}
+function openAI(ctx){S.menu=false;S.ai='full';S.ctx=ctx||({futures:'BTCUSDT 永续',spot:'BTC/USDT 现货',cfd:'UKOUSD CFD'}[S.page]||null);S.tab=S.ctx?'chat':'board';S.bubble=false;render()}
 function closeAI(){tok++;S.busy=false;S.ai=null;render()}
 function toast(t){S.toast=t;render();clearTimeout(toastT);toastT=setTimeout(()=>{S.toast='';render()},1600)}
 
