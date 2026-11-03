@@ -424,8 +424,8 @@ const pq=q=>`<span class="pend">⚠️ ${q} 待确认</span>`;
 
 /* ---------- 示意数据 ---------- */
 const POS={
- sol:{sym:'SOLUSDT',side:'多',lev:10,mode:'逐仓',qty:5.5,unit:'SOL',entry:182.40,mark:168.90,liq:152.35,mr:128,upnl:-74.20,sl:true},
- btc:{sym:'BTCUSDT',side:'多',lev:5,mode:'全仓',qty:0.02,unit:'BTC',entry:78117.0,mark:79697.47,liq:64210.0,mr:412,upnl:31.60,sl:false}
+ sol:{sym:'SOLUSDT',side:'多',lev:10,mode:'逐仓',qty:5.5,unit:'SOL',entry:182.40,mark:168.90,liq:152.35,mr:88,upnl:-74.20,sl:true},
+ btc:{sym:'BTCUSDT',side:'多',lev:5,mode:'全仓',qty:0.02,unit:'BTC',entry:78117.0,mark:79697.47,liq:64210.0,mr:12,upnl:31.60,sl:false}
 };
 const ORDERS=[
  {id:'o1',sym:'BTCUSDT',type:'限价',side:'开多',price:'78,000.0',qty:0.010,unit:'BTC',filled:0.004},
@@ -530,8 +530,8 @@ const SCENES=[
  {id:'risk',g:'⑤ 对话 → 操作',t:'风险处理与止损',
   run(){openChat();S.from='来自风险提醒 · 10:42';ask('SOL 多单离强平 9.8%，怎么处理')},
   trig:'AI 入口气泡、风险推送，或用户主动问。',
-  logic:['风险卡片：保证金率、强平价、标记价、未实现盈亏','三个处理方式：设止损 / 减仓 / 加保证金','设止损：给 3 个候选价，显示距现价多远、触发时亏损多少，在卡片内确认'],
-  edge:['止损价必须高于强平价，否则会先被强平','加保证金跳转仓位页完成，不在对话里提交'],
+  logic:['风险卡片：保证金率、强平价、标记价、未实现盈亏；合约保证金率越接近 100% 越危险，达到 100% 触发强平','三个处理方式：设止损 / 减仓 / 加保证金','设止损：给 3 个候选价，显示距现价多远、触发时亏损多少，在卡片内确认'],
+  edge:['「需关注」等级的阈值为示意值（原型按 80%），待 Q8','止损价必须高于强平价，否则会先被强平','加保证金跳转仓位页完成，不在对话里提交'],
   rules:['R4'],pend:['Q8 风险提醒阈值（搁置）']},
  {id:'close',g:'⑤ 对话 → 操作',t:'平仓',new:true,demo:['close'],
   run(){openChat();ask('我要平仓')},
@@ -624,7 +624,7 @@ function ask(q,opt={}){
  const k=route(q);
  if((BLOCKED[S.user]||[]).includes(k)){return reply('核对账户权限',()=>[{r:'a',k:'block',d:{}}])}
  const H={
-  risk:()=>reply('读取 SOL 仓位',()=>[{r:'a',k:'text',d:{trace:'已读取仓位 · 10:42:18',t:'这笔 <b>SOL 多单</b>的保证金率 24 小时内从 168% 降到 128%，SOL 再跌 <b>9.8%</b> 会触发强平。你可以三选一：'}},{r:'a',k:'risk',d:{mr:128,liq:152.35,mark:168.90,upnl:-74.20,at:'10:42:18'}}]),
+  risk:()=>reply('读取 SOL 仓位',()=>[{r:'a',k:'text',d:{trace:'已读取仓位 · 10:42:18',t:'这笔 <b>SOL 多单</b>的保证金率 24 小时内从 61% 升到 88%，SOL 再跌 <b>9.8%</b> 会触发强平。你可以三选一：'}},{r:'a',k:'risk',d:{mr:88,liq:152.35,mark:168.90,upnl:-74.20,at:'10:42:18'}}]),
   close:()=>reply('读取持仓',()=>[{r:'a',k:'text',d:{trace:'已读取持仓 · 2 个仓位',t:'你有 2 个合约仓位，要平哪一个？'}},{r:'a',k:'pick',d:{sel:null}}]),
   closeall:()=>reply('读取持仓',()=>[{r:'a',k:'text',d:{trace:'已读取持仓 · 2 个仓位',t:'对话里<b>不支持一键全平</b>。下面是你的 2 个仓位，每个单独确认，也可以只平其中一个：'}},...Object.keys(POS).map(k=>({r:'a',k:'close',d:{pos:k,pct:100,type:'市价',st:'edit'}})),{r:'a',k:'fu',d:{c:[['去合约交易页用「一键平仓」','go:futures']]}}]),
   orders:()=>{if(!/合约|现货/.test(q))return reply('识别挂单类型',()=>[{r:'a',k:'text',d:{trace:'没说明是现货还是合约',t:'你想看哪一类挂单？'}},{r:'a',k:'otype',d:{q,sel:null}}]);
@@ -658,11 +658,11 @@ const R={
  text:d=>`<div class="ma">${d.trace?`<div class="trace done">${d.trace}</div>`:''}<div class="at">${d.t}</div></div>`,
  fu:(d,i)=>`<div class="fu">${d.c.map(([l,a])=>`<button onclick="act(${i},'fu','${a}')">${l}</button>`).join('')}</div>`,
  risk(d,i){
-  const lv=d.mr<150?['需关注','warn']:['安全','up'];
-  const pos=Math.min(96,Math.max(4,(d.mr-100)/3.2));
+  const lv=d.mr>=80?['需关注','warn']:['安全','up'];
+  const pos=Math.min(96,Math.max(4,100-d.mr));
   return `<div class="card">
   <div class="ch"><b>SOLUSDT</b><span class="tag">多 10x · 逐仓</span><span class="r ${lv[1]}">${lv[0]}</span></div>
-  <div><div class="big num ${lv[1]}">${d.mr}%</div><div class="sub">保证金率 · 离强平 ${((d.mark-d.liq)/d.mark*100).toFixed(1)}%</div></div>
+  <div><div class="big num ${lv[1]}">${d.mr}%</div><div class="sub">保证金率 · 达到 100% 强平 · 离强平 ${((d.mark-d.liq)/d.mark*100).toFixed(1)}%</div></div>
   <div class="meter"><i style="left:${pos}%"></i></div>
   <div class="kv num"><div><small>强平价</small><b>${f2(d.liq)}</b></div><div><small>标记价</small><b>${f2(d.mark)}</b></div><div><small>未实现盈亏</small><b class="${cls(d.upnl)}">${sg(d.upnl)}</b></div></div>
   <div class="acts"><button class="btn pri" onclick="act(${i},'sl')">设止损</button><button class="btn" onclick="act(${i},'reduce')">减仓</button><button class="btn" onclick="act(${i},'margin')">加保证金</button></div>
@@ -718,7 +718,7 @@ const R={
   <div class="banner n">口径：「浮动」是持仓账面盈亏，平仓前会随价格变化；「已实现」已经计入余额。期间的充值、提币和划转不计入盈亏。</div>
   <div class="fu"><button onclick="act(${i},'fu','q:SOL 多单离强平 9.8%，怎么处理')">SOL 这单怎么办</button><button onclick="act(${i},'fu','q:浮盈和已实现盈亏有什么区别')">浮盈和已实现的区别</button></div></div>`},
  news:(d,i)=>`<div class="card"><div class="ch"><b>持仓相关 · 今天</b><span class="r" style="color:var(--muted)">示意新闻</span></div>
-  <div><div class="news"><small><span class="dir d">关联 SOL 多单</span> · [来源] · 09:12</small><b>[示意] SOL 生态某项目本周有大额代币解锁，市场关注抛压</b><small>可能影响：短期波动加大，你的 SOL 多单保证金率已在 128%</small></div>
+  <div><div class="news"><small><span class="dir d">关联 SOL 多单</span> · [来源] · 09:12</small><b>[示意] SOL 生态某项目本周有大额代币解锁，市场关注抛压</b><small>可能影响：短期波动加大，你的 SOL 多单保证金率已升到 88%</small></div>
   <div class="news"><small><span class="dir n">关联 BTC 多单</span> · [来源] · 07:40</small><b>[示意] 现货 BTC ETF 昨日资金净流入</b><small>可能影响：资金面偏正面，不代表价格走势</small></div>
   <div class="news"><small><span class="dir n">全市场</span> · [来源] · 06:55</small><b>[示意] 今晚 20:30 公布美国 CPI</b><small>可能影响：数据公布前后波动通常放大</small></div></div>
   <div class="fine">只陈述事实和可能影响，不构成投资建议。来源 [数据源待接入]，截至 10:42。</div>
@@ -760,7 +760,7 @@ function act(i,a,v){
   if(t==='spot'){S.msgs.push({r:'u',t:'买 BTC 现货 · 100 USDT'});return reply('生成下单卡片',()=>[{r:'a',k:'text',d:{trace:'参数已齐',t:'好的：用 100 USDT 市价买入 BTC 现货。确认后会生成下单卡片。'+pq('开仓卡片形态')}}])}
   if(t==='fut'){S.msgs.push({r:'u',t:'开 BTC 合约'});return reply('核对参数',()=>[{r:'a',k:'text',d:{trace:'还缺 3 个参数',t:'开合约还需要你说明：<b>方向</b>、<b>保证金</b>、<b>杠杆</b>。'}}])}
  }
- if(a==='refresh'){if(m.k==='risk'){d.mr=131;d.mark=169.40;d.upnl=-71.45;d.at='10:43:05';toast('已刷新');}else toast('已刷新');return render()}
+ if(a==='refresh'){if(m.k==='risk'){d.mr=86;d.mark=169.40;d.upnl=-71.45;d.at='10:43:05';toast('已刷新');}else toast('已刷新');return render()}
  if(m.k==='risk'){
   if(a==='sl'){S.msgs.push({r:'u',t:'设止损'});return reply('计算候选止损价',()=>[{r:'a',k:'stop',d:{p:160,st:'edit'}}])}
   if(a==='reduce'){S.msgs.push({r:'u',t:'减仓'});return reply('生成平仓卡片',()=>[{r:'a',k:'close',d:{pos:'sol',pct:50,type:'市价',st:'edit'}}])}
@@ -846,7 +846,7 @@ function futures(){
  ${Object.values(POS).map(p=>{const m=p.qty*p.entry/p.lev,roe=p.upnl/m*100;return `<div class="pc num"><div class="h"><b>${p.sym} 永续</b><span class="mine">挖矿中 •</span><span class="ln">↗</span></div>
  <div class="chipz"><span class="${p.side==='多'?'l':'s'}">${p.side}</span><span>${p.mode}</span><span>${p.lev}x</span></div>
  <div class="pnlr"><div><small>未实现盈亏</small><b class="${cls(p.upnl)}">${sg(p.upnl)}</b></div><div><small>ROE%</small><b class="${cls(roe)}">${sg(roe)}%</b></div></div>
- <div class="pg"><div>数量<b>${p.qty} ${p.unit}</b></div><div>开仓价格<b>${f2(p.entry)}</b></div><div>标记价格<b>${f2(p.mark)}</b></div><div>持仓保证金 <span style="color:var(--app)">⊕</span><b>${f2(m)}</b></div><div>预估强平价<b>${f2(p.liq)}</b></div><div>保证金率 <span class="pend">⚠️ 口径</span><b>${p.mr}%</b></div></div>
+ <div class="pg"><div>数量<b>${p.qty} ${p.unit}</b></div><div>开仓价格<b>${f2(p.entry)}</b></div><div>标记价格<b>${f2(p.mark)}</b></div><div>持仓保证金 <span style="color:var(--app)">⊕</span><b>${f2(m)}</b></div><div>预估强平价<b>${f2(p.liq)}</b></div><div>保证金率<b>${p.mr}%</b></div></div>
  <div class="pb"><button onclick="toast('止盈/止损：交易页现有功能（示意）')">止盈/止损</button><button onclick="toast('加仓（示意）')">加仓</button><button onclick="toast('平仓：交易页现有功能（示意）')">平仓</button></div>
  <div class="pb p2"><button class="g" onclick="toast('防爆盾（示意）')">⛨ 防爆盾</button><button class="g" onclick="toast('护财符（示意）')">☂ 护财符</button></div></div>`}).join('')}
  </div>${nav()}</div>`}
@@ -906,13 +906,13 @@ function earn(){
  </div></div>${nav()}</div>`}
 function lock(){
  return `<div class="lock"><div class="d">11月2日 星期一</div><div class="t num">10:51</div>
- <button class="push hot" onclick="landPush()"><span class="ic"><i></i></span><span style="flex:1"><b>SOL 多单需要关注</b><p>保证金率降到 128%，再跌 9.8% 会触发强平。点开看处理方式。</p></span><span class="tm">10:42</span></button>
+ <button class="push hot" onclick="landPush()"><span class="ic"><i></i></span><span style="flex:1"><b>SOL 多单需要关注</b><p>保证金率升到 88%，再跌 9.8% 会触发强平。点开看处理方式。</p></span><span class="tm">10:42</span></button>
  <button class="push" onclick="toast('落地：价格提醒详情（示意）')"><span class="ic"><i></i></span><span style="flex:1"><b>BTC 到 80,000 了</b><p>你设的价格提醒已触发。</p></span><span class="tm">8 分钟前</span></button>
  <button class="push" onclick="openAI();S.tab='board';render()"><span class="ic"><i></i></span><span style="flex:1"><b>今日要点：SOL 领跌，BTC 横盘</b><p>1 件事需要处理，另有 2 条和你的持仓有关。</p></span><span class="tm">08:00</span></button>
  <div class="tip">点击第一条推送，查看「数据已变化」的落地</div></div>`}
 function landPush(){reset();S.page='home';S.ai='full';S.tab='chat';
- S.from='来自风险提醒 · 10:42 · 你在 10:51 打开。已按最新数据刷新：你在 10:45 追加了 50 USDT 保证金，保证金率从 128% 回升到 141%。';
- S.msgs=[{r:'a',k:'text',d:{trace:'已按最新数据刷新 · 10:51:03',t:'<b class="up">风险已降低，暂时不用处理。</b>强平价从 152.35 降到 143.26，距离拉开到 15.2%。要不要顺便设个止损，防止再次跌回来？'}},{r:'a',k:'risk',d:{mr:141,liq:143.26,mark:168.90,upnl:-74.20,at:'10:51:03'}}];
+ S.from='来自风险提醒 · 10:42 · 你在 10:51 打开。已按最新数据刷新：你在 10:45 追加了 50 USDT 保证金，保证金率从 88% 降到 79%。';
+ S.msgs=[{r:'a',k:'text',d:{trace:'已按最新数据刷新 · 10:51:03',t:'<b class="up">风险已降低，暂时不用处理。</b>强平价从 152.35 降到 143.26，距离拉开到 15.2%。要不要顺便设个止损，防止再次跌回来？'}},{r:'a',k:'risk',d:{mr:79,liq:143.26,mark:168.90,upnl:-74.20,at:'10:51:03'}}];
  stickBottom=true;render()}
 function board(){
  if(S.acct==='nofund')return `<div class="greet">欢迎 · 你还没有充值</div>
@@ -927,7 +927,7 @@ function board(){
  if(S.acct==='copy')return `<div class="greet">早上好 · 11月2日 · 你只有跟单仓位</div>
  <div class="boxs num"><button class="box" onclick="toast('跳转跟单页（示意）')"><small>跟单收益 · 昨日</small><b class="up">+5.20</b><small>跟随 2 位带单员 ›</small></button><button class="box" onclick="toast('跳转跟单页（示意）')"><small>跟单投入 · USDT</small><b>800.00</b><small>累计 +36.40 ›</small></button></div>`;
  return `<div class="greet">早上好 · 11月2日 · 今天有 1 件事需要处理</div>
- <div class="hero"><span class="st">● 需处理</span><b>SOL 多单离强平只剩 9.8%</b><span class="sub">保证金率 24 小时内从 168% 降到 128%</span><div class="acts"><button class="btn pri" onclick="go('risk')">去处理</button><button class="btn" onclick="S.bubble=false;toast('已稍后提醒（示意）')">稍后</button></div></div>
+ <div class="hero"><span class="st">● 需处理</span><b>SOL 多单离强平只剩 9.8%</b><span class="sub">保证金率 24 小时内从 61% 升到 88%</span><div class="acts"><button class="btn pri" onclick="go('risk')">去处理</button><button class="btn" onclick="S.bubble=false;toast('已稍后提醒（示意）')">稍后</button></div></div>
  <div class="sec"><h6>今日要点</h6>
  <button class="li" onclick="ask('接下来有哪些重要宏观事件？')"><span class="k w">今晚</span><span class="tx">20:30 公布美国 CPI，波动可能放大</span><span class="ar">›</span></button>
  <button class="li" onclick="ask('根据我的持仓，整理今天相关的新闻')"><span class="k n">持仓</span><span class="tx">SOL 生态有大额代币解锁</span><span class="ar">›</span></button>
