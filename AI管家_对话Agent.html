@@ -588,15 +588,16 @@ const SCENES=[
   edge:['不编造行情、余额、到账时间或订单结果'],
   rules:['R5'],pend:[]},
  {id:'comply',g:'⑥ 异常兜底',t:'合规拦截',new:true,demo:['user'],
-  run(){S.user=S.user==='normal'?'restricted':S.user;openChat();ask('帮我开个 BTC 合约')},
-  trig:'受限地区用户、未完成 KYC 的用户请求受限功能。',
-  logic:['AI 的权限等于用户在 App 内的权限，不多也不少','受限地区：可以问知识类问题，拿不到下单入口','未完成认证：只能查询、问 FAQ、看认证引导','受限功能给出明确的拦截原因和可行的下一步'],
+  run(){S.user=S.user==='normal'?'restricted':S.user;openChat();ask(S.user==='unkyc'?'我要申请带单':'帮我开个 BTC 合约')},
+  trig:'受限地区用户请求受限功能；未完成 KYC 的用户请求 OTC 或申请带单。',
+  logic:['AI 的权限等于用户在 App 内的权限，不多也不少','受限地区：可以问知识类问题，拿不到下单入口','未完成认证：只拦 OTC 和申请带单，交易、查询、FAQ 等其他功能都不拦截','右侧切到「未 KYC」可看申请带单被拦','受限功能给出明确的拦截原因和可行的下一步'],
   edge:['不提示绕过方式（例如换地区、用他人账户）'],
   rules:['R6','R14'],pend:['受限地区名单与功能矩阵（法务 / 合规提供）']}
 ];
 
 /* ---------- 路由：用户输入 → 任务 ---------- */
 function route(q){
+ if(/OTC|场外|申请带单|成为带单员|当带单员/.test(q))return 'kycbiz';
  if(/预测|明天.*价格|会涨到|带单|代我/.test(q))return 'unsupported';
  if(/人工|客服|投诉/.test(q))return 'handoff';
  if(/亏/.test(q)&&/撤/.test(q))return 'multi';
@@ -615,7 +616,7 @@ function route(q){
  for(const k of FAQ_KEYS){const kw={fee:/手续费/,funding:/资金费/,mode:/全仓|逐仓/,avail:/开不了|不能开/,tpsl:/止盈/,order:/市价|限价/,slip:/滑点|成交价/,safe:/安全|诈骗|骗/,redeem:/赎回|理财/,transfer:/划转/,deposit:/没到/,pnl:/浮盈|已实现/}[k];if(kw.test(q))return 'faq:'+k}
  return 'unsupported';
 }
-const BLOCKED={restricted:['open','close','closeall'],unkyc:['open','close','closeall','orders-cancel']};
+const BLOCKED={restricted:['open','close','closeall'],unkyc:['kycbiz']};
 
 function ask(q,opt={}){
  if(S.busy){toast('请等当前回答完成');return}
@@ -626,6 +627,7 @@ function ask(q,opt={}){
  const H={
   risk:()=>reply('读取 SOL 仓位',()=>[{r:'a',k:'text',d:{trace:'已读取仓位 · 10:42:18',t:'这笔 <b>SOL 多单</b>的保证金率 24 小时内从 61% 升到 88%，SOL 再跌 <b>9.8%</b> 会触发强平。你可以三选一：'}},{r:'a',k:'risk',d:{mr:88,liq:152.35,mark:168.90,upnl:-74.20,at:'10:42:18'}}]),
   close:()=>reply('读取持仓',()=>[{r:'a',k:'text',d:{trace:'已读取持仓 · 2 个仓位',t:'你有 2 个合约仓位，要平哪一个？'}},{r:'a',k:'pick',d:{sel:null}}]),
+  kycbiz:()=>reply('识别业务',()=>[{r:'a',k:'text',d:{trace:'OTC / 申请带单',t:'这个需要在对应页面办理，我带你过去。'}},{r:'a',k:'fu',d:{c:[['去申请带单','toast:跳转申请带单页（示意）'],['去 OTC','toast:跳转 OTC 页（示意）']]}}]),
   closeall:()=>reply('读取持仓',()=>[{r:'a',k:'text',d:{trace:'已读取持仓 · 2 个仓位',t:'对话里<b>不支持一键全平</b>。下面是你的 2 个仓位，每个单独确认，也可以只平其中一个：'}},...Object.keys(POS).map(k=>({r:'a',k:'close',d:{pos:k,pct:100,type:'市价',st:'edit'}})),{r:'a',k:'fu',d:{c:[['去合约交易页用「一键平仓」','go:futures']]}}]),
   orders:()=>{if(!/合约|现货/.test(q))return reply('识别挂单类型',()=>[{r:'a',k:'text',d:{trace:'没说明是现货还是合约',t:'你想看哪一类挂单？'}},{r:'a',k:'otype',d:{q,sel:null}}]);
    if(/现货/.test(q))return reply('读取现货挂单',()=>[{r:'a',k:'text',d:{trace:'已读取现货挂单 · 10:42:20',t:'你有 <b>1 笔</b>未成交的现货挂单：'}},{r:'a',k:'spot',d:{}}]);
@@ -746,8 +748,8 @@ const R={
   return `<div class="card"><div class="ch"><b>转人工摘要</b><span class="r" style="color:var(--muted)">发送前可修改</span></div>
   <div class="rows num"><div class="rw"><span>问题类型</span><b>提币处理时间过长</b></div><div class="rw"><span>提币单号</span><b>W26110210050017</b></div><div class="rw"><span>当前状态</span><b>风控复核中 · 已 37 分钟</b></div><div class="rw"><span>用户诉求</span><b>想知道何时到账</b></div></div>
   <div class="acts"><button class="btn" onclick="toast('编辑摘要（示意）')">修改</button><button class="btn pri" onclick="act(${i},'send')">确认并转人工</button></div></div>`},
- block:(d,i)=>`<div class="card"><div class="banner r">${S.user==='restricted'?'根据你所在地区的监管要求，合约开仓和平仓相关的功能暂时无法使用。':'完成身份认证（KYC）后才能使用合约交易相关功能。'}</div>
-  <div class="at" style="font-size:12.5px">${S.user==='restricted'?'你仍然可以问我：行情、规则等知识类问题。':'认证前你可以：查询账户、问规则、看认证进度。'}</div>
+ block:(d,i)=>`<div class="card"><div class="banner r">${S.user==='restricted'?'根据你所在地区的监管要求，合约开仓和平仓相关的功能暂时无法使用。':'OTC 和申请带单需要先完成身份认证（KYC）。'}</div>
+  <div class="at" style="font-size:12.5px">${S.user==='restricted'?'你仍然可以问我：行情、规则等知识类问题。':'其他功能（交易、查询、问规则等）不受影响。'}</div>
   <div class="acts">${S.user==='unkyc'?'<button class="btn pri" onclick="toast(\'跳转身份认证（示意）\')">去认证</button>':''}<button class="btn" onclick="act(${i},'fu','q:资金费率是什么？')">问规则</button></div>
   <div class="fine">AI 能做的事与你在 App 内的权限一致。受限地区名单和功能矩阵 ${pq('由法务 / 合规提供')}</div></div>`
 };
