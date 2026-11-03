@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 业务关联清单</title>
+<style>
+:root{--ink:#0F1419;--ink2:#2B3139;--muted:#6B7480;--faint:#9AA3AE;--line:#E6E8EB;--line2:#F0F1F3;--bg:#F5F6F7;--panel:#fff;--soft:#F5F6F7;--up:#0B9B5C;--upbg:#E7F6EE;--down:#D9304F;--downbg:#FCEBEE;--warn:#B8740C;--warnbg:#FDF4E3;--brand:#0F7B5F;--brandbg:#E6F4EF;--blue:#2563B8;--bluebg:#E8F1FD;--vio:#6B4BC2;--viobg:#F1EDFC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#EAECEF;--ink2:#C9CED6;--muted:#929AA5;--faint:#6B7480;--line:#2B3139;--line2:#232830;--bg:#0B0E11;--panel:#151A1F;--soft:#1C2127;--up:#2EBD85;--upbg:#12301F;--down:#F6465D;--downbg:#3A1A20;--warn:#F0B90B;--warnbg:#3A2F0E;--brand:#3DD6A6;--brandbg:#103229;--blue:#7EB2F2;--bluebg:#16273D;--vio:#B49CF0;--viobg:#251E3A}}
+:root[data-theme="dark"]{--ink:#EAECEF;--ink2:#C9CED6;--muted:#929AA5;--faint:#6B7480;--line:#2B3139;--line2:#232830;--bg:#0B0E11;--panel:#151A1F;--soft:#1C2127;--up:#2EBD85;--upbg:#12301F;--down:#F6465D;--downbg:#3A1A20;--warn:#F0B90B;--warnbg:#3A2F0E;--brand:#3DD6A6;--brandbg:#103229;--blue:#7EB2F2;--bluebg:#16273D;--vio:#B49CF0;--viobg:#251E3A}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:110px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,"PingFang SC","Noto Sans SC",sans-serif;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:980px;margin:0 auto;padding:36px 24px 72px}
+h1{font-size:28px;line-height:1.25;margin:0 0 8px;letter-spacing:-.3px}
+.lead{color:var(--muted);margin:0;max-width:640px}
+.meta{font-size:12px;color:var(--faint);margin-top:10px}
+h2{font-size:18px;margin:44px 0 4px;letter-spacing:-.2px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.cap{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:10px;white-space:nowrap}
+.c1{background:var(--bluebg);color:var(--blue)}.c2{background:var(--viobg);color:var(--vio)}.c3{background:var(--warnbg);color:var(--warn)}.c4{background:var(--downbg);color:var(--down)}.c5{background:var(--brandbg);color:var(--brand)}.c6{background:var(--soft);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+/* 能力图例 */
+.caps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:24px}
+.caps div{background:var(--panel);padding:12px 14px;font-size:12.5px;color:var(--muted)}
+.caps .cap{margin-bottom:4px}
+.caps p{margin:0;color:var(--ink2);font-size:13px}
+/* 关联矩阵 */
+.mx{overflow-x:auto}
+.mx table{border-collapse:separate;border-spacing:0;width:100%;min-width:620px;font-size:13px}
+.mx th,.mx td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line2)}
+.mx thead th{font-size:12px;font-weight:600;color:var(--muted)}
+.mx tbody th{text-align:left;font-weight:600;padding-left:16px;white-space:nowrap}
+.mx tbody th a:hover{color:var(--brand)}
+.mx tr:last-child th,.mx tr:last-child td{border-bottom:0}
+.mx td.e{color:var(--line)}
+.mx td.h{font-weight:700;font-variant-numeric:tabular-nums}
+.mx td.h.on{color:var(--up);background:color-mix(in srgb,var(--upbg) 70%,transparent)}
+.mx td.h.lt{color:var(--faint)}
+.mx td.h sub{font-size:10px;color:var(--faint);font-weight:500;margin-left:2px}
+.mx td.tt{font-weight:700;color:var(--ink);padding-right:16px;font-variant-numeric:tabular-nums}
+.mx td.tt span{color:var(--faint);font-weight:500}
+.mxl{font-size:12px;color:var(--muted);margin-top:8px}
+/* 筛选 */
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(8px);padding:12px 0;margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-bottom:1px solid var(--line)}
+.bar button{font:inherit;font-size:12.5px;border:1px solid var(--line);background:var(--panel);color:var(--ink2);border-radius:16px;padding:3px 12px;cursor:pointer}
+.bar button[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.bar i{width:1px;height:16px;background:var(--line);margin:0 6px}
+.bar .n{margin-left:auto;font-size:12px;color:var(--muted)}
+/* 业务清单 */
+.dom{margin-top:26px}
+.dh{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px}
+.dh h3{font-size:16px;margin:0}
+.dh span{font-size:12px;color:var(--muted)}
+.list{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.it{display:grid;grid-template-columns:44px 1fr auto;gap:14px;padding:13px 16px;border-top:1px solid var(--line2);align-items:start}
+.it:first-child{border-top:0}
+.it .no{font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums;padding-top:2px}
+.ask{display:flex;flex-wrap:wrap;gap:4px 14px;font-weight:600}
+.ask q{quotes:"「" "」"}
+.do{color:var(--muted);font-size:13px;margin-top:3px}
+.pd{display:inline-block;font-size:12px;color:var(--warn);background:var(--warnbg);border-radius:6px;padding:1px 8px;margin-top:6px}
+.tg{display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding-top:1px}
+.st{font-size:12px;font-weight:600;color:var(--up)}
+.it.later .st{color:var(--faint)}
+.it.later .ask,.it.later .do{opacity:.55}
+.hide{display:none}
+/* 不碰 + 规则 */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{padding:6px 18px}
+.box .r{padding:12px 0;border-top:1px solid var(--line2)}
+.box .r:first-child{border-top:0}
+.box b{display:block;font-size:13.5px}
+.box p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.box .ref{font-size:11px;font-weight:600;color:var(--brand);background:var(--brandbg);border-radius:8px;padding:0 6px;margin-left:6px;vertical-align:1px}
+.no-t b::before{content:"✕";color:var(--down);margin-right:6px;font-weight:700}
+.ver{font-size:12px;color:var(--muted);margin-top:48px;border-top:1px solid var(--line);padding-top:14px}
+.ver table{border-collapse:collapse;margin-top:6px}
+.ver td{padding:3px 16px 3px 0;vertical-align:top}
+@media (max-width:720px){.wrap{padding:24px 16px 56px}h1{font-size:23px}.caps{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.it{grid-template-columns:36px 1fr;gap:10px}.tg{grid-column:2;flex-direction:row;align-items:center}.bar .n{width:100%;margin:2px 0 0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <h1>AI 管家 · 业务关联清单</h1>
+ <p class="lead">交易所各业务里，AI 能接哪些问题、怎么处理、本期做哪些。共 11 个业务域、44 项业务，本期 37 项，后续 7 项。</p>
+ <div class="meta">2026-11-03 · 排期已逐项确认（规则台账 R9）</div>
+ <div class="caps"><div><span class="cap c1">查询</span><p>读取用户自己的账户、订单、资产数据并展示</p></div><div><span class="cap c2">解释</span><p>解释规则、名词和数字背后的原因</p></div><div><span class="cap c3">资讯</span><p>新闻、宏观、情绪、情景推演</p></div><div><span class="cap c4">操作</span><p>AI 生成确认卡片，用户确认后由业务系统执行</p></div><div><span class="cap c5">引导</span><p>讲步骤并跳转到对应页面，由用户自己完成</p></div><div><span class="cap c6">转人工</span><p>整理上下文后转给人工客服</p></div></div>
+</header>
+
+<h2>业务 × AI 能力</h2>
+<p class="sub">数字为该业务域下这类能力的业务项数；绿色表示本期有，右下小字为其中本期项数；点击业务域跳到明细</p>
+<div class="card mx"><table><thead><tr><th></th><th><span class="cap c1">查询</span></th><th><span class="cap c2">解释</span></th><th><span class="cap c3">资讯</span></th><th><span class="cap c4">操作</span></th><th><span class="cap c5">引导</span></th><th><span class="cap c6">转人工</span></th><th>本期</th></tr></thead><tbody><tr><th><a href="#d1">合约</a></th><td class="h on" title="合约 · 查询：本期 2 / 共 2">2</td><td class="h on" title="合约 · 解释：本期 2 / 共 2">2</td><td class="e">·</td><td class="h on" title="合约 · 操作：本期 5 / 共 5">5</td><td class="e">·</td><td class="e">·</td><td class="tt">9<span>/9</span></td></tr><tr><th><a href="#d2">现货</a></th><td class="h on" title="现货 · 查询：本期 1 / 共 1">1</td><td class="e">·</td><td class="e">·</td><td class="h on" title="现货 · 操作：本期 2 / 共 2">2</td><td class="e">·</td><td class="e">·</td><td class="tt">3<span>/3</span></td></tr><tr><th><a href="#d3">资产</a></th><td class="h on" title="资产 · 查询：本期 2 / 共 2">2</td><td class="h on" title="资产 · 解释：本期 1 / 共 1">1</td><td class="e">·</td><td class="h on" title="资产 · 操作：本期 1 / 共 1">1</td><td class="e">·</td><td class="e">·</td><td class="tt">4<span>/4</span></td></tr><tr><th><a href="#d4">充值</a></th><td class="h on" title="充值 · 查询：本期 1 / 共 1">1</td><td class="e">·</td><td class="e">·</td><td class="e">·</td><td class="h on" title="充值 · 引导：本期 1 / 共 1">1</td><td class="h on" title="充值 · 转人工：本期 1 / 共 1">1</td><td class="tt">3<span>/3</span></td></tr><tr><th><a href="#d5">提币</a></th><td class="h on" title="提币 · 查询：本期 1 / 共 1">1</td><td class="h on" title="提币 · 解释：本期 1 / 共 1">1</td><td class="e">·</td><td class="h lt" title="提币 · 操作：本期 0 / 共 1">1<sub>0</sub></td><td class="e">·</td><td class="e">·</td><td class="tt">2<span>/3</span></td></tr><tr><th><a href="#d6">行情与资讯</a></th><td class="e">·</td><td class="e">·</td><td class="h on" title="行情与资讯 · 资讯：本期 5 / 共 6">6<sub>5</sub></td><td class="h on" title="行情与资讯 · 操作：本期 1 / 共 1">1</td><td class="e">·</td><td class="e">·</td><td class="tt">6<span>/7</span></td></tr><tr><th><a href="#d7">跟单</a></th><td class="h on" title="跟单 · 查询：本期 1 / 共 2">2<sub>1</sub></td><td class="e">·</td><td class="e">·</td><td class="h lt" title="跟单 · 操作：本期 0 / 共 1">1<sub>0</sub></td><td class="e">·</td><td class="e">·</td><td class="tt">1<span>/3</span></td></tr><tr><th><a href="#d8">理财</a></th><td class="h on" title="理财 · 查询：本期 1 / 共 1">1</td><td class="h on" title="理财 · 解释：本期 1 / 共 1">1</td><td class="e">·</td><td class="h lt" title="理财 · 操作：本期 0 / 共 1">1<sub>0</sub></td><td class="e">·</td><td class="e">·</td><td class="tt">2<span>/3</span></td></tr><tr><th><a href="#d9">账户与安全</a></th><td class="h on" title="账户与安全 · 查询：本期 1 / 共 1">1</td><td class="e">·</td><td class="e">·</td><td class="e">·</td><td class="h on" title="账户与安全 · 引导：本期 1 / 共 1">1</td><td class="h on" title="账户与安全 · 转人工：本期 1 / 共 1">1</td><td class="tt">3<span>/3</span></td></tr><tr><th><a href="#d10">活动与奖励</a></th><td class="h on" title="活动与奖励 · 查询：本期 1 / 共 2">2<sub>1</sub></td><td class="h on" title="活动与奖励 · 解释：本期 1 / 共 1">1</td><td class="e">·</td><td class="e">·</td><td class="e">·</td><td class="e">·</td><td class="tt">2<span>/3</span></td></tr><tr><th><a href="#d11">客服</a></th><td class="h lt" title="客服 · 查询：本期 0 / 共 1">1<sub>0</sub></td><td class="h on" title="客服 · 解释：本期 1 / 共 1">1</td><td class="e">·</td><td class="e">·</td><td class="e">·</td><td class="h on" title="客服 · 转人工：本期 1 / 共 1">1</td><td class="tt">2<span>/3</span></td></tr></tbody></table></div>
+
+<h2>业务明细</h2>
+<div class="bar" id="bar">
+ <button data-f="s" data-v="" aria-pressed="true">全部</button><button data-f="s" data-v="本期" aria-pressed="false">本期</button><button data-f="s" data-v="后续" aria-pressed="false">后续</button>
+ <i></i><button data-f="c" data-v="" aria-pressed="true">全部能力</button><button data-f="c" data-v="查询" aria-pressed="false">查询</button><button data-f="c" data-v="解释" aria-pressed="false">解释</button><button data-f="c" data-v="资讯" aria-pressed="false">资讯</button><button data-f="c" data-v="操作" aria-pressed="false">操作</button><button data-f="c" data-v="引导" aria-pressed="false">引导</button><button data-f="c" data-v="转人工" aria-pressed="false">转人工</button>
+ <span class="n" id="n"></span>
+</div>
+<section class="dom" id="d1" data-dom><div class="dh"><h3>合约</h3><span>本期 9 / 9</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="查询">
+   <span class="no">F01</span>
+   <div class="tx"><div class="ask"><q>我的 SOL 还安全吗</q><q>离强平还有多远</q></div><div class="do">展示保证金率、强平价、当前价与强平价的距离，给出风险等级和可选的处理方式（追加保证金、止损、减仓），不替用户选</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="操作">
+   <span class="no">F02</span>
+   <div class="tx"><div class="ask"><q>帮我把 SOL 平了</q><q>平一半</q></div><div class="do">在对话卡片内列出要平的仓位、数量、预估成交价和平仓后影响，用户点「确认」后提交；结果以业务系统回执为准</div><div class="pd">待定 · Q16 平仓后止盈止损单如何处理</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="操作">
+   <span class="no">F03</span>
+   <div class="tx"><div class="ask"><q>把 BTC 没成交的单撤了</q></div><div class="do">列出挂单供勾选，卡片内确认后撤单；已部分成交的只撤未成交部分</div><div class="pd">待定 · Q2 是否支持批量撤单</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="查询">
+   <span class="no">F04</span>
+   <div class="tx"><div class="ask"><q>我有哪些挂单</q></div><div class="do">按交易对列出普通限价单、计划委托、止盈止损单，展示方向、价格、数量、已成交部分</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="操作">
+   <span class="no">F05</span>
+   <div class="tx"><div class="ask"><q>给 SOL 设个止损</q></div><div class="do">用户说明止损价或比例后，卡片内确认设置；未给出价格时只追问，不替用户定</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="操作">
+   <span class="no">F06</span>
+   <div class="tx"><div class="ask"><q>开 5 倍 BTC 多单 100U</q></div><div class="do">方向、杠杆、金额全部由用户明说才生成确认卡片；缺任何一项只追问。当前页面停在哪个币种不代表下单授权</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="操作">
+   <span class="no">F07</span>
+   <div class="tx"><div class="ask"><q>给 SOL 加点保证金</q><q>杠杆调到 3 倍</q></div><div class="do">卡片内确认追加金额或新杠杆，展示调整后的强平价</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="解释">
+   <span class="no">F08</span>
+   <div class="tx"><div class="ask"><q>BTC 涨了我为什么还在亏</q></div><div class="do">拆解亏损来源：空单亏损、其他币种拖累、手续费、资金费、未实现与已实现盈亏口径差异</div></div>
+   <div class="tg"><span class="cap c2">解释</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="解释">
+   <span class="no">F09</span>
+   <div class="tx"><div class="ask"><q>资金费率是什么</q><q>什么是 ADL</q><q>全仓和逐仓区别</q></div><div class="do">基于知识库回答，并附「查看完整规则」入口；结合用户当前仓位举例</div></div>
+   <div class="tg"><span class="cap c2">解释</span><span class="st">本期</span></div>
+  </div>
+  </div></section><section class="dom" id="d2" data-dom><div class="dh"><h3>现货</h3><span>本期 3 / 3</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="查询">
+   <span class="no">F10</span>
+   <div class="tx"><div class="ask"><q>我的现货挂单</q><q>最近成交</q></div><div class="do">列出现货挂单和近期成交</div><div class="pd">待定 · Q13 现货与合约挂单合并还是分开展示</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="操作">
+   <span class="no">F11</span>
+   <div class="tx"><div class="ask"><q>买 100U 的 BTC</q></div><div class="do">金额、价格类型由用户明说后生成确认卡片</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="操作">
+   <span class="no">F12</span>
+   <div class="tx"><div class="ask"><q>撤掉现货挂单</q></div><div class="do">同合约撤单流程</div><div class="pd">待定 · Q13 现货与合约挂单合并还是分开展示</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">本期</span></div>
+  </div>
+  </div></section><section class="dom" id="d3" data-dom><div class="dh"><h3>资产</h3><span>本期 4 / 4</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="查询">
+   <span class="no">F13</span>
+   <div class="tx"><div class="ask"><q>我昨天亏了多少</q><q>钱都在哪</q></div><div class="do">展示总资产、各账户分布、昨日盈亏及主要来源</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="操作">
+   <span class="no">F14</span>
+   <div class="tx"><div class="ask"><q>从现货转 50U 到合约</q></div><div class="do">卡片内确认划转方向和金额，划转只在本人账户之间进行</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="解释">
+   <span class="no">F15</span>
+   <div class="tx"><div class="ask"><q>这笔扣款是什么</q></div><div class="do">根据资金流水解释某笔变动的来源（手续费、资金费、强平清算、活动发放等）</div></div>
+   <div class="tg"><span class="cap c2">解释</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="查询">
+   <span class="no">F16</span>
+   <div class="tx"><div class="ask"><q>我的手续费是多少</q><q>怎么升 VIP</q></div><div class="do">展示当前费率等级、近 30 天交易量和升级条件</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div>
+  </div></section><section class="dom" id="d4" data-dom><div class="dh"><h3>充值</h3><span>本期 3 / 3</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="查询">
+   <span class="no">F17</span>
+   <div class="tx"><div class="ask"><q>充值怎么还没到</q></div><div class="do">按链上确认数、所需确认数、预计时间诊断；可自助解决的给出步骤</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="转人工">
+   <span class="no">F18</span>
+   <div class="tx"><div class="ask"><q>我充错网络了</q><q>忘了填 Memo</q></div><div class="do">说明情况和可能的结果，整理充值信息后转人工；不承诺一定能找回</div></div>
+   <div class="tg"><span class="cap c6">转人工</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="引导">
+   <span class="no">F19</span>
+   <div class="tx"><div class="ask"><q>给我充值地址</q></div><div class="do">不在对话里直接展示地址，引导到充值页获取，避免地址被篡改或截图误用</div></div>
+   <div class="tg"><span class="cap c5">引导</span><span class="st">本期</span></div>
+  </div>
+  </div></section><section class="dom" id="d5" data-dom><div class="dh"><h3>提币</h3><span>本期 2 / 3</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="查询">
+   <span class="no">F20</span>
+   <div class="tx"><div class="ask"><q>提币一直处理中</q></div><div class="do">展示所处阶段（审核中 / 风控复核 / 已广播 / 链上确认中 / 失败退回）和预计时间区间；超时引导转人工并带上提币单号</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="解释">
+   <span class="no">F21</span>
+   <div class="tx"><div class="ask"><q>提币限额多少</q><q>手续费多少</q></div><div class="do">展示当前额度、已用额度、各网络手续费和最小提币量</div></div>
+   <div class="tg"><span class="cap c2">解释</span><span class="st">本期</span></div>
+  </div><div class="it later" data-s="后续" data-c="操作">
+   <span class="no">F22</span>
+   <div class="tx"><div class="ask"><q>帮我取消这笔提币</q></div><div class="do">仅在可撤销阶段提供卡片内确认撤销</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">后续</span></div>
+  </div>
+  </div></section><section class="dom" id="d6" data-dom><div class="dh"><h3>行情与资讯</h3><span>本期 6 / 7</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="操作">
+   <span class="no">F23</span>
+   <div class="tx"><div class="ask"><q>BTC 到 80000 提醒我</q></div><div class="do">卡片内确认价格提醒，触发后推送并进入对话</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="资讯">
+   <span class="no">F24</span>
+   <div class="tx"><div class="ask"><q>和我持仓有关的新闻</q></div><div class="do">按持仓整理新闻，标注来源和发布时间；没有持仓时按自选，没有自选时按热门</div></div>
+   <div class="tg"><span class="cap c3">资讯</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="资讯">
+   <span class="no">F25</span>
+   <div class="tx"><div class="ask"><q>最近有什么宏观事件</q></div><div class="do">事件日历 + 事实数据 + 对用户持仓可能的影响，不给买卖建议</div></div>
+   <div class="tg"><span class="cap c3">资讯</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="资讯">
+   <span class="no">F26</span>
+   <div class="tx"><div class="ask"><q>现在市场情绪怎么样</q></div><div class="do">展示情绪指标和多空分布，标注来源和截至时间</div></div>
+   <div class="tg"><span class="cap c3">资讯</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="资讯">
+   <span class="no">F27</span>
+   <div class="tx"><div class="ask"><q>美元走强对我的持仓有什么影响</q></div><div class="do">情景推演只给方向（利好 / 利空 / 中性），不给估算盈亏数值</div></div>
+   <div class="tg"><span class="cap c3">资讯</span><span class="st">本期</span></div>
+  </div><div class="it later" data-s="后续" data-c="资讯">
+   <span class="no">F28</span>
+   <div class="tx"><div class="ask"><q>SOL 是做什么的</q><q>什么时候解锁</q></div><div class="do">币种基本信息：项目简介、流通量、近期解锁和重大事件</div></div>
+   <div class="tg"><span class="cap c3">资讯</span><span class="st">后续</span></div>
+  </div><div class="it " data-s="本期" data-c="资讯">
+   <span class="no">F29</span>
+   <div class="tx"><div class="ask"><q>这个币要下架吗</q></div><div class="do">解读平台上新 / 下架 / 维护公告，以及对用户持仓和挂单的影响</div></div>
+   <div class="tg"><span class="cap c3">资讯</span><span class="st">本期</span></div>
+  </div>
+  </div></section><section class="dom" id="d7" data-dom><div class="dh"><h3>跟单</h3><span>本期 1 / 3</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="查询">
+   <span class="no">F30</span>
+   <div class="tx"><div class="ask"><q>我的跟单赚了多少</q></div><div class="do">展示跟单中的带单员、跟单金额、收益和当前持仓</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div><div class="it later" data-s="后续" data-c="查询">
+   <span class="no">F31</span>
+   <div class="tx"><div class="ask"><q>这个带单员怎么样</q></div><div class="do">只展示历史数据事实（收益率、回撤、带单时长），不推荐带单员</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">后续</span></div>
+  </div><div class="it later" data-s="后续" data-c="操作">
+   <span class="no">F32</span>
+   <div class="tx"><div class="ask"><q>停止跟单</q></div><div class="do">卡片内确认停止跟单，说明当前跟单仓位的处理方式</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">后续</span></div>
+  </div>
+  </div></section><section class="dom" id="d8" data-dom><div class="dh"><h3>理财</h3><span>本期 2 / 3</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="查询">
+   <span class="no">F33</span>
+   <div class="tx"><div class="ask"><q>我的理财收益</q><q>赎回到账了吗</q></div><div class="do">展示理财持仓、累计收益、赎回进度</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="解释">
+   <span class="no">F34</span>
+   <div class="tx"><div class="ask"><q>活期和定期有什么区别</q></div><div class="do">基于产品规则解释，附产品详情入口</div></div>
+   <div class="tg"><span class="cap c2">解释</span><span class="st">本期</span></div>
+  </div><div class="it later" data-s="后续" data-c="操作">
+   <span class="no">F35</span>
+   <div class="tx"><div class="ask"><q>帮我申购 / 赎回</q></div><div class="do">卡片内确认；涉及适当性和锁定期，建议后续版本再做</div></div>
+   <div class="tg"><span class="cap c4">操作</span><span class="st">后续</span></div>
+  </div>
+  </div></section><section class="dom" id="d9" data-dom><div class="dh"><h3>账户与安全</h3><span>本期 3 / 3</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="查询">
+   <span class="no">F36</span>
+   <div class="tx"><div class="ask"><q>我的认证怎么没通过</q></div><div class="do">展示认证进度和未通过原因，引导重新提交；说明未认证时哪些功能受限</div><div class="pd">待定 · Q12 未认证 / 受限地区可用范围</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="引导">
+   <span class="no">F37</span>
+   <div class="tx"><div class="ask"><q>怎么开谷歌验证</q><q>防钓鱼码在哪设</q></div><div class="do">只讲步骤并跳转到设置页，AI 不代为修改任何安全设置</div></div>
+   <div class="tg"><span class="cap c5">引导</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="转人工">
+   <span class="no">F38</span>
+   <div class="tx"><div class="ask"><q>我的账户被冻结了</q><q>有陌生设备登录</q></div><div class="do">说明可能原因，整理信息后转人工；高危情况提示用户先自行冻结账户</div></div>
+   <div class="tg"><span class="cap c6">转人工</span><span class="st">本期</span></div>
+  </div>
+  </div></section><section class="dom" id="d10" data-dom><div class="dh"><h3>活动与奖励</h3><span>本期 2 / 3</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="解释">
+   <span class="no">F39</span>
+   <div class="tx"><div class="ask"><q>这个活动怎么参加</q></div><div class="do">基于活动规则解释参与条件、时间和奖励</div></div>
+   <div class="tg"><span class="cap c2">解释</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="查询">
+   <span class="no">F40</span>
+   <div class="tx"><div class="ask"><q>我的奖励发了吗</q><q>卡券什么时候过期</q></div><div class="do">展示奖励发放状态、卡券余额和到期时间</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">本期</span></div>
+  </div><div class="it later" data-s="后续" data-c="查询">
+   <span class="no">F41</span>
+   <div class="tx"><div class="ask"><q>我的返佣有多少</q></div><div class="do">展示返佣明细和结算时间</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">后续</span></div>
+  </div>
+  </div></section><section class="dom" id="d11" data-dom><div class="dh"><h3>客服</h3><span>本期 2 / 3</span></div><div class="list">
+  <div class="it " data-s="本期" data-c="解释">
+   <span class="no">F42</span>
+   <div class="tx"><div class="ask"><q>（规则类问题）</q></div><div class="do">FAQ 知识问答，答案来自知识库，查不到时明确说不支持，不编造</div><div class="pd">待定 · Q14 知识库是否需要运营后台</div></div>
+   <div class="tg"><span class="cap c2">解释</span><span class="st">本期</span></div>
+  </div><div class="it " data-s="本期" data-c="转人工">
+   <span class="no">F43</span>
+   <div class="tx"><div class="ask"><q>转人工</q></div><div class="do">把已确认的信息（问题类型、订单号、时间）整理好再转人工，不承诺一定能解决</div></div>
+   <div class="tg"><span class="cap c6">转人工</span><span class="st">本期</span></div>
+  </div><div class="it later" data-s="后续" data-c="查询">
+   <span class="no">F44</span>
+   <div class="tx"><div class="ask"><q>我上次的工单怎么样了</q></div><div class="do">展示工单进度</div></div>
+   <div class="tg"><span class="cap c1">查询</span><span class="st">后续</span></div>
+  </div>
+  </div></section>
+
+<div class="two" style="margin-top:44px">
+ <div><h2 style="margin-top:0">AI 不碰的业务</h2><p class="sub">用户问到时按右侧方式回应</p>
+  <div class="card box no-t"><div class="r"><b>发起提币、修改提币地址白名单</b><p>资金直接出账，被诱导或误操作后无法追回。说明不支持，引导到提币页由本人操作。</p></div><div class="r"><b>修改密码、2FA、绑定手机 / 邮箱等安全设置</b><p>账户安全类操作必须由本人在安全中心完成。讲步骤，跳转到设置页。</p></div><div class="r"><b>买卖建议、推荐币种 / 带单员、价格预测</b><p>合规边界：只讲事实和影响（R5）。说明不提供建议，可改为展示事实数据。</p></div><div class="r"><b>自动交易、策略托管、策略模拟运行</b><p>本期范围外（R2）。说明暂不支持。</p></div><div class="r"><b>C2C / 法币订单申诉裁决</b><p>涉及双方纠纷，需要人工判定。整理订单信息后转人工。</p></div><div class="r"><b>承诺到账时间、承诺赔付或找回资产</b><p>结果不由 AI 决定，承诺会引发客诉。只给预计时间区间，转人工。</p></div></div></div>
+ <div><h2 style="margin-top:0">所有业务通用规则</h2><p class="sub">摘自规则台账</p>
+  <div class="card box"><div class="r"><b>写操作在对话卡片内确认<span class="ref">R4 · R9</span></b><p>平仓、撤单、开仓、追加保证金、调杠杆、现货下单 / 撤单：卡片展示对象、参数和影响，用户点「确认」才提交，结果以业务系统回执为准。</p></div><div class="r"><b>不给投资建议<span class="ref">R5</span></b><p>资讯只讲事实、数据和对持仓的可能影响；情景推演只给利好 / 利空 / 中性，不给盈亏估算；标注来源和截至时间。</p></div><div class="r"><b>所在页面不等于授权<span class="ref">R7</span></b><p>在某币种页唤起 AI 会带上该币种作参考，交易参数必须由用户明说。</p></div><div class="r"><b>参数不全只追问</b><p>「全买了」「照之前来」不推断金额和范围，只追问缺的参数。</p></div><div class="r"><b>结果未知不重复提交</b><p>写操作超时显示「结果确认中」，先查最新状态。</p></div><div class="r"><b>只做 App<span class="ref">R6</span></b><p>本期仅 App 端提供。</p></div></div></div>
+</div>
+
+<div class="ver"><b>版本历史</b><table>
+ <tr><td>v1.0</td><td>2026-11-03</td><td>新建：业务 × AI 能力关联矩阵、按业务域的业务明细、AI 不碰的业务与通用规则</td></tr>
+</table></div>
+</div>
+<script>
+const F={s:'',c:''};
+function apply(){let n=0;document.querySelectorAll('[data-dom]').forEach(d=>{let v=0;d.querySelectorAll('.it').forEach(it=>{const ok=(!F.s||it.dataset.s===F.s)&&(!F.c||it.dataset.c===F.c);it.classList.toggle('hide',!ok);if(ok)v++});d.classList.toggle('hide',!v);n+=v});document.getElementById('n').textContent='显示 '+n+' / 44'}
+document.getElementById('bar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;F[b.dataset.f]=b.dataset.v;document.querySelectorAll('#bar button[data-f="'+b.dataset.f+'"]').forEach(x=>x.setAttribute('aria-pressed',x===b));apply()});
+apply();
+</script>
+</body>
+</html>
