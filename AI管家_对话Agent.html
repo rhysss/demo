@@ -60,7 +60,7 @@ aside.notes{background:var(--panel);border-left:1px solid var(--line);overflow-y
 .page{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff}
 .scroll{flex:1;overflow-y:auto;min-height:0}
 .scroll::-webkit-scrollbar{width:0}
-.hp{padding:4px 16px 16px;display:flex;flex-direction:column;gap:16px}
+.hp{padding:4px 16px 100px;display:flex;flex-direction:column;gap:16px}
 .hp .top{display:flex;align-items:center;gap:10px}
 .avatar{width:32px;height:32px;border-radius:16px;background:#EEF1F4;display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--muted)}
 .search{flex:1;height:34px;border-radius:17px;background:var(--soft);display:flex;align-items:center;padding:0 14px;color:var(--faint);font-size:12.5px}
@@ -77,20 +77,24 @@ aside.notes{background:var(--panel);border-left:1px solid var(--line);overflow-y
 .mrow b{font-size:14px}
 .pill{font-size:12px;font-weight:600;padding:5px 0;border-radius:6px;text-align:center;color:#fff}
 .pill.up{background:var(--up)}.pill.down{background:var(--down)}
-.tabbar{height:64px;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:flex-start;padding-top:9px;font-size:10.5px;color:var(--faint);flex:none;background:#fff}
-.tabbar span{display:flex;flex-direction:column;align-items:center;gap:4px}
-.tabbar span::before{content:"";width:20px;height:20px;border-radius:6px;background:#E3E6EA}
-.tabbar .on{color:var(--ink);font-weight:600}.tabbar .on::before{background:var(--ink)}
-/* 光球入口 */
-.orb{position:absolute;right:16px;bottom:82px;width:56px;height:56px;border-radius:28px;background:#fff;box-shadow:0 6px 18px rgba(15,20,25,.16);display:grid;place-items:center;border:0;z-index:5}
-.orb i{width:34px;height:34px;border-radius:17px;display:block;background:radial-gradient(circle at 35% 30%,#8CF0C8,var(--ai1) 45%,var(--ai2));animation:breath 3.2s ease-in-out infinite}
+/* 底部悬浮导航：左侧 AI 入口独立成圆，右侧胶囊 tab */
+.tabnav{position:absolute;left:12px;right:12px;bottom:16px;display:flex;align-items:center;gap:10px;z-index:5}
+.navbar{flex:1;height:60px;border-radius:30px;background:rgba(255,255,255,.97);box-shadow:0 6px 20px rgba(15,20,25,.12);display:flex;justify-content:space-around;align-items:center;padding:0 6px}
+.navbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--ink2);padding:0;min-width:44px}
+.navbar .ic{width:24px;height:24px;border-radius:12px;border:1.6px solid var(--ink2);display:grid;place-items:center;font-size:12px;line-height:1}
+.navbar .on .ic{width:44px;height:44px;border-radius:22px;background:var(--ink);border:0;color:#fff;font-size:18px}
+.navbar .on .l{display:none}
+.homebar{position:absolute;left:50%;bottom:5px;width:120px;height:4px;border-radius:2px;background:#C9CED4;transform:translateX(-50%);z-index:5}
+.orb{position:relative;flex:none;width:62px;height:62px;border-radius:31px;background:#fff;box-shadow:0 6px 18px rgba(15,20,25,.16);display:grid;place-items:center;border:0;padding:0}
+.orb i{width:38px;height:38px;border-radius:19px;display:block;margin-top:-6px;background:radial-gradient(circle at 35% 30%,#8CF0C8,var(--ai1) 45%,var(--ai2));animation:breath 3.2s ease-in-out infinite}
+.orb em{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);font-style:normal;font-size:10px;font-weight:800;color:#fff;background:var(--ink);border-radius:6px;padding:0 5px;line-height:14px}
 .orb.pending i{background:radial-gradient(circle at 35% 30%,#FFE08A,#F0A81E 50%,#C77C0A)}
 .orb.danger i{background:radial-gradient(circle at 35% 30%,#FF9AA8,#E5384F 50%,#B01F37)}
-.orb.pending::after,.orb.danger::after{content:"";position:absolute;inset:-4px;border-radius:32px;border:2px solid;opacity:.5;animation:pulse 1.8s ease-out infinite}
+.orb.pending::after,.orb.danger::after{content:"";position:absolute;inset:-4px;border-radius:35px;border:2px solid;opacity:.5;animation:pulse 1.8s ease-out infinite}
 .orb.pending::after{border-color:#F0A81E}.orb.danger::after{border-color:#E5384F}
 .orb .badge{position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;border-radius:9px;background:var(--down);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 4px;border:2px solid #fff}
 .orb.pending .badge{background:#E08B00}
-.bubble{position:absolute;right:80px;bottom:90px;max-width:210px;background:var(--ink);color:#fff;border-radius:14px 14px 4px 14px;padding:9px 12px;font-size:12.5px;line-height:1.45;z-index:5;box-shadow:0 6px 16px rgba(0,0,0,.18);border:0;text-align:left}
+.bubble{position:absolute;left:16px;bottom:90px;max-width:210px;background:var(--ink);color:#fff;border-radius:14px 14px 14px 4px;padding:9px 12px;font-size:12.5px;line-height:1.45;z-index:5;box-shadow:0 6px 16px rgba(0,0,0,.18);border:0;text-align:left}
 .bubble small{display:block;color:#9FE8CB;margin-top:2px}
 @keyframes breath{0%,100%{transform:scale(.92)}50%{transform:scale(1)}}
 @keyframes pulse{0%{transform:scale(.95);opacity:.6}100%{transform:scale(1.25);opacity:0}}
@@ -329,10 +333,10 @@ function reset(){tok++;S.msgs=[];S.busy=false;S.ctx=null;S.from=null;S.tab='boar
 
 /* ---------- 场景（左侧旅程导航 + 右侧说明） ---------- */
 const SCENES=[
- {id:'home',g:'① 主动触达',t:'首页入口 · 光球三态',demo:['orb'],
+ {id:'home',g:'① 主动触达',t:'底部导航 AI 入口 · 三态',demo:['orb'],
   run(){S.page='home';S.ai=null},
-  trig:'所有已登录用户在首页右下角看到常驻光球。颜色只由当前最高风险等级决定。',
-  logic:['默认：绿色呼吸，没有待处理事项','待处理：琥珀色 + 数字角标 + 外圈脉冲','高风险：红色 + 叹号，用于接近强平','出现新待处理事项时弹出一次气泡，点气泡直接进入对应对话'],
+  trig:'底部悬浮导航最左侧是独立的 AI 入口，首页和其他业务页（市场、交易、资产）都常驻。颜色只由当前最高风险等级决定。',
+  logic:['点击 AI 入口：AI 全屏打开，底部导航栏隐藏；关闭 AI 后回到原页面，导航栏恢复','进入其他业务页时，底部导航栏保持原样不变','默认：绿色呼吸，没有待处理事项','待处理：琥珀色 + 数字角标 + 外圈脉冲','高风险：红色 + 叹号，用于接近强平','出现新待处理事项时弹出一次气泡，点气泡直接进入对应对话'],
   edge:['多个事项同时存在时，角标显示总数，颜色取最高等级','用户关闭气泡后，同一事项不再弹出'],
   rules:['R1'],pend:['Q9 气泡停留时长','Q10 多风险合并与排序']},
  {id:'push',g:'① 主动触达',t:'锁屏推送 → 落地',new:false,
@@ -342,17 +346,17 @@ const SCENES=[
   edge:['用户点开时仓位已经平掉：卡片显示「已平仓」，不再给操作按钮','推送和早报说的是同一件事：只推送一次'],
   rules:['R1'],pend:['Q8 风险提醒默认阈值','Q9 推送频控']},
  {id:'board',g:'② 唤起与看板',t:'AI 看板',
-  run(){S.page='home';S.ai='sheet';S.tab='board'},
-  trig:'点击光球打开 AI。默认进入「看板」：今天需要处理的事、要点、资产和持仓一屏看完。',
+  run(){S.page='home';S.ai='full';S.tab='board'},
+  trig:'点击底部导航的 AI 入口，全屏打开 AI。默认进入「看板」：今天需要处理的事、要点、资产和持仓一屏看完。',
   logic:['顶部只放 1 条最高优先级事项和处理入口','「今日要点」点击后直接带着问题进入对话','资产、持仓数字可点击，问 AI 来源和原因','常问问题按用户当前阶段推荐（新手 / 有持仓 / 只有跟单）'],
   edge:['没有待处理事项：顶部改为「今天一切正常」','未登录：只展示行情和常问问题，不展示个人数据'],
   rules:['R1','R3'],pend:[]},
  {id:'futures',g:'② 唤起与看板',t:'交易页内唤起',new:true,
-  run(){S.page='futures';S.ai='sheet';S.tab='chat';S.ctx='BTCUSDT 永续'},
-  trig:'用户在合约交易页点击 AI 入口，打开对话浮层，交易页保留在下面。',
-  logic:['自动带上当前交易对，作为上下文提示','推荐问题按当前交易对生成（挂单、新闻、平仓、规则）','浮层可以展开成全屏（右上角 ⤢），对话内容保留'],
-  edge:['页面停在 BTC，不等于用户授权买 BTC。交易参数必须由用户明说','对话浮层和半屏下单组件不同时出现：先关闭浮层再打开下单'],
-  rules:['R2','R6'],pend:['Q5 交易页入口形态（顶栏按钮 / 悬浮光球）']},
+  run(){S.page='futures';S.ai='full';S.tab='chat';S.ctx='BTCUSDT 永续'},
+  trig:'用户在合约交易页点击底部导航的 AI 入口，AI 全屏打开，导航栏隐藏；关闭后回到交易页。',
+  logic:['自动带上当前交易对，作为上下文提示','推荐问题按当前交易对生成（挂单、新闻、平仓、规则）','关闭 AI 回到交易页时，对话内容保留，再次打开可继续'],
+  edge:['页面停在 BTC，不等于用户授权买 BTC。交易参数必须由用户明说','AI 全屏时不出现半屏下单组件：需要下单时先关闭 AI 回到交易页'],
+  rules:['R2','R6','R7'],pend:['Q18 币种页 / 持仓卡入口']},
  {id:'orders',g:'③ 查询',t:'合约挂单查询',new:true,demo:['orders'],
   run(){openChat();ask('查我所有的合约挂单')},
   trig:'「我有哪些挂单」「委托」「没成交的单」。',
@@ -397,7 +401,7 @@ const SCENES=[
   rules:['R2'],pend:['Q14 知识库是否由运营后台维护']},
  {id:'risk',g:'⑤ 对话 → 操作',t:'风险处理与止损',
   run(){openChat();S.from='来自风险提醒 · 10:42';ask('SOL 多单离强平 9.8%，怎么处理')},
-  trig:'光球气泡、风险推送，或用户主动问。',
+  trig:'AI 入口气泡、风险推送，或用户主动问。',
   logic:['风险卡片：保证金率、强平价、标记价、未实现盈亏','三个处理方式：设止损 / 减仓 / 加保证金','设止损：给 3 个候选价，显示距现价多远、触发时亏损多少，在卡片内确认'],
   edge:['止损价必须高于强平价，否则会先被强平','加保证金跳转仓位页完成，不在对话里提交'],
   rules:['R4'],pend:['Q8 风险提醒阈值']},
@@ -507,7 +511,7 @@ function reply(trace,build){
  const my=tok;S.busy=true;S.msgs.push({r:'a',k:'trace',d:{t:trace}});stickBottom=true;render();
  setTimeout(()=>{if(my!==tok)return;S.msgs.pop();S.msgs.push(...build());S.busy=false;stickBottom=true;render()},750);
 }
-function openChat(){S.ai=S.ai||'sheet';S.tab='chat';if(S.page==='lock')S.page='home'}
+function openChat(){S.ai='full';S.tab='chat';if(S.page==='lock')S.page='home'}
 
 /* ---------- 卡片渲染 ---------- */
 function stamp(d,i){return `<div class="stamp"><span>数据截至 ${d.at||'10:42:18'}</span><button onclick="act(${i},'refresh')">刷新</button></div>`}
@@ -651,26 +655,30 @@ function act(i,a,v){
 
 /* ---------- 页面渲染 ---------- */
 function home(){
- const orbCls=S.orb==='default'?'':S.orb;
  return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="scroll"><div class="hp">
  <div class="top"><span class="avatar">R</span><div class="search">搜索币种 / 功能</div></div>
  <div class="asset"><small>总资产估值 (USDT)</small><div class="v num">4,734.53</div><small class="down num">昨日盈亏 −82.40</small></div>
  <div class="tiles"><div><i></i>充值</div><div><i></i>划转</div><div><i></i>跟单</div><div><i></i>理财</div></div>
  <div class="mkt"><div class="h"><b>自选</b><span>热门</span><span>涨幅榜</span></div>
  ${[['BTC/USDT','79,697.47','−0.86%','down'],['ETH/USDT','2,316.63','+0.68%','up'],['SOL/USDT','168.90','−6.20%','down'],['BNB/USDT','598.20','+0.31%','up']].map(r=>`<div class="mrow num"><b>${r[0]}</b><span>${r[1]}</span><span class="pill ${r[3]}">${r[2]}</span></div>`).join('')}
- <button class="btn" style="margin-top:12px" onclick="go('futures')">进入 BTCUSDT 合约交易页 ›</button></div></div></div>
- <div class="tabbar"><span class="on">首页</span><span>市场</span><span>交易</span><span>理财</span><span>资产</span></div>
+ <button class="btn" style="margin-top:12px" onclick="navTo('futures')">进入 BTCUSDT 合约交易页 ›</button></div></div></div>
  ${S.orb!=='default'&&S.bubble&&!S.ai?`<button class="bubble" onclick="go('risk')">SOL 多单离强平 9.8%<small>点我看处理方式</small></button>`:''}
- <button class="orb ${orbCls}" aria-label="打开 AI 管家" onclick="openAI()"><i></i>${S.orb==='pending'?'<span class="badge">1</span>':S.orb==='danger'?'<span class="badge">!</span>':''}</button></div>`}
+ ${nav('home')}</div>`}
+function nav(on){
+ if(S.ai)return '';
+ const orbCls=S.orb==='default'?'':S.orb;
+ return `<div class="tabnav"><button class="orb ${orbCls}" aria-label="打开 AI 管家" onclick="openAI()"><i></i><em>AI</em>${S.orb==='pending'?'<span class="badge">1</span>':S.orb==='danger'?'<span class="badge">!</span>':''}</button>
+ <div class="navbar">${[['home','首页','⌂'],['market','市场','◫'],['futures','交易','⇅'],['asset','资产','◎']].map(t=>`<button class="${t[0]===on?'on':''}" onclick="navTo('${t[0]}')"><span class="ic">${t[2]}</span><span class="l">${t[1]}</span></button>`).join('')}</div></div><div class="homebar"></div>`}
+function navTo(p){if(p!=='home'&&p!=='futures')return toast('示意：进入'+({market:'市场',asset:'资产'}[p])+'页，底部导航保持不变');S.page=p;S.ai=null;S.scene=p==='home'?'home':'futures';render()}
 function futures(){
  return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div>
- <div class="fh"><span style="color:var(--muted)" onclick="go('home')">‹</span><b>BTCUSDT</b><span class="tag">永续</span><button class="aibtn" onclick="openAI('BTCUSDT 永续')"><i></i>问 AI</button>${pq('Q5')}</div>
+ <div class="fh"><span style="color:var(--muted)" onclick="go('home')">‹</span><b>BTCUSDT</b><span class="tag">永续</span></div>
  <div class="fp num"><div class="p">79,697.47</div><div class="sub">标记价 79,690.12 · 资金费率 0.0100% · 16:00 结算</div></div>
  <div class="fgrid num"><div class="ob">${[['79,712.0','0.214','down'],['79,705.5','0.088','down'],['79,701.2','1.320','down'],['79,697.4','0.540','up'],['79,692.0','0.912','up'],['79,688.8','0.160','up']].map(r=>`<div><span class="${r[2]}">${r[0]}</span><span>${r[1]}</span></div>`).join('')}</div>
  <div class="form"><div class="f"><span>全仓</span><span>5x</span></div><div class="f"><span>价格</span><span>市价</span></div><div class="f"><span>数量</span><span>USDT</span></div><div class="bb" style="background:var(--up)">开多</div><div class="bb" style="background:var(--down)">开空</div></div></div>
  <div class="ptab"><b>仓位 (2)</b><span>当前委托 (3)</span></div>
  ${Object.values(POS).map(p=>`<div class="prow num"><b>${p.sym} · <span class="up">${p.side} ${p.lev}x</span></b><span class="sub">保证金率 ${p.mr}% · 未实现 <span class="${cls(p.upnl)}">${sg(p.upnl)}</span></span></div>`).join('')}
- </div>`}
+ ${nav('futures')}</div>`}
 function lock(){
  return `<div class="lock"><div class="d">11月2日 星期一</div><div class="t num">10:51</div>
  <button class="push hot" onclick="landPush()"><span class="ic"><i></i></span><span style="flex:1"><b>SOL 多单需要关注</b><p>保证金率降到 128%，再跌 9.8% 会触发强平。点开看处理方式。</p></span><span class="tm">10:42</span></button>
@@ -697,10 +705,9 @@ function sugg(){
 }
 function aiPanel(){
  const chat=S.tab==='chat';
- return `${S.ai==='sheet'?'<div class="scrim" onclick="closeAI()"></div>':''}
- <section class="ai ${S.ai==='full'?'full':''}"><div class="sbpad"></div><div class="grab"></div>
+ return `<section class="ai full"><div class="sbpad"></div><div class="grab"></div>
  <div class="ahead"><span class="ttl"><i></i>AI 管家</span><div class="atabs"><button aria-pressed="${!chat}" onclick="S.tab='board';render()">看板</button><button aria-pressed="${chat}" onclick="S.tab='chat';render()">对话</button></div><span class="sp"></span>
- <button class="ib" title="${S.ai==='full'?'收起为浮层':'展开全屏'}" onclick="S.ai=S.ai==='full'?'sheet':'full';render()">${S.ai==='full'?'⤡':'⤢'}</button><button class="ib" title="新对话" onclick="tok++;S.msgs=[];S.busy=false;S.from=null;S.tab='chat';render()">＋</button><button class="ib" title="关闭" onclick="closeAI()">✕</button></div>
+ <button class="ib" title="新对话" onclick="tok++;S.msgs=[];S.busy=false;S.from=null;S.tab='chat';render()">＋</button><button class="ib" title="关闭" onclick="closeAI()">✕</button></div>
  ${chat&&S.ctx?`<div class="ctxbar">当前页面：<b>${S.ctx}</b><span>· 只作为参考，不代表下单授权</span></div>`:''}
  ${chat&&S.from?`<div class="from">${S.from}</div>`:''}
  <div class="abody" id="abody">${chat?(S.msgs.length?S.msgs.map((m,i)=>m.r==='u'?`<div class="mu">${m.t}</div>`:R[m.k](m.d,i)).join(''):`<div class="ma"><div class="at">${S.ctx?`你在看 <b>${S.ctx}</b>，想问点什么？行情、你的仓位和挂单、规则都可以。`:'有什么想问的？查账户、看行情、准备交易都可以。'}</div></div>`):board()}</div>
@@ -715,7 +722,7 @@ function render(){
  const ni=document.querySelector('.inrow input');if(ni){ni.value=val;if(foc)ni.focus()}
  renderSide();
 }
-function openAI(ctx){S.ai='sheet';S.ctx=ctx||S.ctx;S.tab=ctx?'chat':'board';S.bubble=false;render()}
+function openAI(ctx){S.ai='full';S.ctx=ctx||(S.page==='futures'?'BTCUSDT 永续':null);S.tab=S.ctx?'chat':'board';S.bubble=false;render()}
 function closeAI(){tok++;S.busy=false;S.ai=null;render()}
 function toast(t){S.toast=t;render();clearTimeout(toastT);toastT=setTimeout(()=>{S.toast='';render()},1600)}
 
