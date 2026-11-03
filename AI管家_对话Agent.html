@@ -554,31 +554,31 @@ const SCENES=[
   logic:['答案来自帮助中心内容，附「查看完整规则」','能结合用户自己的数据时顺带说明（例如你的 BTC 多单下次结算预计付多少）','卡片里可以切换到相关问题'],
   edge:['帮助中心里没有：明确说「暂不支持」，不编造','帮助中心更新后，AI 同步更新；本期不建运营后台'],
   rules:['R2','R17'],pend:[]},
- {id:'risk',g:'⑤ 对话 → 操作',t:'风险处理与止损',demo:['res'],
+ {id:'risk',g:'⑤ 对话 → 操作',t:'风险处理与止损',demo:['res'],failOp:'margin',
   run(){openChat();S.from='来自风险提醒 · 10:42';ask('SOL 多单离强平 1.7%，怎么处理')},
   trig:'AI 入口气泡、风险推送，或用户主动问。',
   logic:['风险卡片：保证金率、强平价、标记价、未实现盈亏；合约保证金率越接近 100% 越危险，达到 100% 触发强平','三个处理方式并列给出，由用户选：设止损 / 减仓 / 加保证金','设止损：给 3 个候选价，显示距现价多远、触发时亏损多少，在卡片内确认','加保证金：在卡片内选金额，展示追加后的保证金率和强平价，确认后提交；全仓仓位不能单独追加，改为引导划转','止损、追加保证金同样有失败 / 结果未知状态（右侧切换）'],
   edge:['风险分档阈值为示意值（≥50% 接近强平 / 30–50% 需关注 / <30% 安全），待 Q8','止损价必须高于强平价，否则会先被强平','止损候选价的生成规则 ⚠️ 待确认'],
   rules:['R4','R9','R23'],pend:['Q8 风险提醒阈值（搁置）']},
- {id:'open',g:'⑤ 对话 → 操作',t:'合约开仓',new:true,demo:['res'],
-  run(){S.page='futures';openChat();S.ctx='BTCUSDT 永续';ask('开多 BTC 100U 5倍')},
-  trig:'「开 5 倍 BTC 多单 100U」：方向、标的、保证金、杠杆都由用户说明。',
-  logic:['四个参数齐全才生成开仓卡片；缺哪个只追问哪个，不推断','逐轮追问：用户后续补充的参数与之前已说的合并，并复述已记下的部分（如先说「开仓」，再说「doge 10x 多」，接着只问保证金）','用户中途问了别的问题，已记下的参数保留，之后再补充时继续；转去做另一种操作（如平仓、撤单、现货买入）时作废','保证金模式沿用交易页当前设置','卡片展示预估数量和手续费，在卡片内确认，以业务回执为准'],
+ {id:'open',g:'⑤ 对话 → 操作',t:'合约开仓',new:true,demo:['res'],failOp:'open',
+  run(){S.page='futures';openChat();S.ctx='BTCUSDT 永续';ask('开多 BTC 100U 5倍 市价')},
+  trig:'「开 5 倍 BTC 多单 100U 市价」：方向、标的、保证金、杠杆、委托类型都由用户说明，限价单还要给价格。',
+  logic:['方向、标的、保证金、杠杆、委托类型（市价 / 限价）齐全才生成开仓卡片，限价单还要有价格；缺哪个只追问哪个，不推断','杠杆上限按交易对配置实时拉取校验，标的一说出来就校验，有误立即提示','逐轮追问：用户后续补充的参数与之前已说的合并，并复述已记下的部分（如先说「开仓」，再说「doge 10x 多」，接着只问保证金）','用户中途问了别的问题，已记下的参数保留，之后再补充时继续；转去做另一种操作（如平仓、撤单、现货买入）时作废','保证金模式沿用交易页当前设置','卡片展示预估数量和手续费，在卡片内确认，以业务回执为准'],
   edge:['页面上的交易对只作提示，不当作标的','预估强平价以确认时计算为准','保证金超过合约账户可用：卡片提示先划转或改小，确认按钮不可点','杠杆超过该交易对上限：不生成卡片，请用户重说杠杆，其他参数保留','标的不存在：请用户确认标的，其他参数保留','提交失败：说明原因和「没有成交、没有占用保证金」，可重新提交或转人工；结果未知：显示确认中并自动查询，禁止重复提交','成功后仓位和合约账户可用余额同步更新'],
-  rules:['R4','R9','R20'],pend:['各交易对最大杠杆 ⚠️ 数值待确认','限价开仓是否本期支持 ⚠️ 待确认']},
- {id:'close',g:'⑤ 对话 → 操作',t:'平仓',new:true,demo:['close'],
+  rules:['R4','R9','R20','R25','R26'],pend:['失败文案初版 ⚠️ 待风控评审（Q25）']},
+ {id:'close',g:'⑤ 对话 → 操作',t:'平仓',new:true,demo:['close'],failOp:'close',
   run(){openChat();ask('我要平仓')},
   trig:'「我要平仓」「把 SOL 平了」「减仓一半」。',
   logic:['说了标的直接生成该仓位的卡片；没说且有多个仓位时先让用户选，不默认第一个','「一半」预填 50%，可改为 25 / 50 / 100%，类型可选市价 / 限价','卡片展示预估成交价和预估已实现盈亏','在卡片内确认，以业务回执为准'],
   edge:['提交失败：说明原因和「仓位没有变化」，可重新提交或转人工','结果未知：显示「确认中」，自动查询最新状态，禁止重复提交','确认时校验发现仓位已变化：不提交，卡片失效，按最新仓位重新生成后可再次确认','关联的止盈止损单：与交易页手动平仓处理一致，卡片上写明','平掉最后一个仓位：看板改为无持仓状态'],
   rules:['R4','R13','R20'],pend:['交易页平仓后止盈止损单的现有处理方式（R13）']},
- {id:'closeall',g:'⑤ 对话 → 操作',t:'全部平掉：逐个确认',new:true,demo:['close'],
+ {id:'closeall',g:'⑤ 对话 → 操作',t:'全部平掉：逐个确认',new:true,demo:['close'],failOp:'close',
   run(){openChat();ask('把仓位全部平掉')},
   trig:'「全部平掉」「全平」「仓位都平了」。',
   logic:['对话里不支持一键全平','列出全部仓位，每个仓位一张平仓卡片，各自确认','用户可以只平其中一部分','同时引导到合约交易页使用「一键平仓」（交易页现有功能）'],
   edge:['不会因为一句「全部平掉」就批量提交'],
   rules:['R4','R12'],pend:[]},
- {id:'cancel',g:'⑤ 对话 → 操作',t:'撤单',new:true,demo:['orders','res'],
+ {id:'cancel',g:'⑤ 对话 → 操作',t:'撤单',new:true,demo:['orders','res'],failOp:'cancel',
   run(){openChat();ask('撤掉 BTC 合约的挂单')},
   trig:'「撤掉 BTC 的挂单」「没成交的不要了」。',
   logic:['按用户说的范围预先筛选，并预选该币种全部挂单（这里是 BTC）','可去掉不想撤的；「全选」只在选定单个币种时可用','点「撤销」后在卡片内确认一次；包含止盈止损单时额外提示','结果逐笔列出'],
@@ -674,7 +674,7 @@ function route(q){
 const BLOCKED={unkyc:['kycbiz']};
 /* 交易参数逐轮追问：缺什么只问什么，用户后续补充的内容与之前已说的合并 */
 const PX={BTC:79697.47,ETH:2316.63,SOL:168.90,DOGE:0.1623};
-const MAXLEV={BTC:125,ETH:100,SOL:50,DOGE:50}; // 各交易对最大杠杆为示意值 ⚠️
+const MAXLEV={BTC:125,ETH:100,SOL:50,DOGE:50}; // 生成开仓卡片时按交易对配置实时拉取，这里是示意数据
 const fq=v=>v>=100?v.toFixed(0):v>=1?v.toFixed(3):v.toFixed(5);
 const fp=v=>v<1?v.toFixed(4):f2(v);
 function parseTrade(q){
@@ -739,15 +739,15 @@ function ask(q,opt={}){
    if(miss.length)return slotAsk(f,miss,[f.coin&&f.coin+' 现货',f.type,f.amt&&f.amt+' USDT',f.price&&'限价 '+f.price].filter(Boolean),first,'例如「市价买 BTC 现货 100U」。');
    if(!PX[f.coin]){delete f.coin;S.slot=f;return reply('核对参数',()=>[{r:'a',k:'text',d:{trace:'标的不存在',t:`没有找到 <b>${t.coin||'这个'}/USDT</b> 现货交易对，请确认要买哪个币。`}}])}
    S.slot=null;return reply('生成下单卡片',()=>[{r:'a',k:'sbuy',d:{coin:f.coin,amt:f.amt,type:f.type,price:f.price,st:'edit'}}])},
-  open:()=>{const first=!S.slot,t=parseTrade(q),f=Object.assign({},S.slot||{kind:'open'},t);delete f.type;delete f.num;
-   if(t.num!=null&&!f.amt)f.amt=t.num;
-   // 标的和杠杆一说出来就校验，不等其他参数补齐
+  open:()=>{const first=!S.slot,t=parseTrade(q),f=Object.assign({},S.slot||{kind:'open'},t);delete f.num;
+   if(t.num!=null){if(!f.amt)f.amt=t.num;else if(f.type==='限价'&&!f.price)f.price=t.num}
+   // 标的和杠杆一说出来就按交易对配置校验，不等其他参数补齐
    let pre='';
    if(f.coin&&!PX[f.coin]){pre=`没有找到 <b>${f.coin}USDT 永续</b>合约，请确认标的。`;delete f.coin}
-   if(f.coin&&f.lev>MAXLEV[f.coin]){pre=`<b>${f.coin}USDT 永续</b>最大杠杆是 <b>${MAXLEV[f.coin]}x</b> ${pq('最大杠杆数值')}，${f.lev}x 超出上限，请重新说一个不超过 ${MAXLEV[f.coin]}x 的杠杆。`;delete f.lev}
-   const miss=[!f.side&&'方向（做多 / 做空）',!f.coin&&'标的',!f.amt&&'保证金投入多少 USDT',!f.lev&&'杠杆几倍'].filter(Boolean);
-   if(miss.length)return slotAsk(f,miss,[f.coin&&f.coin+'USDT 永续',f.side&&'做'+f.side,f.lev&&f.lev+'x',f.amt&&f.amt+' USDT'].filter(Boolean),first&&!pre,'说完我会生成开仓卡片，由你在卡片内确认。例如「开多 BTC 100U 5倍」。',pre?pre+'<br>':'');
-   S.slot=null;return reply('生成开仓卡片',()=>[{r:'a',k:'open',d:{side:f.side,coin:f.coin,amt:f.amt,lev:f.lev,st:'edit'}}])},
+   if(f.coin&&f.lev>MAXLEV[f.coin]){pre=`按交易对配置，<b>${f.coin}USDT 永续</b>当前最大杠杆是 <b>${MAXLEV[f.coin]}x</b>，${f.lev}x 超出上限，请重新说一个不超过 ${MAXLEV[f.coin]}x 的杠杆。`;delete f.lev}
+   const miss=[!f.side&&'方向（做多 / 做空）',!f.coin&&'标的',!f.amt&&'保证金投入多少 USDT',!f.lev&&'杠杆几倍',!f.type&&'用市价还是限价',f.type==='限价'&&f.amt&&!f.price&&'限价多少 USDT'].filter(Boolean);
+   if(miss.length)return slotAsk(f,miss,[f.coin&&f.coin+'USDT 永续',f.side&&'做'+f.side,f.lev&&f.lev+'x',f.amt&&f.amt+' USDT',f.type,f.price&&'限价 '+f.price].filter(Boolean),first&&!pre,'说完我会生成开仓卡片，由你在卡片内确认。例如「开多 BTC 100U 5倍 市价」。',pre?pre+'<br>':'');
+   S.slot=null;return reply('生成开仓卡片',()=>[{r:'a',k:'open',d:{side:f.side,coin:f.coin,amt:f.amt,lev:f.lev,type:f.type,price:f.price,st:'edit'}}])},
   handoff:()=>reply('整理已确认信息',()=>[{r:'a',k:'text',d:{trace:'已整理 4 项信息',t:'好的，我先把已确认的信息整理好，客服接手时能直接看到，不用你再说一遍：'}},{r:'a',k:'handoff',d:{st:'edit'}}]),
   r11:()=>{const nm=(q.match(/冰山|TWAP|网格|跟踪委托|追踪委托/i)||['这类委托'])[0];return reply('检查委托类型',()=>[{r:'a',k:'text',d:{trace:'平台不支持该委托类型',t:`平台暂不支持<b>${nm}${/单|委托/.test(nm)?'':'单'}</b>，我也不会把它改成普通订单提交。平台现有的相近做法如下，和你要的效果有差别，由你自己决定：`}},{r:'a',k:'r11',d:{}}])},
   predict:()=>reply('检查能力范围',()=>[{r:'a',k:'text',d:{trace:'超出支持范围',t:'这个我做不了：我<b>不预测价格</b>，也不会替你做买卖决定。我能帮你：'}},{r:'a',k:'fu',d:{c:[['查持仓和盈亏','q:今天 BTC 涨了，为什么我的账户还在亏？'],['看宏观事件','q:接下来有哪些重要宏观事件？'],['查规则','q:资金费率是什么？']]}}]),
@@ -767,8 +767,45 @@ function openChat(){S.ai='full';S.tab='chat';if(S.page==='lock')S.page='home'}
 /* ---------- 卡片渲染 ---------- */
 function stamp(d,i){return `<div class="stamp"><span>数据截至 ${d.at||'10:42:18'}</span><button onclick="act(${i},'refresh')">刷新</button></div>`}
 // 写操作的失败 / 结果未知组件：所有确认卡片共用
-const FAIL={open:['开仓','价格波动超过保护范围，订单未提交','没有成交，也没有占用保证金。'],sbuy:['买入','价格波动超过保护范围，订单未提交','没有成交，也没有扣款。'],margin:['追加保证金','确认时校验发现合约账户可用余额不足','保证金没有变化。'],stop:['设置止损','确认时校验发现止损价已不高于最新强平价','没有设置任何止损。'],close:['平仓','系统繁忙，平仓请求未被受理','仓位没有变化。'],spot:['撤单','这笔挂单在撤销前已全部成交','成交部分已计入你的现货资产。']};
-function failBox(i,k,retry=true){const [w,r,e]=FAIL[k];return `<div class="banner r"><b>${w}失败</b>：${r}。${e}</div><div class="fine">失败原因为示意，以业务系统返回为准 <span class="pend">⚠️ 文案待风控评审</span></div><div class="acts"><button class="btn" onclick="act(${i},'fu','q:我要找人工客服')">转人工</button>${retry?`<button class="btn pri" onclick="act(${i},'retry')">重新提交</button>`:''}</div>`}
+// 写操作失败文案（初版）：说清哪一步失败、原因、对资金 / 仓位的影响、下一步；[原因, 文案, 影响与下一步, 能否重新提交]
+const FAIL={
+ open:{w:'开仓',list:[
+  ['余额不足','确认时合约账户可用余额不足以支付保证金','没有成交，也没有占用保证金。可以先划转到合约账户，或改小保证金。'],
+  ['超出杠杆上限','按交易对最新配置，所选杠杆超过该交易对当前的最大杠杆','没有成交。请改小杠杆后重新生成卡片。',false],
+  ['超出持仓上限','开仓后会超过该交易对的最大持仓限额','没有成交。可以改小保证金或杠杆。',false],
+  ['价格保护','市价成交价偏离超过保护范围，订单未提交','没有成交，也没有占用保证金。可以稍后重试，或改用限价。'],
+  ['限价超出范围','限价超出该交易对当前允许的价格范围','没有挂单。请调整限价后重新生成卡片。',false],
+  ['交易对暂停','该交易对当前暂停开仓（维护或风控限制）','没有成交。可以查看相关公告。',false],
+  ['配置拉取失败','暂时没有拿到该交易对的最新配置','没有提交任何订单。请稍后重试。'],
+  ['系统繁忙','系统繁忙，请求未被受理','没有成交，也没有占用保证金。可以稍后重试。']]},
+ sbuy:{w:'买入',list:[
+  ['余额不足','确认时现货可用余额不足','没有成交，也没有扣款。可以先充值或划转，或改小金额。'],
+  ['低于最小金额','金额低于该交易对的最小下单金额','没有下单。请调大金额后重新生成卡片。',false],
+  ['价格保护','市价成交价偏离超过保护范围，订单未提交','没有成交，也没有扣款。可以稍后重试，或改用限价。'],
+  ['限价超出范围','限价超出该交易对当前允许的价格范围','没有挂单。请调整限价后重新生成卡片。',false],
+  ['交易对暂停','该交易对当前暂停交易','没有成交。可以查看相关公告。',false],
+  ['系统繁忙','系统繁忙，请求未被受理','没有成交，也没有扣款。可以稍后重试。']]},
+ close:{w:'平仓',list:[
+  ['价格保护','市价成交价偏离超过保护范围，平仓未提交','仓位没有变化。可以稍后重试，或改用限价平仓。'],
+  ['限价超出范围','限价超出该交易对当前允许的价格范围','没有挂单，仓位没有变化。请调整限价。',false],
+  ['交易对暂停','该交易对当前暂停交易','仓位没有变化。可以查看相关公告，或到交易页查看是否允许平仓。',false],
+  ['系统繁忙','系统繁忙，平仓请求未被受理','仓位没有变化。可以稍后重试。']]},
+ stop:{w:'设置止损',list:[
+  ['止损价无效','按最新价格，这个止损价已越过当前价或强平价，设置后会立即触发或不起作用','没有设置任何止损。请重新选择止损价。',false],
+  ['数量达上限','该仓位的止盈止损单数量已达上限','没有设置。可以先在仓位页删除旧的止盈止损单。',false],
+  ['系统繁忙','系统繁忙，请求未被受理','没有设置任何止损。可以稍后重试。']]},
+ margin:{w:'追加保证金',list:[
+  ['余额不足','确认时合约账户可用余额不足','保证金没有变化。可以先划转到合约账户，或选小一点的金额。',false],
+  ['仓位已变化','这个仓位已被平掉或强平','没有追加，资金没有变化。',false],
+  ['系统繁忙','系统繁忙，请求未被受理','保证金没有变化。可以稍后重试。']]},
+ cancel:{w:'撤单',list:[
+  ['已全部成交','这笔挂单在撤销前已全部成交','成交部分已计入你的资产，不需要再撤。',false],
+  ['已被撤销','这笔挂单已在别处撤销','不需要再撤。',false],
+  ['系统繁忙','系统繁忙，撤单请求未被受理','挂单仍然有效，可以重新撤销。']]}
+};
+FAIL.spot=FAIL.cancel;
+const failPick=k=>FAIL[k].list[(S.failIdx||0)%FAIL[k].list.length];
+function failBox(i,k){const [,r,e,rt=true]=failPick(k);return `<div class="banner r"><b>${FAIL[k].w}失败</b>：${r}。${e}</div><div class="fine">失败文案初版，原因以业务系统返回为准 <span class="pend">⚠️ 待风控评审</span></div><div class="acts"><button class="btn" onclick="act(${i},'fu','q:我要找人工客服')">转人工</button>${rt?`<button class="btn pri" onclick="act(${i},'retry')">重新提交</button>`:''}</div>`}
 const pendBox=w=>`<div class="banner w"><span class="spin dk"></span>${w}结果确认中：网络超时，正在查询最新状态，请不要重复提交。</div>`;
 const tierFine='<div class="fine">风险分档阈值 <span class="pend">⚠️ 示意值，待 Q8</span></div>';
 const R={
@@ -831,15 +868,15 @@ const R={
   <div class="acts"><button class="btn" onclick="act(${i},'cancel')">取消</button><button class="btn dan" onclick="act(${i},'confirm')">${d.st==='sub'?'<span class="spin"></span>提交中':'确认平仓'}</button></div>
   <div class="stamp"><span>数据截至 10:42:25</span><span>点确认时校验最新价格和仓位</span></div></div>`},
  open(d,i){
-  const px=PX[d.coin],qty=px?fq(d.amt*d.lev/px):null,low=d.amt>BAL.fut,head=`<div class="ch"><b>开仓 · ${d.coin}USDT 永续</b><span class="tag">${d.side==='多'?'开多':'开空'} ${d.lev}x · 全仓</span><span class="r" style="color:var(--muted)">AI 已预填</span></div>`;
+  const lim=d.type==='限价',px=lim?d.price:PX[d.coin],qty=px?fq(d.amt*d.lev/px):null,low=d.amt>BAL.fut,head=`<div class="ch"><b>开仓 · ${d.coin}USDT 永续</b><span class="tag">${d.type}${d.side==='多'?'开多':'开空'} ${d.lev}x · 全仓</span><span class="r" style="color:var(--muted)">AI 已预填</span></div>`;
   if(d.st==='fail')return `<div class="card">${head}${failBox(i,'open')}</div>`;
   if(d.st==='unknown')return `<div class="card">${head}${pendBox('开仓')}</div>`;
-  if(d.st==='done')return `<div class="card">${head}<div class="banner g">✓ 已开仓 ${qty||''} ${d.coin}，${px?`成交均价 ${fp(px)}，`:''}占用保证金 ${f2(d.amt)} USDT。</div><div class="stamp"><span>回执编号 OP-26110210434 · 以业务系统为准</span><button onclick="toast('跳转仓位页（示意）')">查看仓位 ›</button></div></div>`;
+  if(d.st==='done')return `<div class="card">${head}<div class="banner g">${lim?`✓ 已挂限价${d.side==='多'?'开多':'开空'}单：${qty} ${d.coin} @ ${fp(px)}，冻结保证金 ${f2(d.amt)} USDT。成交前可在当前委托里撤销。`:`✓ 已开仓 ${qty||''} ${d.coin}，${px?`成交均价 ${fp(px)}，`:''}占用保证金 ${f2(d.amt)} USDT。`}</div><div class="stamp"><span>回执编号 OP-26110210434 · 以业务系统为准</span><button onclick="toast('跳转${lim?'当前委托':'仓位页'}（示意）')">${lim?'查看委托':'查看仓位'} ›</button></div></div>`;
   return `<div class="card">${head}
-  <div class="rows num"><div class="rw"><span>方向 / 杠杆</span><b>${d.side==='多'?'做多':'做空'} · ${d.lev}x</b></div><div class="rw"><span>保证金</span><b>${f2(d.amt)} USDT</b></div><div class="rw"><span>保证金模式</span><b>全仓（沿用交易页设置）</b></div><div class="rw"><span>委托类型 / 预估成交价</span><b>市价 · ${px?'≈ '+fp(px):'以成交为准'}</b></div><div class="rw"><span>预估数量</span><b>${qty?`≈ ${qty} ${d.coin}`:'以成交为准'}</b></div><div class="rw"><span>手续费</span><b>按你的费率 ${P}</b></div><div class="rw"><span>合约账户可用</span><b>${f2(BAL.fut)} USDT</b></div></div>
-  ${low?'<div class="banner w">合约账户可用 '+f2(BAL.fut)+' USDT，不够这笔保证金。可以先划转，或改小保证金。</div>':'<div class="fine">预估强平价以确认时计算为准；市价单可能有滑点。</div>'}
+  <div class="rows num"><div class="rw"><span>方向 / 杠杆</span><b>${d.side==='多'?'做多':'做空'} · ${d.lev}x</b></div><div class="rw"><span>保证金</span><b>${f2(d.amt)} USDT</b></div><div class="rw"><span>保证金模式</span><b>全仓（沿用交易页设置）</b></div><div class="rw"><span>${lim?'委托类型 / 限价':'委托类型 / 预估成交价'}</span><b>${lim?'限价 · '+fp(px):'市价 · '+(px?'≈ '+fp(px):'以成交为准')}</b></div><div class="rw"><span>${lim?'数量':'预估数量'}</span><b>${qty?`${lim?'':'≈ '}${qty} ${d.coin}`:'以成交为准'}</b></div><div class="rw"><span>手续费</span><b>按你的费率 ${P}</b></div><div class="rw"><span>合约账户可用</span><b>${f2(BAL.fut)} USDT</b></div></div>
+  ${low?'<div class="banner w">合约账户可用 '+f2(BAL.fut)+' USDT，不够这笔保证金。可以先划转，或改小保证金。</div>':`<div class="fine">${lim?'限价单成交前冻结保证金；预估强平价以成交时为准。':'预估强平价以确认时计算为准；市价单可能有滑点。'}</div>`}
   <div class="acts"><button class="btn" onclick="act(${i},'cancel')">取消</button><button class="btn pri" ${low?'disabled':''} onclick="act(${i},'confirm')">${d.st==='sub'?'<span class="spin"></span>提交中':'确认开仓'}</button></div>
-  <div class="stamp"><span>数据截至 10:42:25</span><span>点确认时校验最新价格和余额</span></div></div>`},
+  <div class="stamp"><span>数据截至 10:42:25</span><span>点确认时拉取交易对配置并校验价格和余额</span></div></div>`},
  sbuy(d,i){
   const lp=d.type==='限价'?d.price:null,px=lp||PX[d.coin],qty=px?fq(d.amt/px):null,low=d.amt>BAL.spot,head=`<div class="ch"><b>现货买入 · ${d.coin}/USDT</b><span class="tag">${d.type}</span><span class="r" style="color:var(--muted)">AI 已预填</span></div>`;
   if(d.st==='fail')return `<div class="card">${head}${failBox(i,'sbuy')}</div>`;
@@ -853,7 +890,7 @@ const R={
   const live=liveOrd();
   if(S.ordersEmpty||(!live.length&&d.st!=='done'))return `<div class="card"><div class="banner n">没有未成交的合约挂单。</div><div class="acts"><button class="btn" onclick="toast('跳转委托记录（示意）')">看历史委托</button><button class="btn" onclick="act(${i},'fu','q:我要平仓')">管理仓位</button></div></div>`;
   if(d.st==='unknown')return `<div class="card"><div class="ch"><b>撤单</b></div>${pendBox('撤单')}</div>`;
-  if(d.st==='done'){const done=ORDERS.filter(o=>d.sel.includes(o.id)),nf=d.failId?1:0;return `<div class="card"><div class="ch"><b>撤单结果</b><span class="r ${nf?'warn':'up'}">${nf?`成功 ${done.length-1} 笔 · 失败 1 笔`:`已完成 ${done.length} 笔`}</span></div><div class="rows num">${done.map(o=>o.id===d.failId?`<div class="rw"><span>${o.sym} ${o.type} ${o.side} @ ${o.price}</span><b class="down">撤销失败</b></div><div class="fine">这笔在撤销前已全部成交（示意原因，以业务系统返回为准）。</div>`:`<div class="rw"><span>${o.sym} ${o.type} ${o.side} @ ${o.price}</span><b class="up">${o.filled?'已撤未成交部分':'已撤销'}</b></div>${o.filled?`<div class="fine">撤销前已成交 ${o.filled} ${o.unit}，这部分保留为持仓；只撤销了剩余 ${(o.qty-o.filled).toFixed(3)} ${o.unit}。</div>`:''}`).join('')}</div><div class="stamp"><span>以业务系统回执为准 · 10:42:31</span><button onclick="toast('跳转委托记录（示意）')">委托记录 ›</button></div></div>`}
+  if(d.st==='done'){const done=ORDERS.filter(o=>d.sel.includes(o.id)),nf=d.failId?1:0;return `<div class="card"><div class="ch"><b>撤单结果</b><span class="r ${nf?'warn':'up'}">${nf?`成功 ${done.length-1} 笔 · 失败 1 笔`:`已完成 ${done.length} 笔`}</span></div><div class="rows num">${done.map(o=>o.id===d.failId?`<div class="rw"><span>${o.sym} ${o.type} ${o.side} @ ${o.price}</span><b class="down">撤销失败</b></div><div class="fine">${failPick('cancel')[1]}，${failPick('cancel')[2]}</div>`:`<div class="rw"><span>${o.sym} ${o.type} ${o.side} @ ${o.price}</span><b class="up">${o.filled?'已撤未成交部分':'已撤销'}</b></div>${o.filled?`<div class="fine">撤销前已成交 ${o.filled} ${o.unit}，这部分保留为持仓；只撤销了剩余 ${(o.qty-o.filled).toFixed(3)} ${o.unit}。</div>`:''}`).join('')}</div><div class="stamp"><span>以业务系统回执为准 · 10:42:31</span><button onclick="toast('跳转委托记录（示意）')">委托记录 ›</button></div></div>`}
   const syms=[...new Set(live.map(o=>o.sym))],list=live.filter(o=>d.f==='全部'||o.sym===d.f);
   const n=d.sel.length,all=list.length&&list.every(o=>d.sel.includes(o.id));
   return `<div class="card"><div class="hyp">${['全部',...syms].map(f=>`<button aria-pressed="${d.f===f}" onclick="act(${i},'filter','${f}')">${f}</button>`).join('')}${d.f==='全部'?'<span class="sub" style="margin-left:auto;font-size:11px">选定币种后可全选</span>':`<button style="margin-left:auto" aria-pressed="${all}" onclick="act(${i},'all')">全选</button>`}</div>
@@ -909,7 +946,7 @@ const R={
  otype:(d,i)=>`<div class="opts">${[['合约','永续合约的限价单、止盈止损单'],['现货','币币交易的限价单']].map(([v,x])=>`<button class="opt" aria-pressed="${d.sel===v}" ${d.sel?'disabled':''} onclick="act(${i},'otype','${v}')"><span class="grow"><b>${v}挂单</b><small>${x}</small></span><span>›</span></button>`).join('')}</div>`,
  spot(d,i){
   const live=SPOT.filter(o=>!o.done);
-  if(d.st==='fail')return `<div class="card"><div class="ch"><b>现货挂单</b></div>${failBox(i,'spot',false)}</div>`;
+  if(d.st==='fail')return `<div class="card"><div class="ch"><b>现货挂单</b></div>${failBox(i,'spot')}</div>`;
   if(d.st==='unknown')return `<div class="card"><div class="ch"><b>现货挂单</b></div>${pendBox('撤单')}</div>`;
   if(d.st==='done')return `<div class="card"><div class="ch"><b>撤单结果</b><span class="r up">已完成 1 笔</span></div><div class="rows num"><div class="rw"><span>BTC/USDT 限价买入 @ 76,000.00</span><b class="up">已撤销</b></div></div><div class="stamp"><span>以业务系统回执为准 · 10:42:31</span></div></div>`;
   if(!live.length)return `<div class="card"><div class="banner n">没有未成交的现货挂单。</div></div>`;
@@ -951,6 +988,7 @@ function act(i,a,v){
  }
  if(m.k==='stop'){if(a==='pickp')d.p=v;if(a==='confirm'&&d.p&&d.st==='edit'){return done(d,()=>{POS[d.pos].tpsl=POS[d.pos].tpsl||'止损'})}return render()}
  if(m.k==='margin'){if(a==='add')d.add=v;if(a==='confirm'&&d.st==='edit'&&d.add<=BAL.fut){return done(d,()=>{const p=POS[d.pos],a0=calc(p);p.margin+=d.add;BAL.fut-=d.add;const a1=calc(p);d.from=[a0.mr,a1.mr,a0.liq,a1.liq]})}return render()}
+ if(m.k==='open'&&a==='confirm'&&d.st==='edit'&&d.amt<=BAL.fut&&d.type==='限价')return done(d,()=>{BAL.fut-=d.amt;ORDERS.push({id:'o'+(ORDERS.length+1),sym:d.coin+'USDT',type:'限价',side:'开'+d.side,price:fp(d.price),qty:+(d.amt*d.lev/d.price).toFixed(5),unit:d.coin,filled:0})});
  if(m.k==='open'&&a==='confirm'&&d.st==='edit'&&d.amt<=BAL.fut)return done(d,()=>{const px=PX[d.coin],k=d.coin.toLowerCase(),q=d.amt*d.lev/px,o=POS[k];BAL.fut-=d.amt;
   if(o&&!o.closed&&o.side===d.side){o.entry=(o.entry*o.qty+px*q)/(o.qty+q);o.qty=+(o.qty+q).toFixed(5);o.margin+=d.amt}
   else POS[k]={sym:d.coin+'USDT',side:d.side,lev:d.lev,mode:'全仓',qty:+q.toFixed(5),unit:d.coin,entry:px,mark:px,margin:d.amt,tpsl:null};
@@ -1165,7 +1203,7 @@ function closeAI(){tok++;S.busy=false;S.msgs=S.msgs.filter(m=>m.k!=='trace');S.a
 function toast(t){S.toast=t;render();clearTimeout(toastT);toastT=setTimeout(()=>{S.toast='';render()},1600)}
 
 /* ---------- 导航与说明栏 ---------- */
-function go(id){const sc=SCENES.find(s=>s.id===id);if(!sc)return;if(id==='comply'&&S.scene!=='comply')S.user='unkyc';if(S.scene==='comply'&&id!=='comply')S.user='normal';resetData();S.page='home';S.menu=false;if(id!=='board')S.acct='pos';if(id==='stale'&&S.scene!=='stale')S.res='changed';else if(id!==S.scene)S.res='ok';S.aiFail=false;S.scene=id;reset();sc.run();stickBottom=true;render()}
+function go(id){const sc=SCENES.find(s=>s.id===id);if(!sc)return;if(id==='comply'&&S.scene!=='comply')S.user='unkyc';if(S.scene==='comply'&&id!=='comply')S.user='normal';resetData();S.page='home';S.menu=false;if(id!=='board')S.acct='pos';if(id==='stale'&&S.scene!=='stale')S.res='changed';else if(id!==S.scene){S.res='ok';S.failIdx=0}S.aiFail=false;S.scene=id;reset();sc.run();stickBottom=true;render()}
 function renderNav(){
  const groups=[...new Set(SCENES.map(s=>s.g))];
  $('nav').innerHTML=groups.map(g=>`<h4>${g}</h4>`+SCENES.filter(s=>s.g===g).map(s=>`<button aria-current="${S.scene===s.id}" onclick="go('${s.id}')">${s.t}${s.new?'<span class="new">新增</span>':''}</button>`).join('')).join('');
@@ -1188,6 +1226,7 @@ function renderSide(){
  ${dm.includes('orb')?`<div class="row"><label>入口状态</label>${segBtns('orb',[['default','默认'],['info','资讯'],['pending','待处理'],['danger','高风险']])}</div>`:''}
  ${dm.includes('acct')?`<div class="row"><label>账户状态</label>${segBtns('acct',[['nofund','未充值'],['nopos','有资产无仓位'],['pos','有仓位'],['copy','只有跟单']])}</div>`:''}
  ${dm.includes('res')?`<div class="row"><label>提交结果</label>${segBtns('res',[['ok','成功'],['fail','失败'],['unknown','结果未知']])}</div>`:''}
+ ${(dm.includes('res')||dm.includes('close'))&&S.res==='fail'&&sc.failOp?`<div class="row"><label>失败原因（${FAIL[sc.failOp].w}）</label><div class="seg" style="flex-wrap:wrap">${FAIL[sc.failOp].list.map((x,j)=>`<button aria-pressed="${(S.failIdx||0)===j}" onclick="S.failIdx=${j};go(S.scene)">${x[0]}</button>`).join('')}</div></div>`:''}
  ${dm.includes('close')?`<div class="row"><label>提交结果</label>${segBtns('res',[['ok','成功'],['fail','失败'],['unknown','结果未知'],['changed','仓位已变化']])}</div>`:''}
  ${dm.includes('orders')?`<div class="row"><label>挂单数据</label><div class="seg"><button aria-pressed="${!S.ordersEmpty}" onclick="setDemo('ordersEmpty','false')">有挂单</button><button aria-pressed="${S.ordersEmpty}" onclick="setDemo('ordersEmpty','true')">空状态</button></div></div>`:''}
  ${dm.includes('user')?`<div class="row"><label>用户身份</label>${segBtns('user',[['normal','正常（已认证）'],['unkyc','未 KYC']])}</div>`:''}
