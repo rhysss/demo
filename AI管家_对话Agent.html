@@ -197,6 +197,20 @@ aside.notes{background:var(--panel);border-left:1px solid var(--line);overflow-y
 .prod{background:var(--soft);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;text-align:left;border:0;width:100%}
 .prod .t{display:flex;justify-content:space-between}.prod .t b{font-size:14px}
 .prod .r{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px;font-size:12.5px}
+.pc{padding:14px 16px;border-bottom:1px solid var(--line2);display:flex;flex-direction:column;gap:9px}
+.pc .h{display:flex;align-items:center;gap:6px}.pc .h b{font-size:15px}.pc .h .ln{margin-left:auto;color:var(--faint)}
+.mine{font-size:10.5px;color:#C77C0A;background:#FFF4E0;border-radius:4px;padding:1px 6px}
+.chipz{display:flex;gap:4px}.chipz span{font-size:11px;padding:1px 6px;border-radius:4px;background:var(--soft);color:var(--ink2)}
+.chipz .l{background:var(--appbg);color:var(--app)}.chipz .s{background:var(--down);color:#fff}
+.pnlr{display:flex;justify-content:space-between;align-items:flex-end}.pnlr small{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}.pnlr b{font-size:18px}.pnlr div:last-child{text-align:right}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 4px;font-size:11px;color:var(--muted)}
+.pg b{display:block;color:var(--ink);font-size:13px;font-weight:500;margin-top:2px}
+.pg div:nth-child(3n+2){text-align:center}.pg div:nth-child(3n){text-align:right}
+.pb{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.pb.p2{grid-template-columns:1fr 1fr}
+.pb button{height:32px;border:0;border-radius:8px;background:var(--soft);font-size:12.5px;font-weight:600;color:var(--ink)}
+.pb .g{background:var(--appbg);color:var(--app);font-weight:500}
+.oc{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.prog{width:60px;height:3px;background:var(--line);border-radius:2px;display:inline-block}
 .bubble{position:absolute;left:16px;bottom:90px;max-width:210px;background:var(--ink);color:#fff;border-radius:14px 14px 14px 4px;padding:9px 12px;font-size:12.5px;line-height:1.45;z-index:5;box-shadow:0 6px 16px rgba(0,0,0,.18);border:0;text-align:left}
 .bubble small{display:block;color:#9FE8CB;margin-top:2px}
 .bubble.danger{background:#E5384F}.bubble.danger small{color:#FFE1E5}
@@ -829,7 +843,12 @@ function futures(){
  </div><div><div class="kvs" style="flex-direction:column;align-items:flex-end;gap:2px;margin-bottom:6px"><span>资金费率/倒计时</span><b>0.0100% / 05:17:42</b></div>${obk(['价格(USDT)','数量(BTC)'],'79,697.47','79,690.12 −0.86%')}</div></div>
  <div class="btabs"><b>仓位(2)</b><span>当前委托(3)</span><span>卡券(0)</span></div>
  <div class="brow"><span class="tog">隐藏其他合约</span><button class="gbtn" onclick="toast('一键平仓：交易页现有功能（示意）')">一键平仓</button></div>
- ${Object.values(POS).map(p=>`<div class="prow num"><b>${p.sym} · <span class="up">${p.side} ${p.lev}x</span></b><span class="sub">保证金率 ${p.mr}% · 未实现 <span class="${cls(p.upnl)}">${sg(p.upnl)}</span></span></div>`).join('')}
+ ${Object.values(POS).map(p=>{const m=p.qty*p.entry/p.lev,roe=p.upnl/m*100;return `<div class="pc num"><div class="h"><b>${p.sym} 永续</b><span class="mine">挖矿中 •</span><span class="ln">↗</span></div>
+ <div class="chipz"><span class="${p.side==='多'?'l':'s'}">${p.side}</span><span>${p.mode}</span><span>${p.lev}x</span></div>
+ <div class="pnlr"><div><small>未实现盈亏</small><b class="${cls(p.upnl)}">${sg(p.upnl)}</b></div><div><small>ROE%</small><b class="${cls(roe)}">${sg(roe)}%</b></div></div>
+ <div class="pg"><div>数量<b>${p.qty} ${p.unit}</b></div><div>开仓价格<b>${f2(p.entry)}</b></div><div>标记价格<b>${f2(p.mark)}</b></div><div>持仓保证金 <span style="color:var(--app)">⊕</span><b>${f2(m)}</b></div><div>预估强平价<b>${f2(p.liq)}</b></div><div>保证金率 <span class="pend">⚠️ 口径</span><b>${p.mr}%</b></div></div>
+ <div class="pb"><button onclick="toast('止盈/止损：交易页现有功能（示意）')">止盈/止损</button><button onclick="toast('加仓（示意）')">加仓</button><button onclick="toast('平仓：交易页现有功能（示意）')">平仓</button></div>
+ <div class="pb p2"><button class="g" onclick="toast('防爆盾（示意）')">⛨ 防爆盾</button><button class="g" onclick="toast('护财符（示意）')">☂ 护财符</button></div></div>`}).join('')}
  </div>${nav()}</div>`}
 function spot(){
  return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="tbar"><span>BTC/USDT 图表</span><span>▾</span></div><div class="scroll tp">
@@ -845,7 +864,9 @@ function spot(){
  </div>${obk(['价格(USDT)','数量(BTC)'],'79,697.47','79,697.47 −0.86%')}</div>
  <div class="btabs"><b>委托(1)</b><span>资产</span></div>
  <div class="brow"><span class="tog">隐藏其他交易对</span><button class="gbtn" onclick="toast('全部取消：交易页现有功能（示意）')">全部取消</button></div>
- <div class="prow num"><b>BTC/USDT · <span class="up">限价买入</span></b><span class="sub">价格 76,000.00 · 数量 0.002 BTC · 已成交 0</span></div>
+ <div class="oc num"><div class="kvs"><b style="font-size:15px">BTC/USDT</b><span style="display:flex;align-items:center;gap:8px"><span class="prog"></span>0%<button class="gbtn" onclick="toast('取消挂单（示意）')">取消</button></span></div>
+ <div style="font-size:12px"><span style="color:var(--app)">限价 / 买入</span> <span class="sub">2026-11-02 10:40:12</span></div>
+ <div class="kvs" style="font-size:12px"><span>成交数量 / 数量</span><b>0 BTC / 0.002 BTC</b></div><div class="kvs" style="font-size:12px"><span>价格</span><b>76,000.00</b></div></div>
  </div>${nav()}</div>`}
 function copy(){
  const T=[['带单员 A','带单 2 天','+48.94%','6.78K','2','0.00%'],['带单员 B','带单 9 天','0.00%','0.00','0','0.00%'],['带单员 C','带单 12 天','+3.10%','1.20K','5','2.40%']];
@@ -861,13 +882,16 @@ function cfd(){
  return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="scroll tp">
  <div class="thd"><b>UKOUSD</b><span class="tg n">500x</span><span>▾</span><span class="sp">⫼</span></div>
  <div style="padding:0 16px;font-size:12px;color:var(--muted)">英国布伦特原油</div>
- <div class="brow" style="padding-top:10px"><span>可用保证金 <b style="color:var(--ink)">0.00 USDx</b> <span style="color:var(--app)">⊕</span></span><span style="text-align:right">做多/做空掉期利率<br><b style="color:var(--ink)">149.93 / −199.97</b></span></div>
- <div class="tgrid num"><div class="tf"><div class="fld">市价<span>▾</span></div><div class="fld">数量<span>手数</span></div><div class="kvs"><span>价值</span><b>-- USDx</b></div><span class="cbx">止盈止损</span><button class="xbtn" style="height:40px" onclick="toast('开通 CFD（示意）')">去开通</button></div>
+ <div class="brow" style="padding-top:10px"><span>可用保证金 <b style="color:var(--ink)">320.40 USDx</b> <span style="color:var(--app)">⊕</span></span><span style="text-align:right">做多/做空掉期利率<br><b style="color:var(--ink)">149.93 / −199.97</b></span></div>
+ <div class="tgrid num"><div class="tf"><div class="fld">市价<span>▾</span></div><div class="fld">数量<span>手数</span></div><div class="kvs"><span>价值</span><b>-- USDx</b></div><span class="cbx">止盈止损</span><button class="xbtn" style="height:44px;font-size:13px;line-height:1.25">买入/做多<br>110.531</button><button class="xbtn dn" style="height:44px;font-size:13px;line-height:1.25">卖出/做空<br>110.480</button></div>
  <div class="cfr"><div><span>中间价</span><b class="up">110.505</b></div><div><span>涨跌</span><b class="up">+2.47%</b></div><div><span>卖出价格</span><b class="down">110.480</b></div><div><span>买入价格</span><b class="up">110.531</b></div><div><span>价差</span><b>51</b></div><span class="note">该交易对的参考流动性数据即将上线。</span></div></div>
- <div style="padding:0 16px 12px"><div class="fld">保证金比例<span>-- ›</span></div></div>
- <div class="btabs"><b>仓位(0)</b><span>委托(0)</span><span>资产</span></div>
+ <div style="padding:0 16px 12px"><div class="fld">保证金比例<span><b class="up">1,681.47%</b> ›</span></div></div>
+ <div class="btabs"><b>仓位(1)</b><span>委托(0)</span><span>资产</span></div>
  <div class="brow"><button class="gbtn" onclick="toast('一键平仓：交易页现有功能（示意）')">一键平仓</button></div>
- <div class="empty"><i></i>暂无数据</div>
+ <div class="pc num"><div class="h"><b>XAGAUD</b></div><div class="chipz"><span class="l">多</span><span>100x</span></div>
+ <div class="pnlr"><div><small>未实现盈亏 (USDx)</small><b class="down">−6.17</b></div><div><small>收益率</small><b class="down">−20.13%</b></div></div>
+ <div class="pg"><div>开仓均价<b>87.746</b></div><div>对手价<b>87.570</b></div><div>保证金<b>30.65</b></div><div>保证金比例<b class="up">1,681.47%</b></div><div>数量 (手)<b>0.01</b></div><div></div></div>
+ <div class="pb p2"><button onclick="toast('止盈/止损（示意）')">止盈/止损</button><button onclick="toast('市价全平（示意）')">市价全平</button></div></div>
  </div>${nav()}</div>`}
 function earn(){
  return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div><div class="scroll"><div class="ep">
