@@ -78,14 +78,14 @@ aside.notes{background:var(--panel);border-left:1px solid var(--line);overflow-y
 .pill{font-size:12px;font-weight:600;padding:5px 0;border-radius:6px;text-align:center;color:#fff}
 .pill.up{background:var(--up)}.pill.down{background:var(--down)}
 /* 底部悬浮导航：左侧 AI 入口独立成圆，右侧胶囊 tab */
-.tabnav{position:absolute;left:12px;right:12px;bottom:16px;display:flex;align-items:center;gap:10px;z-index:5}
-.navbar{flex:1;height:60px;border-radius:30px;background:rgba(255,255,255,.97);box-shadow:0 6px 20px rgba(15,20,25,.12);display:flex;justify-content:space-around;align-items:center;padding:0 6px}
-.navbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--ink2);padding:0;min-width:44px}
-.navbar .ic{width:24px;height:24px;border-radius:12px;border:1.6px solid var(--ink2);display:grid;place-items:center;font-size:12px;line-height:1}
-.navbar .on .ic{width:44px;height:44px;border-radius:22px;background:var(--ink);border:0;color:#fff;font-size:18px}
+.tabnav{position:absolute;left:10px;right:10px;bottom:16px;display:flex;align-items:center;gap:8px;z-index:5}
+.navbar{flex:1;min-width:0;height:60px;border-radius:30px;background:rgba(255,255,255,.97);box-shadow:0 6px 20px rgba(15,20,25,.12);display:flex;align-items:center;padding:0 4px}
+.navbar button{flex:1;min-width:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--ink2);padding:0;white-space:nowrap}
+.navbar .ic{width:22px;height:22px;border-radius:11px;border:1.5px solid var(--ink2);display:grid;place-items:center;font-size:11px;line-height:1}
+.navbar .on .ic{width:42px;height:42px;border-radius:21px;background:var(--ink);border:0;color:#fff;font-size:17px}
 .navbar .on .l{display:none}
 .homebar{position:absolute;left:50%;bottom:5px;width:120px;height:4px;border-radius:2px;background:#C9CED4;transform:translateX(-50%);z-index:5}
-.orb{position:relative;flex:none;width:62px;height:62px;border-radius:31px;background:#fff;box-shadow:0 6px 18px rgba(15,20,25,.16);display:grid;place-items:center;border:0;padding:0}
+.orb{position:relative;flex:none;width:60px;height:60px;border-radius:30px;background:#fff;box-shadow:0 6px 18px rgba(15,20,25,.16);display:grid;place-items:center;border:0;padding:0}
 .orb i{width:38px;height:38px;border-radius:19px;display:block;margin-top:-6px;background:radial-gradient(circle at 35% 30%,#8CF0C8,var(--ai1) 45%,var(--ai2));animation:breath 3.2s ease-in-out infinite}
 .orb em{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);font-style:normal;font-size:10px;font-weight:800;color:#fff;background:var(--ink);border-radius:6px;padding:0 5px;line-height:14px}
 .orb.pending i{background:radial-gradient(circle at 35% 30%,#FFE08A,#F0A81E 50%,#C77C0A)}
@@ -96,6 +96,9 @@ aside.notes{background:var(--panel);border-left:1px solid var(--line);overflow-y
 .orb.pending .badge{background:#E08B00}
 .bubble{position:absolute;left:16px;bottom:90px;max-width:210px;background:var(--ink);color:#fff;border-radius:14px 14px 14px 4px;padding:9px 12px;font-size:12.5px;line-height:1.45;z-index:5;box-shadow:0 6px 16px rgba(0,0,0,.18);border:0;text-align:left}
 .bubble small{display:block;color:#9FE8CB;margin-top:2px}
+.bubble.danger{background:#E5384F}.bubble.danger small{color:#FFE1E5}
+.bubble.pending{background:#F0A81E;color:#2B1D00}.bubble.pending small{color:#5C3D00}
+.orb.info .badge{background:var(--brand)}
 @keyframes breath{0%,100%{transform:scale(.92)}50%{transform:scale(1)}}
 @keyframes pulse{0%{transform:scale(.95);opacity:.6}100%{transform:scale(1.25);opacity:0}}
 /* 合约页 */
@@ -333,12 +336,12 @@ function reset(){tok++;S.msgs=[];S.busy=false;S.ctx=null;S.from=null;S.tab='boar
 
 /* ---------- 场景（左侧旅程导航 + 右侧说明） ---------- */
 const SCENES=[
- {id:'home',g:'① 主动触达',t:'底部导航 AI 入口 · 三态',demo:['orb'],
+ {id:'home',g:'① 主动触达',t:'底部导航 AI 入口 · 状态与气泡',demo:['orb'],
   run(){S.page='home';S.ai=null},
   trig:'底部悬浮导航最左侧是独立的 AI 入口，首页和其他业务页（市场、交易、资产）都常驻。颜色只由当前最高风险等级决定。',
-  logic:['点击 AI 入口：AI 全屏打开，底部导航栏隐藏；关闭 AI 后回到原页面，导航栏恢复','进入其他业务页时，底部导航栏保持原样不变','默认：绿色呼吸，没有待处理事项','待处理：琥珀色 + 数字角标 + 外圈脉冲','高风险：红色 + 叹号，用于接近强平','出现新待处理事项时弹出一次气泡，点气泡直接进入对应对话'],
-  edge:['多个事项同时存在时，角标显示总数，颜色取最高等级','用户关闭气泡后，同一事项不再弹出'],
-  rules:['R1'],pend:['Q9 气泡停留时长','Q10 多风险合并与排序']},
+  logic:['点击 AI 入口：AI 全屏打开，底部导航栏隐藏；关闭 AI 后回到原页面，导航栏恢复','进入其他业务页时，底部导航栏保持原样不变','默认：绿色呼吸，没有任何事项','资讯：绿色 + 品牌色数字角标，不弹气泡（早报、持仓新闻、宏观事件）','待处理：琥珀色 + 数字角标 + 外圈脉冲，弹琥珀色气泡（如挂单部分成交、到账）','高风险：红色 + 叹号，弹红色气泡（如接近强平）','气泡颜色与 AI 入口状态一致，只有待处理和高风险弹气泡；点气泡直接进入对应对话'],
+  edge:['多个事项同时存在时，角标显示总数，入口和气泡颜色都取最高等级，气泡只展示最高等级那一条','用户关闭气泡后，同一事项不再弹出'],
+  rules:['R1','R7','R8'],pend:['Q9 气泡停留时长','Q10 多风险合并与排序']},
  {id:'push',g:'① 主动触达',t:'锁屏推送 → 落地',new:false,
   run(){S.page='lock';S.ai=null},
   trig:'风险提醒、价格提醒、早报、到账通知。点击推送打开 AI 对话，并带上来源。',
@@ -662,14 +665,16 @@ function home(){
  <div class="mkt"><div class="h"><b>自选</b><span>热门</span><span>涨幅榜</span></div>
  ${[['BTC/USDT','79,697.47','−0.86%','down'],['ETH/USDT','2,316.63','+0.68%','up'],['SOL/USDT','168.90','−6.20%','down'],['BNB/USDT','598.20','+0.31%','up']].map(r=>`<div class="mrow num"><b>${r[0]}</b><span>${r[1]}</span><span class="pill ${r[3]}">${r[2]}</span></div>`).join('')}
  <button class="btn" style="margin-top:12px" onclick="navTo('futures')">进入 BTCUSDT 合约交易页 ›</button></div></div></div>
- ${S.orb!=='default'&&S.bubble&&!S.ai?`<button class="bubble" onclick="go('risk')">SOL 多单离强平 9.8%<small>点我看处理方式</small></button>`:''}
+ ${BUB[S.orb]&&S.bubble&&!S.ai?`<button class="bubble ${S.orb}" onclick="go('${BUB[S.orb][2]}')">${BUB[S.orb][0]}<small>${BUB[S.orb][1]}</small></button>`:''}
  ${nav('home')}</div>`}
+/* 气泡三档：颜色与 AI 入口状态一致；资讯类只显示角标，不弹气泡 */
+const BUB={danger:['SOL 多单离强平 9.8%','点我看处理方式','risk'],pending:['BTC 挂单已部分成交 0.004','点我看剩余挂单','orders']};
 function nav(on){
  if(S.ai)return '';
  const orbCls=S.orb==='default'?'':S.orb;
- return `<div class="tabnav"><button class="orb ${orbCls}" aria-label="打开 AI 管家" onclick="openAI()"><i></i><em>AI</em>${S.orb==='pending'?'<span class="badge">1</span>':S.orb==='danger'?'<span class="badge">!</span>':''}</button>
- <div class="navbar">${[['home','首页','⌂'],['market','市场','◫'],['futures','交易','⇅'],['asset','资产','◎']].map(t=>`<button class="${t[0]===on?'on':''}" onclick="navTo('${t[0]}')"><span class="ic">${t[2]}</span><span class="l">${t[1]}</span></button>`).join('')}</div></div><div class="homebar"></div>`}
-function navTo(p){if(p!=='home'&&p!=='futures')return toast('示意：进入'+({market:'市场',asset:'资产'}[p])+'页，底部导航保持不变');S.page=p;S.ai=null;S.scene=p==='home'?'home':'futures';render()}
+ return `<div class="tabnav"><button class="orb ${orbCls}" aria-label="打开 AI 管家" onclick="openAI()"><i></i><em>AI</em>${S.orb==='pending'?'<span class="badge">1</span>':S.orb==='danger'?'<span class="badge">!</span>':S.orb==='info'?'<span class="badge">2</span>':''}</button>
+ <div class="navbar">${[['home','首页','⌂'],['market','市场','◫'],['futures','交易','⇅'],['earn','理财','¥'],['asset','资产','◎']].map(t=>`<button class="${t[0]===on?'on':''}" onclick="navTo('${t[0]}')"><span class="ic">${t[2]}</span><span class="l">${t[1]}</span></button>`).join('')}</div></div><div class="homebar"></div>`}
+function navTo(p){if(p!=='home'&&p!=='futures')return toast('示意：进入'+({market:'市场',earn:'理财',asset:'资产'}[p])+'页，底部导航保持不变');S.page=p;S.ai=null;S.scene=p==='home'?'home':'futures';render()}
 function futures(){
  return `<div class="page"><div class="sb"><span>10:42</span><span>●●● ▮</span></div>
  <div class="fh"><span style="color:var(--muted)" onclick="go('home')">‹</span><b>BTCUSDT</b><span class="tag">永续</span></div>
@@ -747,7 +752,7 @@ function renderSide(){
  <h5>关联规则（台账）</h5><div class="chipsr">${sc.rules.map(r=>`<span class="rtag">${r}</span>`).join('')||'<span class="sub">—</span>'}</div>
  ${sc.pend.length?`<h5>⚠️ 待确认</h5><div class="chipsr">${sc.pend.map(q=>`<span class="qtag">${q}</span>`).join('')}</div>`:''}
  <div class="demo"><h5>演示开关</h5>
- ${dm.includes('orb')?`<div class="row"><label>光球状态</label>${segBtns('orb',[['default','默认'],['pending','待处理'],['danger','高风险']])}</div>`:''}
+ ${dm.includes('orb')?`<div class="row"><label>入口状态</label>${segBtns('orb',[['default','默认'],['info','资讯'],['pending','待处理'],['danger','高风险']])}</div>`:''}
  ${dm.includes('close')?`<div class="row"><label>平仓提交结果</label>${segBtns('closeRes',[['ok','成功'],['unknown','结果未知'],['changed','仓位已变化']])}</div>`:''}
  ${dm.includes('orders')?`<div class="row"><label>挂单数据</label><div class="seg"><button aria-pressed="${!S.ordersEmpty}" onclick="setDemo('ordersEmpty','false')">有挂单</button><button aria-pressed="${S.ordersEmpty}" onclick="setDemo('ordersEmpty','true')">空状态</button></div></div>`:''}
  <div class="row"><label>用户身份（全局）</label>${segBtns('user',[['normal','正常'],['unkyc','未 KYC'],['restricted','受限地区']])}</div>
