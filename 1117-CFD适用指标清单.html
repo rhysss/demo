@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFD 适用指标清单</title>
+<style>
+:root{--green:#00C566;--green-d:#00A857;--text:#1E2329;--muted:#707A8A;--border:#EAECEF;--red:#F6465D;--amber:#b8860b;--amber-bg:#FFF6E0;--soft:#F0FBF5;--red-bg:#FFF0F2;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;color:var(--text);background:#f0f2f5;line-height:1.6;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px 80px;}
+header{background:linear-gradient(135deg,#00C566,#00A857);color:#fff;padding:34px 16px 26px;margin-bottom:22px;}
+header .inner{max-width:1080px;margin:0 auto;}
+header h1{font-size:24px;font-weight:800;}
+header .sub{opacity:.92;margin-top:8px;font-size:14px;}
+header .meta{margin-top:10px;font-size:12px;opacity:.82;}
+h2{font-size:19px;font-weight:800;margin:34px 0 12px;padding-left:12px;border-left:4px solid var(--green);}
+p,li{font-size:13.5px;color:#3a424c;}
+p{margin:6px 0;}
+ul{padding-left:20px;margin:6px 0;}
+.box{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin:12px 0;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0;}
+.stat{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.stat .n{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;}
+.stat .l{font-size:12.5px;color:var(--muted);}
+.stat.ok .n{color:var(--green-d);} .stat.cond .n{color:var(--amber);} .stat.no .n{color:var(--red);}
+.tbl-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin:12px 0;background:#fff;-webkit-overflow-scrolling:touch;}
+table{border-collapse:collapse;width:100%;min-width:860px;font-size:12.5px;}
+th,td{border-bottom:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top;}
+th{background:#fafbfc;font-weight:700;white-space:nowrap;color:#474d57;}
+tr:last-child td{border-bottom:none;}
+td.nm{font-weight:700;white-space:nowrap;}
+td.nm small{display:block;font-weight:400;color:var(--muted);font-size:11.5px;}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.tag.ok{background:var(--soft);color:var(--green-d);}
+.tag.cond{background:var(--amber-bg);color:var(--amber);}
+.tag.no{background:var(--red-bg);color:var(--red);}
+.tag.pos{background:#F0F3F7;color:#474d57;font-weight:600;}
+.grp td{background:#f6f7f9;font-weight:700;color:#474d57;font-size:12px;}
+.warn{color:var(--amber);font-weight:700;}
+.note{font-size:12px;color:var(--muted);margin-top:8px;}
+@media(max-width:640px){.stats{grid-template-columns:1fr;}header h1{font-size:20px;}}
+</style>
+</head>
+<body>
+<header><div class="inner">
+  <h1>CFD 适用指标清单</h1>
+  <div class="sub">以 App 现有 K 线指标（主图 7 个 / 副图 9 个 / 交易数据 6 个）为基础，逐项判断能否用于 CFD，并列出 CFD 交易者常用、App 目前没有的候选指标</div>
+  <div class="meta">适用品种：贵金属、指数、外汇、原油、股票 CFD · 整理日期 2026-11-17</div>
+</div></header>
+
+<div class="wrap">
+
+<h2>判断标准</h2>
+<div class="box">
+  <p>CFD 是<b>报价驱动</b>的：价格来自流动性提供商报价，用户和平台对手成交，<b>没有公开、集中的成交市场</b>。所以只看一点：指标计算时用的是什么数据。</p>
+  <ul>
+    <li><span class="tag ok">✅ 直接适用</span>　只用 K 线的开、高、低、收价格计算，换到 CFD 结果同样有效</li>
+    <li><span class="tag cond">⚠️ 有条件</span>　依赖成交量。CFD 没有真实市场成交量，取决于 D1 选哪种成交量口径</li>
+    <li><span class="tag no">❌ 不适用</span>　依赖加密合约市场的持仓、多空或主动买卖统计，CFD 没有对应数据，或者展示会暴露平台敞口</li>
+  </ul>
+</div>
+
+<div class="stats">
+  <div class="stat ok"><div class="n">12</div><div class="l">✅ 直接适用</div></div>
+  <div class="stat cond"><div class="n">4</div><div class="l">⚠️ 有条件（取决于 D1）</div></div>
+  <div class="stat no"><div class="n">6</div><div class="l">❌ 原样不适用（多空比 3 项可改造，见 D3）</div></div>
+</div>
+
+<h2>一、现有指标适配结论</h2>
+<div class="tbl-scroll"><table>
+<thead><tr><th>指标</th><th>位置</th><th>计算依赖</th><th>CFD 结论</th><th>说明</th></tr></thead>
+<tbody>
+<tr class="grp"><td colspan="5">主图指标</td></tr>
+<tr><td class="nm">MA<small>移动平均线</small></td><td><span class="tag pos">主图</span></td><td>收盘价</td><td><span class="tag ok">✅ 直接适用</span></td><td>MT5 内置，外汇和黄金交易者最常用</td></tr>
+<tr><td class="nm">EMA<small>指数移动平均线</small></td><td><span class="tag pos">主图</span></td><td>收盘价</td><td><span class="tag ok">✅ 直接适用</span></td><td>同上，反应比 MA 快</td></tr>
+<tr><td class="nm">BOLL<small>布林带</small></td><td><span class="tag pos">主图</span></td><td>收盘价</td><td><span class="tag ok">✅ 直接适用</span></td><td>MT5 内置</td></tr>
+<tr><td class="nm">SAR<small>抛物线转向</small></td><td><span class="tag pos">主图</span></td><td>最高价、最低价</td><td><span class="tag ok">✅ 直接适用</span></td><td>MT5 内置。休市后开盘跳空会让 SAR 点位突变，受 D5 影响</td></tr>
+<tr><td class="nm">SUPER<small>超级趋势</small></td><td><span class="tag pos">主图</span></td><td>价格 + ATR</td><td><span class="tag ok">✅ 直接适用</span></td><td>基于 ATR 计算，同样会被休市跳空拉偏，受 D5 影响</td></tr>
+<tr><td class="nm">VWAP<small>成交量加权平均价</small></td><td><span class="tag pos">主图</span></td><td>价格 + 成交量</td><td><span class="tag cond">⚠️ 有条件</span></td><td>按成交量加权。D1 选「不提供成交量」时一并去掉；选 Tick 量时含义变成「按报价活跃度加权」，不再是机构成本基准</td></tr>
+<tr><td class="nm">AVL<small>均价线</small></td><td><span class="tag pos">主图</span></td><td>成交额 ÷ 成交量</td><td><span class="tag cond">⚠️ 有条件</span></td><td>同 VWAP，跟随 D1</td></tr>
+<tr class="grp"><td colspan="5">副图指标</td></tr>
+<tr><td class="nm">VOL<small>成交量</small></td><td><span class="tag pos">副图</span></td><td>成交量</td><td><span class="tag cond">⚠️ 有条件</span></td><td>由 D1 决定显示 Tick 量、平台内部成交量，还是不显示</td></tr>
+<tr><td class="nm">MACD</td><td><span class="tag pos">副图</span></td><td>收盘价</td><td><span class="tag ok">✅ 直接适用</span></td><td>MT5 内置</td></tr>
+<tr><td class="nm">RSI<small>相对强弱指标</small></td><td><span class="tag pos">副图</span></td><td>收盘价</td><td><span class="tag ok">✅ 直接适用</span></td><td>MT5 内置</td></tr>
+<tr><td class="nm">KDJ<small>随机指标</small></td><td><span class="tag pos">副图</span></td><td>最高、最低、收盘价</td><td><span class="tag ok">✅ 直接适用</span></td><td>国内用户习惯的叫法。外汇用户更熟悉的是 Stochastic，两者原理相同，KDJ 多一条 J 线</td></tr>
+<tr><td class="nm">OBV<small>能量潮</small></td><td><span class="tag pos">副图</span></td><td>收盘价 + 成交量</td><td><span class="tag cond">⚠️ 有条件</span></td><td>完全建立在成交量上，跟随 D1</td></tr>
+<tr><td class="nm">WR<small>威廉指标</small></td><td><span class="tag pos">副图</span></td><td>最高、最低、收盘价</td><td><span class="tag ok">✅ 直接适用</span></td><td>MT5 内置（Williams' Percent Range）</td></tr>
+<tr><td class="nm">StochRSI</td><td><span class="tag pos">副图</span></td><td>收盘价</td><td><span class="tag ok">✅ 直接适用</span></td><td>TradingView 内置</td></tr>
+<tr><td class="nm">ATR<small>平均真实波幅</small></td><td><span class="tag pos">副图</span></td><td>最高、最低、收盘价</td><td><span class="tag ok">✅ 直接适用</span></td><td>MT5 内置，CFD 用户常用它定止损距离。休市跳空会把真实波幅拉大，受 D5 影响</td></tr>
+<tr><td class="nm">CCI<small>顺势指标</small></td><td><span class="tag pos">副图</span></td><td>最高、最低、收盘价</td><td><span class="tag ok">✅ 直接适用</span></td><td>MT5 内置</td></tr>
+<tr class="grp"><td colspan="5">副图指标 · 交易数据（加密合约专属）</td></tr>
+<tr><td class="nm">O.I.<small>持仓量</small></td><td><span class="tag pos">副图</span></td><td>合约未平仓总量</td><td><span class="tag no">❌ 不适用</span></td><td>CFD 只有平台内部用户的持仓。公开展示等于亮出平台对手盘敞口，有风控和合规顾虑</td></tr>
+<tr><td class="nm">L.S Acco.<small>多空比（账户数）</small></td><td><span class="tag pos">副图</span></td><td>多空账户统计</td><td><span class="tag no">❌ 原样不适用</span></td><td>可改造为「客户情绪」，见 D3</td></tr>
+<tr><td class="nm">L.S Posit.<small>多空比（持仓量）</small></td><td><span class="tag pos">副图</span></td><td>多空持仓统计</td><td><span class="tag no">❌ 原样不适用</span></td><td>按持仓量统计比按人数更直接暴露平台敞口，不建议改造</td></tr>
+<tr><td class="nm">L.S Ratio<small>全市场多空人数比</small></td><td><span class="tag pos">副图</span></td><td>多空人数统计</td><td><span class="tag no">❌ 原样不适用</span></td><td>可改造为「客户情绪」，见 D3</td></tr>
+<tr><td class="nm">B.S Vol.<small>主动买卖量</small></td><td><span class="tag pos">副图</span></td><td>吃单方向统计</td><td><span class="tag no">❌ 不适用</span></td><td>CFD 全部是用户与平台成交，没有吃单方和挂单方之分，概念不成立</td></tr>
+<tr><td class="nm">Basis<small>基差</small></td><td><span class="tag pos">副图</span></td><td>合约价 − 现货价</td><td><span class="tag no">❌ 不适用</span></td><td>CFD 价格本身就是贴着标的报的，基差约等于点差，没有分析价值</td></tr>
+</tbody>
+</table></div>
+
+<h2>二、可新增的候选指标</h2>
+<p>以下是 CFD 和外汇交易者常用、App 目前没有的指标，都只用价格计算，可以直接用于 CFD。<span class="warn">是否纳入、纳入哪几个，待 PM 决定（D4）。</span></p>
+<div class="tbl-scroll"><table>
+<thead><tr><th>指标</th><th>位置</th><th>用途</th><th>来源</th><th>与现有指标的关系</th></tr></thead>
+<tbody>
+<tr><td class="nm">Pivot Points<small>枢轴点</small></td><td><span class="tag pos">主图</span></td><td>根据前一日高低收价，画出当日的支撑位和阻力位</td><td>TradingView 内置</td><td>现有没有同类指标。外汇日内交易最常用</td></tr>
+<tr><td class="nm">Ichimoku<small>一目均衡表</small></td><td><span class="tag pos">主图</span></td><td>一组线加一块「云」，同时看趋势、支撑阻力和动能</td><td>MT5 内置 / TradingView 内置</td><td>现有没有同类指标。日元货币对和黄金交易者常用</td></tr>
+<tr><td class="nm">Envelopes<small>包络线</small></td><td><span class="tag pos">主图</span></td><td>均线上下按固定百分比画出通道</td><td>MT5 内置</td><td>和 BOLL 作用接近，区别是通道宽度固定，不随波动率变化</td></tr>
+<tr><td class="nm">Alligator<small>鳄鱼线</small></td><td><span class="tag pos">主图</span></td><td>三条错位均线，判断趋势开始和休眠</td><td>MT5 内置（比尔·威廉姆斯系列）</td><td>本质是均线组合，和 MA 有部分重叠</td></tr>
+<tr><td class="nm">Fractals<small>分形</small></td><td><span class="tag pos">主图</span></td><td>在局部高点和低点上打标记</td><td>MT5 内置（比尔·威廉姆斯系列）</td><td>现有没有同类指标</td></tr>
+<tr><td class="nm">ADX / DMI<small>平均趋向指标</small></td><td><span class="tag pos">副图</span></td><td>衡量趋势强度，不看方向</td><td>MT5 内置 / TradingView 内置</td><td>现有没有同类指标。和 ATR 搭配，一个看趋势强度，一个看波动大小</td></tr>
+<tr><td class="nm">Stochastic<small>随机震荡指标</small></td><td><span class="tag pos">副图</span></td><td>判断超买、超卖</td><td>MT5 内置</td><td><b>和 KDJ 原理相同</b>。可以只保留 KDJ，或在 CFD 下改用外汇用户熟悉的 Stochastic 名称</td></tr>
+<tr><td class="nm">Momentum<small>动量</small></td><td><span class="tag pos">副图</span></td><td>当前价相对 N 根 K 线前的变化</td><td>MT5 内置</td><td>和 MACD、RSI 方向类似，更简单</td></tr>
+<tr><td class="nm">ADR<small>日均波幅</small></td><td><span class="tag pos">副图</span></td><td>最近 N 天每天的平均波动幅度</td><td>TradingView 内置</td><td>和 ATR 接近，ATR 按每根 K 线算，ADR 固定按日算</td></tr>
+</tbody>
+</table></div>
+
+<h2>待 PM 决策</h2>
+<div class="tbl-scroll"><table>
+<thead><tr><th>编号</th><th>问题</th><th>选项</th><th>影响范围</th></tr></thead>
+<tbody>
+<tr><td class="nm">D1</td><td>CFD 的成交量用什么口径</td><td>A. Tick 量（报价跳动次数，MT5 惯例）<br>B. 平台内部用户成交量（代表不了市场，量小时会误导）<br>C. 不提供</td><td>VOL、OBV、VWAP、AVL 共 4 项是否保留</td></tr>
+<tr><td class="nm">D2</td><td>K 线用哪个价格画</td><td>A. Bid 卖价（行业惯例）<br>B. 中间价</td><td>所有指标的数值都基于 K 线计算</td></tr>
+<tr><td class="nm">D3</td><td>多空比是否改造成「客户情绪」（平台用户多空占比）</td><td>A. 做，需要风控评估是否暴露平台敞口<br>B. 不做</td><td>L.S Acco.、L.S Ratio</td></tr>
+<tr><td class="nm">D4</td><td>第二部分的候选指标纳入哪些</td><td>由 PM 勾选</td><td>CFD 指标面板的主图和副图列表</td></tr>
+<tr><td class="nm">D5</td><td>休市跳空怎么处理</td><td>A. K 线连续画，跳空照常计入指标<br>B. 标出休市段</td><td>SAR、SUPER、ATR 的数值</td></tr>
+<tr><td class="nm">D6</td><td>副图最多同时显示几个</td><td><span class="warn">⚠️ 数值待确认</span></td><td>避免 K 线主区域被挤没</td></tr>
+</tbody>
+</table></div>
+<p class="note">来源说明：「MT5 内置」指 MetaTrader 5 终端自带的指标；「TradingView 内置」指 TradingView 指标库 Technicals 分类下的官方指标。</p>
+
+</div>
+</body>
+</html>
