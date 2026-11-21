@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>黄金专属指标原型</title>
+<style>
+:root{--bg:#0B0E11;--panel:#181A20;--panel2:#1E2329;--line:#2B3139;--text:#EAECEF;--muted:#848E9C;--yellow:#F0B90B;--green:#0ECB81;--red:#F6465D;--warn:#F0B90B;--blue:#3D8BFD;--purple:#B07CFF;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0B0E11;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;font-size:13px;line-height:1.5;}
+.ctrl{position:sticky;top:0;z-index:50;background:#14171C;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;}
+.ctrl b{font-size:12px;color:var(--muted);font-weight:500;margin-right:6px;}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+.seg button{background:none;border:0;color:var(--muted);padding:5px 10px;font-size:12px;cursor:pointer;}
+.seg button.on{background:var(--panel2);color:var(--yellow);}
+.stage{display:flex;gap:24px;justify-content:center;align-items:flex-start;padding:24px 16px 60px;flex-wrap:wrap;}
+.phone{width:375px;max-width:100%;background:var(--bg);border:1px solid var(--line);border-radius:28px;overflow:hidden;position:relative;min-height:760px;}
+.sbar{height:28px;display:flex;justify-content:space-between;padding:6px 20px 0;font-size:11px;color:var(--muted);}
+.top{display:flex;align-items:center;gap:8px;padding:6px 14px;}
+.top .pair{font-size:16px;font-weight:700;}
+.top .badge{font-size:10px;color:var(--muted);background:var(--panel2);padding:1px 5px;border-radius:3px;}
+.top .r{margin-left:auto;color:var(--muted);font-size:16px;}
+.px{padding:2px 14px 8px;display:flex;align-items:flex-end;gap:10px;}
+.px .p{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;}
+.px .c{font-size:12px;margin-bottom:4px;}
+.closed{display:none;font-size:10px;color:var(--warn);border:1px solid rgba(240,185,11,.45);border-radius:3px;padding:0 5px;margin-bottom:5px;}
+.tabs{display:flex;gap:18px;padding:0 14px;border-bottom:1px solid var(--line);}
+.tabs span{padding:8px 0;color:var(--muted);font-size:13px;}
+.tabs span.on{color:var(--text);border-bottom:2px solid var(--yellow);font-weight:600;}
+.tf{display:flex;align-items:center;gap:14px;padding:8px 14px;font-size:12px;color:var(--muted);}
+.tf span.on{color:var(--text);font-weight:600;}
+.tf .ind{margin-left:auto;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:4px;border:1px solid var(--line);padding:2px 8px;border-radius:4px;}
+.legend{padding:0 14px;font-size:10.5px;display:flex;gap:10px;font-variant-numeric:tabular-nums;}
+.panel{border-top:1px solid var(--line);}
+.ph{display:flex;align-items:center;gap:6px;padding:5px 14px 0;font-size:11px;}
+.ph .nm{color:var(--muted);}
+.ph .v{font-weight:600;font-variant-numeric:tabular-nums;}
+.ph .i{color:var(--muted);cursor:pointer;width:14px;height:14px;border:1px solid var(--muted);border-radius:50%;font-size:9px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;}
+.ph .tag{font-size:10px;padding:0 5px;border-radius:3px;}
+.tag.warn{color:var(--warn);background:rgba(240,185,11,.12);}
+.tag.mute{color:var(--muted);background:var(--panel2);}
+.ph .x{margin-left:auto;color:var(--muted);cursor:pointer;font-size:13px;}
+.empty{height:78px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:12px;gap:4px;}
+.empty a{color:var(--yellow);cursor:pointer;font-size:11px;}
+.skel{height:64px;margin:8px 14px 10px;border-radius:4px;background:linear-gradient(90deg,#1b1f25 25%,#252a31 50%,#1b1f25 75%);background-size:200% 100%;animation:sh 1.2s infinite;}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.bottom{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;padding:10px 14px 18px;background:var(--bg);border-top:1px solid var(--line);}
+.bottom button{flex:1;border:0;border-radius:6px;padding:10px;font-weight:700;font-size:14px;color:#fff;}
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.55);display:none;z-index:20;}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--panel);border-radius:14px 14px 0 0;z-index:21;display:none;max-height:82%;overflow:auto;}
+.sheet .hd{display:flex;align-items:center;padding:14px 16px 8px;font-size:15px;font-weight:700;}
+.sheet .hd .x{margin-left:auto;color:var(--muted);cursor:pointer;font-weight:400;}
+.grp{padding:6px 16px 10px;}
+.grp h4{font-size:12px;color:var(--muted);font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:4px;padding:5px 10px;font-size:12px;cursor:pointer;}
+.chip.on{border-color:var(--yellow);color:var(--yellow);}
+.chip small{color:var(--muted);margin-left:4px;font-size:10px;}
+.hint{font-size:11px;color:var(--muted);padding:0 16px 14px;}
+.warnline{color:var(--warn);font-size:11px;}
+.info p{padding:0 16px 10px;font-size:12.5px;color:#B7BDC6;}
+.info .k{color:var(--text);font-weight:600;}
+.info table{margin:0 16px 16px;width:calc(100% - 32px);border-collapse:collapse;font-size:12px;}
+.info td{border-top:1px solid var(--line);padding:7px 0;vertical-align:top;}
+.info td:first-child{color:var(--muted);width:76px;}
+.toast{position:absolute;left:50%;top:45%;transform:translateX(-50%);background:rgba(30,35,41,.96);border:1px solid var(--line);color:var(--text);padding:8px 14px;border-radius:6px;font-size:12px;z-index:30;display:none;white-space:nowrap;}
+.notes{width:420px;max-width:100%;background:#14171C;border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+.notes h3{font-size:14px;margin:4px 0 8px;}
+.notes h3:not(:first-child){margin-top:18px;}
+.notes ol,.notes ul{padding-left:18px;}
+.notes li{font-size:12.5px;color:#B7BDC6;margin:5px 0;}
+.notes code{font-family:inherit;color:var(--yellow);}
+.notes .q{color:var(--warn);}
+</style>
+</head>
+<body>
+
+<div class="ctrl">
+  <span><b>交易对</b><span class="seg" id="segPair"><button data-v="XAU" class="on">XAUUSDT 黄金</button><button data-v="BTC">BTCUSDT</button></span></span>
+  <span><b>黄金指标数据状态</b><span class="seg" id="segState"><button data-v="ok" class="on">正常</button><button data-v="loading">加载中</button><button data-v="delay">外部数据延迟</button><button data-v="closed">休市</button><button data-v="error">数据不可用</button></span></span>
+</div>
+
+<div class="stage">
+<div class="phone" id="phone">
+  <div class="sbar"><span>9:41</span><span>5G ▮▮▮</span></div>
+  <div class="top"><span style="font-size:18px;color:var(--muted)">‹</span><span class="pair" id="pairName">XAUUSDT</span><span class="badge">永续</span><span style="color:var(--muted)">▾</span><span class="r">☆ ⋯</span></div>
+  <div class="px"><span class="p" id="lastPx">3,542.30</span><span class="c" id="chg" style="color:var(--red)">-1.35%</span><span class="closed" id="closedTag">非交易时段</span></div>
+  <div class="tabs"><span class="on">图表</span><span>信息</span><span>交易数据</span></div>
+  <div class="tf"><span>15分</span><span>1小时</span><span>4小时</span><span class="on">1日</span><span>更多 ▾</span><span class="ind" id="btnInd">指标 ⚙</span></div>
+  <div class="legend" id="mainLegend"></div>
+  <div id="mainChart"></div>
+  <div id="subs"></div>
+  <div style="height:76px"></div>
+  <div class="bottom"><button style="background:var(--green)">开多</button><button style="background:var(--red)">开空</button></div>
+
+  <div class="mask" id="mask"></div>
+  <div class="sheet" id="sheetInd">
+    <div class="hd">指标<span class="x" data-close>✕</span></div>
+    <div class="grp"><h4>主图</h4><div class="chips" id="chMain"></div></div>
+    <div class="grp"><h4>副图</h4><div class="chips" id="chSub"></div></div>
+    <div class="grp" id="grpGold"><h4>黄金专属 <span class="warnline">⚠️ 单独分组 / 并入副图 待确认</span></h4><div class="chips" id="chGold"></div></div>
+    <div class="hint">副图最多同时显示 <span class="warnline">⚠️ 数值待确认</span> 个（原型示意 3 个），黄金专属指标计入副图数量。</div>
+  </div>
+  <div class="sheet info" id="sheetInfo"></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<div class="notes">
+  <h3>这是什么</h3>
+  <p style="font-size:12.5px;color:#B7BDC6">黄金交易对的 K 线页。在常规主图、副图指标之外，新增两个黄金专属副图指标：<b>金银比</b>（比值类）和<b>黄金波动率</b>（波动率类）。Darius 2026-11-21 确认两类都加。</p>
+  <h3>页面说明</h3>
+  <ol>
+    <li><b>入口</b>：K 线周期栏右侧「指标」，打开指标面板。</li>
+    <li><b>指标面板</b>：主图、副图为常规指标（范围按下一版实际排期）；黄金交易对额外显示「黄金专属」分组，点选后在 K 线下方新增一栏，再点取消。</li>
+    <li><b>非黄金交易对</b>：不显示「黄金专属」分组，上方切到 BTCUSDT 可看效果。</li>
+    <li><b>副图栏头</b>：指标名、当前值、ⓘ 说明、数据状态标签、✕ 关闭。</li>
+    <li><b>ⓘ 说明</b>：讲清指标含义、怎么看、数据来源和更新时间，不给买卖建议。</li>
+    <li><b>数据状态</b>（上方切换）：
+      <ul>
+        <li>正常：显示曲线和当前值。</li>
+        <li>加载中：骨架屏，不显示数值。</li>
+        <li>外部数据延迟：曲线照常，栏头标「延迟」和截至时间。</li>
+        <li>休市：价格旁标「非交易时段」；曲线停在休市前最后一根，栏头标截至时间。</li>
+        <li>数据不可用：保留这一栏，显示「数据暂不可用」和重试；当前值显示 --，不影响 K 线和其他指标。</li>
+      </ul>
+    </li>
+    <li><b>多端</b>：Web 与 App 规则一致，Web 布局待设计。</li>
+  </ol>
+  <h3>⚠️ 待确认（详见规则台账_K线指标）</h3>
+  <ul>
+    <li class="q">Q1 比值类只做金银比，还是加金油比等</li>
+    <li class="q">Q2 黄金波动率用哪个数据源（Cboe GVZ / CME GCVL），授权与费用</li>
+    <li class="q">Q3 金银比的白银价格从哪取</li>
+    <li class="q">Q4 是否进下一个包</li>
+    <li class="q">Q5 白银等其他贵金属交易对是否也展示</li>
+    <li class="q">Q6 外部数据更新频率与 K 线周期怎么对齐、延迟多久算异常</li>
+    <li class="q">Q7 黄金专属单独分组还是并入副图</li>
+  </ul>
+</div>
+</div>
+
+<script>
+(function(){
+  var S = { pair:'XAU', state:'ok', main:{MA:true,EMA:false,BOLL:false,SAR:false,SUPER:false}, sub:{MACD:false,RSI:false,KDJ:false}, gold:{GSR:true,GVOL:true}, maxSub:3 };
+  var W = 375, PAD = 14;
+  function rng(seed){ return function(){ seed = (seed*9301+49297)%233280; return seed/233280; }; }
+  function genCandles(n, start, seed){
+    var r = rng(seed), out = [], p = start;
+    for (var i=0;i<n;i++){ var o=p, c=o+(r()-0.52)*start*0.018, h=Math.max(o,c)+r()*start*0.006, l=Math.min(o,c)-r()*start*0.006; out.push({o:o,c:c,h:h,l:l}); p=c; }
+    return out;
+  }
+  function genLine(n, base, amp, seed){
+    var r = rng(seed), out = [], v = base;
+    for (var i=0;i<n;i++){ v += (r()-0.48)*amp; v = Math.max(base-amp*6, Math.min(base+amp*6, v)); out.push(v); }
+    return out;
+  }
+  var N = 48;
+  var DATA = {
+    XAU:{ name:'XAUUSDT', px:'3,542.30', chg:'-1.35%', candles:genCandles(N, 3700, 7) },
+    BTC:{ name:'BTCUSDT', px:'96,218.4', chg:'+0.82%', candles:genCandles(N, 94000, 11) }
+  };
+  var GSR = genLine(N, 84, 0.9, 3), GVOL = genLine(N, 30, 1.1, 5);
+  GSR[N-1] = 85.74; GVOL[N-1] = 34.80;
+  function fmt(v,d){ return v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function ma(arr, k){ return arr.map(function(_,i){ if(i<k-1) return null; var s=0; for(var j=i-k+1;j<=i;j++) s+=arr[j]; return s/k; }); }
+  function pathOf(vals, x, y){ var d=''; vals.forEach(function(v,i){ if(v==null) return; d += (d?' L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1); }); return d; }
+
+  function drawMain(){
+    var cs = DATA[S.pair].candles, H = 210, top = 8, bot = H-14;
+    var hi = Math.max.apply(null, cs.map(function(c){return c.h;})), lo = Math.min.apply(null, cs.map(function(c){return c.l;}));
+    var closes = cs.map(function(c){return c.c;}), m7 = ma(closes,7), m25 = ma(closes,25);
+    var bw = (W-PAD*2-40)/N, x = function(i){ return PAD + bw*i + bw/2; }, y = function(v){ return top + (hi-v)/(hi-lo)*(bot-top); };
+    var svg = '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'">';
+    cs.forEach(function(c,i){ var up=c.c>=c.o, col=up?'#0ECB81':'#F6465D'; svg += '<line x1="'+x(i)+'" x2="'+x(i)+'" y1="'+y(c.h)+'" y2="'+y(c.l)+'" stroke="'+col+'"/><rect x="'+(x(i)-bw*0.35)+'" width="'+(bw*0.7)+'" y="'+Math.min(y(c.o),y(c.c))+'" height="'+Math.max(1,Math.abs(y(c.o)-y(c.c)))+'" fill="'+col+'"/>'; });
+    var leg = '';
+    if (S.main.MA){ svg += '<path d="'+pathOf(m7,x,y)+'" fill="none" stroke="#F0B90B" stroke-width="1"/><path d="'+pathOf(m25,x,y)+'" fill="none" stroke="#B07CFF" stroke-width="1"/>'; leg += '<span style="color:#F0B90B">MA7 '+fmt(m7[N-1],2)+'</span><span style="color:#B07CFF">MA25 '+fmt(m25[N-1],2)+'</span>'; }
+    var other = Object.keys(S.main).filter(function(k){ return k!=='MA' && S.main[k]; });
+    if (other.length) leg += '<span style="color:var(--muted)">'+other.join(' / ')+'（示意，曲线略）</span>';
+    [hi, (hi+lo)/2, lo].forEach(function(v){ svg += '<text x="'+(W-PAD)+'" y="'+(y(v)+3)+'" fill="#5E6673" font-size="9" text-anchor="end">'+fmt(v, S.pair==='XAU'?0:0)+'</text>'; });
+    svg += '</svg>';
+    document.getElementById('mainChart').innerHTML = svg;
+    document.getElementById('mainLegend').innerHTML = leg || '<span style="color:var(--muted)">未选主图指标</span>';
+  }
+
+  function lineSvg(vals, color, closedAt){
+    var shown = closedAt ? vals.map(function(v,i){ return i<=closedAt ? v : null; }) : vals;
+    var real = shown.filter(function(v){ return v!=null; });
+    var H = 74, top = 8, bot = H-8, hi = Math.max.apply(null, real), lo = Math.min.apply(null, real);
+    var bw = (W-PAD*2-40)/N, x = function(i){ return PAD + bw*i + bw/2; }, y = function(v){ return top + (hi-v)/(hi-lo||1)*(bot-top); };
+    var svg = '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"><path d="'+pathOf(shown,x,y)+'" fill="none" stroke="'+color+'" stroke-width="1.3"/>';
+    if (closedAt){ svg += '<rect x="'+x(closedAt+1)+'" y="0" width="'+(x(N-1)-x(closedAt+1)+bw)+'" height="'+H+'" fill="rgba(132,142,156,.08)"/><text x="'+(x(closedAt+1)+4)+'" y="'+(H/2+3)+'" fill="#5E6673" font-size="9">休市</text>'; }
+    [hi, lo].forEach(function(v){ svg += '<text x="'+(W-PAD)+'" y="'+(y(v)+3)+'" fill="#5E6673" font-size="9" text-anchor="end">'+fmt(v,2)+'</text>'; });
+    return svg + '</svg>';
+  }
+
+  var GOLD_DEF = {
+    GSR:{ name:'金银比', color:'#B7BDC6', data:function(){return GSR;} },
+    GVOL:{ name:'黄金波动率', color:'#3D8BFD', data:function(){return GVOL;} }
+  };
+  function goldPanel(key){
+    var d = GOLD_DEF[key], st = S.state, vals = d.data(), head = '', body = '';
+    var cur = st==='loading' ? '' : (st==='error' ? '--' : fmt(st==='closed' ? vals[N-6] : vals[N-1], 2));
+    var tag = '';
+    if (st==='delay') tag = '<span class="tag warn">延迟 · 截至 05:02</span>';
+    if (st==='closed') tag = '<span class="tag mute">休市 · 截至 周六 05:00</span>';
+    head = '<div class="ph"><span class="nm">'+d.name+'</span><span class="v" style="color:'+d.color+'">'+cur+'</span><i class="i" data-info="'+key+'">i</i>'+tag+'<span class="x" data-off="'+key+'">✕</span></div>';
+    if (st==='loading') body = '<div class="skel"></div>';
+    else if (st==='error') body = '<div class="empty">数据暂不可用<a data-retry>重试</a></div>';
+    else body = lineSvg(vals, d.color, st==='closed' ? N-6 : 0);
+    return '<div class="panel">'+head+body+'</div>';
+  }
+  function subPanel(key){
+    var vals = genLine(N, 50, 3, key.length*13);
+    return '<div class="panel"><div class="ph"><span class="nm">'+key+'</span><span class="v" style="color:#F0B90B">'+fmt(vals[N-1],2)+'</span><span class="tag mute">示意</span><span class="x" data-offsub="'+key+'">✕</span></div>'+lineSvg(vals,'#F0B90B',0)+'</div>';
+  }
+  function drawSubs(){
+    var h = '';
+    Object.keys(S.sub).forEach(function(k){ if (S.sub[k]) h += subPanel(k); });
+    if (S.pair==='XAU') Object.keys(S.gold).forEach(function(k){ if (S.gold[k]) h += goldPanel(k); });
+    document.getElementById('subs').innerHTML = h;
+  }
+  function subCount(){ var n=0; Object.keys(S.sub).forEach(function(k){ if(S.sub[k]) n++; }); if (S.pair==='XAU') Object.keys(S.gold).forEach(function(k){ if(S.gold[k]) n++; }); return n; }
+
+  function chips(id, obj, labels, group){
+    document.getElementById(id).innerHTML = Object.keys(obj).map(function(k){
+      return '<span class="chip'+(obj[k]?' on':'')+'" data-g="'+group+'" data-k="'+k+'">'+(labels?labels[k]:k)+'</span>';
+    }).join('');
+  }
+  function drawSheet(){
+    chips('chMain', S.main, null, 'main');
+    chips('chSub', S.sub, null, 'sub');
+    chips('chGold', S.gold, {GSR:'金银比<small>比值</small>', GVOL:'黄金波动率<small>波动率</small>'}, 'gold');
+    document.getElementById('grpGold').style.display = S.pair==='XAU' ? '' : 'none';
+  }
+  function render(){
+    var p = DATA[S.pair];
+    document.getElementById('pairName').textContent = p.name;
+    document.getElementById('lastPx').textContent = p.px;
+    var chg = document.getElementById('chg'); chg.textContent = p.chg; chg.style.color = p.chg.charAt(0)==='-' ? 'var(--red)' : 'var(--green)';
+    document.getElementById('closedTag').style.display = (S.pair==='XAU' && S.state==='closed') ? 'inline-block' : 'none';
+    drawMain(); drawSubs(); drawSheet();
+  }
+
+  var INFO = {
+    GSR:{ title:'金银比', what:'1 盎司黄金可以换多少盎司白银，等于黄金价格 ÷ 白银价格。', how:'数值越高，说明黄金相对白银越贵；数值越低，说明白银相对黄金越贵。只反映两者的相对价格，不代表涨跌方向。', src:'黄金：本交易对价格；白银：<span class="warnline">⚠️ 取价来源待确认</span>' },
+    GVOL:{ title:'黄金波动率', what:'市场预期未来 30 天黄金价格的波动幅度，由黄金期权价格推算。', how:'数值越高，说明市场预期接下来波动越大；只反映波动大小，不代表涨跌方向。', src:'<span class="warnline">⚠️ 数据源待确认（Cboe GVZ / CME GCVL）</span>' }
+  };
+  function showInfo(key){
+    var d = INFO[key], el = document.getElementById('sheetInfo');
+    var upd = S.state==='delay' ? '截至 05:02（延迟）' : (S.state==='closed' ? '截至 周六 05:00（休市）' : (S.state==='error' ? '暂不可用' : '随 K 线更新 <span class="warnline">⚠️ 更新频率待确认</span>'));
+    el.innerHTML = '<div class="hd">'+d.title+'<span class="x" data-close>✕</span></div><p><span class="k">是什么：</span>'+d.what+'</p><p><span class="k">怎么看：</span>'+d.how+'</p><table><tr><td>数据来源</td><td>'+d.src+'</td></tr><tr><td>更新时间</td><td>'+upd+'</td></tr><tr><td>提示</td><td>仅供参考，不构成投资建议。</td></tr></table>';
+    open('sheetInfo');
+  }
+  function open(id){ document.getElementById('mask').style.display='block'; document.getElementById(id).style.display='block'; }
+  function closeAll(){ ['mask','sheetInd','sheetInfo'].forEach(function(id){ document.getElementById(id).style.display='none'; }); }
+  var tt; function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(tt); tt=setTimeout(function(){ t.style.display='none'; },1600); }
+
+  function seg(id, key){
+    document.getElementById(id).addEventListener('click', function(e){
+      var b = e.target.closest('button'); if(!b) return;
+      [].forEach.call(this.children, function(x){ x.classList.toggle('on', x===b); });
+      S[key] = b.getAttribute('data-v'); render();
+    });
+  }
+  seg('segPair','pair'); seg('segState','state');
+  document.getElementById('btnInd').addEventListener('click', function(){ open('sheetInd'); });
+  document.getElementById('mask').addEventListener('click', closeAll);
+  document.getElementById('phone').addEventListener('click', function(e){
+    var t = e.target;
+    if (t.hasAttribute('data-close')) return closeAll();
+    if (t.hasAttribute('data-info')) return showInfo(t.getAttribute('data-info'));
+    if (t.hasAttribute('data-off')){ S.gold[t.getAttribute('data-off')] = false; return render(); }
+    if (t.hasAttribute('data-offsub')){ S.sub[t.getAttribute('data-offsub')] = false; return render(); }
+    if (t.hasAttribute('data-retry')){ toast('重新加载中…'); return; }
+    var c = t.closest('.chip'); if (!c) return;
+    var g = c.getAttribute('data-g'), k = c.getAttribute('data-k'), obj = S[g];
+    if (!obj[k] && g!=='main' && subCount() >= S.maxSub){ toast('副图最多同时显示 '+S.maxSub+' 个（⚠️ 数值待确认）'); return; }
+    obj[k] = !obj[k]; render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
