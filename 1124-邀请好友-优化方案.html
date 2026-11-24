@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>邀请好友优化方案</title>
+<style>
+:root{--bg:#0b0e11;--card:#161a1e;--line:#2b3139;--t1:#eaecef;--t2:#929aa5;--green:#79e36b;--warn:#f0b90b;--red:#f6465d;--blue:#5b8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t1);font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;font-size:14px;line-height:1.75}
+.wrap{max-width:960px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:24px;font-weight:700}
+.meta{color:var(--t2);font-size:13px;margin:6px 0 28px}
+.meta a{color:var(--green)}
+h2{font-size:17px;font-weight:600;margin:32px 0 12px;padding-left:10px;border-left:3px solid var(--green)}
+p{margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:12px}
+.tw{overflow-x:auto;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#1e2329;color:var(--t2);font-weight:500;white-space:nowrap}
+.w{color:var(--warn)}
+.ok{color:var(--green)}
+.no{color:var(--t2);text-decoration:line-through}
+.tag{display:inline-block;font-size:12px;padding:0 6px;border-radius:3px;background:rgba(121,227,107,.12);color:var(--green);margin-left:4px}
+ul{padding-left:20px;margin-bottom:10px}
+li{margin-bottom:4px}
+.case{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.case .card b{display:block;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>邀请好友页 · 优化方案</h1>
+<div class="meta">2026-11-24 · 方案讨论稿 · 规模待定 · 原型：<a href="1124-%E9%82%80%E8%AF%B7%E5%A5%BD%E5%8F%8B-%E5%8E%9F%E5%9E%8B.html">邀请好友原型</a> · 规则来源：规则台账_邀请好友 v0.2</div>
+
+<h2>一、背景</h2>
+<p>与 hui、ck 沟通后确认：一个用户身上有<b>两套邀请关系</b>，但「邀请好友」页只展示了其中一套。</p>
+<div class="tw"><table>
+<tr><th>关系</th><th>怎么建立</th><th>覆盖业务</th><th>能否修改</th><th>邀请页展示</th></tr>
+<tr><td>交易所邀请关系</td><td>注册交易所账户时填写邀请码</td><td>现货、合约等</td><td class="w">⚠️ 注册后能否补填待确认（Q1）</td><td class="ok">展示</td></tr>
+<tr><td>美股通邀请关系</td><td>注册后在美股通另外绑定；注册时<b>不会</b>自动绑定</td><td>跟单、跟盈宝</td><td>绑定后不能修改或解绑</td><td>不展示（美股通有自己的邀请记录页）</td></tr>
+</table></div>
+<p>两套关系的<b>邀请码完全相同</b>，区别只在邀请链接的前缀。美股通<b>没有绑定时，跟单、跟盈宝不产生邀请返佣</b>。</p>
+
+<h2>二、会出现的问题</h2>
+<div class="case">
+  <div class="card"><b>① 交易过，却显示「未交易」</b>好友 A 的交易所上级是 B，A 只做跟单。跟单成交属于美股通关系，B 的列表里 A 一直是「未交易」。<br><span class="ok">从返佣归属看这其实是对的</span>：B 本来就拿不到这部分返佣。问题在于页面没有说明统计范围。</div>
+  <div class="card"><b>② 列表里找不到人</b>好友 A 在美股通绑定了 C，但交易所上级不是 C。C 在邀请好友页完全看不到 A。</div>
+  <div class="card"><b>③ 两个上级</b>A 的交易所上级是 B，美股通上级是 C。这是<b>现有设计下的正常情况</b>，不是异常数据，方案不能把它当成冲突来“修”。</div>
+</div>
+<p class="w">⚠️ 撤回此前的建议：11-19 讨论中提出「把跟单成交算进已交易」。按现有规则，跟单返佣归美股通上级，算进交易所列表会让交易所上级误以为自己能拿到返佣。</p>
+
+<h2>三、方案对比</h2>
+<div class="tw"><table>
+<tr><th>方案</th><th>做法</th><th>解决哪些问题</th><th>好处</th><th>代价 / 风险</th></tr>
+<tr><td><b>A</b> 加说明</td><td>列表改名「交易所推荐」；写明交易状态只统计现货、合约；新增入口跳到美股通现有的邀请记录页</td><td>①（说清楚）、②（给出入口）</td><td>只改前端文案和入口，最快止住客诉</td><td>用户要去两个地方看，体验没有本质改善</td></tr>
+<tr><td><b>B</b> 分两个 Tab</td><td>邀请区：一个推荐码 + 交易所 / 美股通两条链接；「立即邀请」先选分享哪条。列表分「交易所 / 美股通」两个 Tab，各自展示本关系的下级和交易状态</td><td>①②③</td><td>一个入口看全；展示和返佣归属一一对应，不会误解</td><td>要接入美股通的邀请数据；同一个好友可能同时出现在两个 Tab</td></tr>
+<tr><td><b>C</b> 合并列表</td><td>邀请区同 B。一个列表按好友去重，卡片用标签区分「交易所 / 美股通」，每套关系分别显示交易状态</td><td>①②③</td><td>人数最直观，一个人只出现一次</td><td>卡片信息更复杂；「总推荐」的口径（按人去重）需要另外说明</td></tr>
+<tr><td><b>F</b> 提示好友绑定美股通<span class="tag">可叠加</span></td><td>在交易所推荐里，好友还没绑定美股通时，显示提示和「邀请绑定」按钮，点击分享我的美股通链接</td><td>—（增长手段）</td><td>好友没绑定美股通时，他的跟单、跟盈宝不给任何人返佣；这个按钮能把这部分转成交易所上级的返佣</td><td class="w">⚠️ 隐私：是否允许向交易所上级展示「好友还没绑定美股通」；已经绑定别人的，一律不展示</td></tr>
+<tr><td><b>E</b> 美股通绑定时默认带出交易所上级<span class="tag">美股通侧</span></td><td>好友在美股通绑定时，默认填好交易所上级的码，可以修改</td><td>③（减少新增）</td><td>两套关系的上级更容易一致</td><td>改的是美股通的绑定页，不在邀请页范围内；绑定后不能改，会长期影响美股通推广方的返佣，属于业务决策</td></tr>
+<tr><td class="no">D 打通关系</td><td class="no">后台把两套关系合成一套</td><td colspan="3">不推荐：和「美股通可以另外自己选上级」的现有设计冲突</td></tr>
+</table></div>
+<p><b>倾向（待你拍板）</b>：先上 A 止住客诉，下一期做 B，F 视隐私结论再叠加；E 需要和美股通团队一起评估。</p>
+
+<h2>四、方案 B / C 的关键交互</h2>
+<ul>
+<li><b>立即邀请</b>：弹出选择「交易所邀请链接 / 美股通邀请链接」，每项写明绑定后对应的返佣范围；美股通那一项注明「绑定后不能修改」。</li>
+<li><b>复制</b>：推荐码一行、两条链接各一行，分别可以复制。</li>
+<li><b>交易所列表</b>：显示注册时间；交易状态只统计交易所业务 <span class="w">⚠️ 具体业务范围待确认（Q5）</span>。</li>
+<li><b>美股通列表</b>：显示绑定时间；交易状态只统计跟单、跟盈宝 <span class="w">⚠️ 待确认</span>。</li>
+<li><b>四种状态</b>：有数据 / 空数据（文案分别说明两种关系）/ 加载中（骨架屏）/ 加载失败（重试）。</li>
+<li><b>后台</b>：A、B、C 只读取现有的两套关系，不涉及管理后台改动。</li>
+</ul>
+
+<h2>五、待你拍板</h2>
+<div class="tw"><table>
+<tr><th>编号</th><th>问题</th><th>阻塞</th></tr>
+<tr><td>Q1</td><td>交易所邀请码注册后能否补填或修改</td><td>边界 Case</td></tr>
+<tr><td>Q5</td><td>两个列表各自的「已交易」按哪些业务统计（交易所：现货、合约，还要不要算闪兑、杠杆等？）</td><td>交易状态规则</td></tr>
+<tr><td>Q6</td><td>方案选型：A / B / C，是否叠加 F，E 是否另外立项</td><td>原型定稿</td></tr>
+<tr><td>Q7</td><td>需求规模（S / M）</td><td>全部下游流程</td></tr>
+<tr><td>Q8</td><td>下级（间接邀请）用户是否在邀请页展示</td><td>列表结构</td></tr>
+<tr><td>新</td><td>方案 F 的隐私边界：能否向交易所上级展示「好友还没绑定美股通」</td><td>方案 F</td></tr>
+</table></div>
+
+<h2>六、版本历史</h2>
+<div class="tw"><table>
+<tr><th>版本</th><th>日期</th><th>阶段</th><th>变更摘要</th></tr>
+<tr><td>v0.1</td><td>2026-11-24</td><td>方案讨论</td><td>首版：背景、问题、A/B/C/E/F 方案对比、待拍板清单</td></tr>
+</table></div>
+</div>
+</body>
+</html>

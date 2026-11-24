@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>邀请好友 · 优化原型</title>
+<style>
+:root{
+  --bg:#000;--card:#141414;--card2:#1c1c1c;--line:#262626;
+  --t1:#f5f5f5;--t2:#9a9a9a;--t3:#6b6b6b;
+  --green:#79e36b;--warn:#f0b90b;--red:#f6465d;--blue:#5b8cff;
+  --page:#0d0d0d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--t1);font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;font-size:14px;min-height:100vh}
+.wrap{display:flex;gap:24px;justify-content:center;align-items:flex-start;padding:16px;flex-wrap:wrap}
+/* 控制台 */
+.ctl{width:300px;background:#151515;border:1px solid var(--line);border-radius:10px;padding:14px;position:sticky;top:16px}
+.ctl h3{font-size:13px;color:var(--t2);font-weight:500;margin:12px 0 6px}
+.ctl h3:first-child{margin-top:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{background:#222;color:var(--t2);border:1px solid #2c2c2c;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer}
+.seg button.on{background:var(--green);color:#000;border-color:var(--green);font-weight:600}
+.note{font-size:12px;color:var(--t2);line-height:1.7;margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.note b{color:var(--t1);font-weight:600}
+.note .w{color:var(--warn)}
+/* 手机 */
+.phone{width:375px;height:812px;background:var(--bg);border-radius:36px;border:8px solid #1f1f1f;overflow:hidden;position:relative;flex-shrink:0}
+.scr{height:100%;overflow-y:auto;padding-bottom:40px}
+.scr::-webkit-scrollbar{display:none}
+.sb{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;font-size:14px;font-weight:600}
+.nav{height:48px;display:flex;align-items:center;justify-content:center;position:relative;font-size:17px;font-weight:600}
+.nav .x{position:absolute;left:14px;width:34px;height:34px;border-radius:50%;border:1px solid #333;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--t2)}
+.hero{text-align:center;padding:18px 0 6px;font-size:22px;font-weight:700}
+.art{height:120px;display:flex;align-items:center;justify-content:center}
+.art div{width:110px;height:64px;border-radius:50%;border:3px solid #2f6b2a;display:flex;align-items:center;justify-content:center;color:#7d6bff;font-size:11px;font-weight:700;letter-spacing:1px}
+.box{margin:10px 16px 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.box h4{font-size:15px;font-weight:600;margin-bottom:12px}
+.row{background:var(--card2);border-radius:10px;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;margin-bottom:10px}
+.row .k{color:var(--t2);font-size:14px}
+.row .v{display:flex;align-items:center;gap:10px;font-size:14px;max-width:210px}
+.row .v span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp{width:16px;height:16px;border:1.5px solid var(--green);border-radius:3px;flex-shrink:0;cursor:pointer;position:relative}
+.cp:after{content:"";position:absolute;left:3px;top:-4px;width:10px;height:10px;border:1.5px solid var(--green);border-radius:3px;border-left:none;border-bottom:none}
+.tagk{font-size:10px;padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:1px}
+.tk-ex{background:rgba(121,227,107,.12);color:var(--green)}
+.tk-us{background:rgba(91,140,255,.14);color:var(--blue)}
+.btn{width:100%;height:46px;border-radius:23px;background:#fff;color:#000;font-size:16px;font-weight:700;border:none;margin-top:4px;cursor:pointer}
+.sec{display:flex;justify-content:space-between;align-items:center;margin:22px 16px 10px}
+.sec .t{font-size:17px;font-weight:700}
+.sec .m{font-size:13px;color:var(--t2);cursor:pointer}
+.sec .m b{color:var(--green);font-weight:500;margin:0 2px}
+.tip{margin:0 16px 10px;font-size:12px;color:var(--t2);line-height:1.6}
+.tip .w{color:var(--warn)}
+.entry{margin:0 16px 10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;cursor:pointer}
+.entry .s{color:var(--t2);font-size:12px;margin-top:2px}
+.entry .go{color:var(--t2)}
+.tabs{display:flex;gap:20px;margin:0 16px 10px;border-bottom:1px solid var(--line)}
+.tabs div{padding:8px 0;font-size:14px;color:var(--t2);cursor:pointer;position:relative}
+.tabs div.on{color:var(--t1);font-weight:600}
+.tabs div.on:after{content:"";position:absolute;left:30%;right:30%;bottom:-1px;height:2px;background:var(--green);border-radius:1px}
+.item{margin:0 16px 10px;background:var(--card);border-radius:12px;padding:14px 16px}
+.item .l1,.item .l2{display:flex;justify-content:space-between;align-items:center}
+.item .l1{font-size:15px;margin-bottom:8px}
+.item .l2{font-size:12px;color:var(--t2)}
+.st{font-size:13px;color:var(--t2)}
+.st.ok{color:var(--green)}
+.multi{margin-top:10px;padding-top:10px;border-top:1px dashed #2a2a2a;display:flex;flex-direction:column;gap:6px;font-size:12px}
+.multi div{display:flex;justify-content:space-between;color:var(--t2)}
+.f{margin-top:10px;padding-top:10px;border-top:1px dashed #2a2a2a;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t2)}
+.f a{color:var(--green);text-decoration:none;cursor:pointer;border:1px solid rgba(121,227,107,.4);border-radius:12px;padding:3px 10px}
+.empty{margin:30px 16px;text-align:center;color:var(--t3);font-size:13px;line-height:1.8}
+.empty i{display:block;width:56px;height:56px;margin:0 auto 10px;border-radius:50%;border:1.5px dashed #333}
+.sk{margin:0 16px 10px;height:74px;border-radius:12px;background:linear-gradient(90deg,#141414 0,#1e1e1e 50%,#141414 100%);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.err{margin:30px 16px;text-align:center;color:var(--t2);font-size:13px}
+.err button{margin-top:10px;background:#222;color:var(--t1);border:1px solid #333;border-radius:16px;padding:6px 18px;cursor:pointer}
+/* 底部弹层 */
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;z-index:5}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#161616;border-radius:16px 16px 0 0;padding:18px 16px 28px;z-index:6;transform:translateY(100%);transition:transform .2s}
+.sheet.on{transform:none}
+.sheet h5{font-size:16px;text-align:center;margin-bottom:4px}
+.sheet .sub{font-size:12px;color:var(--t2);text-align:center;margin-bottom:14px;line-height:1.6}
+.opt{background:var(--card2);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer}
+.opt .a{font-size:14px;font-weight:600}
+.opt .b{font-size:12px;color:var(--t2);margin-top:3px;line-height:1.5}
+.cancel{text-align:center;color:var(--t2);padding-top:6px;cursor:pointer}
+.toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(40,40,40,.96);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;display:none;z-index:9;max-width:280px;text-align:center;line-height:1.5}
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;border-radius:3px;background:#555}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="ctl">
+    <h3>方案</h3>
+    <div class="seg" id="segPlan">
+      <button data-v="A" class="on">A 加说明</button>
+      <button data-v="B">B 分两个 Tab</button>
+      <button data-v="C">C 合并列表</button>
+    </div>
+    <h3>方案 F：提示好友绑定美股通</h3>
+    <div class="seg" id="segF">
+      <button data-v="off" class="on">关闭</button>
+      <button data-v="on">开启</button>
+    </div>
+    <h3>列表状态</h3>
+    <div class="seg" id="segState">
+      <button data-v="data" class="on">有数据</button>
+      <button data-v="empty">空数据</button>
+      <button data-v="loading">加载中</button>
+      <button data-v="error">加载失败</button>
+    </div>
+    <div class="note" id="note"></div>
+  </div>
+
+  <div class="phone">
+    <div class="scr" id="scr"></div>
+    <div class="mask" id="mask"></div>
+    <div class="sheet" id="sheet"></div>
+    <div class="toast" id="toast"></div>
+    <div class="home"></div>
+  </div>
+</div>
+
+<script>
+// 模拟数据：当前用户为邀请人「我」，推荐码 4QNLMW
+const CODE = '4QNLMW';
+const LINK_EX = 'https://www.100xex.com/register?ref=' + CODE;
+const LINK_US = 'https://www.100xex.com/usstock/bind?ref=' + CODE;
+
+// 交易所下级（我是他们的交易所上级）
+// us：该好友的美股通绑定情况（me=绑定的是我 / none=未绑定 / other=绑定了别人）
+const EX = [
+  {acc:'847***@qq.com', uid:'10260987', date:'2026-11-10', traded:false, us:'me'},
+  {acc:'bac***@163.com', uid:'10252274', date:'2026-11-01', traded:false, us:'none'},
+  {acc:'lin***@gmail.com', uid:'10248810', date:'2026-10-28', traded:true, us:'other'}
+];
+// 美股通下级（我是他们的美股通上级）
+const US = [
+  {acc:'847***@qq.com', uid:'10260987', date:'2026-11-12', traded:true},
+  {acc:'139****5521', uid:'10233019', date:'2026-10-20', traded:false}
+];
+
+const S = {plan:'A', f:'off', state:'data', tab:'ex'};
+
+const NOTES = {
+  A:'<b>方案 A：加说明</b><br>· 列表改名为「交易所推荐」<br>· 交易状态只统计现货、合约，并在页面上写明<br>· 新增入口：跳到美股通现有的邀请记录页（R9）<br>· 邀请区不变，「立即邀请」只分享交易所链接<br><span class="w">⚠️ 交易状态的统计范围待确认（Q5）</span>',
+  B:'<b>方案 B：分两个 Tab</b><br>· 邀请区：一个推荐码 + 两条链接（交易所 / 美股通，R6）<br>· 「立即邀请」先选分享哪条链接<br>· 列表分为「交易所 / 美股通」两个 Tab，各自展示自己这套关系的下级和交易状态<br>· 同一个好友可能同时出现在两个 Tab（例：847***@qq.com）<br><span class="w">⚠️ 交易状态的统计范围待确认（Q5）</span>',
+  C:'<b>方案 C：合并列表</b><br>· 邀请区同方案 B<br>· 一个列表，按好友去重，共 4 人<br>· 每张卡片按关系分别显示交易状态，标签区分「交易所 / 美股通」<br>· 只在一套关系里的好友，只显示那一行<br><span class="w">⚠️ 交易状态的统计范围待确认（Q5）</span>'
+};
+const NOTE_F = '<br><br><b>方案 F（已开启）</b><br>· 交易所推荐里，美股通「未绑定」的好友显示提示和「邀请绑定」按钮，点击后分享我的美股通链接<br>· 美股通已绑定他人的好友，不显示任何信息（不泄露他人关系）<br><span class="w">⚠️ 是否允许向交易所上级展示「好友未绑定美股通」待确认（隐私）</span>';
+
+function copyBtn(txt){return `<i class="cp" onclick="toast('已复制')"></i>`}
+
+function inviteBox(){
+  let rows = `<div class="row"><span class="k">推荐码</span><span class="v"><span>${CODE}</span>${copyBtn()}</span></div>`;
+  if(S.plan==='A'){
+    rows += `<div class="row"><span class="k">链接</span><span class="v"><span>${LINK_EX}</span>${copyBtn()}</span></div>`;
+  }else{
+    rows += `<div class="row"><span class="k">交易所链接</span><span class="v"><span>${LINK_EX}</span>${copyBtn()}</span></div>`;
+    rows += `<div class="row"><span class="k">美股通链接</span><span class="v"><span>${LINK_US}</span>${copyBtn()}</span></div>`;
+  }
+  return `<div class="box"><h4>邀请好友</h4>${rows}<button class="btn" onclick="invite()">立即邀请</button></div>`;
+}
+
+function stTxt(t){return `<span class="st ${t?'ok':''}">${t?'已交易':'未交易'}</span>`}
+
+function fBlock(u){
+  if(S.f!=='on' || u.us!=='none') return '';
+  return `<div class="f"><span>好友还没绑定美股通，跟单、跟盈宝不产生返佣</span><a onclick="shareUs()">邀请绑定</a></div>`;
+}
+
+function exItem(u){
+  return `<div class="item"><div class="l1"><span>${u.acc}</span>${stTxt(u.traded)}</div>
+  <div class="l2"><span>UID:${u.uid}</span><span>注册时间：${u.date}</span></div>${fBlock(u)}</div>`;
+}
+function usItem(u){
+  return `<div class="item"><div class="l1"><span>${u.acc}</span>${stTxt(u.traded)}</div>
+  <div class="l2"><span>UID:${u.uid}</span><span>绑定时间：${u.date}</span></div></div>`;
+}
+function mergedList(){
+  const map = {};
+  EX.forEach(u=>{map[u.uid]={acc:u.acc,uid:u.uid,ex:u}});
+  US.forEach(u=>{map[u.uid]=map[u.uid]||{acc:u.acc,uid:u.uid}; map[u.uid].us=u});
+  // 按最近一次建立关系的时间倒序
+  const last = m => [m.ex&&m.ex.date, m.us&&m.us.date].filter(Boolean).sort().pop();
+  return Object.values(map).sort((a,b)=>last(b).localeCompare(last(a)));
+}
+function cItem(m){
+  let tags = (m.ex?'<span class="tagk tk-ex">交易所</span>':'') + (m.us?'<span class="tagk tk-us">美股通</span>':'');
+  let lines = '';
+  if(m.ex) lines += `<div><span>交易所 · 注册 ${m.ex.date}</span>${stTxt(m.ex.traded)}</div>`;
+  if(m.us) lines += `<div><span>美股通 · 绑定 ${m.us.date}</span>${stTxt(m.us.traded)}</div>`;
+  return `<div class="item"><div class="l1"><span>${m.acc}${tags}</span></div>
+  <div class="l2"><span>UID:${m.uid}</span></div><div class="multi">${lines}</div>${m.ex?fBlock(m.ex):''}</div>`;
+}
+
+function listBody(items, render, emptyTxt){
+  if(S.state==='loading') return '<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
+  if(S.state==='error') return '<div class="err">加载失败，请检查网络<br><button onclick="setState(\'data\')">重试</button></div>';
+  if(S.state==='empty' || !items.length) return `<div class="empty"><i></i>${emptyTxt}</div>`;
+  return items.map(render).join('');
+}
+function cnt(n){return S.state==='data'?n:(S.state==='empty'?0:'--')}
+
+function recordSec(){
+  if(S.plan==='A'){
+    return `<div class="sec"><span class="t">交易所推荐</span><span class="m" onclick="toast('进入完整列表（现有页面）')">总推荐<b>${cnt(EX.length)}</b>›</span></div>
+    <div class="tip">交易状态只统计现货、合约交易 <span class="w">⚠️ 统计口径待确认</span></div>
+    <div class="entry" onclick="toast('跳转美股通邀请记录页（现有页面）')"><div>跟单、跟盈宝的邀请记录<div class="s">这两项业务使用美股通邀请关系，请到美股通查看</div></div><span class="go">›</span></div>
+    ${listBody(EX, exItem, '还没有通过交易所链接注册的好友')}`;
+  }
+  if(S.plan==='B'){
+    const isEx = S.tab==='ex';
+    const tip = isEx
+      ? '通过交易所链接注册的好友。交易状态只统计现货、合约 <span class="w">⚠️ 统计口径待确认</span>'
+      : '在美股通绑定你为邀请人的好友，跟单、跟盈宝返佣按这里的关系计算。交易状态只统计跟单、跟盈宝 <span class="w">⚠️ 统计口径待确认</span>';
+    return `<div class="sec"><span class="t">我的推荐</span><span class="m" onclick="toast('进入完整列表（现有页面）')">总推荐<b>${cnt(isEx?EX.length:US.length)}</b>›</span></div>
+    <div class="tabs"><div class="${isEx?'on':''}" onclick="setTab('ex')">交易所 ${cnt(EX.length)}</div><div class="${isEx?'':'on'}" onclick="setTab('us')">美股通 ${cnt(US.length)}</div></div>
+    <div class="tip">${tip}</div>
+    ${isEx ? listBody(EX, exItem, '还没有通过交易所链接注册的好友') : listBody(US, usItem, '还没有好友在美股通绑定你为邀请人')}`;
+  }
+  const M = mergedList();
+  return `<div class="sec"><span class="t">我的推荐</span><span class="m" onclick="toast('进入完整列表（现有页面）')">总推荐<b>${cnt(M.length)}</b>›</span></div>
+  <div class="tip">同一个好友可能在交易所和美股通分别是你的下级，交易状态按关系分别统计 <span class="w">⚠️ 统计口径待确认</span></div>
+  ${listBody(M, cItem, '还没有邀请到好友')}`;
+}
+
+function render(){
+  document.getElementById('scr').innerHTML =
+    `<div class="sb"><span>10:47</span><span>5G ▮▮▮</span></div>
+     <div class="nav"><span class="x">✕</span>邀请好友</div>
+     <div class="hero">分享祝福，共同致富</div>
+     <div class="art"><div>INVITATION</div></div>
+     ${inviteBox()}
+     ${recordSec()}`;
+  document.getElementById('note').innerHTML = NOTES[S.plan] + (S.f==='on'?NOTE_F:'');
+}
+
+function invite(){
+  if(S.plan==='A'){toast('打开系统分享（交易所链接）');return}
+  openSheet(`<h5>选择分享的链接</h5><div class="sub">推荐码相同，链接不同；好友打开哪条链接，就绑定哪套关系</div>
+    <div class="opt" onclick="closeSheet();toast('打开系统分享（交易所链接）')"><div class="a">交易所邀请链接</div><div class="b">好友注册交易所时绑定你为邀请人，现货、合约交易按交易所关系返佣</div></div>
+    <div class="opt" onclick="closeSheet();toast('打开系统分享（美股通链接）')"><div class="a">美股通邀请链接</div><div class="b">好友在美股通绑定你为邀请人，跟单、跟盈宝按美股通关系返佣；绑定后不能修改</div></div>
+    <div class="cancel" onclick="closeSheet()">取消</div>`);
+}
+function shareUs(){
+  openSheet(`<h5>邀请好友绑定美股通</h5><div class="sub">好友打开链接后，在美股通绑定你为邀请人。<br>绑定后不能修改，之后好友的跟单、跟盈宝会给你产生返佣</div>
+    <div class="row"><span class="k">美股通链接</span><span class="v"><span>${LINK_US}</span>${copyBtn()}</span></div>
+    <button class="btn" onclick="closeSheet();toast('打开系统分享（美股通链接）')">分享链接</button>
+    <div class="cancel" style="margin-top:10px" onclick="closeSheet()">取消</div>`);
+}
+function openSheet(h){
+  const s=document.getElementById('sheet');s.innerHTML=h;
+  document.getElementById('mask').style.display='block';
+  requestAnimationFrame(()=>s.classList.add('on'));
+}
+function closeSheet(){
+  document.getElementById('sheet').classList.remove('on');
+  document.getElementById('mask').style.display='none';
+}
+document.getElementById('mask').onclick=closeSheet;
+
+let tt;
+function toast(t){
+  const el=document.getElementById('toast');el.textContent=t;el.style.display='block';
+  clearTimeout(tt);tt=setTimeout(()=>el.style.display='none',1600);
+}
+function setTab(t){S.tab=t;render()}
+function setState(v){S.state=v;syncSeg('segState',v);render()}
+function syncSeg(id,v){document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
+function bindSeg(id,key){
+  document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{S[key]=b.dataset.v;syncSeg(id,b.dataset.v);render()});
+}
+bindSeg('segPlan','plan');bindSeg('segF','f');bindSeg('segState','state');
+render();
+</script>
+</body>
+</html>
