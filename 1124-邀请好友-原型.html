@@ -157,11 +157,11 @@ const S = {user:'normal', ex:'data', us:'data', tab:'ex', view:'home'};
 const NOTE = {
   normal:'<b>普通用户（R10）</b><br>· 邀请区：一个推荐码 + 交易所、美股通两条链接（R6）<br>· 点「立即邀请」先选分享哪条链接<br>· 两个 Tab 各自展示本关系的直推（R13）<br>· 交易所 Tab 只算现货、合约；美股通 Tab 只算跟单、跟盈宝（R12）<br>· 美股通直推为 0（或还没加载完）时，不展示美股通链接和美股通 Tab，页面和现在一样（R22）<br>· 美股通加载失败：展示 Tab 并报错，人数显示「--」（R15）<br>· 点「总推荐 ›」进入完整列表，同样分两个 Tab，默认停在当前 Tab（R19）<br><span class="w">⚠️ 默认展示条数沿用现有，原型按截图展示 2 条（Q16）</span>',
   restricted:'<b>受限地区用户（R16）</b><br>· 不能使用美股通：隐藏美股通链接和美股通 Tab<br>· 页面保持现状：推荐码 + 链接 + 我的推荐<br>· 点「立即邀请」直接分享交易所链接',
-  locked:'<b>未满足美股通邀请人门槛（R17）</b><br>· 美股通链接那一行显示「开通美股通后可邀请」，点击进入美股通开通页<br>· 「立即邀请」弹层里美股通选项置灰<br>· 美股通 Tab 照常展示<br><span class="w">⚠️ 门槛是否存在待确认（Q14），不存在则此状态不出现</span>'
+  locked:'<b>未满足美股通邀请人门槛（R17）</b><br>· 没开通美股通，不会有美股通直推<br>· 不展示美股通链接和美股通 Tab，页面和现在一样<br>· 「立即邀请」直接分享交易所链接<br><span class="w">⚠️ 门槛是否存在待确认（Q14）</span>'
 };
 
-// 美股通链接和 Tab 是否展示：受限地区不展示（R16）；美股通直推为 0 或还没加载完也不展示（R22）；加载失败时展示，交给 Tab 报错（R15）
-const hasUs = () => S.user!=='restricted' && S.us!=='empty' && S.us!=='loading';
+// 美股通链接和 Tab 是否展示：受限地区（R16）、未满足美股通门槛（R17）不展示；美股通直推为 0 或还没加载完也不展示（R22）；加载失败时展示，交给 Tab 报错（R15）
+const hasUs = () => S.user==='normal' && S.us!=='empty' && S.us!=='loading';
 function copyBtn(){return `<i class="cp" onclick="toast('已复制')"></i>`}
 function cnt(state,n){return state==='data'?n:(state==='empty'?0:'--')}
 
@@ -171,9 +171,7 @@ function inviteBox(){
     rows += `<div class="row"><span class="k">链接</span><span class="v"><span>${LINK_EX}</span>${copyBtn()}</span></div>`;
   }else{
     rows += `<div class="row"><span class="k">交易所链接</span><span class="v"><span>${LINK_EX}</span>${copyBtn()}</span></div>`;
-    rows += S.user==='locked'
-      ? `<div class="row"><span class="k">美股通链接</span><span class="lock" onclick="toast('进入美股通开通页（现有页面）')">开通美股通后可邀请 <b>›</b></span></div>`
-      : `<div class="row"><span class="k">美股通链接</span><span class="v"><span>${LINK_US}</span>${copyBtn()}</span></div>`;
+    rows += `<div class="row"><span class="k">美股通链接</span><span class="v"><span>${LINK_US}</span>${copyBtn()}</span></div>`;
   }
   return `<div class="box"><h4>邀请好友</h4>${rows}<button class="btn" onclick="invite()">立即邀请</button></div>`;
 }
@@ -233,10 +231,9 @@ function render(){
 
 function invite(){
   if(!hasUs()){toast('打开系统分享（交易所链接）');return}
-  const locked = S.user==='locked';
   openSheet(`<h5>选择分享的链接</h5><div class="sub">推荐码相同，链接不同；好友打开哪条链接，就绑定哪套关系</div>
     <div class="opt" onclick="closeSheet();toast('打开系统分享（交易所链接）')"><div class="a">交易所邀请链接</div><div class="b">好友注册交易所时绑定你为邀请人，现货、合约交易按交易所关系返佣</div></div>
-    <div class="opt ${locked?'dis':''}" onclick="${locked?"toast('开通美股通后可邀请')":"closeSheet();toast('打开系统分享（美股通链接）')"}"><div class="a">美股通邀请链接</div><div class="b">${locked?'开通美股通后可邀请':'好友在美股通绑定你为邀请人，跟单、跟盈宝按美股通关系返佣；绑定后不能修改'}</div></div>
+    <div class="opt" onclick="closeSheet();toast('打开系统分享（美股通链接）')"><div class="a">美股通邀请链接</div><div class="b">好友在美股通绑定你为邀请人，跟单、跟盈宝按美股通关系返佣；绑定后不能修改</div></div>
     <div class="cancel" onclick="closeSheet()">取消</div>`);
 }
 function openSheet(h){
