@@ -111,7 +111,7 @@ body{background:var(--page);color:var(--t1);font-family:-apple-system,"PingFang 
       <button data-v="loading">加载中</button>
       <button data-v="error">加载失败</button>
     </div>
-    <h3>美股通列表</h3>
+    <h3>美股通列表 <span style="font-size:11px;color:var(--t3)">空数据 = 没有美股通直推</span></h3>
     <div class="seg" id="segUs">
       <button data-v="data" class="on">有数据</button>
       <button data-v="empty">空数据</button>
@@ -155,12 +155,13 @@ const US = [
 const S = {user:'normal', ex:'data', us:'data', tab:'ex', view:'home'};
 
 const NOTE = {
-  normal:'<b>普通用户（R10）</b><br>· 邀请区：一个推荐码 + 交易所、美股通两条链接（R6）<br>· 点「立即邀请」先选分享哪条链接<br>· 两个 Tab 各自展示本关系的直推（R13）<br>· 交易所 Tab 只算现货、合约；美股通 Tab 只算跟单、跟盈宝（R12）<br>· 美股通加载失败只影响美股通 Tab，人数显示「--」（R15）<br>· 点「总推荐 ›」进入完整列表，同样分两个 Tab，默认停在当前 Tab（R19）<br><span class="w">⚠️ 默认展示条数沿用现有，原型按截图展示 2 条（Q16）</span>',
+  normal:'<b>普通用户（R10）</b><br>· 邀请区：一个推荐码 + 交易所、美股通两条链接（R6）<br>· 点「立即邀请」先选分享哪条链接<br>· 两个 Tab 各自展示本关系的直推（R13）<br>· 交易所 Tab 只算现货、合约；美股通 Tab 只算跟单、跟盈宝（R12）<br>· 美股通直推为 0（或还没加载完）时，不展示美股通链接和美股通 Tab，页面和现在一样（R22）<br>· 美股通加载失败：展示 Tab 并报错，人数显示「--」（R15）<br>· 点「总推荐 ›」进入完整列表，同样分两个 Tab，默认停在当前 Tab（R19）<br><span class="w">⚠️ 默认展示条数沿用现有，原型按截图展示 2 条（Q16）</span>',
   restricted:'<b>受限地区用户（R16）</b><br>· 不能使用美股通：隐藏美股通链接和美股通 Tab<br>· 页面保持现状：推荐码 + 链接 + 我的推荐<br>· 点「立即邀请」直接分享交易所链接',
   locked:'<b>未满足美股通邀请人门槛（R17）</b><br>· 美股通链接那一行显示「开通美股通后可邀请」，点击进入美股通开通页<br>· 「立即邀请」弹层里美股通选项置灰<br>· 美股通 Tab 照常展示<br><span class="w">⚠️ 门槛是否存在待确认（Q14），不存在则此状态不出现</span>'
 };
 
-const hasUs = () => S.user!=='restricted';
+// 美股通链接和 Tab 是否展示：受限地区不展示（R16）；美股通直推为 0 或还没加载完也不展示（R22）；加载失败时展示，交给 Tab 报错（R15）
+const hasUs = () => S.user!=='restricted' && S.us!=='empty' && S.us!=='loading';
 function copyBtn(){return `<i class="cp" onclick="toast('已复制')"></i>`}
 function cnt(state,n){return state==='data'?n:(state==='empty'?0:'--')}
 
@@ -225,6 +226,7 @@ function fullView(){
 }
 
 function render(){
+  if(!hasUs()) S.tab='ex';
   document.getElementById('scr').innerHTML = S.view==='home'?homeView():fullView();
   document.getElementById('note').innerHTML = NOTE[S.user];
 }
