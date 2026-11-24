@@ -37,8 +37,8 @@ body{background:var(--page);color:var(--t1);font-family:-apple-system,"PingFang 
 .box{margin:10px 16px 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
 .box h4{font-size:15px;font-weight:600;margin-bottom:12px}
 .row{background:var(--card2);border-radius:10px;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;margin-bottom:10px}
-.row .k{color:var(--t2);font-size:14px}
-.row .v{display:flex;align-items:center;gap:10px;font-size:14px;max-width:210px}
+.row .k{color:var(--t2);font-size:14px;white-space:nowrap;margin-right:12px}
+.row .v{display:flex;align-items:center;gap:10px;font-size:14px;min-width:0}
 .row .v span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cp{width:16px;height:16px;border:1.5px solid var(--green);border-radius:3px;flex-shrink:0;cursor:pointer;position:relative}
 .cp:after{content:"";position:absolute;left:3px;top:-4px;width:10px;height:10px;border:1.5px solid var(--green);border-radius:3px;border-left:none;border-bottom:none}
@@ -87,18 +87,32 @@ body{background:var(--page);color:var(--t1);font-family:-apple-system,"PingFang 
 .cancel{text-align:center;color:var(--t2);padding-top:6px;cursor:pointer}
 .toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(40,40,40,.96);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;display:none;z-index:9;max-width:280px;text-align:center;line-height:1.5}
 .home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;border-radius:3px;background:#555}
+/* v2 新增 */
+.row .lock{color:var(--t2);font-size:13px;cursor:pointer}
+.row .lock b{color:var(--green);font-weight:500}
+.opt.dis{opacity:.45;cursor:not-allowed}
+.nav .bk{position:absolute;left:14px;font-size:22px;color:var(--t1);cursor:pointer;line-height:1}
+.ctl .w{color:var(--warn)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="ctl">
-    <h3>方案 F：提示好友绑定美股通 <span style="color:var(--warn)">⚠️ 待定</span></h3>
-    <div class="seg" id="segF">
-      <button data-v="off" class="on">关闭</button>
-      <button data-v="on">开启</button>
+    <h3>用户类型</h3>
+    <div class="seg" id="segUser">
+      <button data-v="normal" class="on">普通用户</button>
+      <button data-v="restricted">受限地区</button>
+      <button data-v="locked">未满足美股通门槛</button>
     </div>
-    <h3>列表状态</h3>
-    <div class="seg" id="segState">
+    <h3>交易所列表</h3>
+    <div class="seg" id="segEx">
+      <button data-v="data" class="on">有数据</button>
+      <button data-v="empty">空数据</button>
+      <button data-v="loading">加载中</button>
+      <button data-v="error">加载失败</button>
+    </div>
+    <h3>美股通列表</h3>
+    <div class="seg" id="segUs">
       <button data-v="data" class="on">有数据</button>
       <button data-v="empty">空数据</button>
       <button data-v="loading">加载中</button>
@@ -117,95 +131,111 @@ body{background:var(--page);color:var(--t1);font-family:-apple-system,"PingFang 
 </div>
 
 <script>
-// 模拟数据：当前用户为邀请人「我」，推荐码 4QNLMW
+// 模拟数据：当前用户为邀请人「我」，推荐码 4QNLMW；链接前缀为模拟值
 const CODE = '4QNLMW';
 const LINK_EX = 'https://www.100xex.com/register?ref=' + CODE;
 const LINK_US = 'https://www.100xex.com/usstock/bind?ref=' + CODE;
+const HOME_N = 2; // 邀请页默认展示条数：沿用现有（截图为 2 条），⚠️ 待确认 Q16
 
-// 交易所下级（我是他们的交易所上级）
-// us：该好友的美股通绑定情况（me=绑定的是我 / none=未绑定 / other=绑定了别人）
+// 交易所直推（我是他们的交易所上级），按注册时间倒序
 const EX = [
-  {acc:'847***@qq.com', uid:'10260987', date:'2026-11-10', traded:false, us:'me'},
-  {acc:'bac***@163.com', uid:'10252274', date:'2026-11-01', traded:false, us:'none'},
-  {acc:'lin***@gmail.com', uid:'10248810', date:'2026-10-28', traded:true, us:'other'}
+  {acc:'847***@qq.com', uid:'10260987', date:'2026-11-10', traded:false},
+  {acc:'bac***@163.com', uid:'10252274', date:'2026-11-01', traded:false},
+  {acc:'lin***@gmail.com', uid:'10248810', date:'2026-10-28', traded:true},
+  {acc:'wan***@outlook.com', uid:'10241576', date:'2026-10-15', traded:true},
+  {acc:'186****0032', uid:'10236641', date:'2026-10-02', traded:false}
 ];
-// 美股通下级（我是他们的美股通上级）
+// 美股通直推（我是他们的美股通上级），按绑定时间倒序
 const US = [
   {acc:'847***@qq.com', uid:'10260987', date:'2026-11-12', traded:true},
-  {acc:'139****5521', uid:'10233019', date:'2026-10-20', traded:false}
+  {acc:'139****5521', uid:'10233019', date:'2026-10-20', traded:false},
+  {acc:'zho***@qq.com', uid:'10229870', date:'2026-09-30', traded:true}
 ];
 
-const S = {f:'off', state:'data', tab:'ex'};
+const S = {user:'normal', ex:'data', us:'data', tab:'ex', view:'home'};
 
-const NOTE_B = '<b>方案 B：分两个 Tab（已选定，R10）</b><br>· 邀请区：一个推荐码 + 两条链接（交易所 / 美股通，R6）<br>· 点「立即邀请」先选分享哪条链接<br>· 邀请记录分「交易所 / 美股通」两个 Tab，各自展示本关系的下级和交易状态<br>· 同一个好友可能同时出现在两个 Tab（例：847***@qq.com）<br>· 美股通链接的前缀为模拟数据<br><span class="w">⚠️ 交易状态的统计范围待确认（Q5）</span>';
-const NOTE_F = '<br><br><b>方案 F（已开启）</b><br>· 交易所推荐里，美股通「未绑定」的好友显示提示和「邀请绑定」按钮，点击后分享我的美股通链接<br>· 美股通已绑定他人的好友，不显示任何信息（不泄露他人关系）<br><span class="w">⚠️ 是否允许向交易所上级展示「好友未绑定美股通」待确认（隐私）</span>';
+const NOTE = {
+  normal:'<b>普通用户（R10）</b><br>· 邀请区：一个推荐码 + 交易所、美股通两条链接（R6）<br>· 点「立即邀请」先选分享哪条链接<br>· 两个 Tab 各自展示本关系的直推（R13）<br>· 交易所 Tab 只算现货、合约；美股通 Tab 只算跟单、跟盈宝（R12）<br>· 美股通加载失败只影响美股通 Tab，人数显示「--」（R15）<br>· 点「总推荐 ›」进入完整列表，同样分两个 Tab，默认停在当前 Tab（R19）<br><span class="w">⚠️ 默认展示条数沿用现有，原型按截图展示 2 条（Q16）</span>',
+  restricted:'<b>受限地区用户（R16）</b><br>· 不能使用美股通：隐藏美股通链接和美股通 Tab<br>· 页面保持现状：推荐码 + 链接 + 我的推荐<br>· 点「立即邀请」直接分享交易所链接',
+  locked:'<b>未满足美股通邀请人门槛（R17）</b><br>· 美股通链接那一行显示「开通美股通后可邀请」，点击进入美股通开通页<br>· 「立即邀请」弹层里美股通选项置灰<br>· 美股通 Tab 照常展示<br><span class="w">⚠️ 门槛是否存在待确认（Q14），不存在则此状态不出现</span>'
+};
 
-function copyBtn(txt){return `<i class="cp" onclick="toast('已复制')"></i>`}
+const hasUs = () => S.user!=='restricted';
+function copyBtn(){return `<i class="cp" onclick="toast('已复制')"></i>`}
+function cnt(state,n){return state==='data'?n:(state==='empty'?0:'--')}
 
 function inviteBox(){
   let rows = `<div class="row"><span class="k">推荐码</span><span class="v"><span>${CODE}</span>${copyBtn()}</span></div>`;
-  rows += `<div class="row"><span class="k">交易所链接</span><span class="v"><span>${LINK_EX}</span>${copyBtn()}</span></div>`;
-  rows += `<div class="row"><span class="k">美股通链接</span><span class="v"><span>${LINK_US}</span>${copyBtn()}</span></div>`;
+  if(!hasUs()){
+    rows += `<div class="row"><span class="k">链接</span><span class="v"><span>${LINK_EX}</span>${copyBtn()}</span></div>`;
+  }else{
+    rows += `<div class="row"><span class="k">交易所链接</span><span class="v"><span>${LINK_EX}</span>${copyBtn()}</span></div>`;
+    rows += S.user==='locked'
+      ? `<div class="row"><span class="k">美股通链接</span><span class="lock" onclick="toast('进入美股通开通页（现有页面）')">开通美股通后可邀请 <b>›</b></span></div>`
+      : `<div class="row"><span class="k">美股通链接</span><span class="v"><span>${LINK_US}</span>${copyBtn()}</span></div>`;
+  }
   return `<div class="box"><h4>邀请好友</h4>${rows}<button class="btn" onclick="invite()">立即邀请</button></div>`;
 }
 
 function stTxt(t){return `<span class="st ${t?'ok':''}">${t?'已交易':'未交易'}</span>`}
-
-function fBlock(u){
-  if(S.f!=='on' || u.us!=='none') return '';
-  return `<div class="f"><span>好友还没绑定美股通，跟单、跟盈宝不产生返佣</span><a onclick="shareUs()">邀请绑定</a></div>`;
-}
-
-function exItem(u){
+function item(u,label){
   return `<div class="item"><div class="l1"><span>${u.acc}</span>${stTxt(u.traded)}</div>
-  <div class="l2"><span>UID:${u.uid}</span><span>注册时间：${u.date}</span></div>${fBlock(u)}</div>`;
+  <div class="l2"><span>UID:${u.uid}</span><span>${label}：${u.date}</span></div></div>`;
 }
-function usItem(u){
-  return `<div class="item"><div class="l1"><span>${u.acc}</span>${stTxt(u.traded)}</div>
-  <div class="l2"><span>UID:${u.uid}</span><span>绑定时间：${u.date}</span></div></div>`;
+function listBody(state, items, label, emptyTxt, retryKey){
+  if(state==='loading') return '<div class="sk"></div><div class="sk"></div>';
+  if(state==='error') return `<div class="err">加载失败，请稍后重试<br><button onclick="retry('${retryKey}')">重试</button></div>`;
+  if(state==='empty' || !items.length) return `<div class="empty"><i></i>${emptyTxt}</div>`;
+  return items.map(u=>item(u,label)).join('');
+}
+const TIP_EX = '通过交易所链接注册的好友。交易状态只统计现货、合约的成交';
+const TIP_US = '在美股通绑定你为邀请人的好友，跟单、跟盈宝返佣按这里的关系计算。交易状态只统计跟单、跟盈宝的成交';
+const EMPTY_EX = '还没有通过交易所链接注册的好友';
+const EMPTY_US = '还没有好友在美股通绑定你为邀请人';
+
+function tabsBar(){
+  const isEx=S.tab==='ex';
+  return `<div class="tabs"><div class="${isEx?'on':''}" onclick="setTab('ex')">交易所 ${cnt(S.ex,EX.length)}</div><div class="${isEx?'':'on'}" onclick="setTab('us')">美股通 ${cnt(S.us,US.length)}</div></div>`;
+}
+function curList(limit){
+  if(!hasUs() || S.tab==='ex'){
+    const d = limit?EX.slice(0,limit):EX;
+    return (hasUs()?`<div class="tip">${TIP_EX}</div>`:'') + listBody(S.ex, d, '注册时间', EMPTY_EX, 'ex');
+  }
+  const d = limit?US.slice(0,limit):US;
+  return `<div class="tip">${TIP_US}</div>` + listBody(S.us, d, '绑定时间', EMPTY_US, 'us');
 }
 
-function listBody(items, render, emptyTxt){
-  if(S.state==='loading') return '<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
-  if(S.state==='error') return '<div class="err">加载失败，请检查网络<br><button onclick="setState(\'data\')">重试</button></div>';
-  if(S.state==='empty' || !items.length) return `<div class="empty"><i></i>${emptyTxt}</div>`;
-  return items.map(render).join('');
+function homeView(){
+  const total = (!hasUs()||S.tab==='ex') ? cnt(S.ex,EX.length) : cnt(S.us,US.length);
+  return `<div class="sb"><span>10:47</span><span>5G ▮▮▮</span></div>
+   <div class="nav"><span class="x">✕</span>邀请好友</div>
+   <div class="hero">分享祝福，共同致富</div>
+   <div class="art"><div>INVITATION</div></div>
+   ${inviteBox()}
+   <div class="sec"><span class="t">我的推荐</span><span class="m" onclick="go('full')">总推荐<b>${total}</b>›</span></div>
+   ${hasUs()?tabsBar():''}
+   ${curList(HOME_N)}`;
 }
-function cnt(n){return S.state==='data'?n:(S.state==='empty'?0:'--')}
-
-function recordSec(){
-  const isEx = S.tab==='ex';
-  const tip = isEx
-    ? '通过交易所链接注册的好友。交易状态只统计现货、合约 <span class="w">⚠️ 统计口径待确认</span>'
-    : '在美股通绑定你为邀请人的好友，跟单、跟盈宝返佣按这里的关系计算。交易状态只统计跟单、跟盈宝 <span class="w">⚠️ 统计口径待确认</span>';
-  return `<div class="sec"><span class="t">我的推荐</span><span class="m" onclick="toast('进入完整列表（现有页面）')">总推荐<b>${cnt(isEx?EX.length:US.length)}</b>›</span></div>
-  <div class="tabs"><div class="${isEx?'on':''}" onclick="setTab('ex')">交易所 ${cnt(EX.length)}</div><div class="${isEx?'':'on'}" onclick="setTab('us')">美股通 ${cnt(US.length)}</div></div>
-  <div class="tip">${tip}</div>
-  ${isEx ? listBody(EX, exItem, '还没有通过交易所链接注册的好友') : listBody(US, usItem, '还没有好友在美股通绑定你为邀请人')}`;
+function fullView(){
+  return `<div class="sb"><span>10:47</span><span>5G ▮▮▮</span></div>
+   <div class="nav"><span class="bk" onclick="go('home')">‹</span>我的推荐</div>
+   ${hasUs()?tabsBar():'<div style="height:8px"></div>'}
+   ${curList(0)}`;
 }
 
 function render(){
-  document.getElementById('scr').innerHTML =
-    `<div class="sb"><span>10:47</span><span>5G ▮▮▮</span></div>
-     <div class="nav"><span class="x">✕</span>邀请好友</div>
-     <div class="hero">分享祝福，共同致富</div>
-     <div class="art"><div>INVITATION</div></div>
-     ${inviteBox()}
-     ${recordSec()}`;
-  document.getElementById('note').innerHTML = NOTE_B + (S.f==='on'?NOTE_F:'');
+  document.getElementById('scr').innerHTML = S.view==='home'?homeView():fullView();
+  document.getElementById('note').innerHTML = NOTE[S.user];
 }
 
 function invite(){
+  if(!hasUs()){toast('打开系统分享（交易所链接）');return}
+  const locked = S.user==='locked';
   openSheet(`<h5>选择分享的链接</h5><div class="sub">推荐码相同，链接不同；好友打开哪条链接，就绑定哪套关系</div>
     <div class="opt" onclick="closeSheet();toast('打开系统分享（交易所链接）')"><div class="a">交易所邀请链接</div><div class="b">好友注册交易所时绑定你为邀请人，现货、合约交易按交易所关系返佣</div></div>
-    <div class="opt" onclick="closeSheet();toast('打开系统分享（美股通链接）')"><div class="a">美股通邀请链接</div><div class="b">好友在美股通绑定你为邀请人，跟单、跟盈宝按美股通关系返佣；绑定后不能修改</div></div>
+    <div class="opt ${locked?'dis':''}" onclick="${locked?"toast('开通美股通后可邀请')":"closeSheet();toast('打开系统分享（美股通链接）')"}"><div class="a">美股通邀请链接</div><div class="b">${locked?'开通美股通后可邀请':'好友在美股通绑定你为邀请人，跟单、跟盈宝按美股通关系返佣；绑定后不能修改'}</div></div>
     <div class="cancel" onclick="closeSheet()">取消</div>`);
-}
-function shareUs(){
-  openSheet(`<h5>邀请好友绑定美股通</h5><div class="sub">好友打开链接后，在美股通绑定你为邀请人。<br>绑定后不能修改，之后好友的跟单、跟盈宝会给你产生返佣</div>
-    <div class="row"><span class="k">美股通链接</span><span class="v"><span>${LINK_US}</span>${copyBtn()}</span></div>
-    <button class="btn" onclick="closeSheet();toast('打开系统分享（美股通链接）')">分享链接</button>
-    <div class="cancel" style="margin-top:10px" onclick="closeSheet()">取消</div>`);
 }
 function openSheet(h){
   const s=document.getElementById('sheet');s.innerHTML=h;
@@ -223,13 +253,18 @@ function toast(t){
   const el=document.getElementById('toast');el.textContent=t;el.style.display='block';
   clearTimeout(tt);tt=setTimeout(()=>el.style.display='none',1600);
 }
+function go(v){S.view=v;document.getElementById('scr').scrollTop=0;render()}
 function setTab(t){S.tab=t;render()}
-function setState(v){S.state=v;syncSeg('segState',v);render()}
+function retry(k){S[k]='data';syncSeg(k==='ex'?'segEx':'segUs','data');render()}
 function syncSeg(id,v){document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
 function bindSeg(id,key){
-  document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{S[key]=b.dataset.v;syncSeg(id,b.dataset.v);render()});
+  document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{
+    S[key]=b.dataset.v; syncSeg(id,b.dataset.v);
+    if(key==='user' && b.dataset.v==='restricted') S.tab='ex';
+    render();
+  });
 }
-bindSeg('segF','f');bindSeg('segState','state');
+bindSeg('segUser','user');bindSeg('segEx','ex');bindSeg('segUs','us');
 render();
 </script>
 </body>
