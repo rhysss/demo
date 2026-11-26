@@ -109,12 +109,8 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,"PingFang SC
 <body>
 <div class="ctl">
   <span class="tag">原型控制</span>
-  <div class="g">用户类型<div class="seg" id="segUser">
-    <button data-v="normal" class="on">普通用户</button><button data-v="restricted">受限地区</button><button data-v="locked">未满足美股通门槛</button></div></div>
-  <div class="g">交易所推荐<div class="seg" id="segEx">
-    <button data-v="data" class="on">有数据</button><button data-v="empty">空数据</button><button data-v="loading">加载中</button><button data-v="error">加载失败</button></div></div>
-  <div class="g">美股通推荐<div class="seg" id="segUs">
-    <button data-v="data" class="on">有数据</button><button data-v="empty">空（无直推）</button><button data-v="loading">加载中</button><button data-v="error">加载失败</button></div></div>
+  <div class="g">页面展示<div class="seg" id="segUs">
+    <button data-v="yes" class="on">有美股通</button><button data-v="no">没有美股通</button></div></div>
 </div>
 
 <section class="hero"><div class="inner">
@@ -159,12 +155,11 @@ const US = [
   {t:'2026-10-20 11:08:02', acc:'139****5521', uid:'10233019', traded:false, week:false},
   {t:'2026-09-30 19:45:10', acc:'zho***@qq.com', uid:'10229870', traded:true, week:false}
 ];
-const S = {user:'normal', ex:'data', us:'data', main:'ref', sub:'ex'};
+const S = {us:'yes', main:'ref', sub:'ex'};
 
-// 美股通是否展示：受限地区（R16）、未满足门槛（R17）不展示；无直推或未加载完不展示（R22）；加载失败照常展示并报错（R15）
-const hasUs = () => S.user==='normal' && S.us!=='empty' && S.us!=='loading';
-const cnt = (st,n) => st==='data'?n:(st==='empty'?0:'--');
-const weekCnt = (st,arr) => st==='data'?arr.filter(x=>x.week).length:(st==='empty'?0:'--');
+// 有美股通：用户有美股通直推；没有美股通：无美股通直推（R22）、受限地区（R16）、未满足门槛（R17）
+const hasUs = () => S.us==='yes';
+const weekCnt = arr => arr.filter(x=>x.week).length;
 
 function fld(icon, v){
   return `<div class="fld"><i class="ic ${icon}"></i><span class="sep"></span><span class="v">${v}</span><span class="cp" onclick="toast('已复制')"></span></div>`;
@@ -181,17 +176,14 @@ function inviteCard(){
 }
 function stats(){
   if(!hasUs()){
-    return `<div class="st2"><div><div class="k">邀请总数</div><div class="n">${cnt(S.ex,EX.length)}</div></div><div><div class="k">本周邀请数量</div><div class="n">${weekCnt(S.ex,EX)}</div></div></div>`;
+    return `<div class="st2"><div><div class="k">邀请总数</div><div class="n">${EX.length}</div></div><div><div class="k">本周邀请数量</div><div class="n">${weekCnt(EX)}</div></div></div>`;
   }
   return `<table class="st3"><tr><th></th><th>邀请总数</th><th>本周邀请数量</th></tr>
-    <tr><td>交易所</td><td>${cnt(S.ex,EX.length)}</td><td>${weekCnt(S.ex,EX)}</td></tr>
-    <tr><td>美股通</td><td>${cnt(S.us,US.length)}</td><td>${weekCnt(S.us,US)}</td></tr></table>`;
+    <tr><td>交易所</td><td>${EX.length}</td><td>${weekCnt(EX)}</td></tr>
+    <tr><td>美股通</td><td>${US.length}</td><td>${weekCnt(US)}</td></tr></table>`;
 }
 
-function rows(st, arr, emptyTxt, key){
-  if(st==='loading') return '<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
-  if(st==='error') return `<div class="err">加载失败，请稍后重试<br><button onclick="retry('${key}')">重试</button></div>`;
-  if(st==='empty'||!arr.length) return `<div class="empty"><i></i>${emptyTxt}</div>`;
+function rows(arr){
   return arr.map(u=>`<div class="trow"><span>${u.t}</span><span>${u.acc}</span><span>${u.uid}</span><span class="${u.traded?'ok':''}">${u.traded?'已交易':'未交易'}</span></div>`).join('')
     + `<div class="pager">共 ${arr.length} 条 <b>1</b> <span class="w">⚠️ 每页条数沿用现有</span></div>`;
 }
@@ -200,12 +192,12 @@ function refBlock(){
   let h = '';
   if(hasUs()){
     h += `<div class="sub-tabs">
-      <div class="${isUs?'':'on'}" onclick="setSub('ex')">交易所 ${cnt(S.ex,EX.length)}</div>
-      <div class="${isUs?'on':''}" onclick="setSub('us')">美股通 ${cnt(S.us,US.length)}</div>
+      <div class="${isUs?'':'on'}" onclick="setSub('ex')">交易所 ${EX.length}</div>
+      <div class="${isUs?'on':''}" onclick="setSub('us')">美股通 ${US.length}</div>
       <span class="tip">${isUs?'在美股通绑定你为邀请人的好友，跟单、跟盈宝返佣按这里的关系计算；是否交易只统计跟单、跟盈宝':'通过交易所链接注册的好友；是否交易只统计现货、合约'}</span></div>`;
   }
   h += `<div class="thead"><span>${isUs?'绑定时间':'注册时间'}</span><span>账户</span><span>UID</span><span>是否交易</span></div>`;
-  h += isUs ? rows(S.us, US, '还没有好友在美股通绑定你为邀请人', 'us') : rows(S.ex, EX, '还没有通过交易所链接注册的好友', 'ex');
+  h += rows(isUs ? US : EX);
   return h;
 }
 function rec(){
@@ -215,9 +207,8 @@ function rec(){
 }
 
 const NOTES = {
-  normal:'<b>普通用户（Web 端，规则同 App：R10、R12、R15、R22）</b><br>· 邀请卡片：一个邀请码 + 交易所、美股通两条邀请链接；点「分享」先选分享哪条链接<br>· 统计卡片：按交易所、美股通分两行展示邀请总数和本周邀请数量 <span class="w">⚠️ 统计卡片的展示方式待确认</span><br>· 推荐记录：新增「交易所 / 美股通」切换，交易所列显示注册时间，美股通列显示绑定时间<br>· 美股通没有直推或还没加载完时，邀请卡片、统计卡片、推荐记录都和现在一样；加载失败时照常展示并报错<br>· 返佣记录：本期不改 <span class="w">⚠️ 是否展示美股通返佣待确认</span><br>· 左侧「如何获得返佣」：本期不改 <span class="w">⚠️ 是否补充美股通（绑定 → 跟单、跟盈宝）的说明待确认；「完成合约交易」和交易所「是否交易」统计现货、合约的口径不一致，是否顺手修正待确认</span>',
-  restricted:'<b>受限地区用户（R16）</b><br>· 不展示美股通邀请链接、统计卡片的美股通行、推荐记录的切换，页面和现在一样<br>· 点「分享」直接使用交易所邀请链接',
-  locked:'<b>未满足美股通邀请人门槛（R17）</b><br>· 和受限地区一样，页面和现在一样<br><span class="w">⚠️ 门槛是否存在待确认（Q14）</span>'
+  yes:'<b>有美股通（用户已有美股通直推）</b><br>· 邀请卡片：一个邀请码 + 交易所、美股通两条邀请链接；点「分享」先选分享哪条链接<br>· 统计卡片：按交易所、美股通分两行展示邀请总数和本周邀请数量 <span class="w">⚠️ 展示方式待确认（Q21）</span><br>· 推荐记录：新增「交易所 / 美股通」切换，交易所显示注册时间，美股通显示绑定时间；是否交易按各自业务统计（R12）<br>· 返佣记录：本期不改 <span class="w">⚠️ 是否展示美股通返佣待确认（Q22）</span><br>· 左侧「如何获得返佣」：本期不改 <span class="w">⚠️ 是否补充美股通说明待确认（Q23）</span>',
+  no:'<b>没有美股通（和现在一样）</b><br>· 适用：没有美股通直推（R22）、受限地区（R16）、未满足美股通门槛（R17）<br>· 邀请卡片只有邀请码和邀请链接，点「分享」直接用交易所邀请链接<br>· 统计卡片、推荐记录都只有交易所，和现在一样'
 };
 
 function render(){
@@ -225,7 +216,7 @@ function render(){
   document.getElementById('inviteCard').innerHTML = inviteCard();
   document.getElementById('stats').innerHTML = stats();
   document.getElementById('rec').innerHTML = rec();
-  document.getElementById('notes').innerHTML = NOTES[S.user];
+  document.getElementById('notes').innerHTML = NOTES[S.us];
 }
 function share(){
   if(!hasUs()){toast('打开现有分享弹窗（交易所邀请链接）');return}
@@ -241,10 +232,9 @@ let tt;
 function toast(t){const el=document.getElementById('toast');el.textContent=t;el.style.display='block';clearTimeout(tt);tt=setTimeout(()=>el.style.display='none',1600)}
 function setMain(v){S.main=v;render()}
 function setSub(v){S.sub=v;render()}
-function retry(k){S[k]='data';syncSeg(k==='ex'?'segEx':'segUs','data');render()}
 function syncSeg(id,v){document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
 function bindSeg(id,key){document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{S[key]=b.dataset.v;syncSeg(id,b.dataset.v);render()})}
-bindSeg('segUser','user');bindSeg('segEx','ex');bindSeg('segUs','us');
+bindSeg('segUs','us');
 render();
 </script>
 </body>
