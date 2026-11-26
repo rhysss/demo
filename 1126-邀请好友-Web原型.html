@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>邀请好友 · Web 原型</title>
+<style>
+:root{
+  --bg:#000;--card:#0b0b0d;--card2:#141417;--line:#26262b;
+  --t1:#f5f5f5;--t2:#9a9aa2;--t3:#6b6b73;
+  --green:#86f58f;--green-d:#1d3a20;--warn:#f0b90b;--blue:#7d8cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t1);font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;font-size:14px}
+.w{color:var(--warn)}
+/* 原型控制条 */
+.ctl{position:sticky;top:0;z-index:20;background:#111;border-bottom:1px solid var(--line);padding:8px 20px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;font-size:12px;color:var(--t2)}
+.ctl .g{display:flex;align-items:center;gap:6px}
+.seg{display:flex;gap:4px}
+.seg button{background:#1c1c20;color:var(--t2);border:1px solid #2c2c32;border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer}
+.seg button.on{background:var(--green);color:#000;border-color:var(--green);font-weight:600}
+.ctl .tag{background:#1c1c20;border:1px solid #2c2c32;border-radius:5px;padding:4px 9px;color:var(--t1)}
+/* 首屏 */
+.hero{position:relative;overflow:hidden;background:
+  radial-gradient(600px 420px at 0% 0%,rgba(76,175,80,.55),transparent 70%),
+  radial-gradient(700px 500px at 30% 40%,rgba(70,90,140,.45),transparent 70%),
+  radial-gradient(500px 400px at 100% 10%,rgba(110,90,220,.5),transparent 70%),#05060a}
+.inner{max-width:1280px;margin:0 auto;padding:0 40px}
+.hero .inner{display:flex;justify-content:space-between;gap:40px;padding-top:80px;padding-bottom:60px}
+.left{flex:1;min-width:0}
+.left h1{font-size:56px;line-height:1.25;font-weight:800}
+.left h1 .g{color:var(--green)}
+.left .sub{color:var(--t2);font-size:18px;margin-top:22px}
+.how{margin-top:80px}
+.how h3{font-size:22px;font-weight:700}
+.how .d{color:var(--t2);font-size:14px;margin-top:4px}
+.step{display:flex;gap:18px;margin-top:34px}
+.step i{width:28px;height:28px;border:1.6px solid #cfd2dc;border-radius:7px;flex-shrink:0;margin-top:4px}
+.step b{display:block;font-size:15px;font-weight:600}
+.step span{color:var(--t2);font-size:15px}
+.right{width:500px;flex-shrink:0}
+.card{background:rgba(0,0,0,.92);border:1px solid var(--line);border-radius:16px;padding:30px 32px}
+.card h4{font-size:22px;font-weight:700;display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.card h4 i{width:20px;height:16px;border:1.6px solid #ddd;border-radius:3px}
+.lbl{font-size:13px;color:#cfd0d6;margin:0 0 10px}
+.fld{height:56px;border:1px solid #2e2e34;border-radius:12px;background:#0d0d10;display:flex;align-items:center;padding:0 14px 0 18px;margin-bottom:22px;gap:14px}
+.fld .ic{width:18px;height:18px;border:1.5px solid #ccc;border-radius:50%;flex-shrink:0}
+.fld .ic.doc{border-radius:3px}
+.fld .sep{width:1px;height:18px;background:#333}
+.fld .v{flex:1;min-width:0;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp{width:32px;height:32px;border-radius:8px;background:var(--green-d);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.cp:after{content:"";width:10px;height:12px;border:1.6px solid var(--green);border-radius:2px}
+.badge{font-size:11px;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:1px}
+.b-ex{background:rgba(134,245,143,.12);color:var(--green)}
+.b-us{background:rgba(125,140,255,.16);color:var(--blue)}
+.share{width:100%;height:48px;border-radius:24px;border:none;background:var(--green);color:#000;font-size:16px;font-weight:600;cursor:pointer;margin-top:4px}
+.stats{margin-top:22px;padding:26px 32px}
+.st2{display:flex;text-align:center}
+.st2 div{flex:1}
+.st2 div+div{border-left:1px solid var(--line)}
+.st2 .k{color:#cfd0d6;font-size:15px}
+.st2 .n{font-size:22px;font-weight:700;margin-top:6px}
+.st3{width:100%;border-collapse:collapse;text-align:center}
+.st3 th{color:var(--t2);font-weight:400;font-size:13px;padding:0 0 10px}
+.st3 td{font-size:20px;font-weight:700;padding:8px 0}
+.st3 td:first-child{font-size:14px;font-weight:500;color:#cfd0d6;text-align:left}
+.st3 tr+tr td{border-top:1px solid var(--line)}
+/* 记录区 */
+.rec{padding:50px 0 80px}
+.tabs{display:flex;gap:16px;align-items:center}
+.tabs div{font-size:20px;padding:8px 20px;border-radius:22px;color:var(--t2);cursor:pointer}
+.tabs div.on{background:var(--green-d);color:var(--green);font-weight:600}
+.sub-tabs{display:flex;gap:10px;margin-top:26px;align-items:center;flex-wrap:wrap}
+.sub-tabs div{border:1px solid #2e2e34;border-radius:8px;padding:6px 16px;font-size:14px;color:var(--t2);cursor:pointer}
+.sub-tabs div.on{border-color:var(--green);color:var(--green)}
+.sub-tabs .tip{border:none;padding:0 0 0 6px;font-size:13px;color:var(--t3);cursor:default}
+.thead,.trow{display:grid;grid-template-columns:1.2fr 1.2fr 1fr .6fr;align-items:center;padding:0 16px}
+.thead{color:#cfd0d6;font-size:13px;margin-top:26px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.thead span:last-child,.trow span:last-child{text-align:right}
+.trow{height:50px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin-top:10px;font-size:15px}
+.trow .ok{color:var(--green)}
+.pager{display:flex;justify-content:flex-end;gap:6px;margin-top:18px;font-size:13px;color:var(--t2);align-items:center}
+.pager b{display:inline-flex;width:28px;height:28px;border-radius:6px;align-items:center;justify-content:center;background:#1c1c20;color:var(--t1);font-weight:500}
+.empty{text-align:center;color:var(--t3);padding:60px 0;font-size:14px}
+.empty i{display:block;width:64px;height:64px;margin:0 auto 12px;border:1.5px dashed #333;border-radius:50%}
+.sk{height:50px;border-radius:8px;margin-top:10px;background:linear-gradient(90deg,#0d0d10 0,#19191d 50%,#0d0d10 100%);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.err{text-align:center;color:var(--t2);padding:50px 0}
+.err button{margin-top:12px;background:#1c1c20;color:var(--t1);border:1px solid #333;border-radius:16px;padding:6px 20px;cursor:pointer}
+.ph{border:1.5px dashed #33333a;border-radius:10px;padding:40px;text-align:center;color:var(--t3);margin-top:26px;line-height:1.8}
+/* 说明 */
+.notes{max-width:1280px;margin:0 auto 60px;padding:0 40px}
+.notes div{border:1px solid var(--line);border-radius:10px;padding:16px 20px;font-size:13px;color:var(--t2);line-height:1.9;background:#0a0a0c}
+.notes b{color:var(--t1)}
+/* 弹窗 */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;z-index:30;align-items:center;justify-content:center}
+.dlg{width:460px;background:#111114;border:1px solid var(--line);border-radius:16px;padding:26px 28px}
+.dlg h5{font-size:18px;display:flex;justify-content:space-between}
+.dlg h5 span{color:var(--t2);cursor:pointer;font-weight:400}
+.dlg .s{color:var(--t2);font-size:13px;margin:6px 0 18px}
+.opt{border:1px solid #2e2e34;border-radius:12px;padding:14px 16px;margin-bottom:12px;cursor:pointer}
+.opt:hover{border-color:var(--green)}
+.opt b{font-size:15px}
+.opt p{color:var(--t2);font-size:13px;margin-top:4px;line-height:1.6}
+.toast{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);background:rgba(40,40,44,.97);padding:10px 18px;border-radius:8px;font-size:13px;display:none;z-index:40;max-width:360px;text-align:center}
+@media(max-width:980px){.hero .inner{flex-direction:column}.right{width:100%}.left h1{font-size:40px}.how{margin-top:40px}.inner,.notes{padding:0 16px}.hero .inner{padding-top:40px}}
+</style>
+</head>
+<body>
+<div class="ctl">
+  <span class="tag">原型控制</span>
+  <div class="g">用户类型<div class="seg" id="segUser">
+    <button data-v="normal" class="on">普通用户</button><button data-v="restricted">受限地区</button><button data-v="locked">未满足美股通门槛</button></div></div>
+  <div class="g">交易所推荐<div class="seg" id="segEx">
+    <button data-v="data" class="on">有数据</button><button data-v="empty">空数据</button><button data-v="loading">加载中</button><button data-v="error">加载失败</button></div></div>
+  <div class="g">美股通推荐<div class="seg" id="segUs">
+    <button data-v="data" class="on">有数据</button><button data-v="empty">空（无直推）</button><button data-v="loading">加载中</button><button data-v="error">加载失败</button></div></div>
+</div>
+
+<section class="hero"><div class="inner">
+  <div class="left">
+    <h1><span class="g">邀请好友</span><br>赚取高额佣金！</h1>
+    <div class="sub">佣金实时计算，数据实时更新</div>
+    <div class="how">
+      <h3>如何获得返佣？</h3>
+      <div class="d">当您的朋友完成以下步骤时，您将获得返佣奖励！</div>
+      <div class="step"><i></i><div><b>注册</b><span>通过您的推荐码或链接注册</span></div></div>
+      <div class="step"><i></i><div><b>充值资金</b><span>完成充值流程</span></div></div>
+      <div class="step"><i></i><div><b>交易</b><span>完成合约交易</span></div></div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="card" id="inviteCard"></div>
+    <div class="card stats" id="stats"></div>
+  </div>
+</div></section>
+
+<section class="rec"><div class="inner" id="rec"></div></section>
+
+<div class="notes"><div id="notes"></div></div>
+
+<div class="mask" id="mask"><div class="dlg" id="dlg"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// 模拟数据：推荐码 DJG3GT；美股通链接前缀为模拟值
+const CODE = 'DJG3GT';
+const LINK_EX = 'https://www.100xex.com/register?ref=' + CODE;
+const LINK_US = 'https://www.100xex.com/usstock/bind?ref=' + CODE;
+const EX = [
+  {t:'2026-11-25 10:12:08', acc:'847***@qq.com', uid:'10260987', traded:false, week:true},
+  {t:'2026-11-18 16:40:51', acc:'bac***@163.com', uid:'10252274', traded:false, week:false},
+  {t:'2026-10-28 09:03:17', acc:'lin***@gmail.com', uid:'10248810', traded:true, week:false},
+  {t:'2026-10-15 22:31:46', acc:'wan***@outlook.com', uid:'10241576', traded:true, week:false},
+  {t:'2025-08-08 21:43:26', acc:'min***@gmail.com', uid:'10002997', traded:true, week:false}
+];
+const US = [
+  {t:'2026-11-24 14:20:33', acc:'847***@qq.com', uid:'10260987', traded:true, week:true},
+  {t:'2026-10-20 11:08:02', acc:'139****5521', uid:'10233019', traded:false, week:false},
+  {t:'2026-09-30 19:45:10', acc:'zho***@qq.com', uid:'10229870', traded:true, week:false}
+];
+const S = {user:'normal', ex:'data', us:'data', main:'ref', sub:'ex'};
+
+// 美股通是否展示：受限地区（R16）、未满足门槛（R17）不展示；无直推或未加载完不展示（R22）；加载失败照常展示并报错（R15）
+const hasUs = () => S.user==='normal' && S.us!=='empty' && S.us!=='loading';
+const cnt = (st,n) => st==='data'?n:(st==='empty'?0:'--');
+const weekCnt = (st,arr) => st==='data'?arr.filter(x=>x.week).length:(st==='empty'?0:'--');
+
+function fld(icon, v){
+  return `<div class="fld"><i class="ic ${icon}"></i><span class="sep"></span><span class="v">${v}</span><span class="cp" onclick="toast('已复制')"></span></div>`;
+}
+function inviteCard(){
+  let h = `<h4><i></i>邀请</h4><div class="lbl">邀请码</div>${fld('',CODE)}`;
+  if(hasUs()){
+    h += `<div class="lbl">交易所邀请链接</div>${fld('doc',LINK_EX)}`;
+    h += `<div class="lbl">美股通邀请链接</div>${fld('doc',LINK_US)}`;
+  }else{
+    h += `<div class="lbl">邀请链接</div>${fld('doc',LINK_EX)}`;
+  }
+  return h + `<button class="share" onclick="share()">分享</button>`;
+}
+function stats(){
+  if(!hasUs()){
+    return `<div class="st2"><div><div class="k">邀请总数</div><div class="n">${cnt(S.ex,EX.length)}</div></div><div><div class="k">本周邀请数量</div><div class="n">${weekCnt(S.ex,EX)}</div></div></div>`;
+  }
+  return `<table class="st3"><tr><th></th><th>邀请总数</th><th>本周邀请数量</th></tr>
+    <tr><td>交易所</td><td>${cnt(S.ex,EX.length)}</td><td>${weekCnt(S.ex,EX)}</td></tr>
+    <tr><td>美股通</td><td>${cnt(S.us,US.length)}</td><td>${weekCnt(S.us,US)}</td></tr></table>`;
+}
+
+function rows(st, arr, emptyTxt, key){
+  if(st==='loading') return '<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
+  if(st==='error') return `<div class="err">加载失败，请稍后重试<br><button onclick="retry('${key}')">重试</button></div>`;
+  if(st==='empty'||!arr.length) return `<div class="empty"><i></i>${emptyTxt}</div>`;
+  return arr.map(u=>`<div class="trow"><span>${u.t}</span><span>${u.acc}</span><span>${u.uid}</span><span class="${u.traded?'ok':''}">${u.traded?'已交易':'未交易'}</span></div>`).join('')
+    + `<div class="pager">共 ${arr.length} 条 <b>1</b> <span class="w">⚠️ 每页条数沿用现有</span></div>`;
+}
+function refBlock(){
+  const isUs = hasUs() && S.sub==='us';
+  let h = '';
+  if(hasUs()){
+    h += `<div class="sub-tabs">
+      <div class="${isUs?'':'on'}" onclick="setSub('ex')">交易所 ${cnt(S.ex,EX.length)}</div>
+      <div class="${isUs?'on':''}" onclick="setSub('us')">美股通 ${cnt(S.us,US.length)}</div>
+      <span class="tip">${isUs?'在美股通绑定你为邀请人的好友，跟单、跟盈宝返佣按这里的关系计算；是否交易只统计跟单、跟盈宝':'通过交易所链接注册的好友；是否交易只统计现货、合约'}</span></div>`;
+  }
+  h += `<div class="thead"><span>${isUs?'绑定时间':'注册时间'}</span><span>账户</span><span>UID</span><span>是否交易</span></div>`;
+  h += isUs ? rows(S.us, US, '还没有好友在美股通绑定你为邀请人', 'us') : rows(S.ex, EX, '还没有通过交易所链接注册的好友', 'ex');
+  return h;
+}
+function rec(){
+  const ref = S.main==='ref';
+  return `<div class="tabs"><div class="${ref?'on':''}" onclick="setMain('ref')">推荐记录</div><div class="${ref?'':'on'}" onclick="setMain('rebate')">返佣记录</div></div>`
+    + (ref ? refBlock() : `<div class="ph">返佣记录：现有页面，本期不改<br><span class="w">⚠️ 是否需要展示美股通（跟单、跟盈宝）的返佣记录，待确认</span></div>`);
+}
+
+const NOTES = {
+  normal:'<b>普通用户（Web 端，规则同 App：R10、R12、R15、R22）</b><br>· 邀请卡片：一个邀请码 + 交易所、美股通两条邀请链接；点「分享」先选分享哪条链接<br>· 统计卡片：按交易所、美股通分两行展示邀请总数和本周邀请数量 <span class="w">⚠️ 统计卡片的展示方式待确认</span><br>· 推荐记录：新增「交易所 / 美股通」切换，交易所列显示注册时间，美股通列显示绑定时间<br>· 美股通没有直推或还没加载完时，邀请卡片、统计卡片、推荐记录都和现在一样；加载失败时照常展示并报错<br>· 返佣记录：本期不改 <span class="w">⚠️ 是否展示美股通返佣待确认</span><br>· 左侧「如何获得返佣」：本期不改 <span class="w">⚠️ 是否补充美股通（绑定 → 跟单、跟盈宝）的说明待确认；「完成合约交易」和交易所「是否交易」统计现货、合约的口径不一致，是否顺手修正待确认</span>',
+  restricted:'<b>受限地区用户（R16）</b><br>· 不展示美股通邀请链接、统计卡片的美股通行、推荐记录的切换，页面和现在一样<br>· 点「分享」直接使用交易所邀请链接',
+  locked:'<b>未满足美股通邀请人门槛（R17）</b><br>· 和受限地区一样，页面和现在一样<br><span class="w">⚠️ 门槛是否存在待确认（Q14）</span>'
+};
+
+function render(){
+  if(!hasUs()) S.sub='ex';
+  document.getElementById('inviteCard').innerHTML = inviteCard();
+  document.getElementById('stats').innerHTML = stats();
+  document.getElementById('rec').innerHTML = rec();
+  document.getElementById('notes').innerHTML = NOTES[S.user];
+}
+function share(){
+  if(!hasUs()){toast('打开现有分享弹窗（交易所邀请链接）');return}
+  document.getElementById('dlg').innerHTML = `<h5>选择分享的链接<span onclick="closeDlg()">✕</span></h5>
+    <div class="s">邀请码相同，链接不同；好友打开哪条链接，就绑定哪套关系</div>
+    <div class="opt" onclick="closeDlg();toast('打开现有分享弹窗（交易所邀请链接）')"><b>交易所邀请链接</b><span class="badge b-ex">现货、合约</span><p>好友注册交易所时绑定你为邀请人，现货、合约交易按交易所关系返佣</p></div>
+    <div class="opt" onclick="closeDlg();toast('打开现有分享弹窗（美股通邀请链接）')"><b>美股通邀请链接</b><span class="badge b-us">跟单、跟盈宝</span><p>好友在美股通绑定你为邀请人，跟单、跟盈宝按美股通关系返佣；绑定后不能修改</p></div>`;
+  document.getElementById('mask').style.display='flex';
+}
+function closeDlg(){document.getElementById('mask').style.display='none'}
+document.getElementById('mask').onclick=e=>{if(e.target.id==='mask')closeDlg()};
+let tt;
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.style.display='block';clearTimeout(tt);tt=setTimeout(()=>el.style.display='none',1600)}
+function setMain(v){S.main=v;render()}
+function setSub(v){S.sub=v;render()}
+function retry(k){S[k]='data';syncSeg(k==='ex'?'segEx':'segUs','data');render()}
+function syncSeg(id,v){document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
+function bindSeg(id,key){document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{S[key]=b.dataset.v;syncSeg(id,b.dataset.v);render()})}
+bindSeg('segUser','user');bindSeg('segEx','ex');bindSeg('segUs','us');
+render();
+</script>
+</body>
+</html>
