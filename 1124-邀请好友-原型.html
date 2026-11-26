@@ -98,25 +98,10 @@ body{background:var(--page);color:var(--t1);font-family:-apple-system,"PingFang 
 <body>
 <div class="wrap">
   <div class="ctl">
-    <h3>用户类型</h3>
-    <div class="seg" id="segUser">
-      <button data-v="normal" class="on">普通用户</button>
-      <button data-v="restricted">受限地区</button>
-      <button data-v="locked">未满足美股通门槛</button>
-    </div>
-    <h3>交易所列表</h3>
-    <div class="seg" id="segEx">
-      <button data-v="data" class="on">有数据</button>
-      <button data-v="empty">空数据</button>
-      <button data-v="loading">加载中</button>
-      <button data-v="error">加载失败</button>
-    </div>
-    <h3>美股通列表 <span style="font-size:11px;color:var(--t3)">空数据 = 没有美股通直推</span></h3>
+    <h3>页面展示</h3>
     <div class="seg" id="segUs">
-      <button data-v="data" class="on">有数据</button>
-      <button data-v="empty">空数据</button>
-      <button data-v="loading">加载中</button>
-      <button data-v="error">加载失败</button>
+      <button data-v="yes" class="on">有美股通</button>
+      <button data-v="no">没有美股通</button>
     </div>
     <div class="note" id="note"></div>
   </div>
@@ -152,18 +137,16 @@ const US = [
   {acc:'zho***@qq.com', uid:'10229870', date:'2026-09-30', traded:true}
 ];
 
-const S = {user:'normal', ex:'data', us:'data', tab:'ex', view:'home'};
+const S = {us:'yes', tab:'ex', view:'home'};
 
 const NOTE = {
-  normal:'<b>普通用户（R10）</b><br>· 邀请区：一个推荐码 + 交易所、美股通两条链接（R6）<br>· 点「立即邀请」先选分享哪条链接<br>· 两个 Tab 各自展示本关系的直推（R13）<br>· 交易所 Tab 只算现货、合约；美股通 Tab 只算跟单、跟盈宝（R12）<br>· 美股通直推为 0（或还没加载完）时，不展示美股通链接和美股通 Tab，页面和现在一样（R22）<br>· 美股通加载失败：展示 Tab 并报错，人数显示「--」（R15）<br>· 点「总推荐 ›」进入完整列表，同样分两个 Tab，默认停在当前 Tab（R19）<br><span class="w">⚠️ 默认展示条数沿用现有，原型按截图展示 2 条（Q16）</span>',
-  restricted:'<b>受限地区用户（R16）</b><br>· 不能使用美股通：隐藏美股通链接和美股通 Tab<br>· 页面保持现状：推荐码 + 链接 + 我的推荐<br>· 点「立即邀请」直接分享交易所链接',
-  locked:'<b>未满足美股通邀请人门槛（R17）</b><br>· 没开通美股通，不会有美股通直推<br>· 不展示美股通链接和美股通 Tab，页面和现在一样<br>· 「立即邀请」直接分享交易所链接<br><span class="w">⚠️ 门槛是否存在待确认（Q14）</span>'
+  yes:'<b>有美股通（用户已有美股通直推）</b><br>· 邀请区：一个推荐码 + 交易所、美股通两条链接（R6）<br>· 点「立即邀请」先选分享哪条链接<br>· 我的推荐分「交易所 / 美股通」两个 Tab，各自展示本关系的直推（R10、R13）<br>· 交易所 Tab 只算现货、合约；美股通 Tab 只算跟单、跟盈宝（R12）<br>· 点「总推荐 ›」进入完整列表，同样分两个 Tab，默认停在当前 Tab（R19）<br><span class="w">⚠️ 默认展示条数沿用现有，原型按截图展示 2 条（Q16）</span>',
+  no:'<b>没有美股通（和现在一样）</b><br>· 适用：没有美股通直推（R22）、受限地区（R16）、未满足美股通门槛（R17）<br>· 邀请区只有推荐码和链接，点「立即邀请」直接分享交易所链接<br>· 我的推荐只有交易所直推，没有 Tab'
 };
 
-// 美股通链接和 Tab 是否展示：受限地区（R16）、未满足美股通门槛（R17）不展示；美股通直推为 0 或还没加载完也不展示（R22）；加载失败时展示，交给 Tab 报错（R15）
-const hasUs = () => S.user==='normal' && S.us!=='empty' && S.us!=='loading';
+// 有美股通：用户有美股通直推；没有美股通：无美股通直推（R22）、受限地区（R16）、未满足门槛（R17）
+const hasUs = () => S.us==='yes';
 function copyBtn(){return `<i class="cp" onclick="toast('已复制')"></i>`}
-function cnt(state,n){return state==='data'?n:(state==='empty'?0:'--')}
 
 function inviteBox(){
   let rows = `<div class="row"><span class="k">推荐码</span><span class="v"><span>${CODE}</span>${copyBtn()}</span></div>`;
@@ -181,32 +164,25 @@ function item(u,label){
   return `<div class="item"><div class="l1"><span>${u.acc}</span>${stTxt(u.traded)}</div>
   <div class="l2"><span>UID:${u.uid}</span><span>${label}：${u.date}</span></div></div>`;
 }
-function listBody(state, items, label, emptyTxt, retryKey){
-  if(state==='loading') return '<div class="sk"></div><div class="sk"></div>';
-  if(state==='error') return `<div class="err">加载失败，请稍后重试<br><button onclick="retry('${retryKey}')">重试</button></div>`;
-  if(state==='empty' || !items.length) return `<div class="empty"><i></i>${emptyTxt}</div>`;
-  return items.map(u=>item(u,label)).join('');
-}
+function listBody(items, label){return items.map(u=>item(u,label)).join('')}
 const TIP_EX = '通过交易所链接注册的好友。交易状态只统计现货、合约的成交';
 const TIP_US = '在美股通绑定你为邀请人的好友，跟单、跟盈宝返佣按这里的关系计算。交易状态只统计跟单、跟盈宝的成交';
-const EMPTY_EX = '还没有通过交易所链接注册的好友';
-const EMPTY_US = '还没有好友在美股通绑定你为邀请人';
 
 function tabsBar(){
   const isEx=S.tab==='ex';
-  return `<div class="tabs"><div class="${isEx?'on':''}" onclick="setTab('ex')">交易所 ${cnt(S.ex,EX.length)}</div><div class="${isEx?'':'on'}" onclick="setTab('us')">美股通 ${cnt(S.us,US.length)}</div></div>`;
+  return `<div class="tabs"><div class="${isEx?'on':''}" onclick="setTab('ex')">交易所 ${EX.length}</div><div class="${isEx?'':'on'}" onclick="setTab('us')">美股通 ${US.length}</div></div>`;
 }
 function curList(limit){
   if(!hasUs() || S.tab==='ex'){
     const d = limit?EX.slice(0,limit):EX;
-    return (hasUs()?`<div class="tip">${TIP_EX}</div>`:'') + listBody(S.ex, d, '注册时间', EMPTY_EX, 'ex');
+    return (hasUs()?`<div class="tip">${TIP_EX}</div>`:'') + listBody(d, '注册时间');
   }
   const d = limit?US.slice(0,limit):US;
-  return `<div class="tip">${TIP_US}</div>` + listBody(S.us, d, '绑定时间', EMPTY_US, 'us');
+  return `<div class="tip">${TIP_US}</div>` + listBody(d, '绑定时间');
 }
 
 function homeView(){
-  const total = (!hasUs()||S.tab==='ex') ? cnt(S.ex,EX.length) : cnt(S.us,US.length);
+  const total = (!hasUs()||S.tab==='ex') ? EX.length : US.length;
   return `<div class="sb"><span>10:47</span><span>5G ▮▮▮</span></div>
    <div class="nav"><span class="x">✕</span>邀请好友</div>
    <div class="hero">分享祝福，共同致富</div>
@@ -226,7 +202,7 @@ function fullView(){
 function render(){
   if(!hasUs()) S.tab='ex';
   document.getElementById('scr').innerHTML = S.view==='home'?homeView():fullView();
-  document.getElementById('note').innerHTML = NOTE[S.user];
+  document.getElementById('note').innerHTML = NOTE[S.us];
 }
 
 function invite(){
@@ -254,16 +230,14 @@ function toast(t){
 }
 function go(v){S.view=v;document.getElementById('scr').scrollTop=0;render()}
 function setTab(t){S.tab=t;render()}
-function retry(k){S[k]='data';syncSeg(k==='ex'?'segEx':'segUs','data');render()}
 function syncSeg(id,v){document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
 function bindSeg(id,key){
   document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{
     S[key]=b.dataset.v; syncSeg(id,b.dataset.v);
-    if(key==='user' && b.dataset.v==='restricted') S.tab='ex';
     render();
   });
 }
-bindSeg('segUser','user');bindSeg('segEx','ex');bindSeg('segUs','us');
+bindSeg('segUs','us');
 render();
 </script>
 </body>
