@@ -210,10 +210,10 @@ function relBar(){
 }
 function tipLine(){
   if(!hasUs()) return '';
-  const isUs = S.sub==='us', ref = S.main==='ref';
+  const isUs = S.sub==='us', ref = isUs || S.main==='ref';
   const t = ref
     ? (isUs ? `在美股通绑定你为邀请人的好友，共 ${US.length} 人；是否交易只统计跟单、跟盈宝` : `通过交易所链接注册的好友，共 ${EX.length} 人；是否交易只统计现货、合约`)
-    : (isUs ? '美股通上级是你的好友，做跟单、跟盈宝产生的返佣' : '交易所上级是你的好友，做现货、合约等交易所业务产生的返佣');
+    : '交易所上级是你的好友，做现货、合约等交易所业务产生的返佣';
   return `<div class="reltip">${t}</div>`;
 }
 function refBlock(){
@@ -221,30 +221,27 @@ function refBlock(){
   return `<div class="thead"><span>${isUs?'绑定时间':'注册时间'}</span><span>账户</span><span>UID</span><span>是否交易</span></div>` + rows(isUs ? US : EX);
 }
 function rec(){
-  const ref = S.main==='ref';
+  // 美股通下暂不展示返佣记录，只有推荐记录（R24）；切回交易所时恢复原来选中的 Tab
+  const usSide = hasUs() && S.sub==='us';
+  const ref = usSide || S.main==='ref';
   return relBar()
-    + `<div class="tabs"><div class="${ref?'on':''}" onclick="setMain('ref')">推荐记录</div><div class="${ref?'':'on'}" onclick="setMain('rebate')">返佣记录</div></div>`
+    + `<div class="tabs"><div class="${ref?'on':''}" onclick="setMain('ref')">推荐记录</div>${usSide?'':`<div class="${ref?'':'on'}" onclick="setMain('rebate')">返佣记录</div>`}</div>`
     + tipLine()
     + (ref ? refBlock() : rebateBlock());
 }
-// 返佣记录：沿用现有表格；有美股通时按外层切换分开展示，美股通下用「类型」列区分跟单、跟盈宝（R24）；数据为模拟值
+// 返佣记录：沿用现有表格，只展示交易所的返佣（R24）；数据为模拟值
 const RB = [
-  {acc:'847***@qq.com', uid:'10260987', t:'2026-11-25 16:02:41', type:'跟单', amt:'+0.86 USDT', us:true},
-  {acc:'lin***@gmail.com', uid:'10248810', t:'2026-11-25 09:17:05', type:'合约', amt:'+1.24 USDT', us:false},
-  {acc:'zho***@qq.com', uid:'10229870', t:'2026-11-24 00:00:00', type:'跟盈宝', amt:'+0.32 USDT', us:true},
-  {acc:'wan***@outlook.com', uid:'10241576', t:'2026-11-23 21:40:12', type:'合约', amt:'+2.05 USDT', us:false}
+  {acc:'lin***@gmail.com', uid:'10248810', t:'2026-11-25 09:17:05', type:'合约', amt:'+1.24 USDT'},
+  {acc:'wan***@outlook.com', uid:'10241576', t:'2026-11-23 21:40:12', type:'合约', amt:'+2.05 USDT'}
 ];
 function rebateBlock(){
-  const isUs = hasUs() && S.sub==='us';
-  const list = RB.filter(r=>r.us===isUs);
   return `<div class="thead rb"><span>账户</span><span>UID</span><span>交易时间</span><span>类型</span><span>返佣金额</span></div>`
-    + list.map(r=>`<div class="trow rb"><span>${r.acc}</span><span>${r.uid}</span><span>${r.t}</span><span>${r.type}</span><span class="ok">${r.amt}</span></div>`).join('')
-    + `<div class="pager"><span class="w">⚠️ 现有类型名称、金额格式、每页条数沿用现有，原型为模拟值</span></div>`
-    + (isUs?`<div class="reltip" style="margin-top:6px"><span class="w">⚠️ 跟单、跟盈宝返佣行的「交易时间」取什么时间（如跟盈宝按收益结算时间）待确认（Q25）</span></div>`:'');
+    + RB.map(r=>`<div class="trow rb"><span>${r.acc}</span><span>${r.uid}</span><span>${r.t}</span><span>${r.type}</span><span class="ok">${r.amt}</span></div>`).join('')
+    + `<div class="pager"><span class="w">⚠️ 现有类型名称、金额格式、每页条数沿用现有，原型为模拟值</span></div>`;
 }
 
 const NOTES = {
-  yes:'<b>有美股通（用户已有美股通直推）</b><br>· 邀请卡片：一个邀请码 + 交易所、美股通两条邀请链接；点「分享」先选分享哪条链接<br>· 统计卡片：按交易所、美股通分两行展示邀请总数和本周邀请数量，美股通的「本周」按绑定时间算（R25）<br>· 记录区：最上方新增「交易所 / 美股通」切换，同时作用于推荐记录和返佣记录（R26）<br>· 推荐记录：交易所显示注册时间，美股通显示绑定时间；是否交易按各自业务统计（R12）<br>· 返佣记录：沿用现有表格（账户、UID、交易时间、类型、返佣金额）；切到美股通时展示跟单、跟盈宝的返佣，用「类型」列区分（R24）<br>· 佣金规则解释：现有内容，本期不改 <span class="w">⚠️（Q23）</span><br>· 左侧「如何获得返佣」：本期不改 <span class="w">⚠️ 是否补充美股通说明待确认（Q23）</span>',
+  yes:'<b>有美股通（用户已有美股通直推）</b><br>· 邀请卡片：一个邀请码 + 交易所、美股通两条邀请链接；点「分享」先选分享哪条链接<br>· 统计卡片：按交易所、美股通分两行展示邀请总数和本周邀请数量，美股通的「本周」按绑定时间算（R25）<br>· 记录区：最上方新增「交易所 / 美股通」切换（R26）；切到美股通时只有推荐记录，不展示返佣记录<br>· 推荐记录：交易所显示注册时间，美股通显示绑定时间；是否交易按各自业务统计（R12）<br>· 返佣记录：只在交易所下展示，沿用现有表格（账户、UID、交易时间、类型、返佣金额），只有交易所的返佣；美股通返佣本期不展示（R24）<br>· 佣金规则解释：现有内容，本期不改 <span class="w">⚠️（Q23）</span><br>· 左侧「如何获得返佣」：本期不改 <span class="w">⚠️ 是否补充美股通说明待确认（Q23）</span>',
   no:'<b>没有美股通（和现在一样）</b><br>· 适用：没有美股通直推（R22）、受限地区（R16）、未满足美股通门槛（R17）<br>· 邀请卡片只有邀请码和邀请链接，点「分享」直接用交易所邀请链接<br>· 统计卡片、推荐记录都只有交易所，和现在一样'
 };
 
