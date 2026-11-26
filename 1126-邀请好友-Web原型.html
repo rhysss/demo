@@ -88,7 +88,8 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,"PingFang SC
 .err{text-align:center;color:var(--t2);padding:50px 0}
 .err button{margin-top:12px;background:#1c1c20;color:var(--t1);border:1px solid #333;border-radius:16px;padding:6px 20px;cursor:pointer}
 .ph{border:1.5px dashed #33333a;border-radius:10px;padding:40px;text-align:center;color:var(--t3);margin-top:26px;line-height:1.8}
-.thead.rb{grid-template-columns:1fr 1fr 1fr 1fr 1fr;border-bottom:none}
+.thead.rb,.trow.rb{grid-template-columns:1fr 1fr 1fr 1fr 1fr}
+.thead.rb{border-bottom:none}
 .thead.rb span:last-child{text-align:right}
 .nodata{text-align:center;color:var(--t2);font-size:13px;padding:110px 0 90px}
 .nodata i{display:block;width:78px;height:58px;margin:0 auto 12px;border-radius:6px;background:linear-gradient(160deg,#1f5a25,#123316);position:relative}
@@ -214,15 +215,23 @@ function rec(){
   return `<div class="tabs"><div class="${ref?'on':''}" onclick="setMain('ref')">推荐记录</div><div class="${ref?'':'on'}" onclick="setMain('rebate')">返佣记录</div></div>`
     + (ref ? refBlock() : rebateBlock());
 }
-// 返佣记录：还原现有 Web 页面，本期不改（Q22）
+// 返佣记录：沿用现有表格，美股通返佣用「类型」列区分跟单、跟盈宝（R24）；数据为模拟值
+const RB = [
+  {acc:'847***@qq.com', uid:'10260987', t:'2026-11-25 16:02:41', type:'跟单', amt:'+0.86 USDT', us:true},
+  {acc:'lin***@gmail.com', uid:'10248810', t:'2026-11-25 09:17:05', type:'合约', amt:'+1.24 USDT', us:false},
+  {acc:'zho***@qq.com', uid:'10229870', t:'2026-11-24 00:00:00', type:'跟盈宝', amt:'+0.32 USDT', us:true},
+  {acc:'wan***@outlook.com', uid:'10241576', t:'2026-11-23 21:40:12', type:'合约', amt:'+2.05 USDT', us:false}
+];
 function rebateBlock(){
-  return `<div class="thead rb"><span>账户</span><span>UID</span><span>交易时间</span><span>类型</span><span>返佣金额</span></div>
-    <div class="nodata"><i></i>暂无数据</div>
-    ${hasUs()?'<div class="tip" style="color:var(--t3);font-size:13px">⚠️ <span class="w">是否在这里展示美股通（跟单、跟盈宝）的返佣待确认（Q22）。如果要展示，可以沿用现有「类型」列区分跟单、跟盈宝，表格结构不用改</span></div>':''}`;
+  const list = RB.filter(r=>hasUs()||!r.us);
+  return `<div class="thead rb"><span>账户</span><span>UID</span><span>交易时间</span><span>类型</span><span>返佣金额</span></div>`
+    + list.map(r=>`<div class="trow rb"><span>${r.acc}</span><span>${r.uid}</span><span>${r.t}</span><span>${r.us?`<span class="badge b-us" style="margin:0;font-size:13px;padding:2px 8px">${r.type}</span>`:r.type}</span><span class="ok">${r.amt}</span></div>`).join('')
+    + `<div class="pager"><span class="w">⚠️ 现有类型名称、金额格式、每页条数沿用现有，原型为模拟值</span></div>`
+    + (hasUs()?`<div class="tip" style="color:var(--t3);font-size:13px;margin-top:6px"><span class="w">⚠️ 跟单、跟盈宝返佣行的「交易时间」取什么时间（如跟盈宝按收益结算时间）待确认（Q25）</span></div>`:'');
 }
 
 const NOTES = {
-  yes:'<b>有美股通（用户已有美股通直推）</b><br>· 邀请卡片：一个邀请码 + 交易所、美股通两条邀请链接；点「分享」先选分享哪条链接<br>· 统计卡片：按交易所、美股通分两行展示邀请总数和本周邀请数量 <span class="w">⚠️ 展示方式待确认（Q21）</span><br>· 推荐记录：新增「交易所 / 美股通」切换，交易所显示注册时间，美股通显示绑定时间；是否交易按各自业务统计（R12）<br>· 返佣记录：还原现有页面（账户、UID、交易时间、类型、返佣金额），本期不改 <span class="w">⚠️ 是否展示美股通返佣待确认（Q22）</span><br>· 佣金规则解释：现有内容，本期不改 <span class="w">⚠️（Q23）</span><br>· 左侧「如何获得返佣」：本期不改 <span class="w">⚠️ 是否补充美股通说明待确认（Q23）</span>',
+  yes:'<b>有美股通（用户已有美股通直推）</b><br>· 邀请卡片：一个邀请码 + 交易所、美股通两条邀请链接；点「分享」先选分享哪条链接<br>· 统计卡片：按交易所、美股通分两行展示邀请总数和本周邀请数量 <span class="w">⚠️ 展示方式待确认（Q21）</span><br>· 推荐记录：新增「交易所 / 美股通」切换，交易所显示注册时间，美股通显示绑定时间；是否交易按各自业务统计（R12）<br>· 返佣记录：沿用现有表格（账户、UID、交易时间、类型、返佣金额），美股通的返佣也放进来，用「类型」列区分跟单、跟盈宝（R24）<br>· 佣金规则解释：现有内容，本期不改 <span class="w">⚠️（Q23）</span><br>· 左侧「如何获得返佣」：本期不改 <span class="w">⚠️ 是否补充美股通说明待确认（Q23）</span>',
   no:'<b>没有美股通（和现在一样）</b><br>· 适用：没有美股通直推（R22）、受限地区（R16）、未满足美股通门槛（R17）<br>· 邀请卡片只有邀请码和邀请链接，点「分享」直接用交易所邀请链接<br>· 统计卡片、推荐记录都只有交易所，和现在一样'
 };
 
